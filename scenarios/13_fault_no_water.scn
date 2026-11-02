@@ -1,0 +1,11 @@
+name "empty reservoir: pump runs dry, engine stops the shot"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+
+when engine.state == ready for 30s as warm: set reservoir.ml = 0; brew on
+at warm+30s: brew off
+
+expect eventually engine.faults has no_water from warm by warm+12s
+expect always pump.on == 0 from warm+13s
+expect always valve.open == 0 from warm+13s
+expect never cup.mass > 1

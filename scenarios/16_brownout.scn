@@ -1,0 +1,10 @@
+name "mains sags to 195 V during warm-up"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 23min
+
+at 20s: ramp mains.voltage_v to 195 over 10s
+when engine.state == ready as ready:
+
+expect eventually engine.state == ready by 12min
+expect never engine.state == fault
+expect always engine.temp < 96 from ready

@@ -1,0 +1,18 @@
+name "back-to-back shots 45 s apart hold temperature and yield"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 20min
+trace_every 50ms
+
+when engine.state == ready for 2min as warm: brew on
+when engine.state == brew_done as done1:
+at done1+3s: brew off
+at done1+45s: brew on
+when engine.state == brew_done from done1+46s as done2:
+at done2+3s: brew off
+
+expect eventually engine.state == brew_done from done1+46s by done1+100s
+expect at done1+5s: cup.mass > 35g and cup.mass < 37.5g
+expect at done2+5s: cup.mass > 35g and cup.mass < 37.5g
+expect always boiler.water_temp > 88 or puck.flow < 0.2 from done1+57s until done2
+expect always boiler.water_temp < 96 from warm until done2+120s
+expect never engine.state == fault

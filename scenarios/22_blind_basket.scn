@@ -1,0 +1,12 @@
+name "blind basket backflush: profile holds 9 bar, nothing reaches the cup"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 14min
+model puck.grind = 500
+
+when engine.state == ready for 20s as warm: brew on
+at warm+18s: brew off
+
+expect always hydraulics.pressure < 11
+# fill + 5 s soak + 4 s ramp, then 9 bar
+expect eventually hydraulics.pressure > 8.5 from warm by warm+16s
+expect never cup.mass > 0.5

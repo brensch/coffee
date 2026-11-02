@@ -1,0 +1,63 @@
+{
+  "name": "Blooming",
+  "description": "Fill, then let the puck bloom with the pump off, then a declining pressure extraction.",
+  "temperature_c": 94.0,
+  "phases": [
+    {
+      "name": "fill",
+      "target": {
+        "flow": 5.0
+      },
+      "limit": 3.0,
+      "exit": [
+        {
+          "pressure_above": 2.5
+        },
+        {
+          "time_s": 12
+        }
+      ]
+    },
+    {
+      "name": "bloom",
+      "target": {
+        "flow": 0.0
+      },
+      "exit": [
+        {
+          "time_s": 15
+        }
+      ]
+    },
+    {
+      "name": "ramp",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 3
+      },
+      "exit": [
+        {
+          "time_s": 3
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 20
+      },
+      "limit": 3.5
+    }
+  ],
+  "stop": {
+    "weight_g": 40.0,
+    "max_time_s": 75.0
+  }
+}

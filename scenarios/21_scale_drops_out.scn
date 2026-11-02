@@ -1,0 +1,12 @@
+name "scale disconnects mid-shot: profile max time ends the shot"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+
+when engine.state == ready for 30s as warm: brew on
+at warm+18s: set scale.connected = 0
+when engine.state == brew_done as done:
+at done+2s: brew off
+
+expect never engine.state == fault
+expect eventually engine.state == brew_done from warm by warm+62s
+expect at done+1s: engine.shot_time > 55

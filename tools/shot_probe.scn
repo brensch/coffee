@@ -1,0 +1,13 @@
+name "diagnostic: two shots from a warm machine"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 20min
+trace_every 50ms
+trace time, boiler.temp, boiler.water_temp, portafilter.temp, brew.water_temp, probe.temp, hydraulics.pressure, pump.flow, opv.flow, group.flow, puck.flow, puck.wet, cup.mass, heater.power, engine.state, engine.phase, engine.temp, engine.setpoint, engine.pressure, engine.target_pressure, engine.flow, engine.target_flow, engine.weight, engine.heater_duty, engine.pump_duty, engine.shot_time, engine.water, engine.heat_soak
+
+when engine.state == ready for 5min as warm: brew on
+when engine.state == brew_done as done1:
+at done1+3s: brew off
+at done1+4min: brew on
+when engine.state == brew_done from done1+60s as done2:
+at done2+3s: brew off
+expect eventually engine.state == brew_done

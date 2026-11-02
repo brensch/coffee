@@ -1,0 +1,25 @@
+[package]
+name = "coffee-engine"
+description = "The espresso engine as a host binary: lockstep link to an emulator (or a USB hardware bridge) plus the web UI/API."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "coffee-engine"
+path = "src/main.rs"
+
+[dependencies]
+coffee-io.workspace = true
+coffee-core.workspace = true
+coffee-api.workspace = true
+coffee-node.workspace = true
+serde = { workspace = true, features = ["std"] }
+serde_json.workspace = true
+toml.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tokio.workspace = true
+axum.workspace = true
+tower-http.workspace = true
+futures.workspace = true

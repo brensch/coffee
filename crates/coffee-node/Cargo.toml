@@ -1,0 +1,13 @@
+[package]
+name = "coffee-node"
+description = "Everything the machine does, shared verbatim by the PC binary and the ESP32 firmware: engine, shot recording, profile library, config, the HTTP API, telemetry and logging. no_std + alloc."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+coffee-io.workspace = true
+coffee-core.workspace = true
+coffee-api.workspace = true
+serde.workspace = true
+serde_json = { version = "1", default-features = false, features = ["alloc"] }

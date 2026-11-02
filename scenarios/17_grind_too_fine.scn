@@ -1,0 +1,13 @@
+name "grind far too fine: shot chokes and the max time stops it"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+model puck.grind = 4.0
+
+when engine.state == ready for 30s as warm: brew on
+when engine.state == brew_done as done:
+at done+2s: brew off
+
+expect always hydraulics.pressure < 10.5
+expect eventually engine.state == brew_done from warm by warm+62s
+expect at done+3s: cup.mass < 30g
+expect at done-1s: engine.shot_time > 55

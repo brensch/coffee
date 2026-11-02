@@ -1,0 +1,7 @@
+/target
+/out
+/ui/target
+/ui/dist
+/firmware/esp32c6/target
+/profiles/imported
+/data

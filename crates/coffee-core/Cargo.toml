@@ -1,0 +1,14 @@
+[package]
+name = "coffee-core"
+description = "The espresso control engine: sensor conversion, estimation, control, profiles, safety. no_std + alloc."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+coffee-io.workspace = true
+serde.workspace = true
+libm.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

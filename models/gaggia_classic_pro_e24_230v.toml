@@ -1,0 +1,101 @@
+# Gaggia Classic Pro E24 (brass boiler), 230 V / 50 Hz.
+#
+# STATUS: first-principles estimates. Every value here is a starting point for
+# `coffee-emu fit` against logs from the real machine. Sources and reasoning are
+# in docs/MODELS.md. Values marked (est) have no published source.
+
+[meta]
+name = "Gaggia Classic Pro E24 230V"
+notes = "Initial estimates; fit thermal.* from a cold heat-up log and hydraulics.* from a blind-basket log."
+
+[mains]
+voltage_v = 230.0
+frequency_hz = 50.0
+
+[heater]
+power_w = 1370.0          # retail listings quote 1350-1370 W for the brew boiler
+rated_voltage_v = 230.0
+cutoff_open_c = 170.0     # bimetal safety cutout on the boiler (est)
+cutoff_close_c = 150.0
+thermal_fuse_c = 184.0    # one-shot fuse (est)
+
+[thermal]
+ambient_c = 22.0
+chassis_air_c = 35.0      # inside the case, where the MAX31855 cold junction lives (est)
+boiler_mass_kg = 1.3      # brass, incl. element and group casting (est)
+boiler_cp = 380.0         # brass J/(kg K)
+boiler_capacity_ml = 136.0
+h_boiler_water_w_k = 45.0 # body <-> water conductance, element submerged (est)
+h_flow_gain_w_k_per_ml_s = 4.0
+loss_boiler_w_k = 0.55    # ~40 W idle at 93 C (est)
+portafilter_mass_kg = 0.5 # chromed brass portafilter + basket (est)
+portafilter_cp = 380.0
+h_boiler_portafilter_w_k = 1.2
+loss_portafilter_w_k = 0.25
+screen_ua_w_k = 3.0
+
+[hydraulics]
+compliance_ml_per_bar = 0.8
+opv_crack_bar = 10.0      # EU units; measure with a blind basket
+opv_k_ml_s_per_bar = 4.0
+opv_softness_bar = 0.4
+valve_screen_r = 0.05
+wand_liquid_r = 0.6
+wand_vapor_g_s_per_bar = 0.6
+seep_ml_s_per_bar = 0.003    # check valve / solenoid seepage (est): idle pressure ~2-3 bar while heating, bleeds off over minutes
+
+[pump]
+# Ulka E5 datasheet, average flow (cc/min) vs pressure (bar), rated V/Hz.
+curve = [[0.0, 650.0], [2.0, 520.0], [4.0, 420.0], [6.0, 350.0], [7.0, 330.0],
+         [8.0, 300.0], [10.0, 210.0], [12.0, 140.0], [14.0, 60.0], [15.0, 0.0]]
+rated_voltage_v = 230.0
+rated_hz = 50.0
+wear = 1.0
+
+[puck]
+dose_g = 18.0
+grind = 1.0
+r_per_g = 0.095
+compression_per_bar = 0.15
+swell_amp = 0.3
+swell_tau_s = 5.0
+erosion_per_ml = 0.008
+headspace_ml = 12.0
+absorb_g_per_g = 1.1
+solids_c0 = 0.12
+solids_decay_ml = 25.0
+
+[cup]
+drip_tau_s = 0.4
+
+[scale]
+connected = true
+period_s = 0.1
+latency_s = 0.25
+resolution_g = 0.1
+noise_g = 0.03
+
+[thermocouple]
+tau_s = 2.5
+noise_c = 0.15
+offset_c = 0.0
+period_s = 0.1
+
+[pressure_sensor]
+range_bar = 16.0
+v_zero = 0.5
+v_full = 4.5
+divider = 0.6666667
+noise_bar = 0.02
+tau_s = 0.003
+offset_bar = 0.0
+
+[reservoir]
+capacity_ml = 2100.0
+initial_ml = 1800.0
+temp_c = 22.0
+
+[sim]
+substeps = 20
+initial_temp_c = 22.0
+actuator_delay_half_cycles = 1  # firmware applies outputs just before the next zero crossing

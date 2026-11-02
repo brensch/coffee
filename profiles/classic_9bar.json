@@ -1,0 +1,63 @@
+{
+  "name": "Classic 9 bar",
+  "description": "Gentle fill, short soak, ramp to 9 bar and hold. Stops at 36 g.",
+  "temperature_c": 93.0,
+  "phases": [
+    {
+      "name": "fill",
+      "target": {
+        "flow": 6.0
+      },
+      "limit": 2.5,
+      "exit": [
+        {
+          "pressure_above": 2.0
+        },
+        {
+          "time_s": 12
+        }
+      ]
+    },
+    {
+      "name": "soak",
+      "target": {
+        "pressure": 2.5
+      },
+      "limit": 2.0,
+      "exit": [
+        {
+          "time_s": 5
+        },
+        {
+          "weight_above": 1.0
+        }
+      ]
+    },
+    {
+      "name": "ramp",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "ease_in_out",
+        "over_s": 4
+      },
+      "exit": [
+        {
+          "time_s": 4
+        }
+      ]
+    },
+    {
+      "name": "extract",
+      "target": {
+        "pressure": 9.0
+      },
+      "limit": 4.0
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 60.0
+  }
+}

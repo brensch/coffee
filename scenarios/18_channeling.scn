@@ -1,0 +1,13 @@
+name "puck channels mid-shot: flow limit catches it"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+
+when engine.state == ready for 30s as warm: brew on
+at warm+20s: set puck.channel = 0.25
+when engine.state == brew_done as done:
+at done+2s: brew off
+
+# Classic profile caps extraction flow at 4 ml/s: pressure must yield, not flow.
+expect always engine.flow < 4.6 from warm+21.5s until done
+expect always engine.pressure < 7 from warm+23s until done
+expect eventually engine.state == brew_done from warm by warm+40s

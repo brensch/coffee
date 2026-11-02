@@ -1,0 +1,16 @@
+name "steam mode builds saturation pressure, then brew-ready again"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 23min
+
+when engine.state == ready for 20s as warm: steam on
+when engine.temp > 138 for 10s as hot: wand open
+at hot+30s: wand close; steam off
+# Like a real barista: pull the portafilter and flush to bring the boiler down.
+at hot+35s: set portafilter.attached = 0; brew on
+at hot+65s: brew off
+at hot+68s: set portafilter.attached = 1
+
+expect eventually hydraulics.pressure > 2.2 from warm by warm+4min
+expect always boiler.temp < 160
+expect eventually engine.state == ready from hot+66s by hot+7min
+expect never engine.state == fault

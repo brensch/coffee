@@ -1,0 +1,12 @@
+name "worn pump (60% stroke volume) still reaches 9 bar"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+model pump.wear = 0.6
+
+when engine.state == ready for 30s as warm: brew on
+when engine.state == brew_done as done:
+at done+2s: brew off
+
+expect always engine.pressure > 8.0 from warm+20s until done-1s
+expect eventually engine.state == brew_done from warm by warm+60s
+expect at done+4s: cup.mass > 33g

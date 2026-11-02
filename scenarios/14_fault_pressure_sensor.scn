@@ -1,0 +1,11 @@
+name "pressure transducer unplugged mid-shot"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+
+when engine.state == ready for 30s as warm: brew on
+at warm+15s: set pressure_sensor.fault = disconnected
+at warm+25s: brew off
+
+expect eventually engine.faults has pressure_sensor from warm+15s by warm+15.5s
+expect always pump.on == 0 from warm+15.6s
+expect always hydraulics.pressure < 10.5

@@ -1,0 +1,14 @@
+[package]
+name = "coffee-api"
+description = "HTTP/WebSocket API types shared by the engine (host + firmware), the emulator lab and the UI. no_std + alloc."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+coffee-io.workspace = true
+coffee-core.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "coffee-scenario"
+description = "A small DSL for scripting emulator scenarios: timed and event-triggered actions, fault injection, ramps and expectations."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+coffee-io.workspace = true
+anyhow.workspace = true

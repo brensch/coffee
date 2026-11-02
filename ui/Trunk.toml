@@ -1,0 +1,14 @@
+[build]
+target = "index.html"
+dist = "dist"
+
+# `trunk serve` for UI development against a running coffee-engine.
+[serve]
+port = 8090
+
+[[proxy]]
+backend = "http://127.0.0.1:8080/api/"
+
+[[proxy]]
+backend = "ws://127.0.0.1:8080/api/ws"
+ws = true

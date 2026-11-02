@@ -1,0 +1,11 @@
+name "SSR fails shorted: software flags runaway, hardware cutout holds"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 20min
+
+when engine.state == ready for 20s as warm: set ssr.fault = stuck_on
+
+expect eventually engine.faults has temp_runaway or engine.faults has over_temp from warm by warm+120s
+# Software cannot open a shorted SSR; the bimetal cutout must cap the boiler.
+expect always boiler.temp < 175
+expect eventually thermostat.open == 1 from warm
+expect never fuse.blown == 1

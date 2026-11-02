@@ -1,0 +1,33 @@
+[package]
+name = "coffee-firmware"
+version = "0.1.0"
+edition = "2024"
+description = "ESP32-C6 firmware: runs coffee-core against the real machine (or as a USB hardware-in-the-loop bridge)."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+coffee-core = { path = "../../crates/coffee-core" }
+coffee-io = { path = "../../crates/coffee-io" }
+coffee-api = { path = "../../crates/coffee-api" }
+coffee-node = { path = "../../crates/coffee-node" }
+esp-hal = { version = "1.2", features = ["esp32c6", "unstable"] }
+esp-bootloader-esp-idf = { version = "0.6", features = ["esp32c6"] }
+esp-backtrace = { version = "0.20", features = ["esp32c6", "panic-handler", "println"] }
+esp-println = { version = "0.18", features = ["esp32c6"] }
+esp-alloc = { version = "0.11", features = ["esp32c6"] }
+embedded-hal = "1.0"
+nb = "1.1"
+
+[features]
+# Hardware-in-the-loop: sensor frames arrive from `coffee-emu` over USB and
+# actuator frames go back; the machine pins stay off.
+bridge = []
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+debug = 2
+
+[profile.dev]
+opt-level = "s"

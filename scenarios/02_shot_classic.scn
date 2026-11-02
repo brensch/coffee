@@ -1,0 +1,23 @@
+name "classic 9 bar shot from a warm machine"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 23min
+trace_every 50ms
+
+# "Warm machine": portafilter heat-soaked too (Ready itself no longer waits for it).
+when engine.state == ready for 6min as warm: brew on
+when engine.state == brew_done as done: mark "shot finished"
+at done+3s: brew off
+
+expect eventually engine.state == brewing by warm+1s
+expect always hydraulics.pressure < 10.5
+expect always engine.pressure > 8.0 and engine.pressure < 10.0 from warm+18s until done-1s
+expect eventually engine.state == brew_done from warm by warm+50s
+expect at done+5s: cup.mass > 35g and cup.mass < 37.5g
+# Temperature: the water observer + cascade holds the (true) water near 93 C
+# through the shot and limits the post-shot overshoot. Thresholds lock in the
+# tuning; they are only as true as thermal.* until fitted to real logs.
+expect always boiler.water_temp > 88.5 or puck.flow < 0.2 from warm+12s until done
+expect always brew.water_temp > 86 or puck.flow < 0.2 from warm+12s until done
+expect always boiler.water_temp < 95.5 from done until done+120s
+expect always hydraulics.pressure < 9.6 from warm+18s until done-1s
+expect never engine.state == fault

@@ -1,0 +1,14 @@
+name "cold start reaches ready and holds temperature"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 20min
+trace time, boiler.temp, boiler.water_temp, probe.temp, engine.temp, engine.setpoint, engine.heater_duty, heater.power, engine.state
+
+when engine.state == ready as ready:
+
+# Ready waits for the group to heat-soak (estimated), ~7-8 min from cold.
+expect eventually engine.state == ready by 9min
+expect always engine.temp < 97 from ready
+expect always engine.temp > 91 from ready+60s
+expect always boiler.water_temp > 90 and boiler.water_temp < 96 from ready+3min
+expect never engine.state == fault
+expect always boiler.temp < 120

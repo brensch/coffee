@@ -1,0 +1,8 @@
+[package]
+name = "coffee-io"
+description = "Hardware boundary types shared by the engine, the firmware and the emulator. no_std."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]

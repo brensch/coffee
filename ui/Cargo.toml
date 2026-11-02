@@ -1,0 +1,23 @@
+[package]
+name = "coffee-ui"
+version = "0.1.0"
+edition = "2024"
+description = "Web UI (Leptos, client-side rendered). Served by coffee-engine and by the ESP32 firmware."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+coffee-api = { path = "../crates/coffee-api" }
+leptos = { version = "0.8", features = ["csr"] }
+gloo-net = { version = "0.6", default-features = false, features = ["http", "json", "websocket"] }
+gloo-timers = { version = "0.3", features = ["futures"] }
+futures = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+web-sys = { version = "0.3", features = ["Window", "Location", "Storage"] }
+console_error_panic_hook = "0.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
