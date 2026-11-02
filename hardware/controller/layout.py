@@ -1,0 +1,480 @@
+#!/usr/bin/env python3
+"""Build, route and check the controller PCB from controller.py's output.
+
+Runs in KiCad's Python (pcbnew), so it reads build/parts-<V>v.json rather than
+importing SKiDL. Pipeline:
+
+  1. place footprints (positions below), draw the outline, the isolation slots
+     and the creepage keep-out band, add GND pours on the SELV side;
+  2. hand-route the heater current path (3 mm, short, both layers);
+  3. export Specctra DSN -> Freerouting -> import the session (.ses);
+  4. fill zones, run DRC, write the .kicad_pcb plus gerbers/drill/renders.
+
+    source ~/opt/kienv.sh            # KiCad 7 libraries + pcbnew on PYTHONPATH
+    python3 layout.py [--mains 230] [--passes 40]
+"""
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+
+import pcbnew
+from pcbnew import FromMM as mm, VECTOR2I as V
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+BUILD = os.path.join(HERE, "build")
+FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
+# Freerouting 2.1.0 jar (Java 21). The 2.5.0 native CLI hangs at 0% CPU after a serialisation crash.
+FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
+
+# ---------------------------------------------------------------- geometry (mm)
+W, H = 120.0, 80.0          # board
+BAND = (42.5, 49.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
+SLOT_X = 46.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
+SLOT_W = 2.0
+SLOTS = [(3.0, 26.5), (28.5, 68.5)]   # y ranges; a web of board is left between slots for stiffness
+
+# ref: (x, y, rotation_deg, side) - side 'F' (top) or 'B'. Mains side is x < 42.5.
+PLACE = {
+    # ================= MAINS (x < 42.5) =================
+    # machine connections along the bottom edge (wires exit downwards)
+    "J2": (8.0, 74.5, 0, "F"),      # heater: in place of the brew thermostat
+    "J3": (21.0, 74.5, 0, "F"),     # pump / valve (switched L)
+    "J1": (34.0, 74.5, 0, "F"),     # mains in (L, N)
+    # triacs on the left edge, tabs outward: Q1 bolts to the chassis (heatsink)
+    "Q1": (3.6, 62.0, 90, "F"),     # heater BTA16: pin1 MT1 y=62, pin2 MT2 y=59.46, pin3 G y=56.92
+    "Q2": (3.6, 46.0, 90, "F"),     # pump BTA08
+    "Q3": (8.0, 30.0, 0, "F"),      # valve Z0109 (SOT-223)
+    # heater channel: R3 opto series, R4 gate-MT1
+    "R3": (18.0, 66.0, 0, "F"), "R4": (9.0, 54.0, 90, "F"),
+    # pump channel: R6 opto series, R7 gate-MT1, R8 + C21 snubber
+    "R6": (22.0, 54.0, 0, "F"), "R7": (10.0, 39.0, 90, "F"), "R8": (14.0, 49.0, 90, "F"), "C21": (19.0, 44.0, 0, "F"),
+    # valve channel
+    "R9": (26.0, 40.0, 0, "F"), "R10": (16.0, 34.5, 90, "F"), "R11": (14.5, 24.0, 90, "F"), "C22": (19.0, 19.0, 0, "F"),
+    # board supply branch + zero-cross
+    "F1": (14.0, 8.0, 0, "F"), "RV1": (25.0, 13.0, 0, "F"),
+    "R1": (31.0, 32.0, 90, "F"), "R2": (35.5, 32.0, 90, "F"),
+    "PS1": (37.0, 11.0, 0, "F"),    # AC pins x=37 (mains), DC pins x=70.6 (SELV); body straddles the slot
+    # optos straddling the band: mains pins x=40.92, SELV pins x=51.08
+    "U1": (40.92, 31.0, 0, "F"),    # H11AA1 zero cross: AC1 (40.92,31), AC2 (40.92,33.54)
+    "U4": (51.08, 46.0, 180, "F"),  # valve MOC3063: MT2 side pin6 (40.92,46), gate pin4 (40.92,40.92)
+    "U3": (51.08, 56.0, 180, "F"),  # pump MOC3063
+    "U2": (51.08, 66.0, 180, "F"),  # heater MOC3063
+    # ================= SELV (x > 49.5) =================
+    # power: PSU 5 V (70.6, 23) -> D1 -> +5V; USB VBUS -> D2
+    "D1": (77.0, 29.5, 0, "F"), "D2": (77.0, 34.0, 0, "F"), "C1": (68.0, 33.0, 90, "F"),
+    "U7": (79.5, 41.0, 0, "F"), "C2": (73.5, 41.0, 90, "F"), "C3": (87.0, 41.0, 90, "F"),
+    "U8": (100.0, 12.5, 0, "F"),    # ESP32-S3: antenna at the top edge, keep-out overhangs the board
+    "C4": (86.5, 12.0, 90, "F"), "C5": (84.5, 12.0, 90, "F"),
+    "R20": (86.5, 17.5, 90, "F"), "C6": (84.5, 17.5, 90, "F"),
+    "SW1": (113.0, 55.0, 0, "F"), "SW2": (113.0, 64.0, 0, "F"), "R21": (106.5, 62.0, 90, "F"),
+    "J4": (103.0, 76.0, 0, "F"), "U9": (103.0, 68.5, 0, "F"), "R22": (98.5, 69.0, 90, "F"), "R23": (107.5, 69.0, 90, "F"),
+    # zero-cross output
+    "R24": (55.0, 31.0, 90, "F"), "C7": (57.5, 31.0, 90, "F"),
+    # triac drivers, one row per opto (opto LED anode pin1 at y0, cathode pin2 at y0-2.54)
+    "R31": (55.0, 46.5, 0, "F"), "D5": (59.0, 46.5, 0, "F"), "Q6": (55.5, 42.0, 0, "F"), "R32": (59.0, 41.0, 0, "F"), "R33": (62.0, 42.5, 90, "F"),
+    "R28": (55.0, 56.5, 0, "F"), "D4": (59.0, 56.5, 0, "F"), "Q5": (55.5, 52.0, 0, "F"), "R29": (59.0, 51.0, 0, "F"), "R30": (62.0, 52.5, 90, "F"),
+    "R25": (55.0, 66.5, 0, "F"), "D3": (59.0, 66.5, 0, "F"), "Q4": (55.5, 62.0, 0, "F"), "R26": (59.0, 61.0, 0, "F"), "R27": (62.0, 62.5, 90, "F"),
+    # thermocouple: far corner from PSU, LDO and triacs
+    "J5": (115.5, 37.0, 270, "F"), "C9": (111.0, 37.0, 90, "F"),
+    "U10": (110.0, 45.0, 0, "F"), "C8": (104.5, 45.0, 90, "F"), "R34": (104.5, 50.0, 90, "F"),
+    # ADC + analog front end
+    "U11": (80.0, 56.0, 0, "F"), "C10": (80.0, 52.0, 0, "F"),
+    "R35": (85.0, 53.0, 90, "F"), "R36": (87.0, 53.0, 90, "F"), "R37": (85.0, 59.0, 90, "F"),
+    "J6": (70.0, 76.0, 0, "F"), "D6": (66.0, 71.0, 0, "F"), "R38": (70.0, 66.0, 90, "F"), "R39": (72.0, 66.0, 90, "F"), "C11": (74.0, 66.0, 90, "F"),
+    "R40": (72.0, 58.0, 90, "F"), "R41": (74.0, 58.0, 90, "F"), "C12": (76.0, 58.0, 90, "F"),
+    "J7": (80.5, 76.0, 0, "F"), "R42": (78.0, 66.0, 90, "F"), "C13": (80.0, 66.0, 90, "F"), "R43": (82.0, 66.0, 90, "F"),
+    # switches
+    "J8": (58.0, 76.0, 0, "F"), "R44": (66.0, 61.5, 90, "F"), "R45": (68.0, 61.5, 90, "F"), "C14": (66.0, 66.0, 90, "F"), "D7": (54.0, 71.0, 0, "F"),
+    "R46": (68.0, 52.0, 90, "F"), "R47": (70.0, 52.0, 90, "F"), "C15": (68.0, 47.0, 90, "F"), "D8": (60.0, 71.0, 0, "F"),
+    "J9": (87.5, 76.0, 0, "F"),
+    "R48": (90.0, 36.0, 90, "F"), "D9": (90.0, 40.0, 90, "F"),
+    # mounting holes, clear of mains copper (the chassis standoffs are earthed)
+    "H1": (4.0, 4.0, 0, "F"), "H2": (116.0, 30.0, 0, "F"), "H3": (97.0, 50.0, 0, "F"), "H4": (116.0, 76.0, 0, "F"),
+}
+
+
+def load_fp(spec):
+    lib, name = spec.split(":", 1)
+    fp = pcbnew.FootprintLoad(os.path.join(FP_DIR, lib + ".pretty"), name)
+    if fp is None:
+        raise SystemExit(f"footprint not found: {spec}")
+    return fp
+
+
+def seg(board, layer, pts, width=0.15, closed=True):
+    n = len(pts)
+    for i in range(n if closed else n - 1):
+        s = pcbnew.PCB_SHAPE(board)
+        s.SetShape(pcbnew.SHAPE_T_SEGMENT)
+        s.SetLayer(layer)
+        s.SetWidth(mm(width))
+        s.SetStart(V(mm(pts[i][0]), mm(pts[i][1])))
+        s.SetEnd(V(mm(pts[(i + 1) % n][0]), mm(pts[(i + 1) % n][1])))
+        board.Add(s)
+
+
+def rect(x0, y0, x1, y1):
+    return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+
+
+def zone(board, net, layer, pts, keepout=False, name="", clearance=0.3, priority=0, pads_ok=False):
+    z = pcbnew.ZONE(board)
+    z.SetLayer(layer)
+    if keepout:
+        z.SetIsRuleArea(True)
+        z.SetDoNotAllowTracks(True)
+        z.SetDoNotAllowVias(True)
+        z.SetDoNotAllowCopperPour(True)
+        z.SetDoNotAllowPads(not pads_ok)
+        z.SetDoNotAllowFootprints(False)
+        ls = pcbnew.LSET(); ls.AddLayer(pcbnew.F_Cu); ls.AddLayer(pcbnew.B_Cu)
+        z.SetLayerSet(ls)
+    else:
+        z.SetNet(net)
+        z.SetLocalClearance(mm(clearance))
+        z.SetMinThickness(mm(0.25))
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL)
+        z.SetThermalReliefGap(mm(0.4))
+        z.SetThermalReliefSpokeWidth(mm(0.5))
+        z.SetAssignedPriority(priority)
+    if name:
+        z.SetZoneName(name)
+    o = z.Outline()
+    o.NewOutline()
+    for x, y in pts:
+        o.Append(mm(x), mm(y))
+    board.Add(z)
+    return z
+
+
+def track(board, net, layer, a, b, width):
+    t = pcbnew.PCB_TRACK(board)
+    t.SetStart(V(mm(a[0]), mm(a[1])))
+    t.SetEnd(V(mm(b[0]), mm(b[1])))
+    t.SetWidth(mm(width))
+    t.SetLayer(layer)
+    t.SetNet(net)
+    t.SetLocked(True)
+    board.Add(t)
+
+
+def pad_pos(board, ref, num):
+    fp = board.FindFootprintByReference(ref)
+    for p in fp.Pads():
+        if p.GetNumber() == num:
+            pos = p.GetPosition()
+            return (pcbnew.ToMM(pos.x), pcbnew.ToMM(pos.y))
+    raise KeyError(f"{ref}.{num}")
+
+
+def build(spec, mains_v):
+    board = pcbnew.BOARD()
+    board.SetCopperLayerCount(2)
+    ds = board.GetDesignSettings()
+    ds.SetCopperLayerCount(2)
+    ds.m_TrackMinWidth = mm(0.2)
+    ds.m_MinClearance = mm(0.2)
+    ds.m_ViasMinSize = mm(0.6)
+    ds.m_MinThroughDrill = mm(0.2)   # the S3 module footprint has 0.2 mm thermal vias
+    ds.m_CopperEdgeClearance = mm(0.5)
+    ds.m_HoleClearance = mm(0.15)    # USB4105 footprint: shell holes sit 0.2 mm from pads
+
+    # nets
+    nets = {}
+    names = sorted({n for p in spec["parts"].values() for n in p["pins"].values() if n})
+    for name in names:
+        ni = pcbnew.NETINFO_ITEM(board, name)
+        board.Add(ni)
+        nets[name] = ni
+
+    # net classes: SELV signals, SELV power, mains, heater
+    ns = ds.m_NetSettings
+    def netclass(name, width, clearance, via=0.8, drill=0.4):
+        nc = pcbnew.NETCLASS(name)
+        nc.SetTrackWidth(mm(width))
+        nc.SetClearance(mm(clearance))
+        nc.SetViaDiameter(mm(via))
+        nc.SetViaDrill(mm(drill))
+        ns.m_NetClasses[name] = nc
+        return nc
+    dflt = ns.m_DefaultNetClass
+    dflt.SetTrackWidth(mm(0.25))
+    dflt.SetClearance(mm(0.2))
+    dflt.SetViaDiameter(mm(0.6))
+    dflt.SetViaDrill(mm(0.3))
+    classes = {
+        "Power": netclass("Power", 0.6, 0.25),
+        "Mains": netclass("Mains", 0.8, 1.0, via=1.2, drill=0.6),   # functional insulation between mains nets (coat the mains side)
+        "Heater": netclass("Heater", 2.5, 1.0, via=1.6, drill=0.8),
+    }
+    power = {"GND", "+5V", "+3V3", "VBUS", "5V_PSU"}
+    for name, ni in nets.items():
+        cls = "Heater" if name in spec["heater_nets"] else "Mains" if name in spec["mains_nets"] else "Power" if name in power else None
+        if cls:
+            ns.m_NetClassPatternAssignments.append(
+                pcbnew.NETCLASS_PATTERN_ASSIGNMENT(f"^{re.escape(name)}$", cls)) if hasattr(pcbnew, "NETCLASS_PATTERN_ASSIGNMENT") else None
+            ni.SetNetClass(classes[cls])
+
+    # footprints
+    missing = []
+    for ref, p in spec["parts"].items():
+        fp = load_fp(p["footprint"])
+        fp.SetReference(ref)
+        fp.SetValue(p["value"])
+        if ref not in PLACE:
+            missing.append(ref)
+            continue
+        x, y, rot, side = PLACE[ref]
+        fp.SetPosition(V(mm(x), mm(y)))
+        if side == "B":
+            fp.Flip(fp.GetPosition(), False)
+        fp.SetOrientationDegrees(rot)
+        for pad in fp.Pads():
+            num = pad.GetNumber()
+            net = p["pins"].get(num)
+            if net is None and num == "" and ref.startswith("U") and "ESP32" in p["footprint"]:
+                net = "GND"  # thermal pad vias under the module
+            if net:
+                pad.SetNet(nets[net])
+        board.Add(fp)
+    if missing:
+        raise SystemExit(f"no placement for: {' '.join(sorted(missing))}")
+
+    # outline + slots (Edge.Cuts) and the creepage band keep-out
+    seg(board, pcbnew.Edge_Cuts, rect(0, 0, W, H))
+    for y0, y1 in SLOTS:
+        seg(board, pcbnew.Edge_Cuts, rect(SLOT_X - SLOT_W / 2, y0, SLOT_X + SLOT_W / 2, y1))
+    zone(board, None, pcbnew.F_Cu, rect(BAND[0], 0, BAND[1], H), keepout=True, name="ISOLATION BAND")
+    # keep copper away from the M3 holes on the mains side (earthed chassis standoffs)
+    zone(board, None, pcbnew.F_Cu, rect(0, 0, 8.5, 8.5), keepout=True, name="H1 clearance", pads_ok=True)
+
+    # The ESP32-S3 footprint carries Espressif's antenna keep-out itself.
+    # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
+    # the pour connects every GND pad, and the real fill leaves islands.
+
+    # silkscreen: mark the barrier and the mains side
+    for txt, x, y, size in (("MAINS - HAZARDOUS VOLTAGE", 21, 2.2, 1.5), ("SELV", 56, 2.2, 1.5),
+                            (f"coffee controller v2  {mains_v} V", 85, 78.2, 1.2)):
+        t = pcbnew.PCB_TEXT(board)
+        t.SetText(txt)
+        t.SetPosition(V(mm(x), mm(y)))
+        t.SetLayer(pcbnew.F_SilkS)
+        t.SetTextSize(V(mm(size), mm(size)))
+        t.SetTextThickness(mm(size * 0.15))
+        board.Add(t)
+    seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
+    seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
+
+    # Heater current path, hand-routed on both layers (2.5 mm each, in parallel):
+    # J2.1 HTR_A <- Q1 pin1 (MT1), J2.2 HTR_B <- Q1 pin2 (MT2). Necked to 1 mm where it
+    # leaves the middle pin so it clears pin 1.
+    q1 = [pad_pos(board, "Q1", n) for n in ("1", "2")]
+    j2 = [pad_pos(board, "J2", n) for n in ("1", "2")]
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        a0 = q1[0]
+        a1 = (a0[0], j2[0][1] - 5.5)
+        a2 = (j2[0][0], a1[1])
+        for p0, p1 in ((a0, a1), (a1, a2), (a2, j2[0])):
+            track(board, nets["HTR_A"], layer, p0, p1, 2.5)
+        b0 = q1[1]
+        b1 = (b0[0] + 4.0, b0[1])
+        b2 = (j2[1][0], b0[1])
+        track(board, nets["HTR_B"], layer, b0, b1, 1.0)
+        track(board, nets["HTR_B"], layer, b1, b2, 2.5)
+        track(board, nets["HTR_B"], layer, b2, j2[1], 2.5)
+    return board
+
+
+def sexpr(text):
+    """Parse an S-expression (Specctra DSN/SES) into nested lists of strings."""
+    tok = re.findall(r'"[^"]*"|\(|\)|[^\s()"]+', text)
+    stack, cur = [], []
+    for t in tok:
+        if t == "(":
+            stack.append(cur)
+            cur = []
+        elif t == ")":
+            done, cur = cur, stack.pop()
+            cur.append(done)
+        else:
+            cur.append(t.strip('"'))
+    return cur[0]
+
+
+def find(node, key):
+    return [c for c in node if isinstance(c, list) and c and c[0] == key]
+
+
+def remove_stubs(board):
+    """Delete track segments with a free end (Freerouting leaves a few), repeatedly."""
+    removed = 0
+    while True:
+        tracks = [t for t in board.GetTracks() if t.Type() == pcbnew.PCB_TRACE_T and not t.IsLocked()]
+        ends = {}
+        for t in board.GetTracks():
+            if t.Type() == pcbnew.PCB_TRACE_T:
+                for p in (t.GetStart(), t.GetEnd()):
+                    ends.setdefault((t.GetNetCode(), t.GetLayer(), p.x, p.y), []).append(t)
+            else:  # via: joins both layers
+                p = t.GetPosition()
+                for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+                    ends.setdefault((t.GetNetCode(), layer, p.x, p.y), []).append(t)
+        pads = [pd for fp in board.GetFootprints() for pd in fp.Pads()]
+        dead = []
+        for t in tracks:
+            for p in (t.GetStart(), t.GetEnd()):
+                others = [o for o in ends.get((t.GetNetCode(), t.GetLayer(), p.x, p.y), []) if o is not t]
+                on_pad = any(pd.GetNetCode() == t.GetNetCode() and pd.HitTest(p) and pd.IsOnLayer(t.GetLayer()) for pd in pads)
+                if not others and not on_pad:
+                    dead.append(t)
+                    break
+        if not dead:
+            return removed
+        for t in dead:
+            board.Remove(t)
+        removed += len(dead)
+
+
+def add_pours(board):
+    gnd = board.GetNetsByName()["GND"]
+    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+        zone(board, gnd, layer, rect(BAND[1] + 0.5, 0.5, W - 0.5, H - 0.5), name="GND")
+
+
+def parse_ses(path):
+    """Specctra session -> (net, layer, width_mm, [pts]) wires and (net, padstack, x, y) vias (mm, KiCad y-down)."""
+    root = sexpr(open(path).read())
+    routes = find(root, "routes")[0]
+    res = find(routes, "resolution") or find(find(root, "placement")[0], "resolution")
+    unit, per = res[0][1], float(res[0][2])
+    scale = {"um": 1e-3, "mm": 1.0, "mil": 0.0254, "inch": 25.4}[unit] / per
+    wires, vias = [], []
+    for net in find(find(routes, "network_out")[0], "net"):
+        name = net[1]
+        for w in find(net, "wire"):
+            for pth in find(w, "path"):
+                nums = [float(v) for v in pth[3:]]
+                pts = [(nums[i] * scale, -nums[i + 1] * scale) for i in range(0, len(nums) - 1, 2)]
+                wires.append((name, pth[1], float(pth[2]) * scale, pts))
+        for v in find(net, "via"):
+            vias.append((name, v[1], float(v[2]) * scale, -float(v[3]) * scale))
+    return wires, vias
+
+
+def import_ses(board, path):
+    wires, vias = parse_ses(path)
+    layers = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu}
+    nets = board.GetNetsByName()
+    n_t = n_v = 0
+    for net, layer, width, pts in wires:
+        ni = nets[net] if nets.has_key(net) else None
+        for a, b in zip(pts, pts[1:]):
+            t = pcbnew.PCB_TRACK(board)
+            t.SetStart(V(mm(a[0]), mm(a[1])))
+            t.SetEnd(V(mm(b[0]), mm(b[1])))
+            t.SetWidth(mm(width))
+            t.SetLayer(layers[layer])
+            if ni:
+                t.SetNet(ni)
+            board.Add(t)
+            n_t += 1
+    for net, stack, x, y in vias:
+        ni = nets[net] if nets.has_key(net) else None
+        m = re.search(r"(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)_um", stack)
+        dia, drill = (float(m.group(1)) / 1000, float(m.group(2)) / 1000) if m else (0.8, 0.4)
+        v = pcbnew.PCB_VIA(board)
+        v.SetPosition(V(mm(x), mm(y)))
+        v.SetWidth(mm(dia))
+        v.SetDrill(mm(drill))
+        v.SetViaType(pcbnew.VIATYPE_THROUGH)
+        v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+        if ni:
+            v.SetNet(ni)
+        board.Add(v)
+        n_v += 1
+    return n_t, n_v
+
+
+def fab_outputs(pcb, stem):
+    """Gerbers, drill, pick-and-place, PDF + SVG renders (kicad-cli)."""
+    fab = stem + "-fab"
+    os.makedirs(fab, exist_ok=True)
+    cli = "kicad-cli"
+    run = lambda *a: subprocess.run([cli, "pcb", "export", *a], capture_output=True, text=True)
+    run("gerbers", pcb, "-o", fab + "/", "-l",
+        "F.Cu,B.Cu,F.Paste,B.Paste,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts")
+    run("drill", pcb, "-o", fab + "/")
+    run("pos", pcb, "-o", fab + "/positions.csv", "--format", "csv", "--units", "mm", "--side", "both")
+    for name, layers, mirror in (("top", "F.Cu,F.SilkS,F.Mask,Edge.Cuts", False),
+                                 ("bottom", "B.Cu,B.SilkS,Edge.Cuts", True),
+                                 ("all", "F.Cu,B.Cu,F.SilkS,Edge.Cuts", False)):
+        args = ["svg", pcb, "-o", f"{stem}-{name}.svg", "-l", layers, "--page-size-mode", "2", "--exclude-drawing-sheet"]
+        run(*(args + (["--mirror"] if mirror else [])))
+    run("pdf", pcb, "-o", stem + ".pdf", "-l", "F.Cu,B.Cu,F.SilkS,Edge.Cuts")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mains", type=int, default=230)
+    ap.add_argument("--passes", type=int, default=40)
+    ap.add_argument("--no-route", action="store_true")
+    ap.add_argument("--attempts", type=int, default=6)
+    a = ap.parse_args()
+    spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
+    stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
+    board = build(spec, a.mains)
+    pcbnew.SaveBoard(stem + "-placed.kicad_pcb", board)
+    if a.no_route:
+        print("placed:", stem + "-placed.kicad_pcb")
+        return
+    dsn, ses = stem + ".dsn", stem + ".ses"
+    if not pcbnew.ExportSpecctraDSN(board, dsn):
+        raise SystemExit("DSN export failed")
+    # Freerouting is multi-threaded and not deterministic: retry until everything connects.
+    best = None
+    for attempt in range(1, a.attempts + 1):
+        if os.path.exists(ses):
+            os.remove(ses)
+        try:
+            r = subprocess.run(["java", "-Djava.awt.headless=true", "-jar", FREEROUTING_JAR, "--gui.enabled=false",
+                                "-de", dsn, "-do", ses, "-mp", str(a.passes), "-mt", "4"],
+                               capture_output=True, text=True, timeout=1800)
+            open(stem + "-freerouting.log", "w").write(r.stdout + r.stderr)
+        except subprocess.TimeoutExpired:
+            print(f"attempt {attempt}: freerouting timed out")
+            continue
+        if not os.path.exists(ses):
+            print(f"attempt {attempt}: no session written")
+            continue
+        # Work on the board as KiCad loads it from disk: zone filling segfaults on a board
+        # that was only ever built in memory (KiCad 7 standalone pcbnew).
+        board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
+        n_t, n_v = import_ses(board, ses)
+        stubs = remove_stubs(board)
+        add_pours(board)
+        board.BuildListOfNets()
+        board.BuildConnectivity()
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+        board.BuildConnectivity()
+        unrouted = board.GetConnectivity().GetUnconnectedCount(False)
+        print(f"attempt {attempt}: {n_t} segments, {n_v} vias, {stubs} stubs removed, unconnected {unrouted}")
+        if best is None or unrouted < best[0]:
+            best = (unrouted, board, n_t, n_v, stubs)
+        if unrouted == 0:
+            break
+    if best is None:
+        raise SystemExit("routing failed")
+    unrouted, board, n_t, n_v, stubs = best
+    pcb = stem + ".kicad_pcb"
+    pcbnew.SaveBoard(pcb, board)
+    rpt = stem + "-drc.rpt"
+    pcbnew.WriteDRCReport(board, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
+    fab_outputs(pcb, stem)
+    print(f"routed: {n_t} track segments ({stubs} stubs removed), {n_v} vias, unconnected: {unrouted}\nwrote {pcb}\nDRC: {rpt}")
+
+if __name__ == "__main__":
+    main()

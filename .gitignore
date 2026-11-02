@@ -14,3 +14,8 @@ controller.log
 hardware/controller/*.log
 __pycache__/
 hardware/controller/.venv/
+hardware/controller/build/*.ses
+hardware/controller/build/*.dsn
+hardware/controller/build/*-freerouting.log
+hardware/controller/build/*-placed.*
+hardware/controller/build/*.kicad_prl
