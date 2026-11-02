@@ -8,10 +8,10 @@ To measure the machine for the models, see [CALIBRATION.md](CALIBRATION.md).
 
 ## Design rules (from the audit)
 
-1. **No mains on anything we design.** Every mains-side part is a certified,
-   off-the-shelf module (SSRs, AC-DC supply). Our electronics, and the PCB we
-   design, are SELV (≤5 V) only. That leaves one exception, zero-cross sensing;
-   see below.
+1. **Mains only where it's been designed for.** The v1 module build keeps every mains part in a
+   certified module. The v2 board ([CIRCUIT.md](CIRCUIT.md)) switches the loads on board, but
+   with a 7 mm copper-free band, milled slots and certified isolating parts (optos, AC-DC module)
+   as the only crossings. A code check fails the build if any net crosses the barrier.
 2. **Hardware protection stays in series with the heater.** Keep the stock
    steam thermostat (or fit a 165–170 °C manual-reset limiter) and the thermal
    fuse. Software can only *ask* a failed-shorted SSR to stop (scenario 12).
@@ -85,7 +85,7 @@ on GPIO19/20 and its strapping pins are 0/3/45/46.
 | MAX31855 SCK / MISO / CS | 6 / 2 / 7 | 12 / 13 / 10 | thermocouple amp |
 | ADS1115 SDA / SCL | 22 / 23 | 8 / 9 | 0x48; AIN0 pressure, AIN1 5 V monitor |
 
-The custom board in CIRCUIT.md uses the C6 module. An S3 version would be the same circuit with this pin map.
+The v2 board in CIRCUIT.md uses the ESP32-S3 module with the S3 pin map above (checked against the firmware on every build).
 
 Mains side (unchanged machine wiring except where noted):
 - **Heater:** live → (stock steam thermostat / limiter) → (thermal fuse) →

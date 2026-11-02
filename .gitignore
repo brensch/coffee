@@ -13,3 +13,4 @@ skidl_REPL.*
 controller.log
 hardware/controller/*.log
 __pycache__/
+hardware/controller/.venv/

@@ -53,7 +53,7 @@ coffee-emu serve --engine-serial /dev/ttyACM0   # emulator drives the real chip
 The fast route to real hardware: modules wired together, no custom PCB. It's close to GaggiMate's
 ["Lego" build](https://docs.gaggimate.eu/docs/sourcing-lego/), with a few deliberate swaps.
 Prices are rough USD. The audit behind each choice is in [docs/HARDWARE.md](docs/HARDWARE.md);
-the custom board for later is in [docs/CIRCUIT.md](docs/CIRCUIT.md).
+the all-in-one v2 board (relays on board, routed PCB) is in [docs/CIRCUIT.md](docs/CIRCUIT.md); off-the-shelf alternatives are compared in [docs/OFF_THE_SHELF.md](docs/OFF_THE_SHELF.md).
 
 | Item | What to buy | Qty | ~$ | Notes |
 |---|---|---|---|---|
@@ -93,7 +93,7 @@ with the heater. **Tools:** wire stripper, ratcheting crimper, multimeter, Phill
 | `firmware/esp32` | ESP32 firmware, C6 or S3 (machine mode and USB bridge mode). |
 | `models/`, `profiles/`, `scenarios/` | Machine models, shot profiles (built-ins + `profiles/community`: 47 Decent and 4 GaggiMate profiles, with their own licenses), test scenarios. |
 
-Docs: [PROFILES](docs/PROFILES.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [HARDWARE & BOM](docs/HARDWARE.md) · [CIRCUIT](docs/CIRCUIT.md) · [INSTALL](docs/INSTALL.md) · [CALIBRATION](docs/CALIBRATION.md) · [MODELS](docs/MODELS.md) · [SCENARIOS](docs/SCENARIOS.md)
+Docs: [PROFILES](docs/PROFILES.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [HARDWARE & BOM](docs/HARDWARE.md) · [CIRCUIT](docs/CIRCUIT.md) · [OFF-THE-SHELF](docs/OFF_THE_SHELF.md) · [INSTALL](docs/INSTALL.md) · [CALIBRATION](docs/CALIBRATION.md) · [MODELS](docs/MODELS.md) · [SCENARIOS](docs/SCENARIOS.md)
 
 ## Status
 
