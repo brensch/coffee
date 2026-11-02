@@ -72,14 +72,23 @@ fn main() -> ! {
 
     let mut usb = UsbSerialJtag::new(p.USB_DEVICE);
 
-    let mut heater = Output::new(p.GPIO5, Level::Low, OutputConfig::default());
-    let mut pump = Output::new(p.GPIO18, Level::Low, OutputConfig::default());
-    let mut valve = Output::new(p.GPIO19, Level::Low, OutputConfig::default());
-    let zc = Input::new(p.GPIO4, InputConfig::default().with_pull(Pull::Down));
-    let brew_sw = Input::new(p.GPIO20, InputConfig::default().with_pull(Pull::Up));
-    let steam_sw = Input::new(p.GPIO21, InputConfig::default().with_pull(Pull::Up));
+    // Pin map per chip. Same signals, different GPIO numbers: the S3's USB lives
+    // on GPIO19/20, and its strapping pins are 0, 3, 45, 46 (all avoided).
+    #[cfg(feature = "esp32c6")]
+    let (zc_pin, heater_pin, pump_pin, valve_pin, brew_pin, steam_pin, sck_pin, miso_pin, cs_pin, sda_pin, scl_pin) =
+        (p.GPIO4, p.GPIO5, p.GPIO18, p.GPIO19, p.GPIO20, p.GPIO21, p.GPIO6, p.GPIO2, p.GPIO7, p.GPIO22, p.GPIO23);
+    #[cfg(feature = "esp32s3")]
+    let (zc_pin, heater_pin, pump_pin, valve_pin, brew_pin, steam_pin, sck_pin, miso_pin, cs_pin, sda_pin, scl_pin) =
+        (p.GPIO4, p.GPIO5, p.GPIO6, p.GPIO7, p.GPIO15, p.GPIO16, p.GPIO12, p.GPIO13, p.GPIO10, p.GPIO8, p.GPIO9);
 
-    let mut tc_cs = Output::new(p.GPIO7, Level::High, OutputConfig::default());
+    let mut heater = Output::new(heater_pin, Level::Low, OutputConfig::default());
+    let mut pump = Output::new(pump_pin, Level::Low, OutputConfig::default());
+    let mut valve = Output::new(valve_pin, Level::Low, OutputConfig::default());
+    let zc = Input::new(zc_pin, InputConfig::default().with_pull(Pull::Down));
+    let brew_sw = Input::new(brew_pin, InputConfig::default().with_pull(Pull::Up));
+    let steam_sw = Input::new(steam_pin, InputConfig::default().with_pull(Pull::Up));
+
+    let mut tc_cs = Output::new(cs_pin, Level::High, OutputConfig::default());
     let mut spi = Spi::new(
         p.SPI2,
         SpiConfig::default()
@@ -87,15 +96,15 @@ fn main() -> ! {
             .with_mode(Mode::_0),
     )
     .expect("spi")
-    .with_sck(p.GPIO6)
-    .with_miso(p.GPIO2);
+    .with_sck(sck_pin)
+    .with_miso(miso_pin);
     let mut i2c = I2c::new(
         p.I2C0,
         I2cConfig::default().with_frequency(Rate::from_khz(400)),
     )
     .expect("i2c")
-    .with_sda(p.GPIO22)
-    .with_scl(p.GPIO23);
+    .with_sda(sda_pin)
+    .with_scl(scl_pin);
     let ads_ok = i2c.write(ADS1115_ADDR, &ADS1115_CONFIG).is_ok();
 
     // Storage is RAM for now; flash-backed storage (esp-storage) slots in here.

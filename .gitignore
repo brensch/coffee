@@ -2,6 +2,13 @@
 /out
 /ui/target
 /ui/dist
-/firmware/esp32c6/target
+/firmware/esp32/target
 /profiles/imported
 /data
+
+# SKiDL side files
+*.erc
+*_sklib.py
+skidl_REPL.*
+controller.log
+hardware/controller/*.log

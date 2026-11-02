@@ -22,7 +22,7 @@ On WSL, pass the ESP32's USB device through with `usbipd` (Windows) to get
 1. Wire the ESP32, MAX31855 + thermocouple, ADS1115 + transducer, and the switch
    inputs on the bench. Power over USB.
 2. **Bridge mode (hardware-in-the-loop):**
-   `cd firmware/esp32c6 && cargo run --release --features bridge`, then
+   `cd firmware/esp32 && cargo run --release --features bridge`, then
    `coffee-emu serve --engine-serial /dev/ttyACM0`.
    The real chip now runs the real engine against the emulated machine. Pull
    shots in the UI and run the scenarios from Experiments.

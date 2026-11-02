@@ -11,7 +11,7 @@ members = [
     "crates/coffee-emu",
 ]
 # The ESP32 firmware targets riscv32imac-unknown-none-elf and is built on its own.
-exclude = ["firmware/esp32c6", "ui"]
+exclude = ["firmware/esp32", "ui"]
 
 [workspace.package]
 edition = "2024"

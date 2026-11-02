@@ -28,7 +28,7 @@ So sensor decoding and fault detection run identically on silicon and in emulati
 
 `coffee-node` holds everything with behaviour: the engine, shot recording, the profile library (built-in profiles compiled in), config, the HTTP API as `Node::handle_http(method, path, body)`, telemetry events, and the binary log and shot formats. The shells only provide plumbing:
 
-| | PC (`coffee-engine`) | ESP32 (`firmware/esp32c6`) |
+| | PC (`coffee-engine`) | ESP32 (`firmware/esp32`) |
 |---|---|---|
 | Frames | emulator over stdio/TCP | real pins, or USB bridge |
 | Storage | files under `--data` (memory if omitted) | RAM (flash backend next) |

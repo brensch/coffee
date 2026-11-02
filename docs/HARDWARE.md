@@ -1,8 +1,9 @@
 # Hardware
 
 Target: **Gaggia Classic Pro E24** (brass boiler). For why this machine, see the
-README. This page is the bill of materials, the audit behind each choice, the
-wiring, and the PCB and enclosure plan. To install it, see [INSTALL.md](INSTALL.md).
+README. This page is the v1 (modules) bill of materials, the audit behind each
+choice, the wiring, and the PCB and enclosure plan. **The controller board design
+(schematic as code, calculations, generated BOM) is [CIRCUIT.md](CIRCUIT.md).** To install it, see [INSTALL.md](INSTALL.md).
 To measure the machine for the models, see [CALIBRATION.md](CALIBRATION.md).
 
 ## Design rules (from the audit)
@@ -30,15 +31,16 @@ Prices are rough (USD, 2026) for planning.
 
 | # | Part | Qty | ~$ | Why / audit notes |
 |---|---|---|---|---|
-| 1 | **ESP32-C6-DevKitC-1-N8** | 1 | 10 | Stable Rust (`esp-hal`), Wi-Fi 6/BLE (scale, UI). Native USB for flashing, the binary log and the HIL bridge. |
+| 1 | **ESP32-C6-DevKitC-1-N8** (or **ESP32-S3-DevKitC-1-N8R2**) | 1 | 10 | Both supported by the firmware. C6: stable Rust, Wi-Fi 6. S3: two cores and optional PSRAM (more memory headroom, what GaggiMate uses), Espressif's Rust toolchain. Native USB for flashing. |
 | 2 | **MAX31855K breakout** (Adafruit 269 or clone) | 1 | 15 | K-type with cold-junction compensation and open/short fault bits. The engine decodes the raw word, fault bits included. |
-| 3 | **K-type thermocouple, M4 thread**, ≥1 m, glass-fibre or PTFE lead | 1 | 8 | Goes in the brew-thermostat hole. **Hand-tight**: the M4 stud snaps. Measures the boiler *wall* (the engine estimates the water). |
-| 4 | **Pressure transducer 0–1.6 MPa, 5 V, 0.5–4.5 V**, G1/8 | 1 | 20 | 16 bar range covers the pump's ~15 bar dead-head. Prefer a **GCP T-fitting kit** (tee, PTFE line, olives) over improvised plumbing. |
+| 3 | **K-type thermocouple, M4 thread, ungrounded junction**, ≥1 m, glass-fibre or PTFE lead | 1 | 8 | Goes in the brew-thermostat hole. **Hand-tight**: the M4 stud snaps. Must be *ungrounded*: the boiler is earthed and the logic ground reaches the PC over USB. Measures the boiler *wall* (the engine estimates the water). |
+| 4 | **Pressure transducer 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 male** | 1 | 20 | 16 bar range covers the pump's ~15 bar dead-head. G1/4 to match the plumbing kit's transducer fitting. |
+| 4a | **[GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit)** (~$26): G1/8 elbow + G1/8 push T-fitting (at the pump/OPV), 30 cm 0406 PTFE tube, G1/4 transducer fitting, PTFE tape, tube cutter | 1 | 26 | Known-good fit for the Classic Pro; sold separately from their controller. Fitting steps: GaggiMate GCP install guide. |
 | 5 | **ADS1115 breakout** | 1 | 6 | 16-bit ADC (the ESP's ADC is too non-linear). AIN0 = pressure through a 2/3 divider (10k/20k). **Audit:** the transducer is *ratiometric* to its 5 V supply, so wire **AIN1 = 5 V rail through a second 2/3 divider** for supply correction. Wiring is ready; firmware support is a TODO. |
 | 6 | **Heater SSR, zero-cross, 25 A**, genuine (Crydom D2425 / Omron G3NA-225B) + bolted to the chassis or a heatsink | 1 | 25–40 | Element is ~6 A at 230 V or ~10 A at 120 V. Counterfeit "Fotek" SSRs are a known fire risk. **Audit:** input must work at 3.3–5 V: D2425 is 3–32 V. |
 | 7 | **Pump + solenoid SSRs, zero-cross, ≥2 A** (Omron G3MB-202P modules or Crydom CX240D5) | 2 | 6 | The pump is ~0.2 A but inductive with a diode, so **add an RC snubber (100 Ω + 100 nF X2)** across each output. |
 | 8 | **Zero-cross detector**: H11AA1 or LTV-814 opto + 2× 47 kΩ 0.5 W (mains side), or a RobotDyn dimmer module used *only* for its Z-C pin | 1 | 3–8 | The one mains-touching part we can't buy certified and cheap. The RobotDyn module works but its isolation is unverified. On the PCB it gets a routed isolation slot (≥6.4 mm). |
-| 9 | **HLK-PM05** (5 V 3 W AC-DC) + 0.5 A slow fuse + 10D561K MOV | 1 | 6 | ESP + sensors draw ~150 mA. Fuse and MOV on its mains input. |
+| 9 | **HLK-5M05** (5 V 5 W AC-DC) + 0.5 A slow fuse + 10D561K MOV | 1 | 8 | ESP + sensors + SSR inputs: ~0.2 A average, 0.42 A peak (CIRCUIT.md budget). 5 W, not 3 W, for margin at 60 °C. |
 | 10 | **PC817 optocouplers** or direct contacts (see switches) | 2 | 1 | Brew and steam switches become logic inputs (GaggiMate does the same; the switch lamps go dark). |
 | 11 | **Logic-level MOSFETs (AO3400) + 1k/10k resistors** | 3 | 1 | Drive the SSR inputs from 5 V, so SSRs see a solid on-voltage rather than marginal 3.3 V. |
 | 12 | High-temperature wire (silicone 18 AWG for mains, 22–26 AWG signal), ferrules, Faston 6.3 mm crimps, heat-shrink, fibreglass sleeve | – | 20 | It's hot inside the case (60–70 °C near the boiler). No PVC near the boiler. |
@@ -52,8 +54,11 @@ a blind basket, a stopwatch. Optional: a Scace device (borrow one).
 
 ### Things the audit removed or changed
 
-- **Triac dimmer for the pump:** dropped. With whole-cycle control, a
-  zero-cross SSR does the same job with certified isolation.
+- **Triac dimmer for the pump:** not *required*. With whole-cycle control, a
+  zero-cross SSR does the job with certified isolation. For the v1 module build
+  the RobotDyn dimmer is still a good buy: one cheap, widely used board that drives
+  the pump *and* supplies the zero-cross signal (README BOM). The firmware drives
+  its gate exactly like an SSR input; confirm on the bench (INSTALL.md §2).
 - **Driving SSRs straight from 3.3 V GPIO:** replaced with MOSFET drivers at 5 V.
 - **An ESP ADC for pressure:** never used. ADS1115 only, plus 5 V ratiometric
   correction.
@@ -63,18 +68,24 @@ a blind basket, a stopwatch. Optional: a Scace device (borrow one).
 - **A water-level sensor:** skipped for v1. "No water" is detected from pump
   duty against pressure (scenario 13).
 
-## Wiring (ESP32-C6)
+## Wiring
 
-| Signal | GPIO | Goes to |
-|---|---|---|
-| Zero-cross in | 4 | ZC opto output (pull-down), one rising edge per crossing |
-| Heater SSR | 5 | MOSFET → heater SSR input |
-| Pump SSR | 18 | MOSFET → pump SSR input |
-| Solenoid SSR | 19 | MOSFET → solenoid SSR input |
-| Brew switch | 20 | switch to GND (pull-up), via PC817 if long leads |
-| Steam switch | 21 | switch to GND (pull-up) |
-| MAX31855 SCK / MISO / CS | 6 / 2 / 7 | thermocouple amp |
-| ADS1115 SDA / SCL | 22 / 23 | 0x48; AIN0 pressure, AIN1 5 V monitor |
+The firmware builds for either chip (`firmware/esp32`): the C6 by default, the S3 with
+`cargo +esp build-s3`. The signals are the same; the GPIO numbers differ, because the S3's USB is
+on GPIO19/20 and its strapping pins are 0/3/45/46.
+
+| Signal | ESP32-C6 GPIO | ESP32-S3 GPIO | Goes to |
+|---|---|---|---|
+| Zero-cross in | 4 | 4 | ZC opto output (pull-down), one rising edge per crossing |
+| Heater SSR | 5 | 5 | MOSFET → heater SSR input |
+| Pump SSR | 18 | 6 | MOSFET → pump SSR input |
+| Solenoid SSR | 19 | 7 | MOSFET → solenoid SSR input |
+| Brew switch | 20 | 15 | switch to GND (pull-up) |
+| Steam switch | 21 | 16 | switch to GND (pull-up) |
+| MAX31855 SCK / MISO / CS | 6 / 2 / 7 | 12 / 13 / 10 | thermocouple amp |
+| ADS1115 SDA / SCL | 22 / 23 | 8 / 9 | 0x48; AIN0 pressure, AIN1 5 V monitor |
+
+The custom board in CIRCUIT.md uses the C6 module. An S3 version would be the same circuit with this pin map.
 
 Mains side (unchanged machine wiring except where noted):
 - **Heater:** live → (stock steam thermostat / limiter) → (thermal fuse) →
