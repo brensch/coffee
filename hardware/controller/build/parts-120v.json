@@ -1,0 +1,1176 @@
+{
+ "mains_v": 120,
+ "parts": {
+  "J1": {
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "value": "Mains in",
+   "pins": {
+    "1": "AC_L",
+    "2": "AC_N"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "J2": {
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "value": "Heater",
+   "pins": {
+    "1": "HTR_A",
+    "2": "HTR_B"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "J3": {
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "value": "Pump / valve",
+   "pins": {
+    "1": "PUMP_L",
+    "2": "VALVE_L"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "F1": {
+   "footprint": "Fuse:Fuse_Littelfuse_372_D8.50mm",
+   "value": "T500mA",
+   "pins": {
+    "1": "AC_L",
+    "2": "AC_L_FUSED"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "RV1": {
+   "footprint": "Varistor:RV_Disc_D7mm_W4.2mm_P5mm",
+   "value": "10D271K",
+   "pins": {
+    "1": "AC_L_FUSED",
+    "2": "AC_N"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "PS1": {
+   "footprint": "Converter_ACDC:Converter_ACDC_Hi-Link_HLK-5Mxx",
+   "value": "HLK-5M05",
+   "pins": {
+    "1": "AC_L_FUSED",
+    "2": "AC_N",
+    "3": "GND",
+    "4": "5V_PSU"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R1": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "22k 1W",
+   "pins": {
+    "1": "AC_L_FUSED",
+    "2": "ZC_A"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R2": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "22k 1W",
+   "pins": {
+    "1": "AC_N",
+    "2": "ZC_B"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "U1": {
+   "footprint": "Package_DIP:DIP-6_W10.16mm",
+   "value": "H11AA1",
+   "pins": {
+    "1": "ZC_A",
+    "2": "ZC_B",
+    "3": null,
+    "4": "GND",
+    "5": "ZC",
+    "6": null
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "U2": {
+   "footprint": "Package_DIP:DIP-6_W10.16mm",
+   "value": "MOC3063",
+   "pins": {
+    "1": "HEATER_LED_K",
+    "2": "HEATER_DRV",
+    "3": null,
+    "4": "HEATER_GATE",
+    "5": null,
+    "6": "HEATER_OPTO"
+   },
+   "mains": [
+    "4",
+    "5",
+    "6"
+   ],
+   "populate": "Y"
+  },
+  "Q1": {
+   "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "value": "BTA16-600BW",
+   "pins": {
+    "1": "HTR_A",
+    "2": "HTR_B",
+    "3": "HEATER_GATE"
+   },
+   "mains": [
+    "1",
+    "2",
+    "3"
+   ],
+   "populate": "Y"
+  },
+  "R3": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "360",
+   "pins": {
+    "1": "HTR_B",
+    "2": "HEATER_OPTO"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R4": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "330",
+   "pins": {
+    "1": "HEATER_GATE",
+    "2": "HTR_A"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "U3": {
+   "footprint": "Package_DIP:DIP-6_W10.16mm",
+   "value": "MOC3063",
+   "pins": {
+    "1": "PUMP_LED_K",
+    "2": "PUMP_DRV",
+    "3": null,
+    "4": "PUMP_GATE",
+    "5": null,
+    "6": "PUMP_OPTO"
+   },
+   "mains": [
+    "4",
+    "5",
+    "6"
+   ],
+   "populate": "Y"
+  },
+  "Q2": {
+   "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "value": "BTA08-600CW",
+   "pins": {
+    "1": "PUMP_L",
+    "2": "AC_L",
+    "3": "PUMP_GATE"
+   },
+   "mains": [
+    "1",
+    "2",
+    "3"
+   ],
+   "populate": "Y"
+  },
+  "R6": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "360",
+   "pins": {
+    "1": "AC_L",
+    "2": "PUMP_OPTO"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R7": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "330",
+   "pins": {
+    "1": "PUMP_GATE",
+    "2": "PUMP_L"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R8": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "100 1W",
+   "pins": {
+    "1": "AC_L",
+    "2": "PUMP_SNUB"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "C21": {
+   "footprint": "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4",
+   "value": "10nF X2",
+   "pins": {
+    "1": "PUMP_SNUB",
+    "2": "PUMP_L"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "U4": {
+   "footprint": "Package_DIP:DIP-6_W10.16mm",
+   "value": "MOC3063",
+   "pins": {
+    "1": "VALVE_LED_K",
+    "2": "VALVE_DRV",
+    "3": null,
+    "4": "VALVE_GATE",
+    "5": null,
+    "6": "VALVE_OPTO"
+   },
+   "mains": [
+    "4",
+    "5",
+    "6"
+   ],
+   "populate": "Y"
+  },
+  "Q3": {
+   "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "value": "Z0109MN",
+   "pins": {
+    "1": "VALVE_L",
+    "2": "AC_L",
+    "3": "VALVE_GATE"
+   },
+   "mains": [
+    "1",
+    "2",
+    "3"
+   ],
+   "populate": "Y"
+  },
+  "R9": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "360",
+   "pins": {
+    "1": "AC_L",
+    "2": "VALVE_OPTO"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R10": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "330",
+   "pins": {
+    "1": "VALVE_GATE",
+    "2": "VALVE_L"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "R11": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "100 1W",
+   "pins": {
+    "1": "AC_L",
+    "2": "VALVE_SNUB"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "C22": {
+   "footprint": "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4",
+   "value": "10nF X2",
+   "pins": {
+    "1": "VALVE_SNUB",
+    "2": "VALVE_L"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y"
+  },
+  "D1": {
+   "footprint": "Diode_SMD:D_SMA",
+   "value": "SS14",
+   "pins": {
+    "1": "+5V",
+    "2": "5V_PSU"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D2": {
+   "footprint": "Diode_SMD:D_SMA",
+   "value": "SS14",
+   "pins": {
+    "1": "+5V",
+    "2": "VBUS"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C1": {
+   "footprint": "Capacitor_SMD:CP_Elec_6.3x7.7",
+   "value": "100uF 16V",
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "U7": {
+   "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "value": "AMS1117-3.3",
+   "pins": {
+    "1": "GND",
+    "2": "+3V3",
+    "3": "+5V"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C2": {
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "value": "10uF",
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C3": {
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "value": "22uF 6.3V",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "U8": {
+   "footprint": "RF_Module:ESP32-S3-WROOM-1",
+   "value": "ESP32-S3-WROOM-1-N8",
+   "pins": {
+    "1": "GND",
+    "2": "+3V3",
+    "3": "EN",
+    "4": "ZC",
+    "5": "HEATER_CMD",
+    "6": "PUMP_CMD",
+    "7": "VALVE_CMD",
+    "8": "SW_BREW_IN",
+    "9": "SW_STEAM_IN",
+    "10": null,
+    "11": null,
+    "12": "SDA",
+    "13": "USB_D-",
+    "14": "USB_D+",
+    "15": null,
+    "16": null,
+    "17": "SCL",
+    "18": "TC_CS",
+    "19": "ADC_RDY",
+    "20": "TC_SCK",
+    "21": "TC_SO",
+    "22": null,
+    "23": null,
+    "24": null,
+    "25": null,
+    "26": null,
+    "27": "IO0_BOOT",
+    "28": null,
+    "29": null,
+    "30": null,
+    "31": "STATUS",
+    "32": null,
+    "33": null,
+    "34": null,
+    "35": null,
+    "36": null,
+    "37": null,
+    "38": null,
+    "39": null,
+    "40": "GND",
+    "41": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C4": {
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "value": "10uF",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C5": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R20": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "EN"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C6": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "1uF",
+   "pins": {
+    "1": "EN",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "SW1": {
+   "footprint": "Button_Switch_SMD:SW_SPST_TL3342",
+   "value": "RESET",
+   "pins": {
+    "1": "EN",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R21": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "IO0_BOOT"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "SW2": {
+   "footprint": "Button_Switch_SMD:SW_SPST_TL3342",
+   "value": "BOOT",
+   "pins": {
+    "1": "IO0_BOOT",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J4": {
+   "footprint": "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+   "value": "USB-C",
+   "pins": {
+    "A1": "GND",
+    "A4": "VBUS",
+    "A5": "CC1",
+    "A6": "USB_D+",
+    "A7": "USB_D-",
+    "A9": "VBUS",
+    "A12": "GND",
+    "B1": "GND",
+    "B4": "VBUS",
+    "B5": "CC2",
+    "B6": "USB_D+",
+    "B7": "USB_D-",
+    "B9": "VBUS",
+    "B12": "GND",
+    "S1": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R22": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC1",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R23": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC2",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "U9": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+   "value": "USBLC6-2SC6",
+   "pins": {
+    "1": "USB_D-",
+    "2": "GND",
+    "3": "USB_D+",
+    "4": "USB_D+",
+    "5": "VBUS",
+    "6": "USB_D-"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R24": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "47k",
+   "pins": {
+    "1": "+3V3",
+    "2": "ZC"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C7": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100pF",
+   "pins": {
+    "1": "ZC",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R25": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "150",
+   "pins": {
+    "1": "+5V",
+    "2": "HEATER_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D3": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "heater green",
+   "pins": {
+    "1": "HEATER_LED_K",
+    "2": "HEATER_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "Q4": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "HEATER_G",
+    "2": "GND",
+    "3": "HEATER_DRV"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R26": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100",
+   "pins": {
+    "1": "HEATER_CMD",
+    "2": "HEATER_G"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R27": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100k",
+   "pins": {
+    "1": "HEATER_G",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R28": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "150",
+   "pins": {
+    "1": "+5V",
+    "2": "PUMP_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D4": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "pump green",
+   "pins": {
+    "1": "PUMP_LED_K",
+    "2": "PUMP_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "Q5": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "PUMP_G",
+    "2": "GND",
+    "3": "PUMP_DRV"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R29": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100",
+   "pins": {
+    "1": "PUMP_CMD",
+    "2": "PUMP_G"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R30": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100k",
+   "pins": {
+    "1": "PUMP_G",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R31": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "150",
+   "pins": {
+    "1": "+5V",
+    "2": "VALVE_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D5": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "valve green",
+   "pins": {
+    "1": "VALVE_LED_K",
+    "2": "VALVE_LED_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "Q6": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "VALVE_G",
+    "2": "GND",
+    "3": "VALVE_DRV"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R32": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100",
+   "pins": {
+    "1": "VALVE_CMD",
+    "2": "VALVE_G"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R33": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100k",
+   "pins": {
+    "1": "VALVE_G",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "U10": {
+   "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "value": "MAX31855KASA+",
+   "pins": {
+    "1": "GND",
+    "2": "TC-",
+    "3": "TC+",
+    "4": "+3V3",
+    "5": "TC_SCK",
+    "6": "TC_CS",
+    "7": "TC_SO",
+    "8": null
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C8": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J5": {
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal",
+   "value": "Thermocouple K",
+   "pins": {
+    "1": "TC+",
+    "2": "TC-"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C9": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "10nF",
+   "pins": {
+    "1": "TC+",
+    "2": "TC-"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R34": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "TC_CS"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "U11": {
+   "footprint": "Package_SO:MSOP-10_3x3mm_P0.5mm",
+   "value": "ADS1115IDGSR",
+   "pins": {
+    "1": "GND",
+    "2": "ADC_RDY",
+    "3": "GND",
+    "4": "P_AIN0",
+    "5": "V5_AIN1",
+    "6": "NTC_AIN2",
+    "7": "AIN3_SPARE",
+    "8": "+3V3",
+    "9": "SDA",
+    "10": "SCL"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C10": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R35": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SDA"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R36": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SCL"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R37": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "ADC_RDY"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J6": {
+   "footprint": "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
+   "value": "Pressure 0-1.6MPa",
+   "pins": {
+    "1": "+5V",
+    "2": "P_SIG",
+    "3": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D6": {
+   "footprint": "Diode_SMD:D_SOD-323",
+   "value": "PESD5V0S1BA",
+   "pins": {
+    "1": "P_SIG",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R38": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "P_SIG",
+    "2": "P_AIN0"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R39": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "20k 0.1%",
+   "pins": {
+    "1": "P_AIN0",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C11": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "P_AIN0",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R40": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "+5V",
+    "2": "V5_AIN1"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R41": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "20k 0.1%",
+   "pins": {
+    "1": "V5_AIN1",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C12": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "V5_AIN1",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J7": {
+   "footprint": "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical",
+   "value": "Group NTC (opt)",
+   "pins": {
+    "1": "NTC_AIN2",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "opt"
+  },
+  "R42": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "+3V3",
+    "2": "NTC_AIN2"
+   },
+   "mains": [],
+   "populate": "opt"
+  },
+  "C13": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "NTC_AIN2",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "opt"
+  },
+  "R43": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100k",
+   "pins": {
+    "1": "AIN3_SPARE",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J8": {
+   "footprint": "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
+   "value": "Switches",
+   "pins": {
+    "1": "SW_BREW",
+    "2": "SW_STEAM",
+    "3": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R44": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_BREW"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R45": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_BREW",
+    "2": "SW_BREW_IN"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C14": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "SW_BREW_IN",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D7": {
+   "footprint": "Diode_SMD:D_SOD-323",
+   "value": "PESD5V0S1BA",
+   "pins": {
+    "1": "SW_BREW",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R46": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_STEAM"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "R47": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_STEAM",
+    "2": "SW_STEAM_IN"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "C15": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "SW_STEAM_IN",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D8": {
+   "footprint": "Diode_SMD:D_SOD-323",
+   "value": "PESD5V0S1BA",
+   "pins": {
+    "1": "SW_STEAM",
+    "2": "GND"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "J9": {
+   "footprint": "Connector_JST:JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical",
+   "value": "I2C expansion",
+   "pins": {
+    "1": "+3V3",
+    "2": "SDA",
+    "3": "SCL",
+    "4": "GND"
+   },
+   "mains": [],
+   "populate": "opt"
+  },
+  "R48": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "STATUS",
+    "2": "STATUS_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "D9": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "status blue",
+   "pins": {
+    "1": "GND",
+    "2": "STATUS_A"
+   },
+   "mains": [],
+   "populate": "Y"
+  },
+  "H1": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "mains": [],
+   "populate": "Y"
+  },
+  "H2": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "mains": [],
+   "populate": "Y"
+  },
+  "H3": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "mains": [],
+   "populate": "Y"
+  },
+  "H4": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "mains": [],
+   "populate": "Y"
+  }
+ },
+ "mains_nets": [
+  "AC_L",
+  "AC_L_FUSED",
+  "AC_N",
+  "HEATER_GATE",
+  "HEATER_OPTO",
+  "HTR_A",
+  "HTR_B",
+  "PUMP_GATE",
+  "PUMP_L",
+  "PUMP_OPTO",
+  "PUMP_SNUB",
+  "VALVE_GATE",
+  "VALVE_L",
+  "VALVE_OPTO",
+  "VALVE_SNUB",
+  "ZC_A",
+  "ZC_B"
+ ],
+ "heater_nets": [
+  "HTR_A",
+  "HTR_B"
+ ]
+}
