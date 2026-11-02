@@ -1,0 +1,47 @@
+{
+  "name": "Rao Allongé",
+  "description": "An amazing long espresso for light roasts, this is the biggest fruit bomb of any brewing method we know",
+  "temperature_c": 92.0,
+  "phases": [
+    {
+      "name": "hold at 4.5 ml/s",
+      "target": {
+        "flow": 4.5
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 8.9,
+      "exit": [
+        {
+          "time_s": 2.0
+        }
+      ]
+    },
+    {
+      "name": "hold at 4.5 ml/s",
+      "target": {
+        "flow": 4.5
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 8.9,
+      "exit": [
+        {
+          "time_s": 60.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 135.0,
+    "max_time_s": 72.0,
+    "volume_ml": 180.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.44
+}

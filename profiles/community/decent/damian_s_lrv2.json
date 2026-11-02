@@ -1,0 +1,156 @@
+{
+  "name": "Damian's LRv2",
+  "description": "This profile simulates a Londinium R machines extraction style",
+  "temperature_c": 89.0,
+  "phases": [
+    {
+      "name": "Fill start",
+      "target": {
+        "pressure": 2.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 2.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Fill",
+      "target": {
+        "pressure": 2.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 25.0
+        },
+        {
+          "pressure_above": 1.5
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Infuse",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Pressure Up",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 8.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Pressure Decline",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 55.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 55.0
+        },
+        {
+          "flow_above": 2.8
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Pressure Hold",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 127.0
+        },
+        {
+          "flow_above": 2.8
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Flow Limit",
+      "target": {
+        "flow": 2.5
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 127.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 120.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.78
+}

@@ -62,6 +62,11 @@ impl Recorder {
         }
     }
 
+    /// The id the next shot will get.
+    pub fn next_id(&self) -> u32 {
+        self.next_id
+    }
+
     /// Feed every tick. `last_shot` is `Engine::last_shot()`.
     pub fn observe(
         &mut self,
@@ -81,7 +86,10 @@ impl Recorder {
         match (&mut self.current, (brewing && !restart) || tail) {
             (None, true) => {
                 let id = self.next_id;
-                self.next_id += 1;
+                // Flushes are recorded (the node drops them) but don't use up a shot number.
+                if profile.name != Profile::FLUSH_NAME {
+                    self.next_id += 1;
+                }
                 self.current = Some(Shot {
                     meta: ShotMeta {
                         id,

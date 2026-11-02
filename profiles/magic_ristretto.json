@@ -1,0 +1,64 @@
+{
+  "name": "Magic (double ristretto)",
+  "description": "Short, sweet double ristretto for a magic: 18 g in, ~28 g out (1:1.5). Grind a touch finer than a normal shot, then steam ~120 ml of milk.",
+  "temperature_c": 93.0,
+  "phases": [
+    {
+      "name": "fill",
+      "target": {
+        "flow": 6.0
+      },
+      "limit": 2.5,
+      "exit": [
+        {
+          "pressure_above": 2.0
+        },
+        {
+          "time_s": 12
+        }
+      ]
+    },
+    {
+      "name": "soak",
+      "target": {
+        "pressure": 2.5
+      },
+      "limit": 2.0,
+      "exit": [
+        {
+          "time_s": 4
+        },
+        {
+          "weight_above": 1.0
+        }
+      ]
+    },
+    {
+      "name": "ramp",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "ease_in_out",
+        "over_s": 3
+      },
+      "exit": [
+        {
+          "time_s": 3
+        }
+      ]
+    },
+    {
+      "name": "extract",
+      "target": {
+        "pressure": 9.0
+      },
+      "limit": 3.0
+    }
+  ],
+  "stop": {
+    "weight_g": 28.0,
+    "max_time_s": 45.0
+  },
+  "grind": 1.3
+}

@@ -239,3 +239,18 @@ textarea.code { width: 100%; min-height: 260px; font-family: var(--mono); font-s
   .link.warm .link-line i { background: repeating-linear-gradient(180deg, var(--weight) 0 8px, transparent 8px 16px); }
   @keyframes run { from { background-position: 0 0; } to { background-position: 0 16px; } }
 }
+
+.grind-line { font-size: 13px; padding: 8px 10px; border-radius: 8px; background: var(--raised); border: 1px solid var(--border); }
+
+/* ---------- fuzzy profile picker ---------- */
+.picker { position: relative; }
+.picker-input { width: 100%; }
+.picker-input::placeholder { color: var(--text); opacity: 0.85; }
+.picker-list { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); max-height: 340px; overflow: auto;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 4px; }
+.picker-item { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 14px; }
+.picker-item.hi { background: var(--raised); }
+.picker-item.current .picker-name { color: var(--accent); font-weight: 600; }
+.picker-meta { color: var(--faint); font-size: 12px; white-space: nowrap; }
+.picker-empty { padding: 10px; color: var(--muted); font-size: 13px; }
+.card.stack > .list-item { min-width: 0; }

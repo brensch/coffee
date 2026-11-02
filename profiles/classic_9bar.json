@@ -59,5 +59,6 @@
   "stop": {
     "weight_g": 36.0,
     "max_time_s": 60.0
-  }
+  },
+  "grind": 1.0
 }

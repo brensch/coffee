@@ -506,6 +506,8 @@ impl Machine {
                 let c = hy.compliance_ml_per_bar.max(1e-3);
                 let seep = hy.seep_ml_s_per_bar * self.p.max(0.0);
                 self.p += (net - q_group - q_wand + q_exp - seep) / c * dt;
+                // Seepage leaks back through the pump's check valve into the tank.
+                self.reservoir_ml += seep * dt;
                 let p_floor = water::p_sat_gauge(self.t_water);
                 if self.p < p_floor {
                     self.p = p_floor;
@@ -753,6 +755,10 @@ impl Machine {
         ("switch.steam", "bool"),
         ("switch.water", "bool"),
         ("scale.reading", "g"),
+        ("puck.grind", "x normal"),
+        ("wand.open", "bool"),
+        ("portafilter.attached", "bool"),
+        ("puck.present", "bool"),
     ];
 
     pub fn signal(&self, name: &str) -> Option<f64> {
@@ -797,6 +803,9 @@ impl Machine {
             "switch.steam" => b(self.switch_steam),
             "switch.water" => b(self.switch_water),
             "scale.reading" => self.scale_mg as f64 / 1000.0,
+            "wand.open" => b(self.wand_open),
+            "portafilter.attached" => b(self.portafilter_attached),
+            "puck.present" => b(self.puck_present),
             _ => return None,
         })
     }

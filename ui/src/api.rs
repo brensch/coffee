@@ -42,6 +42,8 @@ pub struct Store {
     pub lab_url: RwSignal<Option<String>>,
     pub lab_info: RwSignal<Option<LabInfo>>,
     pub lab_connected: RwSignal<bool>,
+    /// Emulator: the virtual barista grinds to whatever the selected profile asks for.
+    pub barista_grind: RwSignal<bool>,
     pub lab_truth: RwSignal<Option<LabTruth>>,
     pub lab_hist: RwSignal<Vec<LabTruth>>,
     pub lab_events: RwSignal<Vec<(f64, String, i8)>>,
@@ -70,6 +72,7 @@ impl Store {
             lab_url: RwSignal::new(None),
             lab_info: RwSignal::new(None),
             lab_connected: RwSignal::new(false),
+            barista_grind: RwSignal::new(true),
             lab_truth: RwSignal::new(None),
             lab_hist: RwSignal::new(vec![]),
             lab_events: RwSignal::new(vec![]),
@@ -268,7 +271,8 @@ fn on_telemetry(s: Store, t: Telemetry) {
         flow: t.flow_ml_s as f64,
         target_flow: nan(t.target_flow_ml_s),
         weight: nan(t.weight_g),
-        phase: t.phase,
+        // Same marker the engine's history uses for a flush (0xFD).
+        phase: if t.profile == "Flush" { t.phase.map(|_| 0xFD) } else { t.phase },
         brewing,
     };
     // A slightly older sample is normal right after connecting (the WS snapshot

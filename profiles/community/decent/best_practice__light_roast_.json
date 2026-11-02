@@ -1,0 +1,120 @@
+{
+  "name": "Best practice (light roast)",
+  "description": "This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent",
+  "temperature_c": 92.0,
+  "phases": [
+    {
+      "name": "Preinfusion fill",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "pressure_above": 3.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Preinfusion fill end",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "flow_below": 1.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Preinfusion dripping",
+      "target": {
+        "pressure": 1.5
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 13.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 13.0
+        },
+        {
+          "pumped_above": 12.0
+        }
+      ]
+    },
+    {
+      "name": "Pressurize",
+      "target": {
+        "pressure": 10.5
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 6.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 6.0
+        },
+        {
+          "pressure_above": 8.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Extraction",
+      "target": {
+        "flow": 3.4
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 30.0
+      },
+      "limit": 9.8,
+      "exit": [
+        {
+          "time_s": 30.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 83.0,
+    "volume_ml": 36.0,
+    "volume_from_phase": 2
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.82
+}

@@ -125,6 +125,7 @@ pub fn ProfilesPage() -> impl IntoView {
     let s = store();
     api::refresh_profiles();
     let selected = RwSignal::new(None::<String>);
+    let lib_query = RwSignal::new(String::new());
     let draft = RwSignal::new(None::<Profile>);
 
     Effect::new(move |_| {
@@ -188,11 +189,16 @@ pub fn ProfilesPage() -> impl IntoView {
     view! {
         <div class="grid" style="grid-template-columns: minmax(220px, 280px) minmax(0, 1fr)">
             <div class="card stack">
-                <h2>"Library"</h2>
-                {move || s.profiles.get().into_iter().map(|p| {
+                <h2>"Library"<span class="spacer"></span><span class="faint small">{move || format!("{} profiles", s.profiles.with(|p| p.len()))}</span></h2>
+                <input type="search" placeholder="Search name or author…" prop:value=move || lib_query.get()
+                    on:input=move |ev| lib_query.set(event_target_value(&ev)) />
+                {move || crate::picker::filtered(&s.profiles.get(), &lib_query.get()).into_iter().map(|p| {
                     let name = p.name.clone();
                     let n2 = name.clone();
-                    let desc = p.description.clone();
+                    let desc = match &p.author {
+                        Some(a) => format!("by {a} · {}", p.description),
+                        None => p.description.clone(),
+                    };
                     view! {
                         <div class="list-item" class:active=move || selected.get().as_deref() == Some(n2.as_str()) on:click=move |_| pick(p.clone())>
                             <div style="font-weight:600">{name}</div>
@@ -235,6 +241,10 @@ pub fn ProfilesPage() -> impl IntoView {
                             <label class="stack small"><span class="muted">"Target puck R (bar·s/ml)"</span>
                                 <input type="number" step="0.1" prop:value=move || draft.with(|d| d.as_ref().and_then(|d| d.target_resistance).map(|v| v.to_string()).unwrap_or_default())
                                     on:change=move |ev| { let v = event_target_value(&ev).parse().ok(); edit(Box::new(move |d| d.target_resistance = v)) } />
+                            </label>
+                            <label class="stack small"><span class="muted">"Grind (× normal; >1 finer)"</span>
+                                <input type="number" step="0.05" placeholder="not specified" prop:value=move || draft.with(|d| d.as_ref().and_then(|d| d.grind).map(|v| v.to_string()).unwrap_or_default())
+                                    on:change=move |ev| { let v = event_target_value(&ev).parse().ok(); edit(Box::new(move |d| d.grind = v)) } />
                             </label>
                             <label class="stack small"><span class="muted">"Description"</span>
                                 <input prop:value=move || draft.with(|d| d.as_ref().map(|d| d.description.clone()).unwrap_or_default())

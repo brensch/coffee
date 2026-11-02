@@ -1,0 +1,65 @@
+{
+  "name": "Two spring lever machine to 9 bar",
+  "description": "A final evolution of the classic lever machine style was to add a second spring",
+  "temperature_c": 94.0,
+  "phases": [
+    {
+      "name": "preinfusion",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 20.0
+        },
+        {
+          "pressure_above": 4.0
+        }
+      ]
+    },
+    {
+      "name": "rise and hold",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 8.0
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 0.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 26.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 26.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 64.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 1.0
+}

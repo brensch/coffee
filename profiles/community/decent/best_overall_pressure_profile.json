@@ -1,0 +1,65 @@
+{
+  "name": "Best overall pressure profile",
+  "description": "We recommend this pressure profile as the most likely to produce a good espresso in the most varied number of cases",
+  "temperature_c": 88.0,
+  "phases": [
+    {
+      "name": "preinfusion",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 20.0
+        },
+        {
+          "pressure_above": 4.0
+        }
+      ]
+    },
+    {
+      "name": "rise and hold",
+      "target": {
+        "pressure": 8.4
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 3.5,
+      "exit": [
+        {
+          "time_s": 10.0
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 30.0
+      },
+      "limit": 3.5,
+      "exit": [
+        {
+          "time_s": 30.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 70.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.97
+}

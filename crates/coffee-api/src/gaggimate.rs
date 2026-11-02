@@ -213,8 +213,12 @@ pub fn convert(gm: &GmProfile) -> Result<Imported, String> {
         stop: Stop {
             weight_g: None,
             max_time_s: Some(total + 5.0),
+            volume_ml: None,
+            volume_from_phase: None,
         },
         target_resistance: None,
+        grind: None,
+        author: Some(String::from("GaggiMate")),
     };
     profile.validate().map_err(String::from)?;
     Ok(Imported { profile, warnings })

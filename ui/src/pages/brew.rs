@@ -23,12 +23,38 @@ fn FlushPrompt() -> impl IntoView {
     }
 }
 
+/// Human description of a profile's grind (relative to your normal espresso grind).
+pub fn grind_label(g: Option<f32>) -> String {
+    match g {
+        None => "Grind: not specified by this profile (start from your normal espresso grind)".into(),
+        Some(g) => {
+            let words = if g < 0.6 {
+                "much coarser than normal"
+            } else if g < 0.92 {
+                "coarser than normal"
+            } else if g <= 1.08 {
+                "your normal espresso grind"
+            } else if g <= 1.2 {
+                "slightly finer than normal"
+            } else {
+                "finer than normal"
+            };
+            format!("Grind: {words} (×{g:.2})")
+        }
+    }
+}
+
 /// If the portafilter is still cold, how much cooler the first shot will land.
 /// Fitted to the emulator (E24 model): ~0.2 C at the puck per C of portafilter
 /// below ~78 C. Only as good as the model until calibrated (CALIBRATION.md #9).
 fn cold_portafilter(t: Option<&coffee_api::Telemetry>) -> Option<String> {
     let t = t?;
     let g = t.group_c?;
+    // Flushing while the boiler is still well short of temperature just pushes
+    // cold water through: wait until the water is nearly there.
+    if t.water_c.or(t.temp_c).is_none_or(|w| w < t.setpoint_c - 3.0) {
+        return None;
+    }
     if t.heat_soak >= 0.999 || t.heat_soak < 0.02 {
         return None;
     }
@@ -74,6 +100,8 @@ pub fn phase_bands(samples: &[(f64, u8)], names: &[String]) -> Vec<Band> {
         }
         let label = if p == 0xFE {
             "after stop".to_string()
+        } else if p == 0xFD {
+            "flush".to_string()
         } else {
             names
                 .get(p as usize)
@@ -289,17 +317,14 @@ pub fn BrewPage() -> impl IntoView {
                     }}
                     <label class="stack small">
                         <span class="muted">"Profile"</span>
-                        <select on:change=move |ev| {
-                            let name = event_target_value(&ev);
-                            api::command(Command::SelectProfile { name }, "Profile selected");
-                        } prop:value=active_profile>
-                            {move || s.profiles.get().into_iter().map(|p| {
-                                let n = p.name.clone();
-                                view! { <option value=n.clone()>{n.clone()}</option> }
-                            }).collect_view()}
-                        </select>
+                        <crate::picker::ProfilePicker
+                            profiles=s.profiles
+                            current=Signal::derive(active_profile)
+                            on_pick=Callback::new(move |name: String| api::command(Command::SelectProfile { name }, "Profile selected"))
+                        />
                     </label>
                     <div class="muted small">{move || profile.with(|p| p.as_ref().map(|p| p.description.clone())).unwrap_or_default()}</div>
+                    <div class="grind-line">{move || profile.with(|p| p.as_ref().map(|p| grind_label(p.grind)))}</div>
                 </div>
 
                 <div class="card">

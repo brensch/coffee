@@ -1,0 +1,140 @@
+{
+  "name": "Damian's LM Leva",
+  "description": "Damian wrote this profile to mimic a shot Gabor Laczko recorded on a La Marzocco Leva machine using his Smart Espresso Profiler",
+  "temperature_c": 89.0,
+  "phases": [
+    {
+      "name": "fill start",
+      "target": {
+        "pressure": 1.8
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 2.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "fill",
+      "target": {
+        "pressure": 1.8
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 20.0
+        },
+        {
+          "pressure_above": 1.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "preinfusion",
+      "target": {
+        "pressure": 2.2
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        },
+        {
+          "pressure_above": 4.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "rise",
+      "target": {
+        "pressure": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "pressure_above": 8.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "hold",
+      "target": {
+        "pressure": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "flow_above": 1.5
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 2.2
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 58.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 58.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 42.0,
+    "max_time_s": 110.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.95
+}

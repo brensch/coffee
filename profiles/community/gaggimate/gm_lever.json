@@ -1,0 +1,102 @@
+{
+  "name": "Cremina lever machine",
+  "description": "Darker Roasts - Very Fine- 40-60s - 1:1.5-2.2",
+  "temperature_c": 86.5,
+  "phases": [
+    {
+      "name": "preinfusion start",
+      "target": {
+        "pressure": 1.1
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 2.0
+        }
+      ]
+    },
+    {
+      "name": "preinfusion",
+      "target": {
+        "pressure": 1.1
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 3.0
+        },
+        {
+          "pressure_above": 3.0
+        }
+      ]
+    },
+    {
+      "name": "soak",
+      "target": {
+        "pressure": 1.1
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        }
+      ]
+    },
+    {
+      "name": "ramp",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "ease_in_out",
+        "over_s": 10.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        }
+      ]
+    },
+    {
+      "name": "ramp-down",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 50.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 50.0
+        },
+        {
+          "weight_above": 36.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": null,
+    "max_time_s": 80.0
+  },
+  "target_resistance": null,
+  "author": "GaggiMate",
+  "grind": 1.0
+}

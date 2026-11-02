@@ -1,0 +1,18 @@
+name "cup already holds flush water: shot weight stays tared after the shot"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+
+when engine.state == ready for 30s as warm: set puck.auto_fresh = 0
+at warm+1s: set cup.mass = 18
+at warm+3s: brew on
+when engine.state == brew_done from warm as done:
+at done+2s: brew off
+
+expect eventually engine.state == brew_done from warm
+# The settle window is a few seconds; well after it the display must still read
+# the shot (~36 g), not shot + the 18 g already in the cup.
+expect at done+20s: engine.weight < 42
+expect at done+20s: engine.weight > 30
+# Lifting the cup off clears the tare: the scale reads what's on it.
+at done+25s: set cup.mass = 0
+expect at done+28s: engine.weight < 1

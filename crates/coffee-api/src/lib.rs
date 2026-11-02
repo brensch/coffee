@@ -33,6 +33,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
 
+pub mod decent;
 pub mod gaggimate;
 pub mod recorder;
 

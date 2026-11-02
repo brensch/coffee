@@ -1,0 +1,115 @@
+{
+  "name": "Espresso Forge Light",
+  "description": "A light roast pressure profile that emulates the flow and temperature characteristics of the Espresso Forge manual machine",
+  "temperature_c": 96.0,
+  "phases": [
+    {
+      "name": "preinfusion",
+      "target": {
+        "flow": 6.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        },
+        {
+          "pressure_above": 0.5
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "long pre brew",
+      "target": {
+        "pressure": 1.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 25.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 25.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "high pressure ramp",
+      "target": {
+        "pressure": 10.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 20.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 20.0
+        },
+        {
+          "pressure_above": 10.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 50.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 50.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "reset temperature",
+      "target": {
+        "flow": 0.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 1.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 1.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 42.0,
+    "max_time_s": 116.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 1.04
+}

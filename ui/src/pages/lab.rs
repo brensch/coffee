@@ -90,6 +90,16 @@ fn LabConnected() -> impl IntoView {
                         format!("t = {:02}:{:04.1}", (t / 60.0) as u32, t % 60.0)
                     }}</span>
                     <span class="chip">{move || if engine_on() { "engine linked" } else { "engine unplugged" }}</span>
+                    {move || (s.lab_val("wand.open") > 0.5).then(|| view! {
+                        <button class="btn small danger" title="Water is escaping through the steam wand: pressure can't build"
+                            on:click=|_| set("wand.open", 0)>"⚠ steam wand open: close"</button>
+                    })}
+                    {move || (s.lab_val("portafilter.attached") < 0.5).then(|| view! {
+                        <button class="btn small danger" on:click=|_| set("portafilter.attached", 1)>"⚠ portafilter off: attach"</button>
+                    })}
+                    {move || (s.lab_val("puck.present") < 0.5).then(|| view! {
+                        <button class="btn small danger" on:click=|_| set("puck.present", 1)>"⚠ no coffee in basket: add"</button>
+                    })}
                 </div>
                 <div class="row">
                     {move || if paused() {
@@ -101,6 +111,7 @@ fn LabConnected() -> impl IntoView {
                         <button class="btn small ghost" class:on=move || (speed() - x).abs() < 0.01
                             on:click=move |_| api::lab_command(LabCommand::Speed { x })>{format!("{x}×")}</button>
                     }).collect_view()}
+                    <GrindMatch />
                     <button class="btn small danger" on:click=|_| api::lab_command(LabCommand::Reset)>"Reset machine"</button>
                 </div>
             </div>
@@ -181,6 +192,37 @@ fn LabConnected() -> impl IntoView {
                 </div>
             </div>
         </div>
+    }
+}
+
+/// Emulated coffee grind vs what the selected profile wants.
+#[component]
+fn GrindMatch() -> impl IntoView {
+    let s = store();
+    let wanted = move || {
+        let name = s.tel.with(|t| t.as_ref().map(|t| t.profile.clone()).unwrap_or_default());
+        s.profiles.with(|ps| ps.iter().find(|p| p.name == name).and_then(|p| p.grind))
+    };
+    view! {
+        <span class="chip" title="Grind of the emulated coffee (puck resistance multiplier)">
+            {move || format!("coffee grind ×{:.2}", s.lab_val("puck.grind"))}
+        </span>
+        <button class="btn small" class:on=move || s.barista_grind.get()
+            title="When on, the emulated barista regrinds whenever you pick a profile"
+            on:click=move |_| s.barista_grind.update(|b| *b = !*b)>
+            {move || if s.barista_grind.get() { "Auto-grind: on" } else { "Auto-grind: off" }}
+        </button>
+        {move || wanted().map(|g| {
+            let differs = (s.lab_val("puck.grind") - g as f64).abs() > 0.01;
+            if differs {
+                view! {
+                    <button class="btn small" on:click=move |_| set("puck.grind", g)>{format!("Match profile grind (×{g:.2})")}</button>
+                }
+                .into_any()
+            } else {
+                view! { <span class="chip" style="color: var(--ok)">"✓ matches profile grind"</span> }.into_any()
+            }
+        })}
     }
 }
 

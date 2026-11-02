@@ -1,0 +1,122 @@
+{
+  "name": "I got your back",
+  "description": "The goal of this profile is to never fail to make an acceptable espresso, at any grinder dial setting",
+  "temperature_c": 90.0,
+  "phases": [
+    {
+      "name": "preinfusion start",
+      "target": {
+        "flow": 4.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 2.0
+        }
+      ]
+    },
+    {
+      "name": "preinfusion",
+      "target": {
+        "flow": 4.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 11.0
+        },
+        {
+          "pressure_above": 4.0
+        }
+      ]
+    },
+    {
+      "name": "Low Resistance",
+      "target": {
+        "flow": 2.2
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 30.0
+        },
+        {
+          "pressure_above": 10.0
+        }
+      ]
+    },
+    {
+      "name": "Pause at HR",
+      "target": {
+        "flow": 0.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 60.0
+        },
+        {
+          "pressure_below": 2.0
+        }
+      ]
+    },
+    {
+      "name": "ramp",
+      "target": {
+        "flow": 2.2
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 5.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        }
+      ]
+    },
+    {
+      "name": "flat flow",
+      "target": {
+        "flow": 2.2
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 8.9,
+      "exit": [
+        {
+          "time_s": 30.0
+        },
+        {
+          "pressure_below": 0.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 120.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 1.0
+}

@@ -32,6 +32,8 @@ coffee-emu run scenarios/02_shot_classic.scn --trace out/shot.csv --events
 coffee-emu signals                          # everything you can read / set / fit
 coffee-emu fit --log real.clog --params thermal.boiler_mass_kg,thermal.loss_boiler_w_k --out models/mine.toml
 coffee-emu import-gaggimate path/to/*.json  # convert GaggiMate profiles
+coffee-emu import-decent path/to/*.tcl      # convert Decent Espresso profiles
+python3 tools/profile_check.py profiles/community   # brew every profile in the emulator
 ```
 
 Firmware: ESP32-C6 (default, stable Rust) or ESP32-S3 (Espressif's Xtensa toolchain):
@@ -89,9 +91,9 @@ with the heater. **Tools:** wire stripper, ratcheting crimper, multimeter, Phill
 | `hardware/controller` | Controller board as code (SKiDL): ERC, isolation and pin-map checks, KiCad netlist, BOM. |
 | `tools/` | `iterate.sh`: rebuild, run diagnostic shots, print control-quality metrics. |
 | `firmware/esp32` | ESP32 firmware, C6 or S3 (machine mode and USB bridge mode). |
-| `models/`, `profiles/`, `scenarios/` | Machine models, shot profiles, test scenarios. |
+| `models/`, `profiles/`, `scenarios/` | Machine models, shot profiles (built-ins + `profiles/community`: 47 Decent and 4 GaggiMate profiles, with their own licenses), test scenarios. |
 
-Docs: [ARCHITECTURE](docs/ARCHITECTURE.md) · [HARDWARE & BOM](docs/HARDWARE.md) · [CIRCUIT](docs/CIRCUIT.md) · [INSTALL](docs/INSTALL.md) · [CALIBRATION](docs/CALIBRATION.md) · [MODELS](docs/MODELS.md) · [SCENARIOS](docs/SCENARIOS.md)
+Docs: [PROFILES](docs/PROFILES.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [HARDWARE & BOM](docs/HARDWARE.md) · [CIRCUIT](docs/CIRCUIT.md) · [INSTALL](docs/INSTALL.md) · [CALIBRATION](docs/CALIBRATION.md) · [MODELS](docs/MODELS.md) · [SCENARIOS](docs/SCENARIOS.md)
 
 ## Status
 

@@ -36,6 +36,9 @@ pub struct Args {
     /// Engine config TOML applied at startup (not persisted).
     #[arg(long)]
     pub config: Option<PathBuf>,
+    /// Extra read-only profile library (searched recursively for *.json).
+    #[arg(long, default_value = "profiles/community")]
+    pub profile_library: PathBuf,
     /// Active profile at startup: a library name or a path to a JSON file.
     #[arg(long)]
     pub profile: Option<String>,
@@ -54,6 +57,23 @@ pub struct Args {
 }
 
 pub type SharedNode = Node<Box<dyn Storage + Send>>;
+
+fn collect_profiles(dir: &std::path::Path, out: &mut Vec<Profile>) {
+    let Ok(rd) = std::fs::read_dir(dir) else { return };
+    let mut entries: Vec<_> = rd.flatten().map(|e| e.path()).collect();
+    entries.sort();
+    for p in entries {
+        if p.is_dir() {
+            collect_profiles(&p, out);
+        } else if p.extension().is_some_and(|e| e == "json") {
+            match std::fs::read(&p).map_err(anyhow::Error::from).and_then(|b| serde_json::from_slice::<Profile>(&b).map_err(anyhow::Error::from)) {
+                Ok(prof) if prof.validate().is_ok() => out.push(prof),
+                Ok(_) => eprintln!("[engine] skipping invalid profile {}", p.display()),
+                Err(e) => eprintln!("[engine] skipping {}: {e}", p.display()),
+            }
+        }
+    }
+}
 
 pub struct AppState {
     pub node: Mutex<SharedNode>,
@@ -85,6 +105,13 @@ fn main() -> Result<()> {
             history_hz: 5.0,
         },
     );
+    let mut extra = vec![];
+    collect_profiles(&args.profile_library, &mut extra);
+    let n_extra = extra.len();
+    node.extend_library(extra);
+    if n_extra > 0 {
+        eprintln!("[engine] loaded {n_extra} profiles from {}", args.profile_library.display());
+    }
     if let Some(p) = &args.config {
         let cfg: EngineConfig = toml::from_str(
             &std::fs::read_to_string(p).with_context(|| format!("reading {}", p.display()))?,

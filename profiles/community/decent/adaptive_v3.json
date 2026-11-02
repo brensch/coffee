@@ -1,0 +1,155 @@
+{
+  "name": "Adaptive v3",
+  "description": "This profile aims to unite the best practices in espresso extraction that we have learned so far with the Decent",
+  "temperature_c": 93.0,
+  "phases": [
+    {
+      "name": "Prefill",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Fill",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "pressure_above": 3.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Compressing",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "flow_below": 3.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Dripping",
+      "target": {
+        "pressure": 0.1
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 6.0
+        }
+      ]
+    },
+    {
+      "name": "Pressurize",
+      "target": {
+        "pressure": 11.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 6.0
+      },
+      "limit": 3.8,
+      "exit": [
+        {
+          "time_s": 6.0
+        },
+        {
+          "pressure_above": 7.7
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Extraction start",
+      "target": {
+        "flow": 1.5
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 8.9,
+      "exit": [
+        {
+          "time_s": 0.5
+        },
+        {
+          "pressure_above": 0.0
+        }
+      ]
+    },
+    {
+      "name": "Extraction",
+      "target": {
+        "flow": 3.5
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 60.0
+      },
+      "limit": 8.9,
+      "exit": [
+        {
+          "time_s": 60.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 111.5,
+    "volume_ml": 36.0,
+    "volume_from_phase": 3
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 1.0
+}

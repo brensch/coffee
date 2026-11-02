@@ -38,6 +38,14 @@ pub struct Profile {
     /// this profile. Used for grind advice.
     #[serde(default)]
     pub target_resistance: Option<f32>,
+    /// How fine this profile wants the coffee, relative to your normal espresso
+    /// grind: 1.0 = normal, >1 finer, <1 coarser. Same scale as the emulator's
+    /// `puck.grind` (a puck-resistance multiplier). None = not specified.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grind: Option<f32>,
+    /// Who made it (imported community profiles keep their attribution).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub author: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
@@ -128,6 +136,14 @@ pub struct Stop {
     /// Stop when the (latency-compensated) cup weight reaches this.
     pub weight_g: Option<f32>,
     pub max_time_s: Option<f32>,
+    /// Stop after this much water has been pumped (ml): the fallback without a
+    /// scale, and how Decent's volumetric profiles end.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume_ml: Option<f32>,
+    /// Count `volume_ml` from the start of this phase (0-based), so
+    /// preinfusion water doesn't count towards the cup.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume_from_phase: Option<u8>,
 }
 
 /// Inputs used to evaluate exit conditions.
@@ -191,8 +207,12 @@ impl Profile {
             stop: Stop {
                 weight_g: None,
                 max_time_s: Some(seconds + 1.0),
+                volume_ml: None,
+                volume_from_phase: None,
             },
             target_resistance: None,
+            grind: None,
+            author: None,
         }
     }
 
@@ -260,8 +280,12 @@ fn serde_default_profile() -> Profile {
         stop: Stop {
             weight_g: Some(36.0),
             max_time_s: Some(60.0),
+            volume_ml: None,
+            volume_from_phase: None,
         },
         target_resistance: None,
+        grind: Some(1.0),
+        author: None,
     }
 }
 

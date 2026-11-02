@@ -39,6 +39,9 @@ fn dq(v: i16, s: f32) -> Option<f32> {
     (v != NONE).then(|| v as f32 / s)
 }
 
+/// Phase marker recorded while a flush runs.
+pub const PHASE_FLUSH: u8 = 0xFD;
+
 pub struct History {
     buf: Vec<Sample>,
     cap: usize,
@@ -84,7 +87,7 @@ impl History {
         self.last_t = f64::NEG_INFINITY;
     }
 
-    pub fn observe(&mut self, t: f64, a: &ActuatorFrame) {
+    pub fn observe(&mut self, t: f64, a: &ActuatorFrame, flushing: bool) {
         if t < self.last_t {
             self.clear(); // clock went backwards: new session
         }
@@ -106,7 +109,8 @@ impl History {
             heater: (s.heater_duty.clamp(0.0, 1.0) * 100.0) as u8,
             pump: (s.pump_duty.clamp(0.0, 1.0) * 100.0) as u8,
             state: s.state as u8,
-            phase: s.phase,
+            // Flushes reuse phase 0 of a one-phase profile: mark them so charts can say "flush".
+            phase: if flushing && s.phase != 0xFF { PHASE_FLUSH } else { s.phase },
         };
         self.head = (self.head + 1) % self.cap;
         self.len = (self.len + 1).min(self.cap);

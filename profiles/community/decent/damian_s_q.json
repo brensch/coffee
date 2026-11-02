@@ -1,0 +1,74 @@
+{
+  "name": "Damian's Q",
+  "description": "A very popular profile made with D-Flow, spun out as its own profile",
+  "temperature_c": 84.0,
+  "phases": [
+    {
+      "name": "Filling",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 25.0
+        },
+        {
+          "pressure_above": 3.0
+        },
+        {
+          "pumped_above": 60.0
+        }
+      ]
+    },
+    {
+      "name": "Infusing",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 1.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Pouring",
+      "target": {
+        "flow": 1.8
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": 10.1,
+      "exit": [
+        {
+          "time_s": 127.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 120.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 1.16
+}

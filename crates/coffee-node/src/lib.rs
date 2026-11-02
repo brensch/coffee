@@ -35,6 +35,7 @@ pub const BUILTIN_PROFILES: &[&str] = &[
     include_str!("../../../profiles/classic_9bar.json"),
     include_str!("../../../profiles/blooming.json"),
     include_str!("../../../profiles/flow_turbo.json"),
+    include_str!("../../../profiles/magic_ristretto.json"),
 ];
 
 const KEY_CONFIG: &str = "config.json";
@@ -166,13 +167,29 @@ impl<S: Storage> Node<S> {
             .max()
             .map(|m| m + 1)
             .unwrap_or(1);
+        // Shots saved by earlier runs: the newest `max_shots` go back into the list.
+        let mut keys: Vec<String> = storage
+            .list(PREFIX_SHOTS)
+            .into_iter()
+            .filter(|k| k.ends_with(".cshot"))
+            .collect();
+        keys.sort();
+        let skip = keys.len().saturating_sub(opts.max_shots);
+        let shots: Vec<(ShotMeta, Vec<u8>)> = keys[skip..]
+            .iter()
+            .filter_map(|k| {
+                let b = storage.load(k)?;
+                let meta = shotpack::decode(&b)?.meta;
+                Some((meta, b))
+            })
+            .collect();
         let history = history::History::new(opts.history_capacity, opts.history_hz);
         Self {
             engine: Engine::new(cfg, profile),
             storage,
             opts,
             recorder: Recorder::with_next_id(next_id),
-            shots: Vec::new(),
+            shots,
             history,
             library,
             telemetry: Telemetry::default(),
@@ -207,6 +224,25 @@ impl<S: Storage> Node<S> {
         self.engine.command(EngCmd::SetProfile(p))
     }
 
+    /// Add read-only profiles (e.g. imported community libraries). Names already
+    /// in the library (built-in or user-saved) win.
+    pub fn extend_library(&mut self, profiles: impl IntoIterator<Item = Profile>) {
+        for mut p in profiles {
+            if let Some(existing) = self.library.iter().find(|q| q.name == p.name) {
+                // Same name from a different author (e.g. Decent's and GaggiMate's
+                // "Cremina"): keep both, disambiguated by author.
+                if existing.author == p.author {
+                    continue;
+                }
+                p.name = format!("{} ({})", p.name, p.author.as_deref().unwrap_or("community"));
+                if self.library.iter().any(|q| q.name == p.name) {
+                    continue;
+                }
+            }
+            self.library.push(p);
+        }
+    }
+
     pub fn library(&self) -> &[Profile] {
         &self.library
     }
@@ -216,7 +252,8 @@ impl<S: Storage> Node<S> {
         let t = s.t_us as f64 * 1e-6;
         let a = self.engine.tick(s);
         self.inputs = s.inputs;
-        self.history.observe(t, &a);
+        let flushing = self.engine.profile.name == coffee_core::Profile::FLUSH_NAME;
+        self.history.observe(t, &a, flushing);
         let last = self.engine.last_shot();
         let profile = &self.engine.profile;
         let ev = self.recorder.observe(t, &a, profile, last);
@@ -538,6 +575,7 @@ mod tests {
             i += 1;
         }
         assert!(saw_brewing);
+        assert_eq!(n.recorder.next_id(), 1, "a flush must not use up a shot number");
         assert_eq!(
             n.engine.profile.name, "Classic 9 bar",
             "profile restored after flush"
@@ -593,5 +631,7 @@ mod tests {
             },
         );
         assert_eq!(n2.handle_http("GET", "/api/shots/1", b"").status, 200);
+        let list = String::from_utf8(n2.handle_http("GET", "/api/shots", b"").body).unwrap();
+        assert!(list.contains("\"id\":1"), "stored shot missing from list after restart: {list}");
     }
 }

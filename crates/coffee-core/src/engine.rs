@@ -64,6 +64,8 @@ struct Brew {
     phase_start_t: f64,
     phase_start_value: f32,
     phase_start_pumped: f32,
+    /// Pumped volume when the volume-stop counting phase began.
+    volume_base: Option<f32>,
     last_setpoint: f32,
     pumped_ml: f32,
     tare_g: Option<f32>,
@@ -133,6 +135,9 @@ pub struct Engine {
     /// After a shot: keep updating its yield until this time (drips landing),
     /// with the shot's tare. Runs in the background; the machine is free.
     settle: Option<(f64, Option<f32>)>,
+    /// The last shot's tare, kept after the settle window so the display keeps
+    /// reading the shot until the cup comes off the scale.
+    hold_tare: Option<f32>,
 
     group_est: Option<f32>,
     water_est: Option<f32>,
@@ -189,6 +194,7 @@ impl Engine {
             shot_counter: 0,
             restore_profile: None,
             settle: None,
+            hold_tare: None,
             group_est: None,
             water_est: None,
             prev_target: None,
@@ -362,6 +368,7 @@ impl Engine {
                     s.weight_g = w.or(s.weight_g);
                 }
             } else {
+                self.hold_tare = self.settle.and_then(|s| s.1);
                 self.settle = None;
             }
         }
@@ -473,6 +480,10 @@ impl Engine {
         }
         let g = s.scale_mg as f32 / 1000.0;
         let w = self.weight.update(g, dt, 0.1);
+        // Cup lifted off (reading well below the held tare): back to raw weight.
+        if self.hold_tare.is_some_and(|t| g < t - 2.0) {
+            self.hold_tare = None;
+        }
         if let Some(prev) = self.weight_prev {
             self.weight_rate.update((w - prev) / dt, dt, 0.6);
         }
@@ -503,6 +514,7 @@ impl Engine {
             .as_ref()
             .and_then(|b| b.tare_g)
             .or_else(|| self.settle.and_then(|s| s.1))
+            .or(self.hold_tare)
             .unwrap_or(0.0);
         Some(w - tare)
     }
@@ -579,6 +591,7 @@ impl Engine {
 
     fn start_brew(&mut self, by_switch: bool, p: f32) {
         self.settle = None;
+        self.hold_tare = None;
         self.temp_pid.integral += 0.0;
         self.pressure_pid.reset();
         self.pump_sd.reset();
@@ -592,6 +605,7 @@ impl Engine {
             phase_start_t: self.t,
             phase_start_value: start,
             phase_start_pumped: 0.0,
+            volume_base: (self.profile.stop.volume_from_phase.unwrap_or(0) == 0).then_some(0.0),
             last_setpoint: start,
             pumped_ml: 0.0,
             tare_g: self.weight.value,
@@ -770,6 +784,12 @@ impl Engine {
                 return;
             }
         }
+        if let (Some(v), Some(base)) = (stop.volume_ml, b.volume_base) {
+            if b.pumped_ml - base >= v {
+                self.end_brew(BrewEnd::ProfileComplete);
+                return;
+            }
+        }
         let max_t = stop
             .max_time_s
             .unwrap_or(f32::MAX)
@@ -817,6 +837,9 @@ impl Engine {
             let b = self.brew.as_mut().unwrap();
             b.phase = next;
             b.phase_start_pumped = b.pumped_ml;
+            if self.profile.stop.volume_from_phase == Some(next as u8) {
+                b.volume_base = Some(b.pumped_ml);
+            }
             b.phase_start_t = now;
             b.phase_start_value = start_value;
         }

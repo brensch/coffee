@@ -1,0 +1,144 @@
+{
+  "name": "Damian's LM Leva",
+  "description": "Light to Medium Roasts - Very Fine - 20-45 - 1:2.0 - 2.5 | Simulates La Marzocco Leva",
+  "temperature_c": 89.0,
+  "phases": [
+    {
+      "name": "fill start",
+      "target": {
+        "pressure": 1.8
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 2.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "fill",
+      "target": {
+        "pressure": 1.8
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 20.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "pressure_above": 1.0
+        }
+      ]
+    },
+    {
+      "name": "preinfusion",
+      "target": {
+        "pressure": 2.2
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "pressure_above": 4.0
+        }
+      ]
+    },
+    {
+      "name": "rise",
+      "target": {
+        "pressure": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "pressure_above": 8.0
+        }
+      ]
+    },
+    {
+      "name": "hold",
+      "target": {
+        "pressure": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "flow_above": 1.5
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 2.2
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 58.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 58.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "weight_above": 36.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": null,
+    "max_time_s": 105.0
+  },
+  "target_resistance": null,
+  "author": "GaggiMate",
+  "grind": 0.95
+}

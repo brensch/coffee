@@ -1,0 +1,146 @@
+{
+  "name": "Adaptive v2",
+  "description": "Light to Medium - Fine - 25-40s - 1:2-2.5",
+  "temperature_c": 93.0,
+  "phases": [
+    {
+      "name": "Prefill",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "ease_out",
+        "over_s": 2.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 5.0
+        },
+        {
+          "pumped_above": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Fill",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "pressure_above": 3.0
+        }
+      ]
+    },
+    {
+      "name": "Compressing",
+      "target": {
+        "pressure": 3.0
+      },
+      "transition": {
+        "curve": "ease_out",
+        "over_s": 2.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 12.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "flow_below": 3.0
+        }
+      ]
+    },
+    {
+      "name": "Dripping",
+      "target": {
+        "pressure": 0.1
+      },
+      "transition": {
+        "curve": "ease_out",
+        "over_s": 2.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 6.0
+        }
+      ]
+    },
+    {
+      "name": "Pressurize",
+      "target": {
+        "pressure": 11.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 6.0,
+        "adaptive": true
+      },
+      "limit": 3.5,
+      "exit": [
+        {
+          "time_s": 6.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "pressure_above": 8.8
+        },
+        {
+          "weight_above": 38.0
+        }
+      ]
+    },
+    {
+      "name": "Extraction",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0,
+        "adaptive": true
+      },
+      "limit": 9.5,
+      "exit": [
+        {
+          "time_s": 60.0
+        },
+        {
+          "pumped_above": 100.0
+        },
+        {
+          "weight_above": 38.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": null,
+    "max_time_s": 106.0
+  },
+  "target_resistance": null,
+  "author": "GaggiMate",
+  "grind": 1.0
+}

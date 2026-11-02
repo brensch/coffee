@@ -1,0 +1,49 @@
+{
+  "name": "Gentle preinfusion flow profile",
+  "description": "Created by a famously innovative Seattle-based espresso machine manufacturer, this technique works well with aromatic, lightly roasted coffee beans.",
+  "temperature_c": 92.0,
+  "phases": [
+    {
+      "name": "preinfusion",
+      "target": {
+        "flow": 3.5
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 30.0
+        },
+        {
+          "pressure_above": 4.0
+        }
+      ]
+    },
+    {
+      "name": "hold flow",
+      "target": {
+        "flow": 2.2
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 21.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 36.0,
+    "max_time_s": 61.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 0.89
+}

@@ -1,0 +1,34 @@
+{
+  "name": "9 Bar Espresso",
+  "description": "Imported from GaggiMate",
+  "temperature_c": 93.0,
+  "phases": [
+    {
+      "name": "Pump",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0,
+        "adaptive": true
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 28.0
+        },
+        {
+          "weight_above": 36.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": null,
+    "max_time_s": 33.0
+  },
+  "target_resistance": null,
+  "author": "GaggiMate",
+  "grind": 1.0
+}

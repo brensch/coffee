@@ -1,0 +1,84 @@
+{
+  "name": "Weiss advanced spring lever",
+  "description": "advanced spring lever profile, with additional steps to salvage choked shots",
+  "temperature_c": 90.0,
+  "phases": [
+    {
+      "name": "infuse",
+      "target": {
+        "flow": 8.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 10.0
+        },
+        {
+          "pressure_above": 6.0
+        }
+      ]
+    },
+    {
+      "name": "rise and hold",
+      "target": {
+        "pressure": 9.0
+      },
+      "transition": {
+        "curve": "instant",
+        "over_s": 0.0
+      },
+      "limit": null,
+      "exit": [
+        {
+          "time_s": 3.0
+        }
+      ]
+    },
+    {
+      "name": "decline",
+      "target": {
+        "pressure": 6.0
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 30.0
+      },
+      "limit": 1.8,
+      "exit": [
+        {
+          "time_s": 30.0
+        },
+        {
+          "pressure_below": 6.0
+        }
+      ]
+    },
+    {
+      "name": "flow limit",
+      "target": {
+        "flow": 1.5
+      },
+      "transition": {
+        "curve": "linear",
+        "over_s": 30.0
+      },
+      "limit": 6.3,
+      "exit": [
+        {
+          "time_s": 30.0
+        }
+      ]
+    }
+  ],
+  "stop": {
+    "weight_g": 32.0,
+    "max_time_s": 83.0
+  },
+  "target_resistance": null,
+  "author": "Decent",
+  "grind": 2.0
+}

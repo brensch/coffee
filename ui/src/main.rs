@@ -2,6 +2,7 @@ mod api;
 mod chart;
 mod diagram;
 mod pages;
+mod picker;
 
 use api::{Store, store};
 use leptos::prelude::*;
@@ -24,6 +25,45 @@ fn main() {
 fn App() -> impl IntoView {
     let s = Store::new();
     provide_context(s);
+    // Emulator only: the virtual barista flushes through an empty portafilter
+    // (knocks the puck out first) and doses a fresh puck afterwards.
+    let was_flushing = StoredValue::new(false);
+    Effect::new(move |_| {
+        if !s.lab_connected.get() {
+            return;
+        }
+        let flushing = s.tel.with(|t| t.as_ref().is_some_and(|t| t.profile == coffee_api::Profile::FLUSH_NAME));
+        if flushing != was_flushing.get_value() {
+            was_flushing.set_value(flushing);
+            let set = |path: &str, value: &str| {
+                api::lab_command(coffee_api::lab::LabCommand::Set { path: path.into(), value: value.into() })
+            };
+            if flushing {
+                set("puck.present", "0");
+            } else {
+                set("puck.present", "1");
+                set("puck.fresh", "1");
+                set("cup.mass", "0");
+            }
+        }
+    });
+    // Emulator only: when the selected profile changes, the virtual barista
+    // regrinds to the grind it asks for (toggle on the Experiments page).
+    let ground_for = StoredValue::new(String::new());
+    Effect::new(move |_| {
+        if !s.lab_connected.get() || !s.barista_grind.get() {
+            ground_for.set_value(String::new());
+            return;
+        }
+        let name = s.tel.with(|t| t.as_ref().map(|t| t.profile.clone())).unwrap_or_default();
+        if name.is_empty() || name == coffee_api::Profile::FLUSH_NAME || ground_for.with_value(|g| *g == name) {
+            return;
+        }
+        if let Some(g) = s.profiles.with(|ps| ps.iter().find(|p| p.name == name).and_then(|p| p.grind)) {
+            ground_for.set_value(name);
+            api::lab_command(coffee_api::lab::LabCommand::Set { path: "puck.grind".into(), value: g.to_string() });
+        }
+    });
     api::start_engine_stream(s);
 
     let initial = web_sys::window()

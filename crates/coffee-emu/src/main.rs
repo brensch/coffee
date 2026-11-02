@@ -133,6 +133,12 @@ enum Cmd {
         #[arg(long)]
         out: PathBuf,
     },
+    /// Convert Decent Espresso `.tcl` profiles (espresso ones only) into coffee profiles.
+    ImportDecent {
+        files: Vec<PathBuf>,
+        #[arg(long, default_value = "profiles/community/decent")]
+        out: PathBuf,
+    },
     /// Convert GaggiMate profile JSON files into coffee profiles.
     ImportGaggimate {
         files: Vec<PathBuf>,
@@ -388,6 +394,31 @@ fn main() -> Result<()> {
                     eprintln!("  {} KiB", total / 1024);
                 }
             }
+        }
+        Cmd::ImportDecent { files, out } => {
+            std::fs::create_dir_all(&out)?;
+            let (mut ok, mut skipped) = (0, 0);
+            for f in &files {
+                let txt = std::fs::read_to_string(f)?;
+                let bev = coffee_api::decent::beverage_type(&txt);
+                // Decent labels its steaming profile "espresso"; it isn't one.
+                if bev != "espresso" || txt.contains("profile_title {Steam only}") {
+                    skipped += 1;
+                    continue;
+                }
+                match coffee_api::decent::convert(&txt) {
+                    Ok(imp) => {
+                        let slug: String = imp.profile.name.chars().map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '_' }).collect();
+                        let dest = out.join(format!("{slug}.json"));
+                        std::fs::write(&dest, serde_json::to_vec_pretty(&imp.profile)?)?;
+                        println!("ok    {:44} {} phases{}", imp.profile.name, imp.profile.phases.len(),
+                            if imp.warnings.is_empty() { String::new() } else { format!("  ({})", imp.warnings.join("; ")) });
+                        ok += 1;
+                    }
+                    Err(e) => println!("FAIL  {}: {e}", f.display()),
+                }
+            }
+            println!("{ok} converted, {skipped} non-espresso skipped. Decent profiles are GPL-3.0 (decentespresso/de1app).");
         }
         Cmd::ImportGaggimate { files, out } => {
             std::fs::create_dir_all(&out)?;
