@@ -90,7 +90,8 @@ def lookup(row):
     pkg = next((p for k, p in PKG.items() if k in fp), None)
     key = MPN_HINTS.get(mpn)
     if key:
-        c = best(query(key), lambda c: key.lower().split("-")[0] in (c.get("componentModelEn") or "").lower())
+        core = re.sub(r"(-?TR|RG)$", "", key, flags=re.I).lower()   # the full part number, packaging suffix aside
+        c = best(query(key), lambda c: (c.get("componentModelEn") or "").lower().startswith(core))
         return c, f"mpn {key}"
     if fp.startswith(("Resistor_SMD", "Capacitor_SMD", "LED_SMD")):
         v, tol = norm_value(value)

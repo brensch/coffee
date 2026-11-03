@@ -228,7 +228,8 @@ def build(spec, mains_v):
     exs = sorted({round(pcbnew.ToMM(p.GetPosition().x), 3) for p in ep}); eys = sorted({round(pcbnew.ToMM(p.GetPosition().y), 3) for p in ep})
     ex0, ex1, ey0, ey1 = exs[0] - 0.75, exs[-1] + 0.75, eys[0] - 0.75, eys[-1] + 0.75
     elayer = pcbnew.B_Cu if u4.IsFlipped() else pcbnew.F_Cu
-    zone(board, nets["GND"], elayer, rect(ex0, ey0, ex1, ey1), clearance=0.2, priority=3, name="EPAD")
+    if not u4.IsFlipped():   # module on top: its own GND patch (the pours are added after routing)
+        zone(board, nets["GND"], elayer, rect(ex0, ey0, ex1, ey1), clearance=0.2, priority=3, name="EPAD")
     for vx in ((exs[0] + exs[1]) / 2, (exs[1] + exs[2]) / 2):
         for vy in ((eys[0] + eys[1]) / 2, (eys[1] + eys[2]) / 2):
             v = pcbnew.PCB_VIA(board)
@@ -271,6 +272,7 @@ def build(spec, mains_v):
             o["courts"] = rt._touch((x0 - r["w"] / 2, y0 - r["w"] / 2, x1 + r["w"] / 2, y1 + r["w"] / 2))
             rt.obs.append(o)
     rt.base_obs = list(rt.obs)
+    rt.load_vias()
     done = {r["net"] for r in pre}
     # Rip-up and reroute: nets that fail move to the front of the order, up to ROUNDS times; keep the
     # best order (fewest failures, then fewest vias) and route it once more for real.
@@ -303,15 +305,28 @@ def build(spec, mains_v):
                 for L in layers:
                     fails += rt.route_net(net, w, [L] if L is not None else None, optional=L is not None)
     # ---- SELV side, same router: 0.2 mm, pad-centre exits, vias only when needed. GND is a pour.
-    if os.environ.get("OWN_SELV", "0") == "1":
+    if os.environ.get("OWN_SELV", "1") == "1":
         sel = [n for n in sorted(rt.pads) if n not in spec["mains_nets"] and n != "GND"]   # GND is added last (tree + pours)
         first = ["USB_D+", "USB_D-", "CC1", "CC2", "EN", "IO8_STRAP", "IO9_BOOT"]
         power = {"+3V3": 0.4, "+5V": 0.5, "VBUS": 0.4}
         fine = {"USB_D+": 0.2, "USB_D-": 0.2, "CC1": 0.2, "CC2": 0.2}   # USB-C pads: 0.3 wide on 0.5 pitch
-        sorder = [n for n in first if n in sel] + [n for n in sel if n not in first and n not in power] + [n for n in power if n in sel]
+        mid = [n for n in sel if n not in first and n not in power]
+        if os.environ.get("SELV_SEED", "2"):
+            import random
+            random.Random(int(os.environ.get("SELV_SEED", "2"))).shuffle(mid)
+        sorder = [n for n in first if n in sel] + mid + [n for n in power if n in sel]
+        nf = rt.fanout("GND")
+        print(f"  GND fan-out: {nf} vias", flush=True)
+        # GND pads the pour can't reach (fenced in by tracks on both layers), tied to the sensor connectors'
+        # through-hole ground pins before the signals are routed.
+        extra = [p for p in os.environ.get("GND_TREE", "").split(",") if p]
+        if extra:
+            ft = rt.route_net("GND", 0.3, only=set(extra + ["J5.2", "J6.3", "J7.3"]))
+            print(f"  GND tree for {len(extra)} pads: {ft} unrouted", flush=True)
+            rt.base_obs = list(rt.obs)
         sbest, sfail = None, None
         smark = len(rt.added)
-        for srnd in range(int(os.environ.get("SELV_ROUNDS", "6"))):
+        for srnd in range(int(os.environ.get("SELV_ROUNDS", "10"))):
             rt.failed = set()
             f = 0
             for n in sorder:
@@ -319,20 +334,20 @@ def build(spec, mains_v):
             print(f"  selv round {srnd}: {f} pads unrouted, {rt.vias()} vias total; failed {sorted(rt.failed)}", flush=True)
             if sbest is None or f < sbest[0]:
                 sbest = (f, list(sorder))
-            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "6")) - 1:
+            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "10")) - 1:
                 break
             # rip up only the SELV copper and retry with the failures first
             for it in rt.added[smark:]:
                 rt.b.Remove(it)
             keep = set(map(id, rt.added[:smark]))
-            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep) and not (o["kind"] == "via" and o["net"] not in spec["mains_nets"])]
+            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep)]
             rt.added = rt.added[:smark]
             sorder = [n for n in sorder if n in rt.failed] + [n for n in sorder if n not in rt.failed]
         if f and sbest[0] < f:                  # replay the best order
             for it in rt.added[smark:]:
                 rt.b.Remove(it)
             keep = set(map(id, rt.added[:smark]))
-            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep) and not (o["kind"] == "via" and o["net"] not in spec["mains_nets"])]
+            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep)]
             rt.added = rt.added[:smark]
             rt.failed = set(); f = 0
             for n in sbest[1]:
@@ -571,9 +586,9 @@ def obstacles(board, net="GND"):
                 if g:
                     items[-1] = ("r", [items[-1][1][0] - g, items[-1][1][1] - g, items[-1][1][2] + g, items[-1][1][3] + g])
     for t in board.GetTracks():
-        if t.GetNetname() == "GND":
+        if t.GetNetname() == "GND" and t.Type() != pcbnew.PCB_VIA_T:
             continue
-        if t.Type() == pcbnew.PCB_VIA_T:
+        if t.Type() == pcbnew.PCB_VIA_T:          # every via, GND too: hole-to-hole spacing
             c = t.GetPosition(); items.append(("c", (pcbnew.ToMM(c.x), pcbnew.ToMM(c.y), pcbnew.ToMM(t.GetWidth()) / 2)))
         else:
             a, b = t.GetStart(), t.GetEnd()
@@ -619,6 +634,149 @@ def stitch(board, pitch=2.5, d=0.6, drill=0.3, clr=0.3):
             y += pitch
         x += pitch
     return n
+
+
+def bridge_fragments(b):
+    """A via inside every secondary GND pour fragment, where the other layer has its main pour."""
+    gnd = b.GetNetsByName()["GND"]
+    items = obstacles(b)
+    mains = {}
+    frags = []
+    for z in b.Zones():
+        if z.GetNetname() != "GND" or z.GetIsRuleArea():
+            continue
+        for L in (pcbnew.F_Cu, pcbnew.B_Cu):
+            if not z.IsOnLayer(L):
+                continue
+            ps = z.GetFilledPolysList(L)
+            if ps.OutlineCount() == 0:
+                continue
+            order = sorted(range(ps.OutlineCount()), key=lambda i: -abs(ps.Outline(i).Area()))
+            m = pcbnew.SHAPE_POLY_SET(); m.AddOutline(ps.Outline(order[0]))
+            mains[L] = m
+            for i in order[1:]:
+                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
+                for h in range(ps.HoleCount(i)):
+                    f_.AddHole(ps.Hole(i, h))
+                frags.append((L, f_))
+    n = 0
+    for L, ol in frags:
+        other = pcbnew.B_Cu if L == pcbnew.F_Cu else pcbnew.F_Cu
+        if other not in mains:
+            continue
+        bb = ol.BBox()
+        # the via must sit on fragment copper with a margin, not just inside its outline
+        x0, x1, y0, y1 = pcbnew.ToMM(bb.GetLeft()), pcbnew.ToMM(bb.GetRight()), pcbnew.ToMM(bb.GetTop()), pcbnew.ToMM(bb.GetBottom())
+        done = False
+        y = y0 + 0.4
+        while y < y1 - 0.3 and not done:
+            x = x0 + 0.4
+            while x < x1 - 0.3:
+                pt = V(mm(x), mm(y))
+                ring = [V(mm(x + dx), mm(y + dy)) for dx, dy in ((0.35, 0), (-0.35, 0), (0, 0.35), (0, -0.35))]
+                if ol.Contains(pt) and all(ol.Contains(q) for q in ring) and mains[other].Contains(pt) and is_free(items, x, y, 0.6):
+                    v = pcbnew.PCB_VIA(b); v.SetPosition(pt); v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd); v.SetLocked(True); b.Add(v)
+                    items.append(("c", (x, y, 0.3))); n += 1; done = True
+                    break
+                x += 0.2
+            y += 0.2
+    return n
+
+
+def gnd_components(b):
+    """GND copper as a graph (pour fragments, pads, vias, tracks); returns the isolated components as
+    lists of (x, y, layers) source points, plus the main component's fragments per layer."""
+    F, B = pcbnew.F_Cu, pcbnew.B_Cu
+    frs = []
+    for z in b.Zones():
+        if z.GetNetname() != "GND" or z.GetIsRuleArea():
+            continue
+        for L in (F, B):
+            if not z.IsOnLayer(L):
+                continue
+            ps = z.GetFilledPolysList(L)
+            for i in range(ps.OutlineCount()):
+                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
+                for h in range(ps.HoleCount(i)):
+                    f_.AddHole(ps.Hole(i, h))
+                frs.append((L, f_, abs(ps.Outline(i).Area())))
+    items = []
+    for t in b.GetTracks():
+        if t.GetNetname() != "GND":
+            continue
+        if t.Type() == pcbnew.PCB_VIA_T:
+            items.append(((F, B), [t.GetPosition()]))
+        else:
+            items.append(((t.GetLayer(),), [t.GetStart(), t.GetEnd()]))
+    for fp in b.GetFootprints():
+        for p in fp.Pads():
+            if p.GetNetname() == "GND":
+                items.append((tuple(L for L in (F, B) if p.IsOnLayer(L)), [p.GetPosition()]))
+    N = len(frs) + len(items); par = list(range(N))
+    def find(x):
+        while par[x] != x:
+            par[x] = par[par[x]]; x = par[x]
+        return x
+    for j, (Ls, pts) in enumerate(items):
+        for i, (L, f_, a) in enumerate(frs):
+            if L in Ls and any(f_.Contains(p) for p in pts):
+                par[find(len(frs) + j)] = find(i)
+    pos = {}
+    for j, (Ls, pts) in enumerate(items):
+        for p in pts:
+            for L in Ls:
+                pos.setdefault((p.x // 1000, p.y // 1000, L), []).append(j)
+    for js in pos.values():
+        for j in js[1:]:
+            par[find(len(frs) + j)] = find(len(frs) + js[0])
+    comps = {}
+    for i in range(N):
+        comps.setdefault(find(i), []).append(i)
+    # main = the component holding the most pour area
+    area = lambda c: sum(frs[i][2] for i in c if i < len(frs))
+    main = max(comps.values(), key=area)
+    iso = []
+    for c in comps.values():
+        if c is main:
+            continue
+        pts = []
+        for i in c:
+            if i >= len(frs):
+                Ls, ps_ = items[i - len(frs)]
+                pts += [(pcbnew.ToMM(p.x), pcbnew.ToMM(p.y), Ls) for p in ps_]
+        if pts:
+            iso.append(pts)
+    mainfr = {F: [frs[i][1] for i in main if i < len(frs) and frs[i][0] == F], B: [frs[i][1] for i in main if i < len(frs) and frs[i][0] == B]}
+    return iso, mainfr
+
+
+def fragment_pads(b):
+    """GND pads sitting only on small pour fragments that hold no via (on every layer they touch)."""
+    vias = [t.GetPosition() for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == "GND"]
+    small = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
+    for z in b.Zones():
+        if z.GetNetname() != "GND" or z.GetIsRuleArea() or z.GetZoneName() != "GND":
+            continue
+        for L in small:
+            if not z.IsOnLayer(L):
+                continue
+            ps = z.GetFilledPolysList(L)
+            for i in range(ps.OutlineCount()):
+                if abs(ps.Outline(i).Area()) / 1e12 > 60:
+                    continue
+                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
+                for h in range(ps.HoleCount(i)):
+                    f_.AddHole(ps.Hole(i, h))
+                if not any(f_.Contains(v) for v in vias):
+                    small[L].append(f_)
+    out = []
+    for fp in b.GetFootprints():
+        for p in fp.Pads():
+            if p.GetNetname() != "GND" or p.GetDrillSize().x == 0:
+                continue
+            if all(any(f_.Contains(p.GetPosition()) for f_ in small[L]) for L in small):
+                out.append(p)
+    return out
 
 
 def gnd_islands(b, tmp):
@@ -675,6 +833,10 @@ def dogbones(b, pads, d=0.6, clr=0.3, w=0.3):
 def finish_own(spec, stem):
     placed = stem + "-placed.kicad_pcb"
     b = pcbnew.LoadBoard(placed)
+    if b.FindFootprintByReference("U4").IsFlipped():      # bottom-side module: the GND pour covers its pad array
+        for z in list(b.Zones()):
+            if z.GetZoneName() == "EPAD":
+                b.Remove(z)
     add_pours(b)
     n = stitch(b)
     pcb = stem + ".kicad_pcb"
@@ -695,7 +857,7 @@ def finish_own(spec, stem):
         b.Remove(t)
     pcbnew.ZONE_FILLER(b).Fill(b.Zones())
     for it in range(4):                     # isolated GND pads: dogbones, then routed joins
-        iso = gnd_islands(b, stem + "-iso")
+        iso = gnd_islands(b, stem + "-iso") + fragment_pads(b)
         print(f"  GND islands round {it}: {len(iso)} pads", flush=True)
         if not iso:
             break
@@ -732,6 +894,36 @@ def finish_own(spec, stem):
         n_join = rt.join("GND", src, tgt)
         print(f"  routed {n_join} of {len(src)} island pads to the main GND pour", flush=True)
         pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    import mainsroute
+    for it in range(3):                      # isolated GND groups: route each to the main GND copper
+        iso, mainfr = gnd_components(b)
+        print(f"  isolated GND groups round {it}: {len(iso)}", flush=True)
+        if not iso:
+            break
+        rt = mainsroute.Router(b, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS, BAND[1])
+        rt.load_tracks()
+        R = mainsroute.RES
+        tgt = set()
+        for L, fl in mainfr.items():
+            for f_ in fl:
+                bb = f_.BBox()
+                for i in range(int(pcbnew.ToMM(bb.GetLeft()) / R) + 1, int(pcbnew.ToMM(bb.GetRight()) / R), 2):
+                    for j in range(int(pcbnew.ToMM(bb.GetTop()) / R) + 1, int(pcbnew.ToMM(bb.GetBottom()) / R), 2):
+                        if f_.Contains(V(mm(i * R), mm(j * R))):
+                            tgt.add((i, j, L))
+        ok = 0
+        for pts in iso:
+            src = {(int(round(x / R)), int(round(y / R)), L) for x, y, Ls in pts for L in Ls}
+            if rt.join_cells("GND", src, tgt):
+                ok += 1
+        print(f"  joined {ok} of {len(iso)}", flush=True)
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    for it in range(3):
+        nb = bridge_fragments(b)
+        print(f"  pour fragments bridged: {nb}", flush=True)
+        if not nb:
+            break
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
     pcbnew.SaveBoard(pcb, b)
     rpt = stem + "-drc.rpt"
     pcbnew.WriteDRCReport(b, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
@@ -764,7 +956,7 @@ def main():
     if a.no_route:
         print("placed:", stem + "-placed.kicad_pcb")
         return
-    if os.environ.get("OWN_SELV", "0") == "1":     # everything routed in build(): pour, stitch, fill, DRC, fab
+    if os.environ.get("OWN_SELV", "1") == "1":     # everything routed in build(): pour, stitch, fill, DRC, fab
         return finish_own(spec, stem)
     dsn, ses = stem + ".dsn", stem + ".ses"
     # Fill the heater pours first, so the router sees them as copper to keep clear of.

@@ -171,7 +171,7 @@ def main():
     if os.path.isdir(g):
         for f in os.listdir(g):
             shutil.copy(os.path.join(g, f), os.path.join(dst, "pcb/gerbers", f))
-    vdir = os.path.join(HERE, "versions", "v11-no-holes")
+    vdir = os.path.join(HERE, "versions", "v12-own-router")
     cp(os.path.join(vdir, "board.glb"), "pcb/board.glb")
     cp(os.path.join(vdir, "3d.png"), "pcb/render-3d.png")
     for f in ("run.py", "waves.py", "REPORT.md", "waves.json"):

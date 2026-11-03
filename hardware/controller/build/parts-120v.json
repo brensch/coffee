@@ -38,7 +38,7 @@
    ],
    "populate": "Y",
    "desc": "Screw_Terminal_01x02_5.08_24A",
-   "mpn": "Phoenix Contact MKDS 3/2-5.08 (1711026), 24 A, 4 mm2",
+   "mpn": "Phoenix Contact MKDS 3/2-5.08 (1711725), 24 A IEC / UL 15 A, 4 mm2",
    "notes": "MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series."
   },
   "J3": {
@@ -80,26 +80,6 @@
    "desc": "Fuse, TR5 radial",
    "mpn": "Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)",
    "notes": "MAINS. Protects the PSU branch"
-  },
-  "RV1": {
-   "footprint": "Varistor:RV_Disc_D7mm_W4.2mm_P5mm",
-   "value": "10D271K",
-   "pins": {
-    "1": "AC_L_FUSED",
-    "2": "AC_N"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [
-    "1",
-    "2"
-   ],
-   "populate": "Y",
-   "desc": "Varistor",
-   "mpn": "Bourns MOV-10D271K (120 V) / 10D561K (230 V)",
-   "notes": "MAINS. Surge clamp across the PSU input"
   },
   "PS1": {
    "footprint": "Recom:RAC03E-K_277",
@@ -230,7 +210,7 @@
   },
   "Q2": {
    "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
-   "value": "BTA08-800CW",
+   "value": "BTA08-800BW",
    "pins": {
     "1": "PUMP_L",
     "2": "AC_L",
@@ -248,7 +228,7 @@
    ],
    "populate": "Y",
    "desc": "Triac, insulated tab",
-   "mpn": "ST BTA08-800CWRG (8 A, 800 V, insulated tab, snubberless)",
+   "mpn": "ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)",
    "notes": "MAINS: PUMP"
   },
   "R2": {
@@ -451,8 +431,8 @@
     "2": "GND",
     "3": "+3V3",
     "4": null,
-    "5": null,
-    "6": null,
+    "5": "V3_SNS",
+    "6": "V5_SNS",
     "7": null,
     "8": "EN",
     "9": null,
@@ -558,9 +538,9 @@
    },
    "mains": [],
    "populate": "Y",
-   "desc": "Wi-Fi 6 / BLE 5 RISC-V module, U.FL antenna connector, 4 MB flash, 105 C rated",
+   "desc": "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",
    "mpn": "ESP32-C6-MINI-1U-H4",
-   "notes": "U.FL antenna: pigtail to a 2.4 GHz antenna outside the steel case"
+   "notes": "W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case"
   },
   "C3": {
    "footprint": "Capacitor_SMD:C_0805_2012Metric",
@@ -679,7 +659,7 @@
   },
   "R12": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "1k",
+   "value": "100",
    "pins": {
     "1": "STATUS",
     "2": "STATUS_A"
@@ -692,7 +672,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": ""
+   "notes": "green LED Vf ~2.9-3.1 V: ~2-4 mA from 3.3 V"
   },
   "D1": {
    "footprint": "LED_SMD:LED_0603_1608Metric",
@@ -1034,8 +1014,8 @@
    "footprint": "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
    "value": "Switches",
    "pins": {
-    "1": "SW_BREW",
-    "2": "SW_STEAM",
+    "1": "SW_BREW_IN",
+    "2": "SW_STEAM_IN",
     "3": "GND"
    },
    "pin_names": {
@@ -1048,6 +1028,176 @@
    "desc": "JST_PH_3",
    "mpn": "",
    "notes": "1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts"
+  },
+  "R20": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_BREW_IN"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "switch pull-up / wetting current"
+  },
+  "R18": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_BREW_IN",
+    "2": "SW_BREW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "GPIO series protection"
+  },
+  "R21": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_STEAM_IN"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "switch pull-up / wetting current"
+  },
+  "R19": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_STEAM_IN",
+    "2": "SW_STEAM"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "GPIO series protection"
+  },
+  "R22": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "+3V3",
+    "2": "V3_SNS"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V3_SNS divider top"
+  },
+  "R23": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "V3_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V3_SNS divider bottom"
+  },
+  "C10": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "V3_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "ADC reservoir"
+  },
+  "R24": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "20k 0.1%",
+   "pins": {
+    "1": "+5V",
+    "2": "V5_SNS"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V5_SNS divider top"
+  },
+  "R25": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k 0.1%",
+   "pins": {
+    "1": "V5_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V5_SNS divider bottom"
+  },
+  "C11": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF",
+   "pins": {
+    "1": "V5_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "ADC reservoir"
   }
  },
  "mains_nets": [

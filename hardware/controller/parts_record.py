@@ -82,7 +82,7 @@ def main():
             "## Assembly notes", "",
             "- **Reflow order.** The ESP32-C6 module tolerates one reflow (datasheet section 12.3). Reflow the side without the "
             "module first; the module's side goes second. Through-hole parts are soldered last.",
-            "- **Copper.** 1 oz is enough: the heater current runs on both layers (2-3 mm each) for ~15 mm.",
+            "- **Copper.** 2 oz outer layers (docs/CIRCUIT.md): the heater current runs on both layers, 2-3 mm wide each, for ~15 mm.",
             ""]
     open(OUT, "w").write("\n".join(out))
     print(f"wrote {OUT}: {len(rows)} BOM lines")

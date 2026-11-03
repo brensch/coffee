@@ -202,7 +202,8 @@ def main():
             cur = place[ref]
             FIXED[ref] = fixed_edges(ref)
             b, pads = G[ref]
-            best = (cost(ref, pads, cur[3]) if legal(ref, cur, b, pads) else math.inf, cur)
+            wrong_side = plan.get("lv_side") and not any(q["mains"] for q in sb.P[ref]["pads"]) and cur[3] != plan["lv_side"]
+            best = (cost(ref, pads, cur[3]) if legal(ref, cur, b, pads) and not wrong_side else math.inf, cur)
 
             def scan(xs, ys, sides, rr):
                 nonlocal best
@@ -218,7 +219,10 @@ def main():
                                 if c < best[0] - 1e-6 and legal(ref, pl, b, pads):
                                     best = (c, pl)
             n = lambda a, b_, s: [a + i * s for i in range(int((b_ - a) / s) + 1)]
-            scan(n(0, W, STEP), n(0, H, STEP), ["F", "B"], rots[ref])
+            sides = ["F", "B"]
+            if plan.get("lv_side") and not any(q["mains"] for q in sb.P[ref]["pads"]):
+                sides = [plan["lv_side"]]
+            scan(n(0, W, STEP), n(0, H, STEP), sides, rots[ref])
             bx, by, br, bs = best[1]
             scan(n(bx - 1, bx + 1, FINE), n(by - 1, by + 1, FINE), [bs], [br])
             if best[1] != cur:

@@ -18,7 +18,7 @@ from pcbnew import FromMM as mm, VECTOR2I as V
 RES = 0.1
 EDGE_GUARD = 0.8
 COURT_GROW = 1.0
-STRICT = set(filter(None, __import__("os").environ.get("STRICT_NETS", "").split(",")))   # nets the DRC caught: no growth
+STRICT = set(filter(None, __import__("os").environ.get("STRICT_NETS", "VALVE_L").split(",")))   # nets the DRC caught: no growth
 SELV_CLR = 0.2           # the 0.2 mm rule; tracks start on the 0.1 grid within 0.05 of pad centres
 VIA_D, VIA_DRILL = 1.2, 0.6
 SQ2 = math.sqrt(2)
@@ -59,7 +59,7 @@ class Router:
                 round_ = p.GetShape() in (pcbnew.PAD_SHAPE_CIRCLE, pcbnew.PAD_SHAPE_OVAL)
                 layers = [l for l in (pcbnew.F_Cu, pcbnew.B_Cu) if p.IsOnLayer(l)]
                 self.obs.append(dict(kind="pad", net=p.GetNetname(), layers=layers, rect=(x0, y0, x1, y1), round=round_,
-                                     ref=fp.GetReference(), courts=self._touch((x0, y0, x1, y1))))
+                                     ref=fp.GetReference(), num=p.GetNumber(), courts=self._touch((x0, y0, x1, y1))))
         self.pads = {}
         for o in self.obs:
             if o["net"]:
@@ -68,6 +68,14 @@ class Router:
         self.base_obs = list(self.obs)
 
     failed = set()
+
+    def load_vias(self):
+        """Vias already on the board (the module's thermal vias) as obstacles."""
+        for t in self.b.GetTracks():
+            if t.Type() == pcbnew.PCB_VIA_T:
+                c = (pcbnew.ToMM(t.GetPosition().x), pcbnew.ToMM(t.GetPosition().y))
+                self.obs.append(dict(kind="via", net=t.GetNetname(), layers=[pcbnew.F_Cu, pcbnew.B_Cu], c=c, d=pcbnew.ToMM(t.GetWidth()), courts=[]))
+        self.base_obs = list(self.obs)
 
     def load_tracks(self):
         """Existing board copper (tracks, vias) as obstacles: for repair passes on a routed board."""
@@ -84,7 +92,7 @@ class Router:
     def join(self, net, src_pads, targets, w=0.3):
         """Connect each pad in src_pads to any cell in targets (set of (i, j, layer))."""
         blk = self.blocked(net, w / 2)
-        vb = self.blocked(net, 0.3)
+        vb = self.blocked("", 0.3)              # vias keep clear of everything, same-net vias included
         vblk = vb[pcbnew.F_Cu] | vb[pcbnew.B_Cu]
         for t in targets:
             blk[t[2]][t[0], t[1]] = False
@@ -98,6 +106,65 @@ class Router:
                 self.emit(net, path, w, 0.6)
                 n += 1
         return n
+
+    def fanout(self, net="GND", w=0.3, vd=0.6):
+        """Every SMD pad of `net`: a short track to its own via, placed before the signals are routed,
+        so each pad reaches whichever layer's pour is solid there."""
+        import math
+        blk = self.blocked(net, w / 2)
+        vb = self.blocked("", vd / 2)
+        vblk = vb[pcbnew.F_Cu] | vb[pcbnew.B_Cu]
+        n = 0
+        for o in self.pads.get(net, []):
+            if len(o["layers"]) != 1:
+                continue                            # through-hole: already on both layers
+            if not (o.get("ref", "")[:1] in ("C", "R") and len([p for p in self.obs if p["kind"] == "pad" and p.get("ref") == o["ref"]]) == 2):
+                continue                            # two-pad passives only: the module grounds through its pad array
+            L = o["layers"][0]
+            x0, y0, x1, y1 = o["rect"]
+            cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+            if cx < self.sx:
+                continue
+            half = max(x1 - x0, y1 - y0) / 2
+            done = False
+            for rr in (half + 0.45, half + 0.7, half + 1.0, half + 1.4):
+                for k in range(16):
+                    a = k * math.pi / 8
+                    vi, vj = int(round((cx + rr * math.cos(a)) / RES)), int(round((cy + rr * math.sin(a)) / RES))
+                    if not (0 <= vi < self.nx and 0 <= vj < self.ny) or vblk[vi, vj]:
+                        continue
+                    ci, cj = int(round(cx / RES)), int(round(cy / RES))
+                    steps = max(abs(vi - ci), abs(vj - cj))
+                    if any(blk[L][ci + round((vi - ci) * t / steps), cj + round((vj - cj) * t / steps)] for t in range(1, steps + 1)):
+                        continue
+                    # 0/45/90 only: go straight if aligned, else a 45 then straight
+                    di, dj = vi - ci, vj - cj
+                    if di and dj and abs(di) != abs(dj):
+                        continue
+                    path = [(ci, cj, L), (vi, vj, L), (vi, vj, pcbnew.B_Cu if L == pcbnew.F_Cu else pcbnew.F_Cu)]
+                    self.emit(net, path, w, vd)
+                    # block this via spot for later fanouts
+                    r_ = int(math.ceil((vd + 0.2) / RES))
+                    vblk[max(0, vi - r_):vi + r_ + 1, max(0, vj - r_):vj + r_ + 1] = True
+                    n += 1; done = True
+                    break
+                if done:
+                    break
+        self.base_obs = list(self.obs)
+        return n
+
+    def join_cells(self, net, src, targets, w=0.3):
+        """Route from any cell in src to any cell in targets (both sets of (i, j, layer))."""
+        blk = self.blocked(net, w / 2)
+        vb = self.blocked("", 0.3)
+        vblk = vb[pcbnew.F_Cu] | vb[pcbnew.B_Cu]
+        for t in list(targets) + list(src):
+            blk[t[2]][t[0], t[1]] = False
+        path = self.astar(src, targets, blk, vblk)
+        if path:
+            self.emit(net, path, w, 0.6)
+            return True
+        return False
 
     def vias(self):
         return sum(1 for it in self.added if it.Type() == pcbnew.PCB_VIA_T)
@@ -255,7 +322,7 @@ class Router:
                 v = pcbnew.PCB_VIA(self.b)
                 v.SetPosition(V(mm(c[0]), mm(c[1]))); v.SetWidth(mm(vd)); v.SetDrill(mm(VIA_DRILL if vd >= 1.0 else 0.3))
                 v.SetNet(ni); v.SetLocked(True); self.b.Add(v); self.added.append(v)
-                self.obs.append(dict(kind="via", net=net, layers=[pcbnew.F_Cu, pcbnew.B_Cu], c=c, d=vd, courts=self._touch((c[0] - .6, c[1] - .6, c[0] + .6, c[1] + .6))))
+                self.obs.append(dict(kind="via", net=net, layers=[pcbnew.F_Cu, pcbnew.B_Cu], c=c, d=vd, track=v, courts=self._touch((c[0] - .6, c[1] - .6, c[0] + .6, c[1] + .6))))
                 continue
             run.append(p)
         segs.append(run)
@@ -280,10 +347,12 @@ class Router:
                 self.obs.append(o); out.append(o)
         return out
 
-    def route_net(self, net, w, layers=None, turn=0.6, optional=False, via_d=None):
+    def route_net(self, net, w, layers=None, turn=0.6, optional=False, via_d=None, only=None):
         """Connect every pad of `net`. Returns the number of pads that could not be joined.
         optional: a parallel copy on one layer (heater): only pads present on that layer, failures ignored."""
         pads = self.pads.get(net, [])
+        if only:
+            pads = [o for o in pads if f"{o['ref']}.{o.get('num')}" in only]
         if layers and len(layers) == 1:
             pads = [o for o in pads if layers[0] in o["layers"]]
         if len(pads) < 2:
