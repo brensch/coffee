@@ -68,7 +68,7 @@ echo "RESULT $&ifm $&v(pin)"
 
 
 # --------------------------------------------------------------- 3. pump snubber
-def snubber(with_rc, vrms=230.0, L=1.2, R=220.0):
+def snubber(with_rc, vrms=120.0, L=1.2, R=220.0):
     """Pump (diode + coil + stray C) on a triac modelled as a gated diode: it conducts until its
     current falls to zero after the gate is removed. Returns max |dv/dt| (V/us) and peak |V| across it."""
     vpk = vrms * 2 ** 0.5
@@ -77,7 +77,7 @@ def snubber(with_rc, vrms=230.0, L=1.2, R=220.0):
 .model DP D(IS=1e-12 N=1.5 RS=0.5 CJO=40p TT=2u)
 .model DT D(IS=1e-12 N=1.3 RS=0.02)
 .model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
-Vline mt2 0 SIN(0 {vpk} 50)
+Vline mt2 0 SIN(0 {vpk} 60)
 * triac: gate held for 2 cycles, then removed; it keeps conducting until its current reaches zero
 Vg g 0 PWL(0 1 40.6m 1 40.61m 0)
 Vsense mt2 xs 0
@@ -103,6 +103,26 @@ run
     t, v = w["time"], w["v(mt2,mt1)"]
     dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
     return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
+
+
+VALVE_DIDT = []
+
+
+def didt_at_dropout(t, i, ih):
+    """Current slope (A/ms) as the triac's current falls through IH after the gate is removed."""
+    # the coil current's own slope on its way down (4*IH -> 1.5*IH), not the model's snap at IH
+    ka = kb = None
+    for k in range(1, len(t)):
+        if t[k] <= 40.6e-3:
+            continue
+        if ka is None and abs(i[k]) < 4 * ih <= abs(i[k - 1]):
+            ka = k
+        if ka is not None and abs(i[k]) < 1.5 * ih <= abs(i[k - 1]):
+            kb = k
+            break
+    if ka is None or kb is None or t[kb] <= t[ka]:
+        return 0.0
+    return abs((i[kb] - i[ka]) / (t[kb] - t[ka])) / 1e3
 
 
 def valve(with_rc, vrms=120.0, L=4.4, R=300.0, csn="10n", ih=0.010):
@@ -134,10 +154,14 @@ run
 .endc
 .end
 """
-    w = wave(net, ["v(mt2,mt1)"], 0.08)
+    w = wave(net, ["v(mt2,mt1)", "i(vsense)"], 0.08)
     t, v = w["time"], w["v(mt2,mt1)"]
     dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
+    VALVE_DIDT.append(didt_at_dropout(t, w["i(vsense)"], ih))
     return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
+
+
+VALVE_DIDT = []
 
 
 # --------------------------------------------------------------- 4. pressure input
@@ -231,7 +255,9 @@ def main():
         for ih, csn in ((0.005, "10n"), (0.010, "10n"), (0.010, "8n")):   # Z0109 IH typ / max; 8 nF = 10 nF X7R derated at voltage
             dv, peak = valve(True, vrms=vr, csn=csn, ih=ih)
             label = f"{vr:.0f} V, 100R+{csn}F, IH {ih * 1e3:.0f} mA"
-            check("Valve turn-off dv/dt", label, dv, "< 300 V/us (MOC3083 static dv/dt 600 min; 2x margin)", dv < 300, "V/us")
+            check("Valve turn-off dv/dt (opto)", label, dv, "< 300 V/us (MOC3083 static dv/dt 600 min; 2x margin)", dv < 300, "V/us")
+            di = VALVE_DIDT[-1]
+            check("Valve commutation (Z0109)", label + f", {dv:.0f} V/us", di, "< 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10)", di < 0.37, "A/ms")
             check("Valve turn-off peak voltage", label, peak, "< 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber)", peak < 533, "V")
     # 4. pressure into the C6's ADC1
     v, out = pressure()

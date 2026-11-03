@@ -8,24 +8,30 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Triac drive (opto LED current from GPIO) | VDD 3.3 V, ir_max | 9.83 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
 | Triac drive (opto LED current from GPIO) | VDD 3.0 V (rail at its simulated minimum), ir_typ | 10.4 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
 | Triac drive (opto LED current from GPIO) | VDD 3.0 V (rail at its simulated minimum), ir_max | 8.21 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
-| Pump turn-off dv/dt across triac/opto | 120 V, no snubber | 40.6 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 120 V, no snubber | 574 V | reference only: why the snubber is fitted | ✅ |
-| Pump turn-off dv/dt across triac/opto | 120 V, with 100R+10nF snubber | 9.74 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 120 V, with 100R+10nF snubber | 170 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
-| Pump turn-off dv/dt across triac/opto | 132 V, with 100R+10nF snubber | 10.8 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 132 V, with 100R+10nF snubber | 186 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
+| Pump turn-off dv/dt across triac/opto | 120 V, no snubber | 198 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Pump turn-off peak voltage | 120 V, no snubber | 2.49e+03 V | reference only: why the snubber is fitted | ✅ |
+| Pump turn-off dv/dt across triac/opto | 120 V, with 100R+10nF snubber | 47.5 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Pump turn-off peak voltage | 120 V, with 100R+10nF snubber | 251 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
+| Pump turn-off dv/dt across triac/opto | 132 V, with 100R+10nF snubber | 47.5 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Pump turn-off peak voltage | 132 V, with 100R+10nF snubber | 242 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
 | Valve turn-off peak voltage | 120 V, no snubber | 1.99e+03 V | reference only: why the snubber is fitted | ✅ |
-| Valve turn-off dv/dt | 120 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 120 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 120 V, 100R+10nF, IH 5 mA, 8 V/us | 0.0382 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 120 V, 100R+10nF, IH 5 mA | 363 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt | 120 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 120 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 120 V, 100R+10nF, IH 10 mA, 16 V/us | 0.0372 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 120 V, 100R+10nF, IH 10 mA | 430 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt | 120 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 120 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 120 V, 100R+8nF, IH 10 mA, 16 V/us | 0.0372 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 120 V, 100R+8nF, IH 10 mA | 450 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt | 132 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 132 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 132 V, 100R+10nF, IH 5 mA, 8 V/us | 0.042 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 132 V, 100R+10nF, IH 5 mA | 394 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt | 132 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 132 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 132 V, 100R+10nF, IH 10 mA, 16 V/us | 0.0412 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 132 V, 100R+10nF, IH 10 mA | 458 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt | 132 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve turn-off dv/dt (opto) | 132 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
+| Valve commutation (Z0109) | 132 V, 100R+8nF, IH 10 mA, 16 V/us | 0.0412 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
 | Valve turn-off peak voltage | 132 V, 100R+8nF, IH 10 mA | 477 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
 | Pressure input | 4.5 V full scale -> GPIO0 | 2.97 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
 | Pressure input | 0.5 V (0 bar) -> GPIO0 | 0.333 V | >= 0.1 V (clear of the ADC's non-linear bottom) | ✅ |
@@ -48,4 +54,4 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.6 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.6 V) | 4.52 V | >= 4.2 V (pressure transducer) | ✅ |
 
-**43 / 43 checks pass.**
+**49 / 49 checks pass.**
