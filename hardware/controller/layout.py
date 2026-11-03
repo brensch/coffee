@@ -201,6 +201,10 @@ def build(spec, mains_v):
         if side == "B":
             fp.Flip(fp.GetPosition(), False)
         fp.SetOrientationDegrees(rot)
+        # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
+        # sit on pads and on each other; the assembly drawing and BOM carry them)
+        if not ref.startswith(("J", "Q", "U1", "U2", "U3", "F", "PS", "TP")):
+            fp.Reference().SetVisible(False)
         for pad in fp.Pads():
             num = pad.GetNumber()
             if ref in SWAP and num in ("1", "2"):
@@ -321,7 +325,8 @@ def build(spec, mains_v):
         # through-hole ground pins before the signals are routed.
         extra = [p for p in os.environ.get("GND_TREE", "").split(",") if p]
         if extra:
-            ft = rt.route_net("GND", 0.3, only=set(extra + ["J5.2", "J6.3", "J7.3"]))
+            anchors = [p for p in os.environ.get("GND_ANCHORS", "J5.2,J6.3,J7.3").split(",") if p]
+            ft = rt.route_net("GND", 0.3, only=set(extra + anchors))
             print(f"  GND tree for {len(extra)} pads: {ft} unrouted", flush=True)
             rt.base_obs = list(rt.obs)
         sbest, sfail = None, None

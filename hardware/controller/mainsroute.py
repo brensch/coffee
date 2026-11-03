@@ -218,7 +218,7 @@ class Router:
         for L in (pcbnew.F_Cu, pcbnew.B_Cu):
             out[L] = base.copy()
         for o in self.obs:
-            if o["net"] == net:
+            if net and o["net"] == net:          # "" = keep clear of everything, no-connect pads included
                 continue
             req = self._req(net, o)
             if o["kind"] == "pad":
