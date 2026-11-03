@@ -31,74 +31,73 @@ FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
 
 # ---------------------------------------------------------------- geometry (mm)
-W, H = 120.0, 80.0          # board
-BAND = (42.5, 49.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
-SLOT_X = 46.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
+W, H = 99.0, 71.0           # board
+BAND = (31.5, 38.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
+SLOT_X = 35.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
 SLOT_W = 2.0
-SLOTS = [(3.0, 26.5), (28.5, 68.5)]   # y ranges; a web of board is left between slots for stiffness
+SLOTS = [(3.0, 25.5), (27.5, 67.5)]   # y ranges; a web of board is left between slots for stiffness
 
 # ref: (x, y, rotation_deg, side) - side 'F' (top) or 'B'. Mains side is x < 42.5.
 PLACE = {
-    # ================= MAINS (x < 42.5) =================
-    # Horizontal lanes, top to bottom: supply, zero cross, valve, pump, heater. Each lane runs
-    # from its opto on the band, through its resistors, to its triac and the terminal on the
-    # left edge (wires enter from the left). The heater keeps the bottom-left corner.
-    # -- supply: mains in -> fuse -> MOV -> PSU AC pins
-    "J1": (5.2, 7.0, 270, "F"),     # L (5.2,7), N (5.2,12.08)
-    "F1": (14.0, 7.0, 0, "F"),
-    "RV1": (25.0, 9.0, 270, "F"),   # L_F (25,9), N (25,14)
-    "PS1": (37.0, 11.0, 0, "F"),    # AC pins x=37 (mains), DC pins x=70.6 (SELV)
-    # -- zero cross
-    "R1": (32.0, 30.5, 0, "F"), "R2": (32.0, 35.0, 0, "F"),
-    "U1": (40.92, 31.0, 0, "F"),    # H11AA1: AC1 (40.92,31), AC2 (40.92,33.54)
-    # -- valve lane: opto U4 (gate pin4 y=40.92, opto pin6 y=46)
-    "U4": (51.08, 46.0, 180, "F"),
-    "Q3": (20.0, 40.0, 90, "F"),    # pins y=43.15: MT1 x17.7, MT2 x20, G x22.3; tab (MT2) at y=36.85
-    "R10": (20.0, 47.0, 180, "F"),  # gate-MT1
-    "R9": (33.0, 46.0, 0, "F"),     # MT2 -> opto
-    "R11": (12.0, 22.0, 90, "F"), "C22": (15.0, 31.0, 0, "F"),   # snubber
-    "J3": (5.2, 44.0, 270, "F"),    # valve (5.2,44), pump (5.2,49.08)
-    # -- pump lane: opto U3 (gate y=50.92, opto y=56)
-    "U3": (51.08, 56.0, 180, "F"),
-    "Q2": (18.0, 53.0, 0, "F"),     # TO-220 lying in the lane: MT1 x18, MT2 x20.54, G x23.08
-    "R7": (29.0, 51.0, 0, "F"), "R6": (33.0, 56.0, 0, "F"),
-    "R8": (36.5, 61.0, 90, "F"), "C21": (18.5, 59.5, 0, "F"),   # snubber
-    # -- heater: corner as before, opto U2 (gate y=60.92, opto y=66)
-    "U2": (51.08, 66.0, 180, "F"),
-    "J2": (8.0, 74.5, 0, "F"),      # heater (brew-thermostat wires), wires exit downwards
-    "Q1": (3.6, 62.0, 90, "F"),     # tab flush with the left edge, bolts to the chassis
-    "R3": (24.0, 66.0, 0, "F"), "R4": (24.0, 70.0, 0, "F"),
-    # ================= SELV (x > 49.5) =================
-    # power: PSU 5 V (70.6, 23) -> D1 -> +5V; USB VBUS -> D2
-    "D1": (77.0, 29.5, 0, "F"), "D2": (77.0, 34.0, 0, "F"), "C1": (68.0, 33.0, 90, "F"),
-    "U7": (79.5, 41.0, 0, "F"), "C2": (73.5, 41.0, 90, "F"), "C3": (87.0, 41.0, 90, "F"),
-    "U8": (100.0, 12.5, 0, "F"),    # ESP32-S3: antenna at the top edge, keep-out overhangs the board
-    "C4": (86.5, 12.0, 90, "F"), "C5": (84.5, 12.0, 90, "F"),
-    "R20": (86.5, 17.5, 90, "F"), "C6": (84.5, 17.5, 90, "F"),
-    "SW1": (113.0, 55.0, 0, "F"), "SW2": (113.0, 64.0, 0, "F"), "R21": (106.5, 62.0, 90, "F"),
-    "J4": (103.0, 76.0, 0, "F"), "U9": (103.0, 68.5, 0, "F"), "R22": (98.5, 69.0, 90, "F"), "R23": (107.5, 69.0, 90, "F"),
+    # ================= MAINS (x < 31.5) =================
+    # Lanes, top to bottom: supply, zero cross, valve, pump, heater. Terminals on the left
+    # edge (wires enter from the left); the heater triac sits on the left edge (tab to chassis).
+    "J1": (5.2, 4.5, 270, "F"),     # L (5.2,4.5), N (5.2,9.58)
+    "F1": (13.5, 4.5, 0, "F"),      # AC_L 13.5, L_F 18.58
+    "RV1": (13.5, 15.5, 0, "F"),    # L_F 13.5, N 18.5
+    "PS1": (26.0, 11.0, 0, "F"),    # AC (26,11) L_F, (26,17) N; DC (59.6,5) GND, (59.6,23) +5V
+    "R1": (24.0, 29.0, 0, "F"), "R2": (24.0, 34.0, 0, "F"),
+    "U1": (29.92, 30.0, 0, "F"),    # H11AA1: AC1 (29.92,30), AC2 (29.92,32.54)
+    # valve lane: U4 gate (29.92,40.32), opto (29.92,45.4)
+    "U4": (40.08, 45.4, 180, "F"),
+    "J3": (5.2, 41.5, 270, "F"),    # valve (5.2,41.5), pump (5.2,46.58)
+    "Q3": (15.0, 38.5, 90, "F"),    # pins y=41.65: MT1 12.7, MT2 15.0, G 17.3; tab (MT2) y=35.35
+    "R10": (15.0, 45.0, 180, "F"),  # gate-MT1 (G pin3 -> pad1, MT1 pin1 -> pad2); MT2 is the tab
+    "R9": (25.0, 45.4, 0, "F"),     # MT2 -> opto
+    "R11": (15.5, 28.5, 0, "F"), "C22": (10.5, 22.0, 0, "F"),   # snubber
+    # pump lane: U3 gate (29.92,49.52), opto (29.92,54.6)
+    "U3": (40.08, 54.6, 180, "F"),
+    "Q2": (14.0, 51.5, 0, "F"),     # TO-220 tab up: MT1 14, MT2 16.54, G 19.08 (y=51.5)
+    "R7": (10.0, 54.5, 90, "F"),    # gate-MT1, left of the pins
+    "R6": (27.5, 52.0, 90, "F"),
+    "R8": (23.8, 50.5, 90, "F"), "C21": (23.0, 65.0, 90, "F"),   # snubber (C21 stands in the strip by U2)
+    # heater: Q1 on the left edge, J2 on the bottom edge, copper pours between
+    "U2": (40.08, 64.5, 180, "F"),  # gate (29.92,59.42), opto (29.92,64.5)
+    "Q1": (3.6, 62.0, 90, "F"),     # pin1 MT1 (3.6,62) HTR_A, pin2 MT2 (3.6,59.46) HTR_B, pin3 G (3.6,56.92)
+    "J2": (11.5, 65.0, 0, "F"),     # HTR_A (11.5,65), HTR_B (16.58,65)
+    "R3": (23.6, 68.6, 0, "F"), "R4": (4.4, 68.3, 0, "F"),   # R3 pad 1 sits in the HTR_B pour
+    # ================= SELV (x > 38.5) =================
+    # power: PSU 5 V (59.6, 23) -> D1 -> +5V; USB VBUS -> D2; LDO
+    "D1": (68.5, 22.0, 0, "F"), "D2": (68.5, 26.5, 0, "F"), "C1": (60.5, 33.5, 90, "F"),
+    "U7": (69.0, 35.0, 0, "F"), "C2": (74.0, 28.5, 90, "F"), "C3": (75.0, 35.0, 90, "F"),
+    "U8": (89.0, 12.5, 0, "F"),     # ESP32-S3, antenna at the top edge
+    "C4": (76.0, 9.0, 90, "F"), "C5": (74.0, 9.0, 90, "F"),
+    "R20": (76.0, 15.0, 90, "F"), "C6": (74.0, 15.0, 90, "F"),
+    "R48": (76.0, 20.5, 90, "F"), "D9": (74.0, 20.5, 90, "F"),
     # zero-cross output
-    "R24": (55.0, 31.0, 90, "F"), "C7": (57.5, 31.0, 90, "F"),
+    "R24": (43.5, 31.0, 90, "F"), "C7": (45.5, 31.0, 90, "F"),
     # triac drivers, one row per opto (opto LED anode pin1 at y0, cathode pin2 at y0-2.54)
-    "R31": (55.0, 46.5, 0, "F"), "D5": (59.0, 46.5, 0, "F"), "Q6": (55.5, 42.0, 0, "F"), "R32": (59.0, 41.0, 0, "F"), "R33": (62.0, 42.5, 90, "F"),
-    "R28": (55.0, 56.5, 0, "F"), "D4": (59.0, 56.5, 0, "F"), "Q5": (55.5, 52.0, 0, "F"), "R29": (59.0, 51.0, 0, "F"), "R30": (62.0, 52.5, 90, "F"),
-    "R25": (55.0, 66.5, 0, "F"), "D3": (59.0, 66.5, 0, "F"), "Q4": (55.5, 62.0, 0, "F"), "R26": (59.0, 61.0, 0, "F"), "R27": (62.0, 62.5, 90, "F"),
-    # thermocouple: far corner from PSU, LDO and triacs
-    "J5": (115.5, 37.0, 270, "F"), "C9": (111.0, 37.0, 90, "F"),
-    "U10": (110.0, 45.0, 0, "F"), "C8": (104.5, 45.0, 90, "F"), "R34": (104.5, 50.0, 90, "F"),
-    # ADC + analog front end
-    "U11": (80.0, 56.0, 0, "F"), "C10": (80.0, 52.0, 0, "F"),
-    "R35": (85.0, 53.0, 90, "F"), "R36": (87.0, 53.0, 90, "F"), "R37": (85.0, 59.0, 90, "F"),
-    "J6": (70.0, 76.0, 0, "F"), "D6": (66.0, 71.0, 0, "F"), "R38": (70.0, 66.0, 90, "F"), "R39": (72.0, 66.0, 90, "F"), "C11": (74.0, 66.0, 90, "F"),
-    "R40": (72.0, 58.0, 90, "F"), "R41": (74.0, 58.0, 90, "F"), "C12": (76.0, 58.0, 90, "F"),
-    "J7": (80.5, 76.0, 0, "F"), "R42": (78.0, 66.0, 90, "F"), "C13": (80.0, 66.0, 90, "F"), "R43": (82.0, 66.0, 90, "F"),
+    "D5": (43.5, 45.4, 0, "F"), "R31": (47.0, 45.4, 180, "F"), "Q6": (44.0, 41.0, 0, "F"), "R32": (47.5, 40.0, 0, "F"), "R33": (50.0, 42.0, 90, "F"),
+    "D4": (43.5, 54.6, 0, "F"), "R28": (47.0, 54.6, 180, "F"), "Q5": (44.0, 50.2, 0, "F"), "R29": (47.5, 49.2, 0, "F"), "R30": (50.0, 51.2, 90, "F"),
+    "D3": (43.5, 64.5, 0, "F"), "R25": (47.0, 64.5, 180, "F"), "Q4": (44.0, 60.1, 0, "F"), "R26": (47.5, 59.1, 0, "F"), "R27": (50.0, 61.1, 90, "F"),
     # switches
-    "J8": (58.0, 76.0, 0, "F"), "R44": (66.0, 61.5, 90, "F"), "R45": (68.0, 61.5, 90, "F"), "C14": (66.0, 66.0, 90, "F"), "D7": (54.0, 71.0, 0, "F"),
-    "R46": (68.0, 52.0, 90, "F"), "R47": (70.0, 52.0, 90, "F"), "C15": (68.0, 47.0, 90, "F"), "D8": (60.0, 71.0, 0, "F"),
-    "J9": (87.5, 76.0, 0, "F"),
-    "R48": (90.0, 36.0, 90, "F"), "D9": (90.0, 40.0, 90, "F"),
+    "J8": (56.0, 67.5, 0, "F"), "R44": (54.0, 57.5, 90, "F"), "R45": (56.0, 57.5, 90, "F"), "C14": (58.0, 57.5, 90, "F"), "D7": (53.5, 61.0, 0, "F"),
+    "R46": (60.0, 57.5, 90, "F"), "R47": (62.0, 57.5, 90, "F"), "C15": (64.0, 57.5, 90, "F"), "D8": (60.5, 61.0, 0, "F"),
+    # ADC + analog front end
+    "U11": (60.0, 47.5, 0, "F"), "C10": (60.0, 43.5, 0, "F"),
+    "R35": (55.0, 44.0, 90, "F"), "R36": (57.0, 44.0, 90, "F"), "R37": (64.5, 44.0, 90, "F"),
+    "J6": (65.5, 67.5, 0, "F"), "D6": (68.5, 60.5, 0, "F"), "R38": (66.0, 52.5, 90, "F"), "R39": (68.0, 52.5, 90, "F"), "C11": (70.0, 52.5, 90, "F"),
+    "R40": (53.0, 50.0, 90, "F"), "R41": (55.0, 50.0, 90, "F"), "C12": (54.5, 39.5, 90, "F"),
+    "J7": (74.5, 67.5, 0, "F"), "R42": (72.0, 52.5, 90, "F"), "C13": (74.0, 52.5, 90, "F"), "R43": (66.5, 44.0, 90, "F"),
+    "J9": (43.8, 67.8, 0, "F"),
+    # thermocouple: right edge, away from the PSU, LDO and triacs
+    "J5": (96.5, 36.0, 270, "F"), "C9": (91.5, 33.0, 90, "F"),
+    "U10": (90.5, 43.5, 0, "F"), "C8": (85.0, 43.5, 90, "F"), "R34": (85.0, 48.5, 90, "F"),
+    # USB (flashing), buttons
+    "J4": (84.5, 67.0, 0, "F"), "U9": (84.5, 59.5, 0, "F"), "R22": (81.0, 60.5, 90, "F"), "R23": (88.0, 60.5, 90, "F"),
+    "SW1": (94.0, 50.5, 0, "F"), "SW2": (94.0, 57.5, 0, "F"), "R21": (88.0, 52.0, 90, "F"),
     # mounting holes, clear of mains copper (the chassis standoffs are earthed)
-    "H1": (4.0, 27.0, 0, "F"), "H2": (116.0, 30.0, 0, "F"), "H3": (97.0, 50.0, 0, "F"), "H4": (116.0, 76.0, 0, "F"),
+    "H1": (4.0, 26.0, 0, "F"), "H2": (95.5, 29.5, 0, "F"), "H3": (79.5, 41.5, 0, "F"), "H4": (95.5, 67.0, 0, "F"),
 }
 
 
@@ -255,15 +254,15 @@ def build(spec, mains_v):
         seg(board, pcbnew.Edge_Cuts, rect(SLOT_X - SLOT_W / 2, y0, SLOT_X + SLOT_W / 2, y1))
     zone(board, None, pcbnew.F_Cu, rect(BAND[0], 0, BAND[1], H), keepout=True, name="ISOLATION BAND")
     # keep copper away from the M3 holes on the mains side (earthed chassis standoffs)
-    zone(board, None, pcbnew.F_Cu, rect(0, 22.5, 8.5, 31.5), keepout=True, name="H1 clearance", pads_ok=True)
+    zone(board, None, pcbnew.F_Cu, rect(0, 21.5, 8.5, 30.5), keepout=True, name="H1 clearance", pads_ok=True)
 
     # The ESP32-S3 footprint carries Espressif's antenna keep-out itself.
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
     # the pour connects every GND pad, and the real fill leaves islands.
 
     # silkscreen: mark the barrier and the mains side
-    for txt, x, y, size in (("MAINS - HAZARDOUS VOLTAGE", 21, 2.2, 1.5), ("SELV", 56, 2.2, 1.5),
-                            (f"coffee controller v2  {mains_v} V", 85, 78.2, 1.2)):
+    for txt, x, y, size in (("MAINS", 16, 28.5, 1.5), ("SELV", 45, 27.5, 1.5),
+                            (f"coffee v2 {mains_v} V", 62, 70.2, 1.0)):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt)
         t.SetPosition(V(mm(x), mm(y)))
@@ -274,23 +273,40 @@ def build(spec, mains_v):
     seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
     seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
 
-    # Heater current path, hand-routed on both layers (2.5 mm each, in parallel):
-    # J2.1 HTR_A <- Q1 pin1 (MT1), J2.2 HTR_B <- Q1 pin2 (MT2). Necked to 1 mm where it
-    # leaves the middle pin so it clears pin 1.
-    q1 = [pad_pos(board, "Q1", n) for n in ("1", "2")]
-    j2 = [pad_pos(board, "J2", n) for n in ("1", "2")]
-    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        a0 = q1[0]
-        a1 = (a0[0], j2[0][1] - 5.5)
-        a2 = (j2[0][0], a1[1])
-        for p0, p1 in ((a0, a1), (a1, a2), (a2, j2[0])):
-            track(board, nets["HTR_A"], layer, p0, p1, 2.5)
-        b0 = q1[1]
-        b1 = (b0[0] + 4.0, b0[1])
-        b2 = (j2[1][0], b0[1])
-        track(board, nets["HTR_B"], layer, b0, b1, 1.0)
-        track(board, nets["HTR_B"], layer, b1, b2, 2.5)
-        track(board, nets["HTR_B"], layer, b2, j2[1], 2.5)
+    # Heater current path as copper pours (solid pad connections). HTR_B leaves the triac's
+    # middle pin on F.Cu only, as wide as the TO-220 pin pitch allows (~2 mm, about the pad
+    # width) and widening to 4.5 mm once clear of the neighbouring pins; B.Cu under that band
+    # stays free for the gate resistor's link into the HTR_A pocket.
+    def pour(net, layer, pts, clearance):
+        z = zone(board, nets[net], layer, pts, clearance=clearance, priority=2, name=net)
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+        z.SetMinThickness(mm(0.3))
+    # Q1 pins: pin3 G y=56.92, pin2 MT2 (HTR_B) y=59.46, pin1 MT1 (HTR_A) y=62.0, all x=3.6.
+    # The band out of the middle pin is bounded by pins 1 and 3 (pads +-1.0 mm, 0.5 mm
+    # clearance): y 58.42..60.5, 2.1 mm, on both layers; it joins the 6 mm column to J2.2.
+    band = [(2.0, 58.42), (14.4, 58.42), (14.4, 56.0), (20.5, 56.0), (20.5, 67.4), (23.0, 67.4), (23.0, 70.4), (14.4, 70.4), (14.4, 60.5), (2.0, 60.5)]
+    band_b = [(5.2, 58.42), (20.5, 58.42), (20.5, 70.4), (14.4, 70.4), (14.4, 60.5), (5.2, 60.5)]   # B.Cu: band + column, below the gate track
+    pocket = [(0.6, 61.5), (13.2, 61.5), (13.2, 70.4), (0.6, 70.4)]
+    pour("HTR_B", pcbnew.F_Cu, band, 0.5)
+    pour("HTR_B", pcbnew.B_Cu, band_b, 0.5)
+    pour("HTR_A", pcbnew.F_Cu, pocket, 0.5)
+
+    # Heater gate, hand-routed on B.Cu (B.Cu has no heater copper above the band):
+    #   Q1.G -> along y=55.2 -> down x=26.5 -> U2 pin 4 (opto gate side);
+    #   Q1.G -> left edge x=1.1 -> via -> R4 pad 1 (gate-MT1 resistor in the HTR_A pocket).
+    g = nets["HEATER_GATE"]
+    q1g, u2g, r4g = pad_pos(board, "Q1", "3"), pad_pos(board, "U2", "4"), pad_pos(board, "R4", "1")
+    gw = 0.6
+    for a_, b_ in ((q1g, (q1g[0] + 1.2, 55.2)), ((q1g[0] + 1.2, 55.2), (26.5, 55.2)), ((26.5, 55.2), (26.5, u2g[1])), ((26.5, u2g[1]), u2g)):
+        track(board, g, pcbnew.B_Cu, a_, b_, gw)
+    via_pt = (1.1, r4g[1] - 2.6)
+    for a_, b_ in ((q1g, (1.1, q1g[1])), ((1.1, q1g[1]), via_pt)):
+        track(board, g, pcbnew.B_Cu, a_, b_, gw)
+    v = pcbnew.PCB_VIA(board)
+    v.SetPosition(V(mm(via_pt[0]), mm(via_pt[1])))
+    v.SetWidth(mm(1.0)); v.SetDrill(mm(0.5)); v.SetNet(g); v.SetLocked(True)
+    board.Add(v)
+    track(board, g, pcbnew.F_Cu, via_pt, r4g, gw)
     return board
 
 
@@ -428,7 +444,7 @@ def main():
     ap.add_argument("--passes", type=int, default=40)
     ap.add_argument("--no-route", action="store_true")
     ap.add_argument("--attempts", type=int, default=6)
-    ap.add_argument("--snap", choices=["90", "45"], default="90")
+    ap.add_argument("--snap", choices=["90", "45"], default="45")
     a = ap.parse_args()
     spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
     stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
@@ -438,6 +454,11 @@ def main():
         print("placed:", stem + "-placed.kicad_pcb")
         return
     dsn, ses = stem + ".dsn", stem + ".ses"
+    # Fill the heater pours first, so the router sees them as copper to keep clear of.
+    board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
+    board.BuildConnectivity()
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    pcbnew.SaveBoard(stem + "-placed.kicad_pcb", board)
     if not pcbnew.ExportSpecctraDSN(board, dsn):
         raise SystemExit("DSN export failed")
     # Manhattan routing (90-degree corners only) reads far neater than 45-degree spaghetti.

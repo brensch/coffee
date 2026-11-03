@@ -256,7 +256,7 @@
    "populate": "Y"
   },
   "C21": {
-   "footprint": "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4",
+   "footprint": "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4",
    "value": "10nF X2",
    "pins": {
     "1": "PUMP_SNUB",
@@ -341,7 +341,7 @@
    "populate": "Y"
   },
   "C22": {
-   "footprint": "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4",
+   "footprint": "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4",
    "value": "10nF X2",
    "pins": {
     "1": "VALVE_SNUB",

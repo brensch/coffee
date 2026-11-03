@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/02/2026 07:20 PM")
+    (date "11/02/2026 07:41 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -230,12 +230,12 @@
       (ref "C21")
       (value "10nF X2")
       (description "X2 safety capacitor 275 VAC")
-      (footprint "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4")
+      (footprint "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4")
       (fields
         (field
           (name "Description") "X2 safety capacitor 275 VAC")
         (field
-          (name "Footprint") "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4")
+          (name "Footprint") "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4")
         (field
           (name "Datasheet"))
         (field
@@ -253,12 +253,12 @@
       (ref "C22")
       (value "10nF X2")
       (description "X2 safety capacitor 275 VAC")
-      (footprint "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4")
+      (footprint "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4")
       (fields
         (field
           (name "Description") "X2 safety capacitor 275 VAC")
         (field
-          (name "Footprint") "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4")
+          (name "Footprint") "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4")
         (field
           (name "Datasheet"))
         (field

@@ -77,7 +77,7 @@ FP_C_BIG = "Capacitor_SMD:C_1206_3216Metric"
 
 R = tmpl("R", "R", FP_R, [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)], "Resistor")
 C = tmpl("C", "C", FP_C, [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)], "Capacitor")
-CX2 = tmpl("C_X2", "C", "Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4",
+CX2 = tmpl("C_X2", "C", "Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4",
            [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)], "X2 safety capacitor 275 VAC")
 CP = tmpl("CP", "C", "Capacitor_SMD:CP_Elec_6.3x7.7", [(1, "+", T.PASSIVE), (2, "-", T.PASSIVE)], "Electrolytic")
 LED = tmpl("LED", "D", "LED_SMD:LED_0603_1608Metric", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "LED")
@@ -219,7 +219,7 @@ def triac_channel(name, idx, mt2_net, mt1_net, triac_tpl, triac_val, triac_mpn, 
     if snubber:
         s_mid = Net(f"{name}_SNUB")
         r_n = part(R, f"R{5 + 3 * idx}", "100 1W", footprint=FP_R_MAINS, mains=True, notes="MAINS: snubber (inductive load)")
-        c_n = part(CX2, f"C{20 + idx}", "10nF X2", mpn="WIMA MKP-X2 10nF 275VAC (13x4 mm)", mains=True, notes="MAINS: snubber")
+        c_n = part(CX2, f"C{20 + idx}", "10nF X2", mpn="WIMA MKP-X2 10nF 275VAC, 10x4 mm, P7.5", mains=True, notes="MAINS: snubber")
         r_n[1, 2] += mt2_net, s_mid
         c_n[1, 2] += s_mid, mt1_net
     u["NC"] += NC

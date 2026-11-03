@@ -145,7 +145,7 @@ board needs a human review before it is ordered.
 | Status LED | 38 | | BOOT | 0 |
 
 ## Layout
-- **Board:** 120 × 80 mm, 2 layers, 2 oz copper.
+- **Board:** 99 × 71 mm, 2 layers, 2 oz copper.
 - **Mains side, left: horizontal lanes**, top to bottom:
   - supply: mains-in terminal → fuse → MOV → PSU;
   - zero cross;
@@ -164,10 +164,13 @@ board needs a human review before it is ordered.
   - analog front end and JST connectors along the bottom;
   - thermocouple at the far right, away from the heat sources;
   - GND pours on both layers.
+- **Heater path:**
+  - copper pours, not tracks, on both layers;
+  - where it leaves the triac's middle pin it is ~2 mm wide (about the pad width, set by the TO-220's 2.54 mm pin pitch), for about 3 mm, then 4.5–6 mm;
+  - the heater gate is hand-routed on the bottom layer, clear of the triac pins and the pours.
 - **Routing:**
   - The heater path is hand-routed.
-  - Freerouting routes everything else **with 90° corners only**. A 45° clean-up pass runs only
-    if anything is left unrouted.
+  - Freerouting routes everything else at 45°.
   - Mains nets: 0.8 mm tracks, 1.0 mm clearance.
   - SELV power: 0.6 mm.
   - SELV signals: 0.25 mm.

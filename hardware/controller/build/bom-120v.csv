@@ -7,7 +7,7 @@ C6,1,1uF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN RC delay (Espressif gu
 C7,1,100pF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,
 C9,1,10nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,Differential filter (datasheet)
 C13,1,100nF,C,Capacitor_SMD:C_0603_1608Metric,opt,Capacitor,
-C21 C22,2,10nF X2,WIMA MKP-X2 10nF 275VAC (13x4 mm),Capacitor_THT:C_Rect_L13.0mm_W4.0mm_P10.00mm_FKS3_FKP3_MKS4,Y,X2 safety capacitor 275 VAC,MAINS: snubber
+C21 C22,2,10nF X2,"WIMA MKP-X2 10nF 275VAC, 10x4 mm, P7.5",Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4,Y,X2 safety capacitor 275 VAC,MAINS: snubber
 D1 D2,2,SS14,SS14,Diode_SMD:D_SMA,Y,Schottky 1 A 40 V,USB power for bench bring-up (no mains)
 D3,1,heater green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Lit = triac driven (same current as the opto LED)
 D4,1,pump green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Lit = triac driven (same current as the opto LED)
