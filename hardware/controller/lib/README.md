@@ -15,3 +15,9 @@ Why the MINI-1U rather than the WROOM-1U:
 - JLCPCB stocks it (C20627095), but had no WROOM-1U in stock in Nov 2026.
 
 The 3D model (`ESP32-C6-MINI-1U.STEP`, 7 MB) isn't vendored; `render3d.py` expects it under `$MODELS/espressif.3dshapes/`.
+
+| `Recom.pretty/RAC03E-K_277.kicad_mod` | drawn here from the RECOM RAC03E-K/277 datasheet (REV 3/2023, p.6, recommended footprint) | — |
+
+RAC03E: pins 1 (VAC L), 2 (VAC N), 3 (NC, secondary side), 5 (+Vout), 4 (−Vout). Pins 1–3 on one row at
+0 / 2.54 / 25.4 mm; 5 and 4 on a row 17.78 mm away at 20.32 / 25.4 mm. Body 37.0 × 24.0 mm, its edge 3.26 mm
+from pin 1 and 3.11 mm beyond the pin 1–3 row. Pins Ø0.6 mm (1.0 mm holes).

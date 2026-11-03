@@ -34,7 +34,7 @@ PKG = {  # KiCad footprint fragment -> JLC package string fragment
 THT = ("TO-220", "DIP-6", "TestPoint", "Fuse_Littelfuse", "RV_Disc", "C_Rect", "TerminalBlock", "Converter_ACDC", "JST_PH", "MountingHole")
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
-    "SS14": "SS14", "AMS1117-3.3": "AMS1117-3.3",
+    "SS14": "SS14", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR", "Murata GRM31CR71A226KE15L": "GRM31CR71A226KE15L",
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "GCT USB4105-GF-A": "USB4105-GF-A",
     "Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)": "GA355QR7GB103",
     "ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)": "Z0109NN",

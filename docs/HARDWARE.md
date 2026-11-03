@@ -42,10 +42,31 @@ The full list with MPNs is `build/bom-120v.csv`. In short:
 
 | Who fits it | Parts |
 |---|---|
-| JLC (SMD) | ESP32-C6-MINI-1U-H4, USB-C, AMS1117-3.3, SS14, Z0109NN valve triac, 2 × 10 nF X2 snubber caps (2220), 0603/1206/2512 passives, status LED |
-| You (through-hole) | 3 screw terminals, BTA24-800BW + BTA08-800CW triacs, 3× MOC3083 (0.4" "TVM" leads), HLK-PM05, TR5 fuse, MOV, 3 JST-PH headers |
+| JLC (SMD) | ESP32-C6-MINI-1U-H4, USB-C, TLV1117LV33, SS14, Z0109NN valve triac, 2 × 10 nF X2 snubber caps (2220), 0603/1206/2512 passives, status LED |
+| You (through-hole) | 3 screw terminals (heater: MKDS 3), BTA24-800BW + BTA08-800CW triacs, 3× MOC3083 (0.4" "TVM" leads), RECOM RAC03E-05SK/277 (from Digi-Key/Mouser), TR5 fuse, MOV, 3 JST-PH headers |
 
 Rough cost: about $30–50 for five assembled boards, plus about $25 of through-hole parts.
+
+### Parts chosen to last (audit for 60–70 °C inside the case, over years)
+
+Every part was checked against two questions: is it rated for a 70 °C ambient with margin, and what wears out?
+
+| Part | Rated | Our stress | Wear-out, and why it's fine |
+|---|---|---|---|
+| PSU: **RECOM RAC03E-05SK/277** | −40 to +85 °C (full load to 75 °C) | ~0.7 W of 3 W | Design life >30,000 h at 50 °C full load; we run at a quarter load. Certified to EN60335-1 (household appliances), IEC61558 and UL62368; 4 kV reinforced; built-in fuse; no external parts. *Replaced the HLK-PM05, which listings rate to only ~60 °C.* |
+| Regulator: **TI TLV1117LV33** | 125 °C junction | 0.2 W average (junction ~80 °C) | Stable with the ceramic capacitors we use. *Replaced the AMS1117, which needs a tantalum output capacitor and can oscillate on ceramics.* |
+| ESP32-C6-MINI-1U-**H4** | 105 °C | — | The "H" high-temperature grade. Flash wear: ~60 KB/day of settings and shots over a 640 KB wear-levelled partition is centuries of life. |
+| Opto-triacs MOC3083 | 85 °C ambient | 8–12 mA LED drive | Trigger needs ≤ 5 mA, so the LED can lose over a third of its light with age before it matters. |
+| Triacs BTA24-800BW / BTA08-800CW / Z0109NN | 125 °C junction | heater ~11 W into the chassis; pump ~0.4 W; valve ~0.03 W | 800 V parts: the worst simulated spike is 477 V. |
+| Snubber caps Murata GA355 (X2, ceramic) | 125 °C | — | Ceramic safety caps don't lose capacitance over the years the way film X2 caps do. |
+| Bulk caps Murata GRM31 22 µF **X7R** | 125 °C | — | There are no electrolytics anywhere on the board (they dry out in heat). X7R, not X5R (85 °C). |
+| Heater terminal **Phoenix MKDS 3** | 24 A | 11.4 A at 60–70 °C | *Was MKDS 1,5 (17.5 A), which is too close once derated for heat.* Use ferrules and re-tighten after the first few heat cycles. |
+| Supply/load terminals Phoenix MKDS 1,5 | 17.5 A | < 1 A | — |
+| MOV Bourns 10D271K | 85 °C | — | MOVs wear a little with each large surge. F1 sits upstream, so a worn-out MOV that shorts blows the fuse instead of burning. |
+| Fuse Littelfuse 372 (TR5, T500mA) | 85 °C | ~80 mA | — |
+| Divider resistors (0.1 % thin film) | 125 °C | — | Drift is far below the two-point calibration's correction. |
+| JST-PH sensor connectors | 85 °C | mA | — |
+| PCB | specify **Tg ≥ 150, 2 oz copper** | heater pours warm | Conformal-coat the mains half. |
 
 ### Off-board parts
 

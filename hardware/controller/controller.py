@@ -18,7 +18,7 @@ Outputs in build/: KiCad netlist, BOM CSV, parts-<V>v.json (input to layout.py, 
 schematic_svg.py).
 
 Pinouts: ESP32-C6-MINI-1U (Espressif datasheet / KiCad library, lib/Espressif.pretty),
-MOC3083, HLK-PM05, AMS1117, BTA24/BTA08 (TO-220: 1 MT1, 2 MT2, 3 G),
+MOC3083, RECOM RAC03E-K/277, TLV1117LV (AMS1117 pinout), BTA24/BTA08 (TO-220: 1 MT1, 2 MT2, 3 G),
 Z0109 (SOT-223: 1 MT1, 2/tab MT2, 3 G).
 """
 
@@ -81,14 +81,19 @@ def conn(n, name, fp):
 
 
 TB2_MAINS = conn(2, "Screw_Terminal_01x02_5.08", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
+TB2_HEATER = conn(2, "Screw_Terminal_01x02_5.08_24A", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal")   # 11.4 A at 60-70 C ambient
 JST2 = conn(2, "JST_PH_2", "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical")
 JST3 = conn(3, "JST_PH_3", "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical")
 
-AMS1117 = tmpl("AMS1117-3.3", "U", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
-               [(1, "GND", T.PWRIN), (2, "VOUT", T.PWROUT), (3, "VIN", T.PWRIN)], "LDO 3.3 V 1 A")
-PSU = tmpl("HLK-PM05", "PS", "Converter_ACDC:Converter_ACDC_Hi-Link_HLK-PMxx",
-           [(1, "AC_L", T.PWRIN), (2, "AC_N", T.PWRIN), (3, "-VO", T.PWROUT), (4, "+VO", T.PWROUT)],
-           "Isolated AC-DC 5 V 0.6 A, 3 W (UL/CE, 3 kVAC isolation)")
+# TI TLV1117LV33: stable with ceramic output caps (the AMS1117 wants tantalum ESR and can oscillate on
+# ceramics), 455 mV dropout at 1 A, AMS1117 pinout.
+LDO = tmpl("TLV1117LV33", "U", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+               [(1, "GND", T.PWRIN), (2, "VOUT", T.PWROUT), (3, "VIN", T.PWRIN)], "LDO 3.3 V 1 A, ceramic-stable")
+# RECOM RAC03E-05SK/277 (datasheet REV 3/2023): -40..+85 C (full load to 75 C), 4 kVAC reinforced,
+# EN60335-1 / IEC61558 / UL62368, internal fusible input resistor, EMC class B with no external parts.
+PSU = tmpl("RAC03E-05SK/277", "PS", "Recom:RAC03E-K_277",
+           [(1, "AC_L", T.PWRIN), (2, "AC_N", T.PWRIN), (3, "NC", T.NOCONNECT), (4, "-VO", T.PWROUT), (5, "+VO", T.PWROUT)],
+           "Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)")
 # ESP32-C6-MINI-1U pads (Espressif datasheet / KiCad symbol "ESP32-C6-MINI-1/U"; lib/README.md).
 # 36-53 are GND: the inner row, the 3x3 exposed pad (49, nine sub-pads) and the four corners.
 _c6 = {1: "GND", 2: "GND", 3: "3V3", 4: "NC", 5: "IO2", 6: "IO3", 7: "NC", 8: "EN", 9: "IO4", 10: "IO5", 11: "GND",
@@ -123,15 +128,15 @@ for n in (gnd, v5, v3):
 # ================================================================ MAINS SIDE
 l_in, n_in = Net("AC_L"), Net("AC_N")
 l_in.drive = n_in.drive = 100
-j_ac = part(TB2_MAINS, "J1", "Mains in", mains=True,
+j_ac = part(TB2_MAINS, "J1", "Mains in", mains=True, mpn="Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
             notes="MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A).")
 j_ac[1, 2] += l_in, n_in
 htr_a, htr_b = Net("HTR_A"), Net("HTR_B")
-j_htr = part(TB2_MAINS, "J2", "Heater", mains=True,
+j_htr = part(TB2_HEATER, "J2", "Heater", mains=True, mpn="Phoenix Contact MKDS 3/2-5.08 (1711026), 24 A, 4 mm2",
              notes="MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series.")
 j_htr[1, 2] += htr_a, htr_b
 pump_out, valve_out = Net("PUMP_L"), Net("VALVE_L")
-j_load = part(TB2_MAINS, "J3", "Valve / pump", mains=True, notes="MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump.")
+j_load = part(TB2_MAINS, "J3", "Valve / pump", mains=True, mpn="Phoenix Contact MKDS 1,5/2-5.08 (1715721)", notes="MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump.")
 j_load[1, 2] += valve_out, pump_out
 
 l_f = Net("AC_L_FUSED")
@@ -142,7 +147,9 @@ f1[1, 2] += l_in, l_f
 rv1 = part(MOV, "RV1", "10D271K" if MAINS_V < 200 else "10D561K", mpn="Bourns MOV-10D271K (120 V) / 10D561K (230 V)", mains=True,
            notes="MAINS. Surge clamp across the PSU input")
 rv1[1, 2] += l_f, n_in
-ps1 = part(PSU, "PS1", "HLK-PM05", mpn="Hi-Link HLK-PM05", mains=["1", "2"], notes="Isolated supply; straddles the slot")
+ps1 = part(PSU, "PS1", "RAC03E-05SK/277", mpn="RECOM RAC03E-05SK/277", mains=["1", "2"],
+           notes="Isolated supply; straddles the slot. Rated to 85 C: the machine's case runs at 60-70 C")
+ps1["NC"] += NC
 ps1["AC_L"] += l_f
 ps1["AC_N"] += n_in
 ps1["+VO"] += v5
@@ -200,7 +207,7 @@ for pin in u_mcu.pins:
     elif pin.name.startswith("NC"):
         pin += NC
 u_mcu["3V3"] += v3
-for ref, val, fp in (("C3", "10uF", FP_C_1206), ("C4", "100nF", FP_C)):
+for ref, val, fp in (("C3", "10uF 10V X7R", FP_C_1206), ("C4", "100nF X7R", FP_C)):
     c = part(C, ref, val, footprint=fp, notes="Module decoupling at the 3V3 pin")
     c[1, 2] += v3, gnd
 en = Net("EN")
@@ -231,12 +238,12 @@ led["K"] += gnd
 d2 = part(SCHOTTKY, "D2", "SS14", mpn="SS14", notes="USB bench power")
 d2["A"] += vbus
 d2["K"] += v5
-u_ldo = part(AMS1117, "U5", "AMS1117-3.3", mpn="AMS1117-3.3", notes="Tab pour is the heatsink")
+u_ldo = part(LDO, "U5", "TLV1117LV33", mpn="TI TLV1117LV33DCYR", notes="Tab pour is the heatsink")
 u_ldo["VIN"] += v5
 u_ldo["GND"] += gnd
 u_ldo["VOUT"] += v3
-for ref, val, net in (("C6", "22uF 10V", v5), ("C7", "22uF 6.3V", v3)):
-    c = part(C, ref, val, footprint=FP_C_1206, notes="Ceramic bulk (no electrolytics to age at 60-70 C)")
+for ref, val, net in (("C6", "22uF 10V X7R", v5), ("C7", "22uF 10V X7R", v3)):
+    c = part(C, ref, val, footprint=FP_C_1206, mpn="Murata GRM31CR71A226KE15L", notes="Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C")
     c[1, 2] += net, gnd
 
 j_usb = part(USBC, "J4", "USB-C", mpn="GCT USB4105-GF-A", notes="Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power")

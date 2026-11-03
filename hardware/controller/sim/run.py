@@ -165,15 +165,15 @@ meas ac g100 FIND vdb(a) AT=100
 
 # --------------------------------------------------------------- 5. 5 V / 3.3 V rails under load steps
 def rails(vpsu, label):
-    net = f"""* PSU -> 22u||10u -> AMS1117-3.3 (dropout ~1.0 V @ 0.1 A, ~1.2 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
+    net = f"""* PSU -> 22u -> TLV1117LV33 (dropout ~0.18 V @ 0.1 A, ~0.3 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
 .model SS14 D(IS=5e-6 N=1.1 RS=0.05)
 Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.15             ; PSU + wiring output resistance (est); PSU feeds +5V directly (v5: no OR diode)
 C1 v5 0 22u
 * other 5 V loads: transducer (~10 mA); the opto LEDs now run from 3.3 V GPIOs
 Rl5 v5 0 300
-* LDO: tracks 3.3 V unless dropout bites: vout = min(3.3, vin - (1.0 + 0.4*I))
-Bldo v33r 0 V = min(3.3, v(v5) - (1.0 + 0.4*i(Vsense)))
+* LDO: tracks 3.3 V unless dropout bites
+Bldo v33r 0 V = min(3.3, v(v5) - (0.15 + 0.3*i(Vsense)))   ; TLV1117LV33: 455 mV dropout at 1 A
 Rout v33r v33s 0.02
 Vsense v33s v33 0
 Bin v5 0 I = i(Vsense)        ; LDO input current = output current

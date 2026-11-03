@@ -18,11 +18,11 @@
    ],
    "populate": "Y",
    "desc": "Screw_Terminal_01x02_5.08",
-   "mpn": "",
+   "mpn": "Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
    "notes": "MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
   },
   "J2": {
-   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal",
    "value": "Heater",
    "pins": {
     "1": "HTR_A",
@@ -37,8 +37,8 @@
     "2"
    ],
    "populate": "Y",
-   "desc": "Screw_Terminal_01x02_5.08",
-   "mpn": "",
+   "desc": "Screw_Terminal_01x02_5.08_24A",
+   "mpn": "Phoenix Contact MKDS 3/2-5.08 (1711026), 24 A, 4 mm2",
    "notes": "MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series."
   },
   "J3": {
@@ -58,7 +58,7 @@
    ],
    "populate": "Y",
    "desc": "Screw_Terminal_01x02_5.08",
-   "mpn": "",
+   "mpn": "Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
    "notes": "MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump."
   },
   "F1": {
@@ -102,28 +102,30 @@
    "notes": "MAINS. Surge clamp across the PSU input"
   },
   "PS1": {
-   "footprint": "Converter_ACDC:Converter_ACDC_Hi-Link_HLK-PMxx",
-   "value": "HLK-PM05",
+   "footprint": "Recom:RAC03E-K_277",
+   "value": "RAC03E-05SK/277",
    "pins": {
     "1": "AC_L_FUSED",
     "2": "AC_N",
-    "3": "GND",
-    "4": "+5V"
+    "3": null,
+    "4": "GND",
+    "5": "+5V"
    },
    "pin_names": {
     "1": "AC_L",
     "2": "AC_N",
-    "3": "-VO",
-    "4": "+VO"
+    "3": "NC",
+    "4": "-VO",
+    "5": "+VO"
    },
    "mains": [
     "1",
     "2"
    ],
    "populate": "Y",
-   "desc": "Isolated AC-DC 5 V 0.6 A, 3 W (UL/CE, 3 kVAC isolation)",
-   "mpn": "Hi-Link HLK-PM05",
-   "notes": "Isolated supply; straddles the slot"
+   "desc": "Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)",
+   "mpn": "RECOM RAC03E-05SK/277",
+   "notes": "Isolated supply; straddles the slot. Rated to 85 C: the machine's case runs at 60-70 C"
   },
   "U1": {
    "footprint": "Package_DIP:DIP-6_W10.16mm",
@@ -562,7 +564,7 @@
   },
   "C3": {
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
-   "value": "10uF",
+   "value": "10uF 10V X7R",
    "pins": {
     "1": "+3V3",
     "2": "GND"
@@ -579,7 +581,7 @@
   },
   "C4": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF",
+   "value": "100nF X7R",
    "pins": {
     "1": "+3V3",
     "2": "GND"
@@ -728,7 +730,7 @@
   },
   "U5": {
    "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
-   "value": "AMS1117-3.3",
+   "value": "TLV1117LV33",
    "pins": {
     "1": "GND",
     "2": "+3V3",
@@ -741,13 +743,13 @@
    },
    "mains": [],
    "populate": "Y",
-   "desc": "LDO 3.3 V 1 A",
-   "mpn": "AMS1117-3.3",
+   "desc": "LDO 3.3 V 1 A, ceramic-stable",
+   "mpn": "TI TLV1117LV33DCYR",
    "notes": "Tab pour is the heatsink"
   },
   "C6": {
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
-   "value": "22uF 10V",
+   "value": "22uF 10V X7R",
    "pins": {
     "1": "+5V",
     "2": "GND"
@@ -759,12 +761,12 @@
    "mains": [],
    "populate": "Y",
    "desc": "Capacitor",
-   "mpn": "",
-   "notes": "Ceramic bulk (no electrolytics to age at 60-70 C)"
+   "mpn": "Murata GRM31CR71A226KE15L",
+   "notes": "Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
   },
   "C7": {
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
-   "value": "22uF 6.3V",
+   "value": "22uF 10V X7R",
    "pins": {
     "1": "+3V3",
     "2": "GND"
@@ -776,8 +778,8 @@
    "mains": [],
    "populate": "Y",
    "desc": "Capacitor",
-   "mpn": "",
-   "notes": "Ceramic bulk (no electrolytics to age at 60-70 C)"
+   "mpn": "Murata GRM31CR71A226KE15L",
+   "notes": "Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
   },
   "J4": {
    "footprint": "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",

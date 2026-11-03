@@ -45,7 +45,7 @@ PLACE = {
     "J1": (5.05, 4.0, 270, "F"),    # L (5.05,4), N (5.05,9.08)
     "F1": (12.75, 4.7, 0, "F"),     # AC_L 12.75, AC_L_FUSED 17.83
     "RV1": (23.2, 4.4, 270, "F"),   # between the fuse and the PSU, standing up
-    "PS1": (29.0, 9.5, 0, "F"),     # AC (29,9.5) L_F, (29,14.5) N
+    "PS1": (29.0, 21.3, 0, "F"),    # RECOM RAC03E: AC pins (29.0, 31.54 @ y 21.3), DC pins (49.32 +V, 54.4 -V @ y 3.52)
     # valve lane: U3 gate pin 4 (32.92,26.92), opto pin 6 (32.92,32)
     "U3": (43.08, 32.0, 180, "F"),
     "C2": (15.2, 14.4, 180, "F"), "R6": (22.8, 16.4, 90, "F"),     # valve snubber 100 R + 10 nF (SMD X2)
@@ -66,13 +66,13 @@ PLACE = {
     # ================= SELV =================
     # ESP32-C6-MINI-1U under the PSU, turned 180: IO18/19/20 at its top-left corner face the optos,
     # USB in the middle of the top row, analog at the top right, 3V3/EN on the right side.
-    "U4": (53.5, 32.5, 180, "F"),
+    "U4": (53.5, 33.3, 180, "F"),
     "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 40.8, 90, "F"), "R7": (45.0, 49.6, 90, "F"),   # opto LED resistors
     # right of the module: sensor dividers by the analog pins, EN RC, strap pull-up, 3V3 decoupling
-    "R15": (61.6, 25.4, 90, "F"), "C8": (63.4, 25.4, 90, "F"), "R16": (65.2, 25.4, 90, "F"), "R17": (67.0, 25.4, 90, "F"),
-    "C9": (68.8, 25.4, 90, "F"),
-    "R10": (61.6, 29.0, 90, "F"), "C5": (63.4, 29.0, 90, "F"), "R11": (65.2, 29.0, 90, "F"),
-    "C4": (61.6, 32.6, 90, "F"), "C3": (63.6, 33.1, 90, "F"),
+    "R15": (61.6, 26.2, 90, "F"), "C8": (63.4, 26.2, 90, "F"), "R16": (65.2, 26.2, 90, "F"), "R17": (67.0, 26.2, 90, "F"),
+    "C9": (68.8, 26.2, 90, "F"),
+    "R10": (61.6, 29.8, 90, "F"), "C5": (63.4, 29.8, 90, "F"), "R11": (65.2, 29.8, 90, "F"),
+    "C4": (61.6, 33.4, 90, "F"), "C3": (63.6, 33.9, 90, "F"),
     # power: LDO and bulk caps below the module
     "U5": (56.0, 43.3, 0, "F"), "C6": (47.6, 46.6, 90, "F"), "C7": (50.0, 42.9, 90, "F"),
     "D1": (48.4, 38.6, 0, "F"), "R12": (51.6, 38.6, 180, "F"),   # status LED
@@ -80,7 +80,7 @@ PLACE = {
     "J4": (67.8, 13.0, 90, "F"), "R13": (63.8, 2.6, 90, "F"), "R14": (63.8, 5.9, 90, "F"),
     "D2": (67.0, 21.2, 0, "F"),
     # bottom edge: switches, pressure, thermistor
-    "J6": (63.4, 37.6, 0, "F"), "J5": (63.4, 43.2, 0, "F"), "J7": (63.4, 48.8, 0, "F"),   # all on the right, beside the divider pins
+    "J6": (63.4, 38.4, 0, "F"), "J5": (63.4, 44.0, 0, "F"), "J7": (63.4, 49.6, 0, "F"),   # all on the right, beside the divider pins
     "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),    # BOOT recovery pads, underneath
     # holes (the heater triac's tab bolt is the fourth fixing)
     "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (55.5, 53.0, 0, "F"),
@@ -350,9 +350,10 @@ def build(spec, mains_v):
     j11, f11, f12, rv1, rv2, ps1, ps2, j12 = P("J1", "1"), P("F1", "1"), P("F1", "2"), P("RV1", "1"), P("RV1", "2"), P("PS1", "1"), P("PS1", "2"), P("J1", "2")
     run("AC_L", B, j11, (f11[0] - (f11[1] - j11[1]), j11[1]), f11)
     run("AC_L_FUSED", B, f12, (rv1[0] - (f12[1] - rv1[1]), f12[1]), rv1)
-    run("AC_L_FUSED", B, rv1, (ps1[0] - (ps1[1] - rv1[1]), rv1[1]), ps1)
+    # into the PSU's AC pins from outside the pair: L from the left, N (bottom layer) from the right
+    run("AC_L_FUSED", F, rv1, (rv1[0] + 3.8, rv1[1] + 3.8), (rv1[0] + 3.8, ps1[1] - (ps1[0] - rv1[0] - 3.8)), ps1)
     run("AC_N", F, j12, (rv2[0] - (rv2[1] - j12[1]), j12[1]), rv2)
-    run("AC_N", B, rv2, (rv2[0] + ps2[1] - rv2[1], ps2[1]), ps2)
+    run("AC_N", B, rv2, (24.0, rv2[1]), (33.5, rv2[1] + 33.5 - 24.0), (33.5, ps2[1]), ps2)
 
     # L trunk on B: fuse -> down the middle (under C2) -> via at the valve triac -> pump triac MT2.
     q22 = P("Q2", "2")
@@ -484,7 +485,7 @@ SAME_POTENTIAL_GROUPS = [
     ("HTR_B", "HEATER_OPTO"),
 ]
 SAME_POTENTIAL = [(g[i], g[j]) for g in SAME_POTENTIAL_GROUPS for i in range(len(g)) for j in range(i + 1, len(g))]
-MAINS_PARTS = ["Q1", "Q2", "Q3", "U1", "U2", "U3"]   # parts whose own pin pitch governs inside their courtyard
+MAINS_PARTS = ["Q1", "Q2", "Q3", "U1", "U2", "U3", "PS1"]   # parts whose own pin pitch governs inside their courtyard
 
 
 def write_rules(path, spec):

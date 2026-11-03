@@ -72,7 +72,7 @@ Layout adds two more:
 
 ```
  MAINS (left)                                         │ band │  SELV (right)
- J1 L ─┬─ F1 T500mA ─┬─ PS1 HLK-PM05 (AC) ════════════╪══════╪═ PS1 (DC) ─ +5V ─ U5 AMS1117 ─ +3V3
+ J1 L ─┬─ F1 T500mA ─┬─ PS1 RECOM RAC03E (AC) ════════╪══════╪═ PS1 (DC) ─ +5V ─ U5 TLV1117LV33 ─ +3V3
        │             └─ RV1 MOV ─ N                   │      │       USB-C VBUS ─ D2 ─┘
        ├─ Q3 Z0109NN ── J3.1 valve ◀ U3 MOC3083 ══════╪══════╪═ R9 150Ω ◀ GPIO18
        └─ Q2 BTA08 ──── J3.2 pump  ◀ U2 MOC3083 ══════╪══════╪═ R8 150Ω ◀ GPIO19
@@ -99,7 +99,7 @@ Layout adds two more:
 - **Triac drive, all three channels:** MOC3083 zero-cross opto-triac (fires only within ±20 V of a crossing), with a 360 Ω resistor from MT2 to the opto (R1, R2, R4) to limit its surge current.
 - **Supply branch:**
   - F1 T500mA (TR5), then RV1 MOV 10D271K.
-  - Then the **HLK-PM05**: certified, 3 kVAC isolation, 3 W (0.6 A).
+  - Then the **RECOM RAC03E-05SK/277**: 3 W (0.6 A), 4 kVAC reinforced, EN60335-1 household-certified, rated to 85 °C (full load to 75 °C) with a built-in input fuse. It replaced the HLK-PM05, which is only rated to about 60 °C; the case runs at 60–70 °C.
   - F1 protects only this branch. The loads are protected by the machine's own fuse and thermal
     fuses.
 
@@ -109,7 +109,7 @@ Layout adds two more:
   (IEC 60664-1).
 - **Two milled slots** run down the band, 2 mm wide: one under the PSU, one under the optos.
 - **Parts that cross the band:** three MOC3083s (5.3 kV RMS isolation, wide 0.4" leads, ~8.6 mm
-  pad to pad) and the HLK-PM05 (3 kV).
+  pad to pad) and the RECOM RAC03E (4 kV reinforced).
 - **Between mains nets** (functional insulation): **2.0 mm minimum, enforced as a design rule**
   (the lint below). IEC 60664-1 asks ~1.6 mm at 120 V, uncoated, pollution degree 2. Exempt:
   - pins inside one part's footprint (the triac and opto pin pitch is the manufacturer's rating);
@@ -137,8 +137,8 @@ Layout adds two more:
   - The PSU feeds +5 V directly.
   - USB VBUS joins through D2 for bench work without mains. D2 also stops the PSU back-feeding
     the PC.
-  - Bulk capacitors are 22 µF ceramics. There are no electrolytics, the part most likely to age at 60–70 °C.
-  - AMS1117-3.3 in SOT-223 on a copper pour.
+  - Bulk capacitors are 22 µF X7R ceramics (125 °C). There are no electrolytics, the part most likely to age at 60–70 °C.
+  - TI TLV1117LV33 in SOT-223 on a copper pour. It's stable with ceramic capacitors (the AMS1117 it replaced needs a tantalum output capacitor and can oscillate without one).
 - **Triac drive:** GPIO → 150 Ω → opto LED → GND.
   - Simulated 8.2–12.1 mA at every corner, against the MOC3083's 5 mA maximum trigger current.
 - **Thermistor (J5):** a 100k B3950 NTC probe to GND, with R15 8.2k 0.1 % to 3.3 V and C8 100 nF, into GPIO1 (ADC1).
@@ -219,7 +219,7 @@ simulation page.
 | Valve snubber | the same for the valve, holding current 5–10 mA | ~2 kV without it; 363–477 V with it (< 533 V, ⅔ of 800 V) |
 | Pressure input | full scale into the ADC, filter corner, 60 Hz pulses, ADC sampling kick-back | 2.97 V, 233 Hz, −0.36 dB, 0.3 mV |
 | Thermistor | voltage range 20–150 °C, sensitivity, self-heating, tolerance before calibration | 3.10–0.65 V, 24 mV/°C at 93 °C, 0.2 °C, ±1.2 °C |
-| Rails | 3.3 V and 5 V under Wi-Fi bursts; PSU −5 %; on USB | 3.3 V ≥ 3.29 V, 5 V ≥ 4.52 V |
+| Rails | 3.3 V and 5 V under Wi-Fi bursts; PSU −5 %; on USB (TLV1117LV dropout) | 3.3 V ≥ 3.29 V, 5 V ≥ 4.52 V |
 
 The models are behavioural:
 - diodes fitted to datasheet Vf;

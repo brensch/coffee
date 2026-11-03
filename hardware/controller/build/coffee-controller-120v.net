@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 01:04 AM")
+    (date "11/03/2026 01:16 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -90,7 +90,7 @@
       (tstamps "507fddd0-e494-5270-a7e4-2511aa140519"))
     (comp
       (ref "C3")
-      (value "10uF")
+      (value "10uF 10V X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_1206_3216Metric")
       (fields
@@ -113,7 +113,7 @@
       (tstamps "299afff0-b6cf-50c0-a677-db76bcc001ee"))
     (comp
       (ref "C4")
-      (value "100nF")
+      (value "100nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
@@ -159,7 +159,7 @@
       (tstamps "1d55401a-d19b-530c-b57c-5c75b8c48e01"))
     (comp
       (ref "C6")
-      (value "22uF 10V")
+      (value "22uF 10V X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_1206_3216Metric")
       (fields
@@ -182,7 +182,7 @@
       (tstamps "a6fd326a-61cc-55ba-9b64-3e8df39c0c42"))
     (comp
       (ref "C7")
-      (value "22uF 6.3V")
+      (value "22uF 10V X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_1206_3216Metric")
       (fields
@@ -413,13 +413,13 @@
     (comp
       (ref "J2")
       (value "Heater")
-      (description "Screw_Terminal_01x02_5.08")
-      (footprint "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
+      (description "Screw_Terminal_01x02_5.08_24A")
+      (footprint "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal")
       (fields
         (field
-          (name "Description") "Screw_Terminal_01x02_5.08")
+          (name "Description") "Screw_Terminal_01x02_5.08_24A")
         (field
-          (name "Footprint") "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
+          (name "Footprint") "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -428,7 +428,7 @@
           (name "SKiDL Line") "controller.py:53"))
       (libsource
         (lib "NO_LIB")
-        (part "Screw_Terminal_01x02_5.08"))
+        (part "Screw_Terminal_01x02_5.08_24A"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -550,14 +550,14 @@
       (tstamps "d3f28a6c-17c1-5c6b-aaa4-b24b96f23d33"))
     (comp
       (ref "PS1")
-      (value "HLK-PM05")
-      (description "Isolated AC-DC 5 V 0.6 A, 3 W (UL/CE, 3 kVAC isolation)")
-      (footprint "Converter_ACDC:Converter_ACDC_Hi-Link_HLK-PMxx")
+      (value "RAC03E-05SK/277")
+      (description "Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)")
+      (footprint "Recom:RAC03E-K_277")
       (fields
         (field
-          (name "Description") "Isolated AC-DC 5 V 0.6 A, 3 W (UL/CE, 3 kVAC isolation)")
+          (name "Description") "Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)")
         (field
-          (name "Footprint") "Converter_ACDC:Converter_ACDC_Hi-Link_HLK-PMxx")
+          (name "Footprint") "Recom:RAC03E-K_277")
         (field
           (name "Datasheet"))
         (field
@@ -566,7 +566,7 @@
           (name "SKiDL Line") "controller.py:53"))
       (libsource
         (lib "NO_LIB")
-        (part "HLK-PM05"))
+        (part "RAC03E-05SK/277"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -1194,12 +1194,12 @@
       (tstamps "b2699459-f172-5b2a-8b70-5ef993fb2f77"))
     (comp
       (ref "U5")
-      (value "AMS1117-3.3")
-      (description "LDO 3.3 V 1 A")
+      (value "TLV1117LV33")
+      (description "LDO 3.3 V 1 A, ceramic-stable")
       (footprint "Package_TO_SOT_SMD:SOT-223-3_TabPin2")
       (fields
         (field
-          (name "Description") "LDO 3.3 V 1 A")
+          (name "Description") "LDO 3.3 V 1 A, ceramic-stable")
         (field
           (name "Footprint") "Package_TO_SOT_SMD:SOT-223-3_TabPin2")
         (field
@@ -1210,7 +1210,7 @@
           (name "SKiDL Line") "controller.py:53"))
       (libsource
         (lib "NO_LIB")
-        (part "AMS1117-3.3"))
+        (part "TLV1117LV33"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -1270,7 +1270,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "PS1")
-        (pin "4")
+        (pin "5")
         (pintype "POWER-OUT"))
       (node
         (ref "U5")
@@ -1454,7 +1454,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "PS1")
-        (pin "3")
+        (pin "4")
         (pintype "POWER-OUT"))
       (node
         (ref "R13")

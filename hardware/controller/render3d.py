@@ -25,6 +25,8 @@ def local_model(path):
 
 missing = []
 for fp in b.GetFootprints():
+    if len(fp.Models()) == 0 and fp.GetReference()[:2] in ("PS",):
+        missing.append(fp.GetReference())   # no 3D model in the footprint at all
     for i in range(len(fp.Models())):
         rel = local_model(fp.Models()[i].m_Filename)
         if not os.path.exists(os.path.join(MODELS, rel)):
@@ -56,6 +58,13 @@ for fp in b.GetFootprints():
         extra.append(dict(ref=ref, kind="box", x=pcbnew.ToMM(fp.GetPosition().x), y=pcbnew.ToMM(fp.GetPosition().y), sx=18.0, sy=19.2, sz=3.2))
     elif ref.startswith("F"):   # TR5 fuse: d8.5 x 8 mm
         extra.append(dict(ref=ref, kind="cyl", x=x, y=y, r=4.25, sz=8.0))
+    elif ref.startswith("PS"):  # RECOM RAC03E: 37 x 24 x 15.4 mm; body centre is (15.24, -8.89) from pin 1
+        o = fp.GetOrientationDegrees()
+        p1 = [p for p in pads if p.GetNumber() == "1"][0]
+        cx, cy = pcbnew.ToMM(p1.GetPosition().x) + 15.24, pcbnew.ToMM(p1.GetPosition().y) - 8.89
+        extra.append(dict(ref=ref, kind="box", x=cx, y=cy, sx=37.0, sy=24.0, sz=15.4))
+    elif ref.startswith("J"):   # screw terminal without a local model: 10 x 10 x 12 mm block over its pins
+        extra.append(dict(ref=ref, kind="disc", x=x, y=y + 1.5, sx=11.0, sy=10.0, sz=12.0))
     elif ref.startswith("RV"):  # 7 mm disc varistor standing on its leads
         extra.append(dict(ref=ref, kind="disc", x=x, y=y, sx=4.2 if vertical else 7.5, sy=7.5 if vertical else 4.2, sz=9.0))
 json.dump(extra, open(os.path.join(out, "standins.json"), "w"))

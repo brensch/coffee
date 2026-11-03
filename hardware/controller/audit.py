@@ -30,7 +30,7 @@ the crystal; the opto-triacs' own zero-cross circuits do the switching at the cr
 **no zero-cross detector**: a one-cycle window always holds exactly one positive half-wave, so the
 pump stroke count is exact without knowing the phase.
 
-A Hi-Link HLK-PM05 module makes 5 V. Sensors go straight into the C6's ADC1:
+A RECOM RAC03E-05SK/277 module (85 °C, EN60335, 4 kV reinforced) makes 5 V; a TI TLV1117LV33 makes 3.3 V. Sensors go straight into the C6's ADC1:
 - a 100k B3950 NTC thermistor (8.2k 0.1 % reference to 3.3 V, two-point calibration);
 - a 0.5–4.5 V ratiometric pressure transducer (10k/20k divider).
 
@@ -77,7 +77,7 @@ the optos and the PSU cross it.
    - Snubbers: why each one is there is in `sim/REPORT.md`. The valve turns off near the line peak and rings to ~2× it (≤ 477 V at 132 V, with the ceramic derated), hence 800 V parts.
 4. **Thermal.**
    - Heater triac ~11 W at 11.4 A; R_th(j-c) 1.7 °C/W, bolted to the chassis. Is that enough?
-   - LDO: AMS1117 at ~0.2 W average.
+   - LDO: TLV1117LV33 at ~0.2 W average.
    - The case interior runs at 60–70 °C.
 5. **Measurement chain.**
    - NTC divider: mid-scale near 93 °C, 24 mV/°C.
@@ -106,7 +106,7 @@ the optos and the PSU cross it.
   - pump modelled as 1.2 H / 220 Ω plus a diode; valve as 4.4 H / 300 Ω.
 - **The coil inductances are estimates**, not measurements.
 - **Some datasheet figures weren't confirmed:** the BTA24's V_TO, r_d and IGT were not checked against the official ST datasheet (R_th 1.7 °C/W was). The Z0109's IH of 10 mA comes from distributor data.
-- **Footprints:** the ESP32-C6 footprint is Espressif's own KiCad library; the rest are KiCad library defaults. Check the HLK-PM05 outline against the parts actually bought.
+- **Footprints:** the ESP32-C6 footprint is Espressif's own KiCad library; the rest are KiCad library defaults. Check the RECOM RAC03E footprint (drawn from its datasheet, lib/Recom.pretty) and the MKDS 3 heater terminal against the parts actually bought.
 - **No EMC analysis.** No thermal measurement.
 
 ## How to reproduce
@@ -171,7 +171,7 @@ def main():
     if os.path.isdir(g):
         for f in os.listdir(g):
             shutil.copy(os.path.join(g, f), os.path.join(dst, "pcb/gerbers", f))
-    vdir = os.path.join(HERE, "versions", "v8-compact")
+    vdir = os.path.join(HERE, "versions", "v9-85c-parts")
     cp(os.path.join(vdir, "board.glb"), "pcb/board.glb")
     cp(os.path.join(vdir, "3d.png"), "pcb/render-3d.png")
     for f in ("run.py", "waves.py", "REPORT.md", "waves.json"):

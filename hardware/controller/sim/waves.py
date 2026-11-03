@@ -68,7 +68,7 @@ Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.15
 C1 v5 0 22u
 Rl5 v5 0 300
-Bldo v33r 0 V = min(3.3, v(v5) - (1.0 + 0.4*i(Vsense)))
+Bldo v33r 0 V = min(3.3, v(v5) - (0.15 + 0.3*i(Vsense)))
 Rout v33r v33s 0.02
 Vsense v33s v33 0
 Bin v5 0 I = i(Vsense)
