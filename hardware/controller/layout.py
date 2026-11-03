@@ -32,11 +32,11 @@ FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
 
 # ---------------------------------------------------------------- geometry (mm)
-W, H = 72.0, 60.5           # board
+W, H = 72.0, 56.5           # board
 BAND = (34.5, 41.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
 SLOT_X = 38.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
 SLOT_W = 2.0
-SLOTS = [(2.5, 22.5), (24.0, 57.5)]   # y ranges; a web of board is left between slots for stiffness
+SLOTS = [(2.5, 22.5), (24.0, 53.5)]   # y ranges; a web of board is left between slots for stiffness
 
 # ref: (x, y, rotation_deg, side) - side 'F' (top) or 'B'. Mains x < 34.5, SELV x > 41.5.
 PLACE = {
@@ -54,20 +54,20 @@ PLACE = {
     "R5": (15.0, 30.6, 180, "F"),   # valve gate-MT1 (2 mm below Q3's MT2 pin)
     "R4": (29.5, 30.5, 0, "F"),     # valve opto series
     # pump lane: U2 gate (32.92,38.92), opto (32.92,44.0)
-    "U2": (43.08, 44.0, 180, "F"),
-    "Q2": (14.0, 39.5, 0, "F"),     # TO-220 tab up: MT1 14, MT2 16.54, G 19.08
-    "R2": (29.2, 44.0, 270, "F"),   # AC_L at the top, PUMP_OPTO beside U2 pin 6
-    "R3": (24.0, 38.7, 270, "F"), "C1": (24.2, 48.0, 180, "F"),   # pump snubber 100 R + 10 nF (SMD X2)
+    "U2": (43.08, 40.8, 180, "F"),
+    "Q2": (14.0, 36.3, 0, "F"),     # TO-220 tab up: MT1 14, MT2 16.54, G 19.08
+    "R2": (29.2, 40.8, 270, "F"),   # AC_L at the top, PUMP_OPTO beside U2 pin 6
+    "R3": (24.0, 35.5, 270, "F"), "C1": (24.2, 44.8, 180, "F"),   # pump snubber 100 R + 10 nF (SMD X2)
     # heater: Q1 on the left edge (bolts to the chassis), J2 on the bottom edge, pours between
-    "U1": (43.08, 55.6, 180, "F"),  # gate (32.92,50.52), opto (32.92,55.6)
-    "Q1": (3.6, 51.0, 90, "F"),     # MT1 (3.6,51) HTR_A, MT2 (3.6,48.46) HTR_B, G (3.6,45.92)
-    "J2": (10.5, 54.5, 0, "F"),
-    "R1": (22.6, 57.8, 0, "F"),     # heater opto series; pad 1 sits in the HTR_B pour
+    "U1": (43.08, 51.6, 180, "F"),  # gate (32.92,50.52), opto (32.92,55.6)
+    "Q1": (3.6, 47.0, 90, "F"),     # MT1 (3.6,51) HTR_A, MT2 (3.6,48.46) HTR_B, G (3.6,45.92)
+    "J2": (10.5, 50.5, 0, "F"),
+    "R1": (22.6, 53.8, 0, "F"),     # heater opto series; pad 1 sits in the HTR_B pour
     # ================= SELV =================
     # ESP32-C6-MINI-1U under the PSU, turned 180: IO18/19/20 at its top-left corner face the optos,
     # USB in the middle of the top row, analog at the top right, 3V3/EN on the right side.
     "U4": (53.5, 32.5, 180, "F"),
-    "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 44.0, 90, "F"), "R7": (45.0, 52.6, 90, "F"),   # opto LED resistors
+    "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 40.8, 90, "F"), "R7": (45.0, 49.6, 90, "F"),   # opto LED resistors
     # right of the module: sensor dividers by the analog pins, EN RC, strap pull-up, 3V3 decoupling
     "R15": (61.6, 25.4, 90, "F"), "C8": (63.4, 25.4, 90, "F"), "R16": (65.2, 25.4, 90, "F"), "R17": (67.0, 25.4, 90, "F"),
     "C9": (68.8, 25.4, 90, "F"),
@@ -80,10 +80,10 @@ PLACE = {
     "J4": (67.8, 13.0, 90, "F"), "R13": (63.8, 2.6, 90, "F"), "R14": (63.8, 5.9, 90, "F"),
     "D2": (67.0, 21.2, 0, "F"),
     # bottom edge: switches, pressure, thermistor
-    "J6": (63.4, 39.4, 0, "F"), "J5": (63.4, 45.0, 0, "F"), "J7": (63.4, 50.6, 0, "F"),   # all on the right, beside the divider pins
+    "J6": (63.4, 37.6, 0, "F"), "J5": (63.4, 43.2, 0, "F"), "J7": (63.4, 48.8, 0, "F"),   # all on the right, beside the divider pins
     "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),    # BOOT recovery pads, underneath
     # holes (the heater triac's tab bolt is the fourth fixing)
-    "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (68.6, 57.4, 0, "F"),
+    "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (55.5, 53.0, 0, "F"),
 }
 
 
@@ -276,7 +276,7 @@ def build(spec, mains_v):
         board.Add(v)
 
     # silkscreen: mark the barrier and the mains side
-    for txt, x, y, size in (("MAINS", 29.5, 58.8, 1.2), ("SELV", 62.6, 37.6, 1.0),
+    for txt, x, y, size in (("MAINS", 29.5, 54.8, 1.2), ("SELV", 62.6, 37.6, 1.0),
                             (f"coffee v6 {mains_v} V", 60.0, 50.0, 0.7)):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt)
@@ -295,7 +295,7 @@ def build(spec, mains_v):
         z = zone(board, nets[net], layer, pts, clearance=clearance, priority=2, name=net)
         z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
         z.SetMinThickness(mm(0.3))
-    dy = -2.0   # v5 heater geometry, moved with the lanes
+    dy = -6.0   # v5 heater geometry, moved with the lanes
     sh = lambda pts: [(x, y + dy) for x, y in pts]
     band = sh([(2.0, 49.42), (14.4, 49.42), (20.5, 49.42), (20.5, 57.8), (23.0, 57.8), (23.0, 61.9), (14.4, 61.9), (14.4, 51.5), (2.0, 51.5)])
     band_b = sh([(5.2, 49.42), (20.5, 49.42), (20.5, 61.9), (14.4, 61.9), (14.4, 51.5), (5.2, 51.5)])
@@ -319,7 +319,7 @@ def build(spec, mains_v):
     # the pump snubber and the 2 mm mains spacing leave the router no way in (v5's last unrouted net).
     o = nets["HEATER_OPTO"]
     r1o, u1o = pad_pos(board, "R1", "2"), pad_pos(board, "U1", "6")
-    yo = 58.6
+    yo = 54.6
     for a_, b_ in ((r1o, (r1o[0] + 0.8, yo)), ((r1o[0] + 0.8, yo), (u1o[0] - 1.9, yo)),
                    ((u1o[0] - 1.9, yo), (u1o[0], yo - 1.9)), ((u1o[0], yo - 1.9), u1o)):
         track(board, o, pcbnew.F_Cu, a_, b_, 0.8)
@@ -365,7 +365,10 @@ def build(spec, mains_v):
 
     # Pump MT2 -> R3 (pump snubber) -> R4 (valve opto feed) and R2 (pump opto feed).
     r31, r41, r21, r42, u36, r22, u26 = P("R3", "1"), P("R4", "1"), P("R2", "1"), P("R4", "2"), P("U3", "6"), P("R2", "2"), P("U2", "6")
-    run("AC_L", F, q22, (q22[0], r31[1] + 1.16), (q22[0] + 1.16, r31[1]), r31)
+    # R3/R4/R2 cluster joins L by a short branch off the trunk (bottom layer), clear of the valve gate parts
+    via("AC_L", (r31[0] - 2.6, r31[1]))
+    run("AC_L", B, (15.0, r31[1] - 1.54), (16.54, r31[1]), (r31[0] - 2.6, r31[1]))
+    run("AC_L", F, (r31[0] - 2.6, r31[1]), r31)
     run("AC_L", F, r31, (r41[0], r31[1] - (r41[0] - r31[0])), r41)
     run("AC_L", F, r31, (r31[0] + 1.2, r31[1]), (r21[0], r31[1] + r21[0] - r31[0] - 1.2), r21)
     run("VALVE_OPTO", F, r42, (r42[0] + u36[1] - r42[1], u36[1]), u36)
@@ -391,11 +394,11 @@ def build(spec, mains_v):
     run("PUMP_GATE", B, q23, (q23[0] + q23[1] - u24[1], u24[1]), u24)
     # Pump load: Q2.1 -> J3.2 (45 deg up-left); Q2.1 -> y 43.6 -> C1 (load side, left pad).
     q21, j32, c1l = P("Q2", "1"), P("J3", "2"), P("C1", "2")
-    run("PUMP_L", F, q21, (j32[0], q21[1] - (q21[0] - j32[0])), j32)
-    run("PUMP_L", F, q21, (q21[0] - 1.0, q21[1] + 1.0), (13.0, 43.6), (c1l[0] - 1.8, 43.6), (c1l[0], 45.4), (c1l[0], 45.8))
+    run("PUMP_L", F, q21, (j32[0] + (q21[1] - j32[1]), q21[1]), j32)
+    run("PUMP_L", F, q21, (q21[0] - 1.0, q21[1] + 1.0), (13.0, 40.4), (c1l[0] - 1.4, 40.4), (c1l[0] + 0.4, 42.2), (c1l[0] + 0.4, 42.6))   # ends inside the pad, clear of the heater keep-out
     # Pump snubber: R3.2 -> C1 (snubber side, right pad).
     r32, c1r = P("R3", "2"), P("C1", "1")
-    run("PUMP_SNUB", F, r32, (c1r[0] - (45.5 - r32[1]), r32[1]), (c1r[0], 45.5), (c1r[0], 46.0))
+    run("PUMP_SNUB", F, r32, (c1r[0] - (42.3 - r32[1]), r32[1]), (c1r[0], 42.3), (c1r[0], 42.8))
 
     # Lint: no foreign pad inside a heater guard (the router could never reach it: v5's last
     # unconnected net was exactly this).
