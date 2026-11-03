@@ -1,6 +1,6 @@
 # Controller board v6
 
-One 72 × 56.5 mm board drives the machine, with 51 parts. It holds:
+One 64.5 × 56.5 mm board drives the machine, with 51 parts. It holds:
 - an ESP32-C6 module;
 - the 5 V supply;
 - three zero-cross triacs for the heater, pump and 3-way valve;
@@ -164,7 +164,7 @@ The drive pins are ordered so that, along the module's edge, they line up with t
 (valve, pump, heater from top to bottom). The traces don't cross.
 
 ## Layout
-- **Board:** 72 × 56.5 mm, 2 layers, 2 oz copper.
+- **Board:** 64.5 × 56.5 mm, 2 layers, 2 oz copper.
 - **Mains side, left: horizontal lanes**, top to bottom:
   - supply: mains-in terminal → fuse → MOV → PSU;
   - valve;

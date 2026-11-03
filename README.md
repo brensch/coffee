@@ -49,7 +49,7 @@ coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardw
 
 ## Hardware: the v6 controller board
 
-One 72 × 56.5 mm board with 51 parts. It sits inside the machine and switches the heater, pump and
+One 64.5 × 56.5 mm board with 51 parts. It sits inside the machine and switches the heater, pump and
 valve itself. The design rule is that anything the firmware can do, the firmware does. What's left on
 the board:
 - isolation;

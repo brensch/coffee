@@ -563,7 +563,7 @@
    "notes": "U.FL antenna: pigtail to a 2.4 GHz antenna outside the steel case"
   },
   "C3": {
-   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
    "value": "10uF 10V X7R",
    "pins": {
     "1": "+3V3",
@@ -748,7 +748,7 @@
    "notes": "Tab pour is the heatsink"
   },
   "C6": {
-   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
    "value": "22uF 10V X7R",
    "pins": {
     "1": "+5V",
@@ -761,11 +761,11 @@
    "mains": [],
    "populate": "Y",
    "desc": "Capacitor",
-   "mpn": "Murata GRM31CR71A226KE15L",
+   "mpn": "Murata GRM21BZ71A226ME15L",
    "notes": "Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
   },
   "C7": {
-   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
    "value": "22uF 10V X7R",
    "pins": {
     "1": "+3V3",
@@ -778,7 +778,7 @@
    "mains": [],
    "populate": "Y",
    "desc": "Capacitor",
-   "mpn": "Murata GRM31CR71A226KE15L",
+   "mpn": "Murata GRM21BZ71A226ME15L",
    "notes": "Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
   },
   "J4": {
@@ -1060,25 +1060,14 @@
    "mpn": "",
    "notes": ""
   },
-  "H2": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": ""
-  },
   "H3": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
+   "footprint": "MountingHole:MountingHole_2.7mm_M2.5",
+   "value": "M2.5",
    "pins": {},
    "pin_names": {},
    "mains": [],
    "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
+   "desc": "M2.5 mounting hole (unplated), beside the PSU",
    "mpn": "",
    "notes": ""
   }

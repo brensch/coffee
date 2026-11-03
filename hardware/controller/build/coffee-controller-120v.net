@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 01:16 AM")
+    (date "11/03/2026 01:27 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -92,12 +92,12 @@
       (ref "C3")
       (value "10uF 10V X7R")
       (description "Capacitor")
-      (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (footprint "Capacitor_SMD:C_0805_2012Metric")
       (fields
         (field
           (name "Description") "Capacitor")
         (field
-          (name "Footprint") "Capacitor_SMD:C_1206_3216Metric")
+          (name "Footprint") "Capacitor_SMD:C_0805_2012Metric")
         (field
           (name "Datasheet"))
         (field
@@ -161,12 +161,12 @@
       (ref "C6")
       (value "22uF 10V X7R")
       (description "Capacitor")
-      (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (footprint "Capacitor_SMD:C_0805_2012Metric")
       (fields
         (field
           (name "Description") "Capacitor")
         (field
-          (name "Footprint") "Capacitor_SMD:C_1206_3216Metric")
+          (name "Footprint") "Capacitor_SMD:C_0805_2012Metric")
         (field
           (name "Datasheet"))
         (field
@@ -184,12 +184,12 @@
       (ref "C7")
       (value "22uF 10V X7R")
       (description "Capacitor")
-      (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (footprint "Capacitor_SMD:C_0805_2012Metric")
       (fields
         (field
           (name "Description") "Capacitor")
         (field
-          (name "Footprint") "Capacitor_SMD:C_1206_3216Metric")
+          (name "Footprint") "Capacitor_SMD:C_0805_2012Metric")
         (field
           (name "Datasheet"))
         (field
@@ -342,38 +342,15 @@
         (tstamps "/"))
       (tstamps "4346372e-b487-58d7-bb7a-35d182fa1b2e"))
     (comp
-      (ref "H2")
-      (value "M3")
-      (description "M3 mounting hole (unplated)")
-      (footprint "MountingHole:MountingHole_3.2mm_M3")
-      (fields
-        (field
-          (name "Description") "M3 mounting hole (unplated)")
-        (field
-          (name "Footprint") "MountingHole:MountingHole_3.2mm_M3")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "H2")
-        (field
-          (name "SKiDL Line") "controller.py:53"))
-      (libsource
-        (lib "NO_LIB")
-        (part "MountingHole"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "0edb43ef-5ede-5ff4-8b77-07bb3d82b998"))
-    (comp
       (ref "H3")
-      (value "M3")
-      (description "M3 mounting hole (unplated)")
-      (footprint "MountingHole:MountingHole_3.2mm_M3")
+      (value "M2.5")
+      (description "M2.5 mounting hole (unplated), beside the PSU")
+      (footprint "MountingHole:MountingHole_2.7mm_M2.5")
       (fields
         (field
-          (name "Description") "M3 mounting hole (unplated)")
+          (name "Description") "M2.5 mounting hole (unplated), beside the PSU")
         (field
-          (name "Footprint") "MountingHole:MountingHole_3.2mm_M3")
+          (name "Footprint") "MountingHole:MountingHole_2.7mm_M2.5")
         (field
           (name "Datasheet"))
         (field
@@ -382,7 +359,7 @@
           (name "SKiDL Line") "controller.py:53"))
       (libsource
         (lib "NO_LIB")
-        (part "MountingHole"))
+        (part "MountingHole_M2.5"))
       (sheetpath
         (names "/")
         (tstamps "/"))

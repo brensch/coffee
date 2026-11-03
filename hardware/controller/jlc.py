@@ -31,10 +31,10 @@ PKG = {  # KiCad footprint fragment -> JLC package string fragment
     "SOT-23-6": "SOT-23-6", "SOT-23": "SOT-23", "SOT-223": "SOT-223",
     "SOIC-8": "SOIC-8", "MSOP-10": "MSOP-10", "TL3342": "SMD",
 }
-THT = ("TO-220", "DIP-6", "TestPoint", "Fuse_Littelfuse", "RV_Disc", "C_Rect", "TerminalBlock", "Converter_ACDC", "JST_PH", "MountingHole")
+THT = ("TO-220", "DIP-6", "TestPoint", "Recom:", "Fuse_Littelfuse", "RV_Disc", "C_Rect", "TerminalBlock", "Converter_ACDC", "JST_PH", "MountingHole")
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
-    "SS14": "SS14", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR", "Murata GRM31CR71A226KE15L": "GRM31CR71A226KE15L",
+    "SS14": "SS14", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR", "Murata GRM21BZ71A226ME15L": "GRM21BZ71A226ME15L",
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "GCT USB4105-GF-A": "USB4105-GF-A",
     "Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)": "GA355QR7GB103",
     "ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)": "Z0109NN",
@@ -77,7 +77,7 @@ def norm_value(v):
     return v0, tol
 
 
-FIXED = {"LED_0603|green": "C12624"}   # KT-0603G green 0603 LED (my remembered C72043 is out of stock)
+FIXED = {"LED_0603|green": "C12624", "SOT-223|TLV1117LV33": "C15578"}   # genuine TI part (another listing claims 12 V / 1.2 V dropout: a clone)   # KT-0603G green 0603 LED (my remembered C72043 is out of stock)
 
 
 def lookup(row):

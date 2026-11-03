@@ -74,6 +74,7 @@ FUSE = tmpl("Fuse_TR5", "F", "Fuse:Fuse_Littelfuse_372_D8.50mm", TWO, "Fuse, TR5
 MOV = tmpl("Varistor", "RV", "Varistor:RV_Disc_D7mm_W4.2mm_P5mm", TWO, "Varistor")
 TESTPAD = tmpl("TestPad", "TP", "TestPoint:TestPoint_Pad_D1.5mm", [(1, "1", T.PASSIVE)], "Bare test pad")
 HOLE = tmpl("MountingHole", "H", "MountingHole:MountingHole_3.2mm_M3", [], "M3 mounting hole (unplated)")
+HOLE_M25 = tmpl("MountingHole_M2.5", "H", "MountingHole:MountingHole_2.7mm_M2.5", [], "M2.5 mounting hole (unplated), beside the PSU")
 
 
 def conn(n, name, fp):
@@ -207,7 +208,7 @@ for pin in u_mcu.pins:
     elif pin.name.startswith("NC"):
         pin += NC
 u_mcu["3V3"] += v3
-for ref, val, fp in (("C3", "10uF 10V X7R", FP_C_1206), ("C4", "100nF X7R", FP_C)):
+for ref, val, fp in (("C3", "10uF 10V X7R", "Capacitor_SMD:C_0805_2012Metric"), ("C4", "100nF X7R", FP_C)):
     c = part(C, ref, val, footprint=fp, notes="Module decoupling at the 3V3 pin")
     c[1, 2] += v3, gnd
 en = Net("EN")
@@ -243,7 +244,7 @@ u_ldo["VIN"] += v5
 u_ldo["GND"] += gnd
 u_ldo["VOUT"] += v3
 for ref, val, net in (("C6", "22uF 10V X7R", v5), ("C7", "22uF 10V X7R", v3)):
-    c = part(C, ref, val, footprint=FP_C_1206, mpn="Murata GRM31CR71A226KE15L", notes="Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C")
+    c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Murata GRM21BZ71A226ME15L", notes="Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C")
     c[1, 2] += net, gnd
 
 j_usb = part(USBC, "J4", "USB-C", mpn="GCT USB4105-GF-A", notes="Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power")
@@ -307,8 +308,8 @@ j_sw[3] += gnd
 
 for p in ("IO2", "IO3", "IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
-for i in range(3):   # the heater triac's tab bolt anchors the fourth corner
-    part(HOLE, f"H{i + 1}", "M3")
+part(HOLE, "H1", "M3")          # mains side; the heater triac's tab bolt is another fixing
+part(HOLE_M25, "H3", "M2.5")    # bottom-right corner
 
 
 # ================================================================ checks + outputs

@@ -32,7 +32,7 @@ FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
 
 # ---------------------------------------------------------------- geometry (mm)
-W, H = 72.0, 56.5           # board
+W, H = 64.5, 56.5           # board
 BAND = (34.5, 41.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
 SLOT_X = 38.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
 SLOT_W = 2.0
@@ -64,26 +64,27 @@ PLACE = {
     "J2": (10.5, 50.5, 0, "F"),
     "R1": (22.6, 53.8, 0, "F"),     # heater opto series; pad 1 sits in the HTR_B pour
     # ================= SELV =================
-    # ESP32-C6-MINI-1U under the PSU, turned 180: IO18/19/20 at its top-left corner face the optos,
-    # USB in the middle of the top row, analog at the top right, 3V3/EN on the right side.
-    "U4": (53.5, 33.3, 180, "F"),
+    # Top side: only the module, the connectors and USB. Every small SMD part sits on the BOTTOM side,
+    # in the otherwise wasted area under the PSU.
+    "U4": (53.5, 33.3, 180, "F"),                                   # IO18/19/20 face the optos
     "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 40.8, 90, "F"), "R7": (45.0, 49.6, 90, "F"),   # opto LED resistors
-    # right of the module: sensor dividers by the analog pins, EN RC, strap pull-up, 3V3 decoupling
-    "R15": (61.6, 26.2, 90, "F"), "C8": (63.4, 26.2, 90, "F"), "R16": (65.2, 26.2, 90, "F"), "R17": (67.0, 26.2, 90, "F"),
-    "C9": (68.8, 26.2, 90, "F"),
-    "R10": (61.6, 29.8, 90, "F"), "C5": (63.4, 29.8, 90, "F"), "R11": (65.2, 29.8, 90, "F"),
-    "C4": (61.6, 33.4, 90, "F"), "C3": (63.6, 33.9, 90, "F"),
-    # power: LDO and bulk caps below the module
-    "U5": (56.0, 43.3, 0, "F"), "C6": (47.6, 46.6, 90, "F"), "C7": (50.0, 42.9, 90, "F"),
-    "D1": (48.4, 38.6, 0, "F"), "R12": (51.6, 38.6, 180, "F"),   # status LED
-    # top right: USB-C on the right edge, CC resistors, VBUS diode
-    "J4": (67.8, 13.0, 90, "F"), "R13": (63.8, 2.6, 90, "F"), "R14": (63.8, 5.9, 90, "F"),
-    "D2": (67.0, 21.2, 0, "F"),
-    # bottom edge: switches, pressure, thermistor
-    "J6": (63.4, 38.4, 0, "F"), "J5": (63.4, 44.0, 0, "F"), "J7": (63.4, 49.6, 0, "F"),   # all on the right, beside the divider pins
-    "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),    # BOOT recovery pads, underneath
+    "D1": (62.2, 29.6, 90, "F"), "R12": (62.2, 33.2, 90, "F"),      # status LED, right edge (light pipe)
+    # one row of sensor/switch connectors under the module, wires leave downward
+    "J6": (48.6, 44.8, 90, "F"), "J5": (54.3, 44.8, 90, "F"), "J7": (60.0, 44.8, 90, "F"),
+    # bottom edge: USB-C (flashing only) and a fixing
+    "J4": (52.0, 52.3, 0, "F"), "H3": (61.3, 53.4, 0, "F"),
+    # ---- bottom side, under the PSU ----
+    "U5": (47.0, 9.5, 0, "B"), "C7": (53.6, 12.0, 90, "B"), "C6": (44.6, 16.0, 90, "B"),
+    "D2": (47.2, 19.8, 0, "B"),
+    "C9": (57.0, 22.2, 90, "B"), "R17": (58.8, 22.2, 90, "B"), "R16": (60.6, 22.2, 90, "B"),   # pressure divider at IO0
+    "C8": (57.0, 18.8, 90, "B"), "R15": (58.8, 18.8, 90, "B"),                                  # thermistor at IO1
+    "R10": (60.6, 18.8, 90, "B"), "C5": (60.6, 15.6, 90, "B"),                                  # EN RC
+    "C4": (58.8, 15.6, 90, "B"), "C3": (57.0, 15.4, 90, "B"),                                   # 3V3 decoupling
+    "R11": (52.6, 22.2, 90, "B"),                                                               # GPIO8 pull-up
+    "R13": (46.4, 41.0, 90, "B"), "R14": (59.0, 49.6, 90, "B"),                                 # USB CC
+    "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),       # BOOT recovery pads
     # holes (the heater triac's tab bolt is the fourth fixing)
-    "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (55.5, 53.0, 0, "F"),
+    "H1": (4.0, 16.4, 0, "F"),
 }
 
 
@@ -276,8 +277,8 @@ def build(spec, mains_v):
         board.Add(v)
 
     # silkscreen: mark the barrier and the mains side
-    for txt, x, y, size in (("MAINS", 29.5, 54.8, 1.2), ("SELV", 62.6, 37.6, 1.0),
-                            (f"coffee v6 {mains_v} V", 60.0, 50.0, 0.7)):
+    for txt, x, y, size in (("MAINS", 29.5, 54.8, 1.2), ("SELV", 49.0, 38.6, 1.0),
+                            (f"coffee v10 {mains_v} V", 57.0, 38.6, 0.6)):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt)
         t.SetPosition(V(mm(x), mm(y)))

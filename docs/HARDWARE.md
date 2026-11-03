@@ -59,7 +59,7 @@ Every part was checked against two questions: is it rated for a 70 °C ambient w
 | Opto-triacs MOC3083 | 85 °C ambient | 8–12 mA LED drive | Trigger needs ≤ 5 mA, so the LED can lose over a third of its light with age before it matters. |
 | Triacs BTA24-800BW / BTA08-800CW / Z0109NN | 125 °C junction | heater ~11 W into the chassis; pump ~0.4 W; valve ~0.03 W | 800 V parts: the worst simulated spike is 477 V. |
 | Snubber caps Murata GA355 (X2, ceramic) | 125 °C | — | Ceramic safety caps don't lose capacitance over the years the way film X2 caps do. |
-| Bulk caps Murata GRM31 22 µF **X7R** | 125 °C | — | There are no electrolytics anywhere on the board (they dry out in heat). X7R, not X5R (85 °C). |
+| Bulk caps Murata GRM21 22 µF **X7R** (0805) | 125 °C | — | There are no electrolytics anywhere on the board (they dry out in heat). X7R, not X5R (85 °C). |
 | Heater terminal **Phoenix MKDS 3** | 24 A | 11.4 A at 60–70 °C | *Was MKDS 1,5 (17.5 A), which is too close once derated for heat.* Use ferrules and re-tighten after the first few heat cycles. |
 | Supply/load terminals Phoenix MKDS 1,5 | 17.5 A | < 1 A | — |
 | MOV Bourns 10D271K | 85 °C | — | MOVs wear a little with each large surge. F1 sits upstream, so a worn-out MOV that shorts blows the fuse instead of burning. |
@@ -108,7 +108,7 @@ The full table, pigtails and pre-power checks are in INSTALL.md §5.
   The heater triac's tab bolts to the metal chassis, which is its heatsink.
 - **Material:** PC, or V-0 rated PETG/ASA. PLA softens at ~55 °C, and the case interior reaches
   60–70 °C near the boiler.
-- **Design:** parametric OpenSCAD around the board (72 × 56.5 mm, three M3 holes, plus the
+- **Design:** parametric OpenSCAD around the board (64.5 × 56.5 mm, three M3 holes, plus the
   triac tab). It needs:
   - standoffs;
   - a separate clip-on cover over the mains half;
