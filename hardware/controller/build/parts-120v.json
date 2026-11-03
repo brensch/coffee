@@ -615,7 +615,7 @@
   },
   "C5": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "1uF",
+   "value": "1uF X7R",
    "pins": {
     "1": "EN",
     "2": "GND"

@@ -2,7 +2,7 @@ Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
 C1 C2,2,10nF X2,"Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)",Capacitor_SMD:C_2220_5750Metric,Y,"X2 safety capacitor, ceramic, 250 VAC",MAINS: snubber
 C3,1,10uF 10V X7R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,Module decoupling at the 3V3 pin
 C4,1,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,Module decoupling at the 3V3 pin
-C5,1,1uF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
+C5,1,1uF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
 C6 C7,2,22uF 10V X7R,Murata GRM21BZ71A226ME15L,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
 C8 C9,2,100nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses | ADC sampling reservoir / noise filter
 D1,1,green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)

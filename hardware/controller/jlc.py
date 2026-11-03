@@ -108,7 +108,11 @@ def lookup(row):
                 return False
             if v.replace("Ω", "") not in d.replace("Ω", "").replace(" ", ""):
                 return False
+            if "X7R" in value and "X7R" not in d:   # temperature grade is part of the spec (X5R is 85 C only)
+                return False
             return tol is None or tol in d
+        if "X7R" in value:
+            kw += " X7R"
         return best(query(kw), need), kw
     return None, "no rule"
 

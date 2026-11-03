@@ -215,7 +215,7 @@ en = Net("EN")
 u_mcu["EN"] += en
 r = part(R, "R10", "10k", notes="EN pull-up (Espressif RC delay)")
 r[1, 2] += v3, en
-c = part(C, "C5", "1uF", notes="EN delay")
+c = part(C, "C5", "1uF X7R", notes="EN delay")
 c[1, 2] += en, gnd
 strap8 = Net("IO8_STRAP")
 u_mcu["IO8"] += strap8

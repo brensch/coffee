@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 01:27 AM")
+    (date "11/03/2026 01:30 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -136,7 +136,7 @@
       (tstamps "6f9a1813-19d4-5d20-adea-8868e7232e30"))
     (comp
       (ref "C5")
-      (value "1uF")
+      (value "1uF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
