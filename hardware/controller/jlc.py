@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 API = "https://jlcpcb.com/api/overseas-pcb-order/v1/shoppingCart/smtGood/selectSmtComponentList"
 
 PKG = {  # KiCad footprint fragment -> JLC package string fragment
-    "R_0603": "0603", "C_0603": "0603", "LED_0603": "0603",
+    "R_0603": "0603", "C_0603": "0603", "LED_0603": "0603", "C_0805": "0805",
     "R_1206": "1206", "C_1206": "1206", "R_2512": "2512",
     "CP_Elec_6.3x7.7": "6.3", "D_SMA": "SMA", "D_SOD-323": "SOD-323",
     "SOT-23-6": "SOT-23-6", "SOT-23": "SOT-23", "SOT-223": "SOT-223",

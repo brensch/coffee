@@ -5,7 +5,7 @@ Looked up live in JLCPCB's library. 'base' = basic part (no setup fee), 'expand'
 | Refs | Value | JLC part | LCSC | library | stock | who |
 |---|---|---|---|---|---|---|
 | C1 C2 | 10nF X2 | GA355QR7GB103KW01L | C237426 | expand | 548 | JLC |
-| C3 | 10uF 10V X7R |  |  |  | 0 | JLC |  **NO MATCH: pick by hand**
+| C3 | 10uF 10V X7R | CL21A106KAYNNNE | C15850 | base | 7808824 | JLC |
 | C4 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 38768392 | JLC |
 | C5 | 1uF | CL10A105KB8NNNC | C15849 | base | 11768683 | JLC |
 | C6 C7 | 22uF 10V X7R | GRM21BZ71A226ME15L | C907991 | expand | 153771 | JLC |
