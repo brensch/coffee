@@ -1,32 +1,33 @@
 //! The hardware boundary.
 //!
 //! Everything the engine knows about the outside world arrives in a [`SensorFrame`],
-//! and everything it does to the world leaves in an [`ActuatorFrame`]. The frames carry
-//! *raw* peripheral data (a MAX31855 SPI word, ADS1115 counts, ...) rather than
-//! engineering units, so the conversion code in the engine is exercised identically
-//! whether the frame came from real silicon or from the emulator.
+//! and everything it does to the world leaves in an [`ActuatorFrame`]. Sensor values
+//! are carried as calibrated ADC millivolts at the MCU pin (the ESP32-C6 ADC1 with
+//! eFuse curve calibration), not engineering units, so the NTC and pressure models in
+//! the engine are exercised identically whether the frame came from real silicon or
+//! from the emulator.
 //!
-//! Timing contract: the engine is ticked once per mains half-cycle, at the zero
-//! crossing. The actuator frame it returns applies to the half-cycle that is starting.
-//! A zero-cross SSR (heater) and a triac (pump) can only change state at a zero
-//! crossing anyway, so this is the natural control quantum.
+//! Timing contract: the engine is ticked once per **mains cycle** (1/60 s or 1/50 s),
+//! timed by the MCU crystal. There is no zero-cross detector: the MOC3063 opto-triacs
+//! only fire a triac at a zero crossing, so an output raised at any point of a cycle
+//! takes effect at the next crossing and an output dropped stops at the next current
+//! zero. Firmware applies the decision for cycle `k` at the start of cycle `k + 1`.
 //!
-//! The vibratory pump has an internal diode and only strokes on the positive
-//! half-cycle. Zero-cross detectors do not report polarity, so the engine commands the
-//! pump in whole mains cycles: `pump` must be held for pairs of ticks starting on an
-//! even `half_cycle` count. Firmware and emulator both honour that.
+//! The vibratory pump has an internal diode and strokes only on the positive half
+//! wave. A crystal window one mains period long contains exactly one positive-going
+//! zero crossing, so "pump on for one cycle" is exactly one stroke, whatever the
+//! phase of the window relative to the grid. (Off-nominal grid frequency slips one
+//! window per beat period; see `coffee_board::grid`.)
 
 #![no_std]
 
-pub mod ads1115;
-pub mod max31855;
 pub mod wire;
 
 /// Bit flags for [`SensorFrame::inputs`].
 pub mod input {
-    /// Front panel brew switch closed.
+    /// Front panel brew switch closed (debounced).
     pub const BREW: u8 = 1 << 0;
-    /// Front panel steam switch closed.
+    /// Front panel steam switch closed (debounced).
     pub const STEAM: u8 = 1 << 1;
     /// Hot water switch closed (machines that have one).
     pub const WATER: u8 = 1 << 2;
@@ -34,33 +35,32 @@ pub mod input {
     pub const SCALE_OK: u8 = 1 << 3;
 }
 
-/// One sample of the world, taken at a mains zero crossing.
+/// One sample of the world: the cycle that just ended, reported at the tick that
+/// ends it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct SensorFrame {
-    /// Monotonic count of half-cycles since boot. Parity selects pump-legal ticks.
-    pub half_cycle: u32,
-    /// Monotonic microseconds at this zero crossing.
+    /// Tick count since boot (one tick per mains cycle).
+    pub cycle: u32,
+    /// Crystal time of this tick, microseconds: `t0 + round(cycle * period)`.
     pub t_us: u64,
-    /// Measured duration of the half-cycle that just ended (microseconds).
-    pub half_period_us: u32,
-    /// Latest raw 32-bit MAX31855 read-out (see [`max31855`]).
-    pub max31855: u32,
-    /// Latest raw ADS1115 conversion for the pressure channel (gain +/-4.096 V).
-    pub pressure_adc: i16,
+    /// NTC divider node, millivolts (oversampled average over the cycle).
+    pub ntc_mv: u16,
+    /// Pressure transducer after the 10k/20k divider, millivolts.
+    pub pressure_mv: u16,
     /// Scale reading in milligrams. Only meaningful when [`input::SCALE_OK`] is set.
     pub scale_mg: i32,
     /// Digital inputs, see [`input`].
     pub inputs: u8,
 }
 
-/// What the engine wants the hardware to do for the coming half-cycle.
+/// What the engine wants the hardware to do for the next mains cycle.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct ActuatorFrame {
-    /// Echo of the sensor frame's half-cycle this answers.
-    pub half_cycle: u32,
-    /// Heater SSR conducts this half-cycle.
+    /// Echo of the sensor frame's cycle this answers.
+    pub cycle: u32,
+    /// Heater triac conducts for the whole cycle.
     pub heater: bool,
-    /// Pump triac conducts this half-cycle.
+    /// Pump triac conducts for the cycle: exactly one stroke.
     pub pump: bool,
     /// 3-way solenoid energised (boiler connected to group).
     pub valve: bool,
@@ -122,27 +122,27 @@ impl EngineState {
 
 /// Fault codes. Stored as a bitmask so several can be active at once.
 pub mod fault {
-    pub const TC_OPEN: u16 = 1 << 0;
-    pub const TC_SHORT: u16 = 1 << 1;
+    /// NTC node near the 3.3 V rail: thermistor or its wiring open.
+    pub const NTC_OPEN: u16 = 1 << 0;
+    /// NTC node near ground: thermistor or its wiring shorted.
+    pub const NTC_SHORT: u16 = 1 << 1;
     pub const OVER_TEMP: u16 = 1 << 2;
     pub const TEMP_IMPLAUSIBLE: u16 = 1 << 3;
     pub const PRESSURE_SENSOR: u16 = 1 << 4;
     pub const OVER_PRESSURE: u16 = 1 << 5;
     pub const HEATER_INEFFECTIVE: u16 = 1 << 6;
     pub const NO_WATER: u16 = 1 << 7;
-    pub const MAINS: u16 = 1 << 8;
-    pub const TEMP_RUNAWAY: u16 = 1 << 9;
+    pub const TEMP_RUNAWAY: u16 = 1 << 8;
 
-    pub const NAMES: [(u16, &str); 10] = [
-        (TC_OPEN, "tc_open"),
-        (TC_SHORT, "tc_short"),
+    pub const NAMES: [(u16, &str); 9] = [
+        (NTC_OPEN, "ntc_open"),
+        (NTC_SHORT, "ntc_short"),
         (OVER_TEMP, "over_temp"),
         (TEMP_IMPLAUSIBLE, "temp_implausible"),
         (PRESSURE_SENSOR, "pressure_sensor"),
         (OVER_PRESSURE, "over_pressure"),
         (HEATER_INEFFECTIVE, "heater_ineffective"),
         (NO_WATER, "no_water"),
-        (MAINS, "mains"),
         (TEMP_RUNAWAY, "temp_runaway"),
     ];
 

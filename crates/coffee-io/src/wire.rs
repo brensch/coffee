@@ -3,16 +3,22 @@
 //!
 //! Frame: `u16 LE payload length | u8 kind | payload`. All integers little-endian,
 //! floats IEEE-754 LE. The protocol is lockstep: the emulator sends `Sensors`, the
-//! engine answers with exactly one `Actuators` carrying the same `half_cycle`.
+//! engine answers with exactly one `Actuators` carrying the same `cycle`.
 
 use crate::{ActuatorFrame, EngineState, EngineStatus, SensorFrame};
 
-pub const PROTOCOL_VERSION: u16 = 1;
+pub const PROTOCOL_VERSION: u16 = 2;
 pub const MAX_FRAME: usize = 3 + 96;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Message {
-    Hello { version: u16 },
+    /// Opens a session. Sent by the machine side (emulator, or the PC end of a
+    /// hardware bridge) with the mains frequency its frames are ticked at; the
+    /// engine side answers with its own Hello.
+    Hello {
+        version: u16,
+        mains_hz: u8,
+    },
     Sensors(SensorFrame),
     Actuators(ActuatorFrame),
     Bye,
@@ -44,9 +50,6 @@ impl W<'_> {
         self.put(&[v]);
     }
     fn u16(&mut self, v: u16) {
-        self.put(&v.to_le_bytes());
-    }
-    fn i16(&mut self, v: i16) {
         self.put(&v.to_le_bytes());
     }
     fn u32(&mut self, v: u32) {
@@ -84,9 +87,6 @@ impl R<'_> {
     fn u16(&mut self) -> Result<u16, WireError> {
         Ok(u16::from_le_bytes(self.take()?))
     }
-    fn i16(&mut self) -> Result<i16, WireError> {
-        Ok(i16::from_le_bytes(self.take()?))
-    }
     fn u32(&mut self) -> Result<u32, WireError> {
         Ok(u32::from_le_bytes(self.take()?))
     }
@@ -105,22 +105,22 @@ impl R<'_> {
 pub fn encode(msg: &Message, out: &mut [u8]) -> usize {
     let mut w = W { buf: out, pos: 3 };
     let kind = match msg {
-        Message::Hello { version } => {
+        Message::Hello { version, mains_hz } => {
             w.u16(*version);
+            w.u8(*mains_hz);
             K_HELLO
         }
         Message::Sensors(s) => {
-            w.u32(s.half_cycle);
+            w.u32(s.cycle);
             w.u64(s.t_us);
-            w.u32(s.half_period_us);
-            w.u32(s.max31855);
-            w.i16(s.pressure_adc);
+            w.u16(s.ntc_mv);
+            w.u16(s.pressure_mv);
             w.i32(s.scale_mg);
             w.u8(s.inputs);
             K_SENSORS
         }
         Message::Actuators(a) => {
-            w.u32(a.half_cycle);
+            w.u32(a.cycle);
             w.u8((a.heater as u8) | (a.pump as u8) << 1 | (a.valve as u8) << 2);
             let s = &a.status;
             w.u8(s.state as u8);
@@ -173,18 +173,20 @@ pub fn decode(buf: &[u8]) -> Result<(Message, usize), WireError> {
         pos: 0,
     };
     let msg = match buf[2] {
-        K_HELLO => Message::Hello { version: r.u16()? },
+        K_HELLO => Message::Hello {
+            version: r.u16()?,
+            mains_hz: r.u8()?,
+        },
         K_SENSORS => Message::Sensors(SensorFrame {
-            half_cycle: r.u32()?,
+            cycle: r.u32()?,
             t_us: r.u64()?,
-            half_period_us: r.u32()?,
-            max31855: r.u32()?,
-            pressure_adc: r.i16()?,
+            ntc_mv: r.u16()?,
+            pressure_mv: r.u16()?,
             scale_mg: r.i32()?,
             inputs: r.u8()?,
         }),
         K_ACTUATORS => {
-            let half_cycle = r.u32()?;
+            let cycle = r.u32()?;
             let flags = r.u8()?;
             let state = EngineState::from_u8(r.u8()?);
             let faults = r.u16()?;
@@ -194,7 +196,7 @@ pub fn decode(buf: &[u8]) -> Result<(Message, usize), WireError> {
                 *v = r.f32()?;
             }
             Message::Actuators(ActuatorFrame {
-                half_cycle,
+                cycle,
                 heater: flags & 1 != 0,
                 pump: flags & 2 != 0,
                 valve: flags & 4 != 0,
@@ -237,18 +239,18 @@ mod tests {
         let msgs = [
             Message::Hello {
                 version: PROTOCOL_VERSION,
+                mains_hz: 60,
             },
             Message::Sensors(SensorFrame {
-                half_cycle: 7,
+                cycle: 7,
                 t_us: 123_456_789,
-                half_period_us: 10_000,
-                max31855: 0xDEAD_BEEF,
-                pressure_adc: -5,
+                ntc_mv: 1650,
+                pressure_mv: 3001,
                 scale_mg: 36_100,
                 inputs: 0b1001,
             }),
             Message::Actuators(ActuatorFrame {
-                half_cycle: 7,
+                cycle: 7,
                 heater: true,
                 pump: false,
                 valve: true,

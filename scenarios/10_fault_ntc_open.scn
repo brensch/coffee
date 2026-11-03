@@ -1,11 +1,11 @@
-name "thermocouple wire breaks while ready"
+name "NTC wire breaks while ready"
 machine "../models/gaggia_classic_pro_e24_230v.toml"
 duration 14min
 
-when engine.state == ready for 20s as warm: set tc.fault = open
-at warm+60s: set tc.fault = ok
+when engine.state == ready for 20s as warm: set ntc.fault = open
+at warm+60s: set ntc.fault = ok
 
-expect eventually engine.faults has tc_open from warm by warm+1s
+expect eventually engine.faults has ntc_open from warm by warm+1s
 expect always heater.power == 0 from warm+1s until warm+60s
 expect always engine.state == fault from warm+1s until warm+60s
 # Self-clearing fault: once the wire is fixed the machine recovers on its own.

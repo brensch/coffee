@@ -209,6 +209,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "coffee-board"
+version = "0.1.0"
+dependencies = [
+ "coffee-io",
+]
+
+[[package]]
 name = "coffee-core"
 version = "0.1.0"
 dependencies = [

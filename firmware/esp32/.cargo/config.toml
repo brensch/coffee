@@ -2,19 +2,8 @@
 target = "riscv32imac-unknown-none-elf"
 
 [target.riscv32imac-unknown-none-elf]
-runner = "espflash flash --monitor --chip esp32c6"
+runner = "espflash flash --monitor --chip esp32c6 --flash-size 4mb"  # ESP32-C6-MINI-1U-H4
 rustflags = ["-C", "link-arg=-Tlinkall.x", "-C", "force-frame-pointers"]
 
 [env]
 ESP_LOG = "info"
-
-[target.xtensa-esp32s3-none-elf]
-runner = "espflash flash --monitor --chip esp32s3"
-rustflags = ["-C", "link-arg=-nostartfiles", "-C", "link-arg=-Tlinkall.x"]
-
-# ESP32-S3 (Xtensa): needs Espressif's toolchain (`espup install`, then source
-# its export file), and builds core/alloc from source.
-[alias]
-build-s3 = "build --release --target xtensa-esp32s3-none-elf --no-default-features --features esp32s3 -Zbuild-std=core,alloc"
-build-s3-bridge = "build --release --target xtensa-esp32s3-none-elf --no-default-features --features esp32s3,bridge -Zbuild-std=core,alloc"
-run-s3 = "run --release --target xtensa-esp32s3-none-elf --no-default-features --features esp32s3 -Zbuild-std=core,alloc"

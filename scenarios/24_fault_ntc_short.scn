@@ -1,0 +1,10 @@
+name "NTC leads short together while ready"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 12min
+
+when engine.state == ready for 20s as warm: set ntc.fault = short
+
+expect eventually engine.faults has ntc_short from warm by warm+1s
+expect always heater.power == 0 from warm+1s
+expect always engine.state == fault from warm+1s
+expect always boiler.temp < 110

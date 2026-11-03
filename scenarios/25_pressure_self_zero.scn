@@ -1,0 +1,12 @@
+name "transducer zero drift is removed by the power-on self-zero"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 1min
+# The part reads 0.25 bar high at atmospheric. Cold at power-on, the engine
+# adopts that as zero (it is within the 0.3 bar band of the install zero).
+model pressure_sensor.offset_bar = 0.25
+
+expect at 2s: hydraulics.pressure < 0.02
+expect at 2s: engine.pressure < 0.08 and engine.pressure > -0.08
+# Heating then pressurises the sealed boiler; the gauge tracks it without the bias.
+expect at 30s: hydraulics.pressure > 1.55 and hydraulics.pressure < 1.75
+expect at 30s: engine.pressure > 1.53 and engine.pressure < 1.73

@@ -6,7 +6,7 @@
 //! commanded; replay feeds the actuators to the model and compares sensors.
 
 use anyhow::{Context, Result, bail};
-use coffee_io::{ads1115, input, max31855};
+use coffee_io::input;
 use coffee_physics::{Actuators, Machine, ModelConfig};
 use std::path::Path;
 
@@ -20,9 +20,44 @@ pub struct Row {
     pub scale: Option<f64>,
 }
 
-/// Read a `.clog` (from `coffee-engine --log` or `coffee-emu capture`). Raw
-/// sensor words are converted with the model's own sensor parameters.
-pub fn load_log(path: &Path, cfg: &ModelConfig) -> Result<Vec<Row>> {
+/// Converts sensor millivolts to deg C / bar with a *fixed* sensor model (the
+/// base model's), applied to the log and to the simulation alike. Fitting
+/// `thermistor.*` or `pressure_sensor.*` then moves only the simulated side.
+#[derive(Clone, Debug)]
+pub struct Decoder {
+    th: coffee_physics::config::Thermistor,
+    ps: coffee_physics::config::PressureSensor,
+}
+
+impl Decoder {
+    pub fn new(cfg: &ModelConfig) -> Self {
+        Self {
+            th: cfg.thermistor.clone(),
+            ps: cfg.pressure_sensor.clone(),
+        }
+    }
+    /// None for open/short readings.
+    pub fn temp_c(&self, mv: u16) -> Option<f64> {
+        let v = mv as f64;
+        if !(100.0..3250.0).contains(&v) {
+            return None;
+        }
+        let r = self.th.r_ref_ohm * v / (self.th.v_ref_mv - v);
+        let inv_t = 1.0 / 298.15 + (r / self.th.r25_ohm).ln() / self.th.beta;
+        Some(1.0 / inv_t - 273.15)
+    }
+    /// None when disconnected.
+    pub fn bar(&self, mv: u16) -> Option<f64> {
+        let v = mv as f64 / self.ps.divider;
+        (mv >= 200).then(|| {
+            (v - self.ps.v_zero_mv) / (self.ps.v_full_mv - self.ps.v_zero_mv) * self.ps.range_bar
+        })
+    }
+}
+
+/// Read a `.clog` (from `coffee-engine --log` or `coffee-emu capture`). Sensor
+/// millivolts are converted with `dec`.
+pub fn load_log(path: &Path, dec: &Decoder) -> Result<Vec<Row>> {
     let data = std::fs::read(path).with_context(|| format!("reading {}", path.display()))?;
     let frames = coffee_node::tlog::read(&data);
     if frames.is_empty() {
@@ -31,22 +66,17 @@ pub fn load_log(path: &Path, cfg: &ModelConfig) -> Result<Vec<Row>> {
     let t0 = frames[0].0.t_us;
     Ok(frames
         .iter()
-        .map(|(s, o)| {
-            let v_adc = ads1115::counts_to_volts(s.pressure_adc) as f64;
-            Row {
-                t: (s.t_us - t0) as f64 * 1e-6,
-                act: Actuators {
-                    heater: o.heater,
-                    pump: o.pump,
-                    valve: o.valve,
-                },
-                inputs: s.inputs,
-                tc: max31855::decode(s.max31855)
-                    .ok()
-                    .map(|r| r.thermocouple_c as f64),
-                p: (v_adc > 0.15).then(|| counts_to_bar(cfg, s.pressure_adc)),
-                scale: (s.inputs & input::SCALE_OK != 0).then(|| s.scale_mg as f64 / 1000.0),
-            }
+        .map(|(s, o)| Row {
+            t: (s.t_us - t0) as f64 * 1e-6,
+            act: Actuators {
+                heater: o.heater,
+                pump: o.pump,
+                valve: o.valve,
+            },
+            inputs: s.inputs,
+            tc: dec.temp_c(s.ntc_mv),
+            p: dec.bar(s.pressure_mv),
+            scale: (s.inputs & input::SCALE_OK != 0).then(|| s.scale_mg as f64 / 1000.0),
         })
         .collect())
 }
@@ -58,16 +88,11 @@ pub struct Simulated {
     pub scale: Vec<Option<f64>>,
 }
 
-fn counts_to_bar(cfg: &ModelConfig, c: i16) -> f64 {
-    let ps = &cfg.pressure_sensor;
-    let v = ads1115::counts_to_volts(c) as f64 / ps.divider;
-    (v - ps.v_zero) / (ps.v_full - ps.v_zero) * ps.range_bar
-}
-
-pub fn simulate(cfg: &ModelConfig, rows: &[Row], seed: u64) -> Simulated {
+pub fn simulate(cfg: &ModelConfig, dec: &Decoder, rows: &[Row], seed: u64) -> Simulated {
     let mut cfg = cfg.clone();
     if let Some(t0) = rows.iter().find_map(|r| r.tc) {
-        cfg.sim.initial_temp_c = t0;
+        // The log reads the probe, which carries the placement offset.
+        cfg.sim.initial_temp_c = t0 - cfg.thermistor.offset_c;
     }
     let mut m = Machine::new(cfg.clone(), seed);
     let mut out = Simulated::default();
@@ -76,15 +101,11 @@ pub fn simulate(cfg: &ModelConfig, rows: &[Row], seed: u64) -> Simulated {
         m.switch_steam = r.inputs & input::STEAM != 0;
         m.switch_water = r.inputs & input::WATER != 0;
         let s = m.sensor_frame();
-        out.tc.push(
-            max31855::decode(s.max31855)
-                .ok()
-                .map(|x| x.thermocouple_c as f64),
-        );
-        out.p.push(Some(counts_to_bar(&cfg, s.pressure_adc)));
+        out.tc.push(dec.temp_c(s.ntc_mv));
+        out.p.push(dec.bar(s.pressure_mv));
         out.scale
             .push((s.inputs & input::SCALE_OK != 0).then(|| s.scale_mg as f64 / 1000.0));
-        m.step_half_cycle(r.act);
+        m.step_cycle(r.act);
     }
     out
 }
@@ -233,7 +254,8 @@ pub fn fit(
             bail!("parameter `{p}` = {v}: only positive parameters can be fitted");
         }
     }
-    let before = score(&simulate(base, rows, seed), rows, w);
+    let dec = Decoder::new(base);
+    let before = score(&simulate(base, &dec, rows, seed), rows, w);
     let make = |x: &[f64]| -> Result<ModelConfig> {
         let mut c = base.clone();
         for ((p, v0), xi) in params.iter().zip(&init).zip(x) {
@@ -245,7 +267,7 @@ pub fn fit(
     let mut f = |x: &[f64]| -> f64 {
         evals += 1;
         match make(x) {
-            Ok(c) => score(&simulate(&c, rows, seed), rows, w).0,
+            Ok(c) => score(&simulate(&c, &dec, rows, seed), rows, w).0,
             Err(_) => f64::INFINITY,
         }
     };
@@ -256,7 +278,7 @@ pub fn fit(
         }
     });
     let cfg = make(&xbest)?;
-    let after = score(&simulate(&cfg, rows, seed), rows, w);
+    let after = score(&simulate(&cfg, &dec, rows, seed), rows, w);
     let params = params
         .iter()
         .zip(&init)
@@ -292,9 +314,10 @@ mod tests {
         truth.thermal.loss_boiler_w_k = 0.8;
         // Bang-bang heater schedule: 90 s on, then 60 s off, then 30 s on.
         let mut rows = vec![];
-        let n = 18_000;
+        let dt = 1.0 / truth.mains.frequency_hz;
+        let n = (180.0 / dt) as usize;
         for i in 0..n {
-            let t = i as f64 * 0.01;
+            let t = i as f64 * dt;
             let heater = t < 90.0 || (150.0..180.0).contains(&t);
             rows.push(Row {
                 t,
@@ -309,7 +332,7 @@ mod tests {
                 scale: None,
             });
         }
-        let sim = simulate(&truth, &rows, 7);
+        let sim = simulate(&truth, &Decoder::new(&truth), &rows, 7);
         for (r, tc) in rows.iter_mut().zip(sim.tc) {
             r.tc = tc;
         }
@@ -342,5 +365,56 @@ mod tests {
         );
         let mass = r.cfg.thermal.boiler_mass_kg;
         assert!((mass - 1.6).abs() < 0.15, "fitted mass {mass}");
+    }
+
+    /// A thermistor whose curve differs from the datasheet, and a slower probe,
+    /// show up in the NTC channel and are recoverable from a heat-up log.
+    #[test]
+    fn recovers_thermistor_parameters() {
+        let mut truth = ModelConfig::default();
+        truth.thermistor.beta = 3880.0;
+        truth.thermistor.tau_s = 5.0;
+        let dt = 1.0 / truth.mains.frequency_hz;
+        let mut rows: Vec<Row> = (0..(150.0 / dt) as usize)
+            .map(|i| Row {
+                t: i as f64 * dt,
+                act: Actuators {
+                    heater: i as f64 * dt < 70.0,
+                    pump: false,
+                    valve: false,
+                },
+                inputs: 0,
+                tc: None,
+                p: None,
+                scale: None,
+            })
+            .collect();
+        let dec = Decoder::new(&ModelConfig::default());
+        let sim = simulate(&truth, &dec, &rows, 3);
+        for (r, tc) in rows.iter_mut().zip(sim.tc) {
+            r.tc = tc;
+        }
+        let mut guess = truth.clone();
+        guess.thermistor.beta = 3950.0;
+        guess.thermistor.tau_s = 2.0;
+        let w = Weights {
+            temp: 1.0,
+            pressure: 0.0,
+            weight: 0.0,
+        };
+        let r = fit(
+            &guess,
+            &rows,
+            &["thermistor.beta".into(), "thermistor.tau_s".into()],
+            w,
+            60,
+            3,
+            false,
+        )
+        .unwrap();
+        let beta = r.cfg.thermistor.beta;
+        let tau = r.cfg.thermistor.tau_s;
+        assert!((beta - 3880.0).abs() < 15.0, "beta {beta}");
+        assert!((tau - 5.0).abs() < 1.0, "tau {tau}");
     }
 }

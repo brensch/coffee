@@ -21,7 +21,7 @@ thermal_fuse_c = 184.0    # one-shot fuse (est)
 
 [thermal]
 ambient_c = 22.0
-chassis_air_c = 35.0      # inside the case, where the MAX31855 cold junction lives (est)
+chassis_air_c = 35.0      # inside the case: what a detached probe settles to (est)
 boiler_mass_kg = 0.65     # aluminium boiler halves + element (est)
 boiler_cp = 900.0         # aluminium J/(kg K)
 boiler_capacity_ml = 100.0
@@ -75,20 +75,26 @@ latency_s = 0.25
 resolution_g = 0.1
 noise_g = 0.03
 
-[thermocouple]
-tau_s = 2.5
-noise_c = 0.15
-offset_c = 0.0
-period_s = 0.1
+[thermistor]
+# 100k B3950 NTC in a brass screw probe, 8.2k 0.1 % reference to 3.3 V,
+# read by the ESP32-C6 ADC1 (curve-calibrated, oversampled per mains cycle).
+tau_s = 3.0               # bead in a brass probe, heat-sink paste (est); fit from a heat-up log
+r25_ohm = 100000.0
+beta = 3950.0
+r_ref_ohm = 8200.0
+v_ref_mv = 3300.0
+offset_c = 0.0            # placement / contact error; the two-point calibration removes it
+noise_mv = 1.5            # per-cycle average of ~32 samples (est)
 
 [pressure_sensor]
+# 0.5-4.5 V ratiometric on 5 V, through a 10k/20k divider (x2/3) to ADC1.
 range_bar = 16.0
-v_zero = 0.5
-v_full = 4.5
+v_zero_mv = 500.0
+v_full_mv = 4500.0
 divider = 0.6666667
 noise_bar = 0.02
 tau_s = 0.003
-offset_bar = 0.0
+offset_bar = 0.0          # zero drift of the part; the power-on self-zero removes it
 
 [reservoir]
 capacity_ml = 2100.0
@@ -98,4 +104,4 @@ temp_c = 22.0
 [sim]
 substeps = 20
 initial_temp_c = 22.0
-actuator_delay_half_cycles = 1  # firmware applies outputs just before the next zero crossing
+actuator_delay_cycles = 0  # decision for cycle k drives cycle k+1 (built into lockstep); extra delay here

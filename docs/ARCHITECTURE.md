@@ -12,17 +12,20 @@
 
 ## Timing contract
 
-- The engine is ticked **once per mains half-cycle at the zero crossing** (100 Hz at 50 Hz mains). The returned `ActuatorFrame` applies to the half-cycle that is starting.
-- **Heater:** a zero-cross SSR conducts for whole half-cycles. The engine turns its heater duty into half-cycle on/off decisions with a sigma-delta modulator.
-- **Switching latency:** zero-cross SSRs can only turn on near 0 V, so the firmware applies the frame decided at crossing *k* about 1.5 ms before crossing *k+1*. Every command therefore takes effect one half-cycle later. The emulator models exactly this (`sim.actuator_delay_half_cycles = 1`).
-- **Pump:** the vibratory pump only strokes on the positive half-cycle (it has an internal diode). Zero-cross detectors don't report polarity, so pump decisions are made per full mains cycle, on even ticks.
+- The engine is ticked **once per mains cycle** (60 Hz in the US, `EngineConfig::mains_hz`), timed by the ESP32-C6's crystal. There is no zero-cross detector. The control period is `dt = 1 / mains_hz`.
+- **Zero-crossing switching happens in hardware.** Every load (heater, pump, valve) is driven by a MOC3063 zero-cross opto-triac, which fires its triac only at a zero crossing. An output raised anywhere in a cycle takes effect at the next crossing, and an output dropped stops at the next current zero. So a load asserted for one crystal window conducts for exactly one full mains cycle, whatever the window's phase against the grid.
+- **Switching latency:** the frame for cycle *k* (sensors averaged over that cycle) is ticked at the boundary, and the firmware applies the decision at once, for cycle *k+1*. Lockstep emulation models exactly that, so `sim.actuator_delay_cycles` is 0 (it adds *extra* delay for experiments).
+- **Heater:** burst firing. The heater duty goes through a sigma-delta modulator into whole-cycle on/off decisions.
+- **Pump:** the vibratory pump strokes only on the positive half wave (it has an internal diode), and a one-period window always holds exactly one positive-going crossing. So "pump on for one cycle" is **one stroke**. Pump duty is the fraction of cycles with a stroke. The flow estimate is the stroke fraction × the pump curve at the measured pressure, and pumped volume adds `curve(P) / mains_hz` per stroke.
+- **Off-nominal grid:** if the grid is not exactly at `mains_hz`, the crystal window slips against it by one crossing per beat period (1/|Δf|; 20 s at ±0.05 Hz). The window where that happens gives 0 or 2 strokes, so the stroke count drifts by at most one per beat period (<0.2 %; `coffee_board::grid` tests). Running the pump continuously delivers exactly the grid's positive half waves.
 
-## Frames carry raw peripheral data
+## Frames carry calibrated millivolts
 
-- `SensorFrame.max31855` is the chip's 32-bit word, fault bits included.
-- `pressure_adc` is the raw ADS1115 count.
+- `SensorFrame.ntc_mv`: the NTC divider node (100k B3950 to GND, 8.2k 0.1 % from 3.3 V). It is the ADC1 reading averaged over 32 evenly spaced samples in the cycle, curve-calibrated from eFuse.
+- `SensorFrame.pressure_mv`: the transducer after its 10k/20k divider, averaged the same way. A uniform average over exactly one mains period removes the pump's pressure ripple.
+- Switches arrive debounced (stable for 3 cycles) in `inputs`.
 
-So sensor decoding and fault detection run identically on silicon and in emulation.
+The NTC and pressure models, fault detection (open is the node at the rail, a short is the node at ground, and a disconnected transducer reads below 200 mV) and calibration all live in `coffee-core::sensors`. They run identically on silicon and in emulation. The pure firmware logic (cycle clock, oversampling, debounce, status LED, grid model) is in `coffee-board`, which is unit-tested on the host.
 
 ## One product, two shells
 
@@ -37,7 +40,11 @@ So sensor decoding and fault detection run identically on silicon and in emulati
 
 ## History formats
 
-- **Tick log (`.clog`, [`tlog`](../crates/coffee-node/src/tlog.rs)).** Only the hardware boundary is stored: actuator bits, raw sensor words, switches and timing. Engine-derived values are reproducible by replay, so they're left out. Ticks store only changed fields, with deltas as zig-zag varints, in self-contained 1-second chunks so captures can start mid-stream. About 2.7 B/tick.
+- **Tick log (`.clog` v2, [`tlog`](../crates/coffee-node/src/tlog.rs)).** Only the hardware boundary is stored: actuator bits, sensor millivolts, switches and timing. Engine-derived values are reproducible by replay, so they're left out.
+  - Ticks store only changed fields, with deltas as zig-zag varints.
+  - Timestamps are predicted from the crystal grid, so on-grid ticks cost nothing.
+  - Chunks are self-contained and 1 s long, so a capture can start mid-stream.
+  - A steady tick is 1 byte; a noisy one 2–3.
 - **Shots (`.cshot`, [`shotpack`](../crates/coffee-node/src/shotpack.rs)).** A JSON metadata header, then quantised, delta-varint columns. More than 8× smaller than JSON. The API still serves JSON to the UI.
 
 ## Three run modes, one engine
@@ -45,7 +52,7 @@ So sensor decoding and fault detection run identically on silicon and in emulati
 | Mode | Engine runs on | Sensors come from |
 |---|---|---|
 | Simulation | PC (`coffee-engine`) | `coffee-emu` over stdio or TCP |
-| Hardware-in-the-loop | ESP32 (`--features bridge`) | `coffee-emu` over USB serial |
+| Hardware-in-the-loop | ESP32 (`--features bridge`) | `coffee-emu` over USB serial (the `Hello` carries the mains frequency) |
 | Real machine | ESP32 | Real pins |
 
 The emulator never links the engine; it only speaks the wire protocol.

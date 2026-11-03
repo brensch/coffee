@@ -1,28 +1,35 @@
-//! Compact per-tick log of the hardware boundary (`.clog`).
+//! Compact per-cycle log of the hardware boundary (`.clog`, version 2).
 //!
-//! Only what crosses the boundary is stored: actuator bits, raw sensor readings,
-//! switches and timing. Everything the engine derives (filtered temperature,
-//! state, duties, ...) is reproducible by replaying these frames through the
-//! deterministic engine, so it isn't logged.
+//! Only what crosses the boundary is stored: actuator bits, sensor millivolts,
+//! switches and timing. Everything the engine derives (temperature, state, duties,
+//! ...) is reproducible by replaying these frames through the deterministic
+//! engine, so it isn't logged.
 //!
 //! The stream is a sequence of self-contained chunks (default 1 s), so a serial
 //! capture can start mid-stream and resynchronise on the magic bytes:
 //!
 //! ```text
-//! chunk  := MAGIC(2) len:u16 baseline ticks:u16 tick*
-//! baseline := half_cycle:u32 t_us:u64 dt:u32 tc:u32 p:i16 scale:i32 inputs:u8   (state "before" tick 0)
-//! tick   := flags:u8 [dt Δ zz-varint] [p Δ zz-varint] [tc u32] [scale Δ zz-varint] [inputs u8]
-//! flags  := b0 heater | b1 pump | b2 valve | b3 dt changed | b4 p changed
-//!           | b5 tc changed | b6 scale changed | b7 inputs changed
+//! chunk    := MAGIC(2) VERSION(1) len:u16 baseline ticks:u16 tick*
+//! baseline := cycle:u32 t0_us:u64 period_ns:u32 ntc_mv:u16 p_mv:u16 scale:i32 inputs:u8
+//!             (the state "before" tick 0; t0_us is the time of cycle 0)
+//! tick     := flags:u8 [t Δ zz-varint] [ntc Δ zz-varint] [p Δ zz-varint]
+//!             [scale Δ zz-varint] [inputs u8]
+//! flags    := b0 heater | b1 pump | b2 valve | b3 t off-grid | b4 ntc changed
+//!             | b5 p changed | b6 scale changed | b7 inputs changed
 //! ```
 //!
-//! A steady tick is 1-2 bytes, versus ~110 bytes as CSV.
+//! Ticks are crystal-timed, one per mains cycle: `cycle` just counts, and firmware
+//! stamps each tick with its scheduled time `t0 + round(cycle * period_ns / 1000)`,
+//! so `t_us` is predicted exactly. Only a tick that lands elsewhere stores its
+//! offset, and moves `t0` so the following ticks are predicted from it.
+//! A steady tick is 1-3 bytes, versus ~60 bytes as CSV.
 
 use alloc::vec::Vec;
 use coffee_io::SensorFrame;
 
 pub const MAGIC: [u8; 2] = [0xC0, 0xF7];
-const BASELINE_LEN: usize = 4 + 8 + 4 + 4 + 2 + 4 + 1;
+pub const VERSION: u8 = 2;
+const BASELINE_LEN: usize = 4 + 8 + 4 + 2 + 2 + 4 + 1;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Outputs {
@@ -33,13 +40,33 @@ pub struct Outputs {
 
 #[derive(Clone, Copy, Default)]
 struct State {
-    half_cycle: u32,
+    cycle: u32,
     t_us: u64,
-    dt: u32,
-    tc: u32,
-    p: i16,
+    ntc: u16,
+    p: u16,
     scale: i32,
     inputs: u8,
+}
+
+/// Predicts tick times on the crystal grid.
+#[derive(Clone, Copy)]
+struct Clock {
+    period_ns: u32,
+    /// Time of cycle 0 (wrapping arithmetic: may be "before" boot).
+    t0_us: u64,
+}
+
+impl Clock {
+    fn offset(&self, cycle: u32) -> u64 {
+        (cycle as u64 * self.period_ns as u64 + 500) / 1000
+    }
+    fn predict(&self, cycle: u32) -> u64 {
+        self.t0_us.wrapping_add(self.offset(cycle))
+    }
+    /// Re-anchor so that `cycle` lands on `t_us`.
+    fn anchor(&mut self, cycle: u32, t_us: u64) {
+        self.t0_us = t_us.wrapping_sub(self.offset(cycle));
+    }
 }
 
 fn put_varint(out: &mut Vec<u8>, mut v: u64) {
@@ -97,33 +124,42 @@ impl Cur<'_> {
 /// finished chunks with [`LogWriter::take`].
 pub struct LogWriter {
     ticks_per_chunk: u16,
+    period_ns: u32,
     out: Vec<u8>,
     body: Vec<u8>,
     baseline: State,
     prev: State,
+    clock: Clock,
     ticks: u16,
 }
 
 impl LogWriter {
-    pub fn new(ticks_per_chunk: u16) -> Self {
+    /// `mains_hz` sets the nominal tick period used to predict timestamps.
+    pub fn new(ticks_per_chunk: u16, mains_hz: f32) -> Self {
+        let period_ns = (1e9 / mains_hz.max(1.0) as f64 + 0.5) as u32;
         Self {
             ticks_per_chunk: ticks_per_chunk.max(1),
+            period_ns,
             out: Vec::new(),
             body: Vec::new(),
             baseline: State::default(),
             prev: State::default(),
+            clock: Clock {
+                period_ns,
+                t0_us: 0,
+            },
             ticks: 0,
         }
     }
 
     pub fn push(&mut self, s: &SensorFrame, o: Outputs) {
         if self.ticks == 0 {
+            self.clock.anchor(s.cycle, s.t_us);
             let b = State {
-                half_cycle: s.half_cycle.wrapping_sub(1),
-                t_us: s.t_us.saturating_sub(s.half_period_us as u64),
-                dt: s.half_period_us,
-                tc: s.max31855,
-                p: s.pressure_adc,
+                cycle: s.cycle.wrapping_sub(1),
+                t_us: self.clock.t0_us,
+                ntc: s.ntc_mv,
+                p: s.pressure_mv,
                 scale: s.scale_mg,
                 inputs: s.inputs,
             };
@@ -134,17 +170,21 @@ impl LogWriter {
         let mut flags = o.heater as u8 | (o.pump as u8) << 1 | (o.valve as u8) << 2;
         let flag_pos = self.body.len();
         self.body.push(0);
-        if s.half_period_us != p.dt {
+        // Cycles are consecutive within a chunk.
+        let cycle = p.cycle.wrapping_add(1);
+        let predicted = self.clock.predict(cycle);
+        if s.t_us != predicted {
             flags |= 1 << 3;
-            put_varint(&mut self.body, zz(s.half_period_us as i64 - p.dt as i64));
+            put_varint(&mut self.body, zz(s.t_us.wrapping_sub(predicted) as i64));
+            self.clock.anchor(cycle, s.t_us);
         }
-        if s.pressure_adc != p.p {
+        if s.ntc_mv != p.ntc {
             flags |= 1 << 4;
-            put_varint(&mut self.body, zz(s.pressure_adc as i64 - p.p as i64));
+            put_varint(&mut self.body, zz(s.ntc_mv as i64 - p.ntc as i64));
         }
-        if s.max31855 != p.tc {
+        if s.pressure_mv != p.p {
             flags |= 1 << 5;
-            self.body.extend_from_slice(&s.max31855.to_le_bytes());
+            put_varint(&mut self.body, zz(s.pressure_mv as i64 - p.p as i64));
         }
         if s.scale_mg != p.scale {
             flags |= 1 << 6;
@@ -156,11 +196,10 @@ impl LogWriter {
         }
         self.body[flag_pos] = flags;
         self.prev = State {
-            half_cycle: s.half_cycle,
+            cycle: s.cycle,
             t_us: s.t_us,
-            dt: s.half_period_us,
-            tc: s.max31855,
-            p: s.pressure_adc,
+            ntc: s.ntc_mv,
+            p: s.pressure_mv,
             scale: s.scale_mg,
             inputs: s.inputs,
         };
@@ -177,12 +216,13 @@ impl LogWriter {
         let b = self.baseline;
         let len = BASELINE_LEN + 2 + self.body.len();
         self.out.extend_from_slice(&MAGIC);
+        self.out.push(VERSION);
         self.out
             .extend_from_slice(&(len.min(u16::MAX as usize) as u16).to_le_bytes());
-        self.out.extend_from_slice(&b.half_cycle.to_le_bytes());
+        self.out.extend_from_slice(&b.cycle.to_le_bytes());
         self.out.extend_from_slice(&b.t_us.to_le_bytes());
-        self.out.extend_from_slice(&b.dt.to_le_bytes());
-        self.out.extend_from_slice(&b.tc.to_le_bytes());
+        self.out.extend_from_slice(&self.period_ns.to_le_bytes());
+        self.out.extend_from_slice(&b.ntc.to_le_bytes());
         self.out.extend_from_slice(&b.p.to_le_bytes());
         self.out.extend_from_slice(&b.scale.to_le_bytes());
         self.out.push(b.inputs);
@@ -208,13 +248,13 @@ impl LogWriter {
 pub fn read(data: &[u8]) -> Vec<(SensorFrame, Outputs)> {
     let mut out = Vec::new();
     let mut i = 0;
-    while i + 4 <= data.len() {
-        if data[i..i + 2] != MAGIC {
+    while i + 5 <= data.len() {
+        if data[i..i + 2] != MAGIC || data[i + 2] != VERSION {
             i += 1;
             continue;
         }
-        let len = u16::from_le_bytes([data[i + 2], data[i + 3]]) as usize;
-        let start = i + 4;
+        let len = u16::from_le_bytes([data[i + 3], data[i + 4]]) as usize;
+        let start = i + 5;
         let Some(chunk) = data.get(start..start + len) else {
             break;
         };
@@ -228,30 +268,36 @@ pub fn read(data: &[u8]) -> Vec<(SensorFrame, Outputs)> {
 
 fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
     let mut c = Cur { d, pos: 0 };
+    let cycle = u32::from_le_bytes(c.bytes()?);
+    let t_us = u64::from_le_bytes(c.bytes()?);
+    let period_ns = u32::from_le_bytes(c.bytes()?);
     let mut st = State {
-        half_cycle: u32::from_le_bytes(c.bytes()?),
-        t_us: u64::from_le_bytes(c.bytes()?),
-        dt: u32::from_le_bytes(c.bytes()?),
-        tc: u32::from_le_bytes(c.bytes()?),
-        p: i16::from_le_bytes(c.bytes()?),
+        cycle,
+        t_us,
+        ntc: u16::from_le_bytes(c.bytes()?),
+        p: u16::from_le_bytes(c.bytes()?),
         scale: i32::from_le_bytes(c.bytes()?),
         inputs: c.u8()?,
     };
+    let mut clock = Clock {
+        period_ns,
+        t0_us: t_us,
+    };
     let n = u16::from_le_bytes(c.bytes()?);
     let mark = out.len();
-    for _ in 0..n {
-        let Some(f) = c.u8() else {
-            out.truncate(mark);
-            return None;
-        };
+    let mut tick = || -> Option<(SensorFrame, Outputs)> {
+        let f = c.u8()?;
+        let cycle = st.cycle.wrapping_add(1);
+        let mut t = clock.predict(cycle);
         if f & (1 << 3) != 0 {
-            st.dt = (st.dt as i64 + unzz(c.varint()?)) as u32;
+            t = t.wrapping_add(unzz(c.varint()?) as u64);
+            clock.anchor(cycle, t);
         }
         if f & (1 << 4) != 0 {
-            st.p = (st.p as i64 + unzz(c.varint()?)) as i16;
+            st.ntc = (st.ntc as i64 + unzz(c.varint()?)) as u16;
         }
         if f & (1 << 5) != 0 {
-            st.tc = u32::from_le_bytes(c.bytes()?);
+            st.p = (st.p as i64 + unzz(c.varint()?)) as u16;
         }
         if f & (1 << 6) != 0 {
             st.scale = (st.scale as i64 + unzz(c.varint()?)) as i32;
@@ -259,15 +305,14 @@ fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
         if f & (1 << 7) != 0 {
             st.inputs = c.u8()?;
         }
-        st.half_cycle = st.half_cycle.wrapping_add(1);
-        st.t_us += st.dt as u64;
-        out.push((
+        st.cycle = cycle;
+        st.t_us = t;
+        Some((
             SensorFrame {
-                half_cycle: st.half_cycle,
+                cycle: st.cycle,
                 t_us: st.t_us,
-                half_period_us: st.dt,
-                max31855: st.tc,
-                pressure_adc: st.p,
+                ntc_mv: st.ntc,
+                pressure_mv: st.p,
                 scale_mg: st.scale,
                 inputs: st.inputs,
             },
@@ -276,7 +321,16 @@ fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
                 pump: f & 2 != 0,
                 valve: f & 4 != 0,
             },
-        ));
+        ))
+    };
+    for _ in 0..n {
+        match tick() {
+            Some(x) => out.push(x),
+            None => {
+                out.truncate(mark);
+                return None;
+            }
+        }
     }
     Some(())
 }
@@ -287,15 +341,19 @@ mod tests {
 
     #[test]
     fn roundtrip_with_garbage_and_partial_chunks() {
-        let mut w = LogWriter::new(100);
+        let mut w = LogWriter::new(60, 60.0);
         let mut frames = Vec::new();
         for i in 0..1234u32 {
+            // Crystal grid at 16666.67 us, with a step from tick 601 on.
+            let mut t_us = 5_000_000 + ((i as u64 + 7) * 50_000_000 + 1_500) / 3_000;
+            if i >= 601 {
+                t_us += 3;
+            }
             let s = SensorFrame {
-                half_cycle: i + 7,
-                t_us: 5_000_000 + i as u64 * 10_000 + if i > 600 { 3 } else { 0 },
-                half_period_us: if i == 601 { 10_003 } else { 10_000 },
-                max31855: 0x1000_0000 + (i / 10) * 4,
-                pressure_adc: 3300 + ((i * 37) % 200) as i16,
+                cycle: i + 7,
+                t_us,
+                ntc_mv: 1650 + (i / 10) as u16,
+                pressure_mv: 333 + ((i * 37) % 200) as u16,
                 scale_mg: (i as i32 / 10) * 100,
                 inputs: if (300..400).contains(&i) { 1 } else { 0 },
             };
@@ -307,12 +365,31 @@ mod tests {
             w.push(&s, o);
             frames.push((s, o));
         }
-        let mut bytes = alloc::vec![0x55, 0xC0, 0x00];
+        let mut bytes = alloc::vec![0x55, 0xC0, 0x00, 0xC0, 0xF7, 0x01];
         bytes.extend(w.finish());
         let got = read(&bytes);
         assert_eq!(got.len(), frames.len());
         assert!(got == frames);
-        // ~2-3 bytes per tick for noisy pressure.
+        // ~2-3 bytes per tick for noisy pressure, nothing for on-grid timing.
         assert!(bytes.len() < frames.len() * 4, "{} bytes", bytes.len());
+    }
+
+    #[test]
+    fn steady_ticks_are_one_byte() {
+        let mut w = LogWriter::new(60, 50.0);
+        for i in 0..600u32 {
+            let s = SensorFrame {
+                cycle: i,
+                t_us: i as u64 * 20_000,
+                ntc_mv: 1700,
+                pressure_mv: 340,
+                ..Default::default()
+            };
+            w.push(&s, Outputs::default());
+        }
+        let bytes = w.finish();
+        let overhead = 10 * (5 + BASELINE_LEN + 2);
+        assert_eq!(bytes.len(), overhead + 600);
+        assert_eq!(read(&bytes).len(), 600);
     }
 }

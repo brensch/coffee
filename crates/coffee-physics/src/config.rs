@@ -17,7 +17,7 @@ pub struct ModelConfig {
     pub puck: Puck,
     pub cup: Cup,
     pub scale: Scale,
-    pub thermocouple: Thermocouple,
+    pub thermistor: Thermistor,
     pub pressure_sensor: PressureSensor,
     pub reservoir: Reservoir,
     pub sim: Sim,
@@ -76,7 +76,7 @@ impl Default for Heater {
 #[serde(default)]
 pub struct Thermal {
     pub ambient_c: f64,
-    /// Air temperature inside the chassis (thermocouple cold junction, detached probe).
+    /// Air temperature inside the chassis (what a detached probe settles to).
     pub chassis_air_c: f64,
     pub boiler_mass_kg: f64,
     /// J/(kg K). Brass ~380, aluminium ~900.
@@ -258,45 +258,59 @@ impl Default for Scale {
     }
 }
 
+/// Boiler NTC as wired on the controller: thermistor from the ADC node to GND,
+/// `r_ref_ohm` from the 3.3 V rail to the node, read by the C6's ADC1 and
+/// oversampled over each mains cycle.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Thermocouple {
-    /// Probe sheath lag relative to the boiler body.
+pub struct Thermistor {
+    /// Probe lag relative to the boiler body (bead in a brass screw probe).
     pub tau_s: f64,
-    pub noise_c: f64,
-    /// Systematic error (probe placement, K-type tolerance +/-2.2 C).
+    /// The real part's curve (beta model). The engine's `ntc` config holds what
+    /// it *believes*; a mismatch is what the two-point calibration removes.
+    pub r25_ohm: f64,
+    pub beta: f64,
+    pub r_ref_ohm: f64,
+    pub v_ref_mv: f64,
+    /// Systematic error (probe placement / thermal contact), deg C.
     pub offset_c: f64,
-    /// MAX31855 read-out period (conversion ~100 ms max).
-    pub period_s: f64,
+    /// Noise on the per-cycle oversampled average, mV RMS.
+    pub noise_mv: f64,
 }
-impl Default for Thermocouple {
+impl Default for Thermistor {
     fn default() -> Self {
         Self {
-            tau_s: 2.5,
-            noise_c: 0.15,
+            tau_s: 3.0,
+            r25_ohm: 100_000.0,
+            beta: 3950.0,
+            r_ref_ohm: 8200.0,
+            v_ref_mv: 3300.0,
             offset_c: 0.0,
-            period_s: 0.1,
+            noise_mv: 1.5,
         }
     }
 }
 
+/// 0.5-4.5 V ratiometric transducer on 5 V, through the 10k/20k divider.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PressureSensor {
     pub range_bar: f64,
-    pub v_zero: f64,
-    pub v_full: f64,
+    pub v_zero_mv: f64,
+    pub v_full_mv: f64,
     pub divider: f64,
+    /// Noise on the per-cycle oversampled average, in bar.
     pub noise_bar: f64,
     pub tau_s: f64,
+    /// Zero drift of the real part (bar). The power-on self-zero removes it.
     pub offset_bar: f64,
 }
 impl Default for PressureSensor {
     fn default() -> Self {
         Self {
             range_bar: 16.0,
-            v_zero: 0.5,
-            v_full: 4.5,
+            v_zero_mv: 500.0,
+            v_full_mv: 4500.0,
             divider: 2.0 / 3.0,
             noise_bar: 0.02,
             tau_s: 0.003,
@@ -328,17 +342,17 @@ pub struct Sim {
     /// Physics substeps per mains half-cycle.
     pub substeps: u32,
     pub initial_temp_c: f64,
-    /// Half-cycles between the engine deciding and the load switching. The
-    /// firmware applies outputs just before the *next* zero crossing so
-    /// zero-cross SSRs fire on time, so real hardware has exactly 1.
-    pub actuator_delay_half_cycles: u32,
+    /// Extra whole mains cycles between the engine's decision and the loads
+    /// switching. The decision for cycle k always applies to cycle k+1 (lockstep
+    /// models that already), so real hardware is 0.
+    pub actuator_delay_cycles: u32,
 }
 impl Default for Sim {
     fn default() -> Self {
         Self {
             substeps: 20,
             initial_temp_c: 22.0,
-            actuator_delay_half_cycles: 1,
+            actuator_delay_cycles: 0,
         }
     }
 }
@@ -358,7 +372,7 @@ impl Default for ModelConfig {
             puck: Default::default(),
             cup: Default::default(),
             scale: Default::default(),
-            thermocouple: Default::default(),
+            thermistor: Default::default(),
             pressure_sensor: Default::default(),
             reservoir: Default::default(),
             sim: Default::default(),

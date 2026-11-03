@@ -9,13 +9,13 @@ fn main() {
     let mut t = 0.0;
     while m.t_body < 93.0 {
         m.sensor_frame();
-        m.step_half_cycle(on);
-        t += 0.01;
+        m.step_cycle(on);
+        t += m.period_s();
     }
     println!("heat-up body 22->93C: {t:.0}s, water {:.1}C", m.t_water);
-    for _ in 0..1000 {
+    for _ in 0..(10.0 / m.period_s()) as usize {
         m.sensor_frame();
-        m.step_half_cycle(Actuators::default());
+        m.step_cycle(Actuators::default());
     }
     println!(
         "after 10s coast: body {:.1} water {:.1}",
@@ -30,10 +30,10 @@ fn main() {
         valve: true,
         heater: false,
     };
-    for i in 0..3000 {
+    for i in 0..(30.0 / m.period_s()) as usize {
         m.sensor_frame();
-        m.step_half_cycle(act);
-        if i % 250 == 0 {
+        m.step_cycle(act);
+        if i % 125 == 0 {
             println!(
                 "t={:5.1} P={:5.2} pump={:5.2} opv={:5.2} grp={:5.2} bev={:5.2} R={:5.2} cup={:5.1} wet={:.2} water={:.1} brew={:.1}",
                 m.t,

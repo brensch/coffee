@@ -208,9 +208,11 @@ impl<S: Storage> Node<S> {
     }
 
     /// A new machine session (emulator handshake / bridge Hello): fresh engine
-    /// state, same config and profile.
-    pub fn reset_session(&mut self) {
-        self.engine = Engine::new(self.engine.cfg.clone(), self.engine.profile.clone());
+    /// state, same config and profile, ticked at the session's mains frequency.
+    pub fn reset_session(&mut self, mains_hz: f32) {
+        let mut cfg = self.engine.cfg.clone();
+        cfg.mains_hz = mains_hz;
+        self.engine = Engine::new(cfg, self.engine.profile.clone());
         self.last_telemetry_t = f64::NEG_INFINITY;
     }
 
@@ -234,7 +236,11 @@ impl<S: Storage> Node<S> {
                 if existing.author == p.author {
                     continue;
                 }
-                p.name = format!("{} ({})", p.name, p.author.as_deref().unwrap_or("community"));
+                p.name = format!(
+                    "{} ({})",
+                    p.name,
+                    p.author.as_deref().unwrap_or("community")
+                );
                 if self.library.iter().any(|q| q.name == p.name) {
                     continue;
                 }
@@ -247,7 +253,7 @@ impl<S: Storage> Node<S> {
         &self.library
     }
 
-    /// One mains half-cycle.
+    /// One mains cycle.
     pub fn tick(&mut self, s: &SensorFrame) -> ActuatorFrame {
         let t = s.t_us as f64 * 1e-6;
         let a = self.engine.tick(s);
@@ -486,7 +492,8 @@ fn json<T: serde::Serialize + ?Sized>(status: u16, v: &T) -> HttpResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use coffee_io::{input, max31855};
+    use coffee_core::sensors;
+    use coffee_io::input;
 
     fn node() -> Node<MemStorage> {
         Node::new(
@@ -508,12 +515,12 @@ mod tests {
     }
 
     fn frame(i: u32, temp: f32, inputs: u8) -> SensorFrame {
+        let cfg = EngineConfig::default();
         SensorFrame {
-            half_cycle: i,
-            t_us: i as u64 * 10_000,
-            half_period_us: 10_000,
-            max31855: max31855::encode(temp, 30.0, None),
-            pressure_adc: 3_300, // ~0 bar
+            cycle: i,
+            t_us: (i as u64 * 50_000 + 1) / 3, // 60 Hz crystal grid
+            ntc_mv: sensors::ntc_mv_for_c(&cfg.ntc, temp).round() as u16,
+            pressure_mv: sensors::pressure_to_mv(&cfg.pressure_sensor, 0.0, 0.0).round() as u16,
             scale_mg: 0,
             inputs,
         }
@@ -575,7 +582,11 @@ mod tests {
             i += 1;
         }
         assert!(saw_brewing);
-        assert_eq!(n.recorder.next_id(), 1, "a flush must not use up a shot number");
+        assert_eq!(
+            n.recorder.next_id(),
+            1,
+            "a flush must not use up a shot number"
+        );
         assert_eq!(
             n.engine.profile.name, "Classic 9 bar",
             "profile restored after flush"
@@ -632,6 +643,9 @@ mod tests {
         );
         assert_eq!(n2.handle_http("GET", "/api/shots/1", b"").status, 200);
         let list = String::from_utf8(n2.handle_http("GET", "/api/shots", b"").body).unwrap();
-        assert!(list.contains("\"id\":1"), "stored shot missing from list after restart: {list}");
+        assert!(
+            list.contains("\"id\":1"),
+            "stored shot missing from list after restart: {list}"
+        );
     }
 }

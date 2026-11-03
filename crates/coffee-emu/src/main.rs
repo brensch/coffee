@@ -255,8 +255,9 @@ fn main() -> Result<()> {
         }
         Cmd::Replay { log, model, out } => {
             let cfg = ModelConfig::load(&model)?;
-            let rows = fit::load_log(&log, &cfg)?;
-            let sim = fit::simulate(&cfg, &rows, 1);
+            let dec = fit::Decoder::new(&cfg);
+            let rows = fit::load_log(&log, &dec)?;
+            let sim = fit::simulate(&cfg, &dec, &rows, 1);
             let (cost, e) = fit::score(
                 &sim,
                 &rows,
@@ -270,7 +271,7 @@ fn main() -> Result<()> {
                 std::fs::create_dir_all(d).ok();
             }
             let mut f = std::io::BufWriter::new(std::fs::File::create(&out)?);
-            writeln!(f, "t_s,tc_log,tc_sim,p_log,p_sim,scale_log,scale_sim")?;
+            writeln!(f, "t_s,temp_log,temp_sim,p_log,p_sim,scale_log,scale_sim")?;
             let o = |x: Option<f64>| x.map(|v| format!("{v:.3}")).unwrap_or_default();
             for (i, r) in rows.iter().enumerate() {
                 writeln!(
@@ -307,7 +308,7 @@ fn main() -> Result<()> {
                 );
             }
             let cfg = ModelConfig::load(&model)?;
-            let rows = fit::load_log(&log, &cfg)?;
+            let rows = fit::load_log(&log, &fit::Decoder::new(&cfg))?;
             let w = fit::Weights {
                 temp: w_temp,
                 pressure: w_pressure,
@@ -357,21 +358,21 @@ fn main() -> Result<()> {
                 let mut f = std::io::BufWriter::new(std::fs::File::create(&out)?);
                 writeln!(
                     f,
-                    "t_s,heater,pump,valve,inputs,max31855,pressure_adc,scale_mg,half_period_us"
+                    "t_s,cycle,heater,pump,valve,inputs,ntc_mv,pressure_mv,scale_mg"
                 )?;
                 for (s, o) in &frames {
                     writeln!(
                         f,
-                        "{:.4},{},{},{},{},{:#010x},{},{},{}",
+                        "{:.4},{},{},{},{},{},{},{},{}",
                         (s.t_us - first.0.t_us) as f64 * 1e-6,
+                        s.cycle,
                         o.heater as u8,
                         o.pump as u8,
                         o.valve as u8,
                         s.inputs,
-                        s.max31855,
-                        s.pressure_adc,
-                        s.scale_mg,
-                        s.half_period_us
+                        s.ntc_mv,
+                        s.pressure_mv,
+                        s.scale_mg
                     )?;
                 }
                 println!("wrote {}", out.display());
@@ -408,17 +409,38 @@ fn main() -> Result<()> {
                 }
                 match coffee_api::decent::convert(&txt) {
                     Ok(imp) => {
-                        let slug: String = imp.profile.name.chars().map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '_' }).collect();
+                        let slug: String = imp
+                            .profile
+                            .name
+                            .chars()
+                            .map(|c| {
+                                if c.is_ascii_alphanumeric() {
+                                    c.to_ascii_lowercase()
+                                } else {
+                                    '_'
+                                }
+                            })
+                            .collect();
                         let dest = out.join(format!("{slug}.json"));
                         std::fs::write(&dest, serde_json::to_vec_pretty(&imp.profile)?)?;
-                        println!("ok    {:44} {} phases{}", imp.profile.name, imp.profile.phases.len(),
-                            if imp.warnings.is_empty() { String::new() } else { format!("  ({})", imp.warnings.join("; ")) });
+                        println!(
+                            "ok    {:44} {} phases{}",
+                            imp.profile.name,
+                            imp.profile.phases.len(),
+                            if imp.warnings.is_empty() {
+                                String::new()
+                            } else {
+                                format!("  ({})", imp.warnings.join("; "))
+                            }
+                        );
                         ok += 1;
                     }
                     Err(e) => println!("FAIL  {}: {e}", f.display()),
                 }
             }
-            println!("{ok} converted, {skipped} non-espresso skipped. Decent profiles are GPL-3.0 (decentespresso/de1app).");
+            println!(
+                "{ok} converted, {skipped} non-espresso skipped. Decent profiles are GPL-3.0 (decentespresso/de1app)."
+            );
         }
         Cmd::ImportGaggimate { files, out } => {
             std::fs::create_dir_all(&out)?;

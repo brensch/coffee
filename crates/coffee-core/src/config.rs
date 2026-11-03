@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct EngineConfig {
+    /// Mains frequency (Hz). The engine ticks once per mains cycle, so this sets
+    /// the control period `dt = 1 / mains_hz` and the volume of one pump stroke.
+    pub mains_hz: f32,
     pub brew_temp_c: f32,
     pub steam_temp_c: f32,
     pub hot_water_temp_c: f32,
@@ -34,7 +37,7 @@ pub struct EngineConfig {
     /// Pressure loop: output is a *flow command* in ml/s, linearised through the pump
     /// model into a stroke duty.
     pub pressure_pid: PidGains,
-    pub thermocouple: ThermocoupleConfig,
+    pub ntc: NtcConfig,
     pub pressure_sensor: PressureSensorConfig,
     pub pump: PumpConfig,
     pub safety: SafetyConfig,
@@ -111,39 +114,80 @@ impl Default for PidGains {
     }
 }
 
+/// Boiler NTC: thermistor from the ADC node to GND, precision reference resistor
+/// from 3.3 V to the node. The engine sees the node voltage in millivolts.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub struct ThermocoupleConfig {
-    /// Added to the reading (calibration against a reference thermometer).
-    pub offset_c: f32,
+pub struct NtcConfig {
+    /// Reference (top) resistor, ohms. 8.2k 0.1 % puts ~95 C near mid-scale.
+    pub r_ref_ohm: f32,
+    /// Divider supply as seen by the ADC, millivolts.
+    pub v_ref_mv: f32,
+    /// Beta model: resistance at 25 C and B constant (B25/50).
+    pub r25_ohm: f32,
+    pub beta: f32,
+    /// Optional Steinhart-Hart coefficients `[A, B, C]` (1/T = A + B ln R + C ln^3 R,
+    /// T in kelvin). When set they replace the beta model.
+    pub steinhart_hart: Option<[f32; 3]>,
+    /// Two-point calibration applied after the model: `T = gain * T_model + offset`.
+    /// See docs/CALIBRATION.md (room temperature + boiling water).
+    pub cal_gain: f32,
+    pub cal_offset_c: f32,
+    /// Node above this => open thermistor / broken wire (pulled to 3.3 V).
+    /// 3250 mV is ~-10 C for a 100k B3950, colder than any kitchen.
+    pub open_mv: f32,
+    /// Node below this => shorted thermistor / wire to GND. 100 mV is ~230 C,
+    /// far above anything the boiler can reach.
+    pub short_mv: f32,
     /// Measurement filter time constant (s).
     pub filter_tau_s: f32,
-    /// A read error must persist this long before a sensor fault is raised.
+    /// A fault reading must persist this long before a sensor fault is raised.
     pub fault_debounce_s: f32,
 }
 
-impl Default for ThermocoupleConfig {
+impl Default for NtcConfig {
     fn default() -> Self {
         Self {
-            offset_c: 0.0,
+            r_ref_ohm: 8200.0,
+            v_ref_mv: 3300.0,
+            r25_ohm: 100_000.0,
+            beta: 3950.0,
+            steinhart_hart: None,
+            cal_gain: 1.0,
+            cal_offset_c: 0.0,
+            open_mv: 3250.0,
+            short_mv: 100.0,
             filter_tau_s: 0.3,
             fault_debounce_s: 0.5,
         }
     }
 }
 
+/// 0.5-4.5 V ratiometric transducer on 5 V, read through a 10k/20k divider.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PressureSensorConfig {
     /// Transducer full scale (bar). 1.6 MPa part => 16 bar.
     pub range_bar: f32,
-    /// Output voltage at 0 bar and at full scale, at the transducer.
-    pub v_zero: f32,
-    pub v_full: f32,
-    /// Divider ratio between the transducer and the ADC input.
+    /// Output at 0 bar and at full scale, at the transducer (millivolts).
+    pub v_zero_mv: f32,
+    pub v_full_mv: f32,
+    /// Divider ratio between the transducer and the ADC pin.
     pub divider: f32,
-    /// Below this ADC-side voltage the sensor is considered disconnected.
-    pub v_fault_low: f32,
+    /// Install calibration: `bar = span_gain * nominal_bar - zero_offset_bar`.
+    /// `zero_offset_bar` is the nominal reading with the system open to air.
+    pub zero_offset_bar: f32,
+    pub span_gain: f32,
+    /// Power-on self-zero: the first `auto_zero_s` of readings are averaged and,
+    /// if they sit within `auto_zero_band_bar` of the install zero *and* the boiler
+    /// is cold (below `auto_zero_max_temp_c`), replace the install zero offset.
+    /// 0 disables it. See `Engine::update_pressure` for why both gates are needed.
+    pub auto_zero_s: f32,
+    pub auto_zero_band_bar: f32,
+    pub auto_zero_max_temp_c: f32,
+    /// Below this pin voltage the sensor is disconnected (a live transducer never
+    /// outputs less than ~0.5 V x 2/3 = 333 mV).
+    pub fault_low_mv: f32,
     pub filter_tau_s: f32,
 }
 
@@ -151,10 +195,15 @@ impl Default for PressureSensorConfig {
     fn default() -> Self {
         Self {
             range_bar: 16.0,
-            v_zero: 0.5,
-            v_full: 4.5,
+            v_zero_mv: 500.0,
+            v_full_mv: 4500.0,
             divider: 2.0 / 3.0,
-            v_fault_low: 0.15,
+            zero_offset_bar: 0.0,
+            span_gain: 1.0,
+            auto_zero_s: 0.5,
+            auto_zero_band_bar: 0.3,
+            auto_zero_max_temp_c: 50.0,
+            fault_low_mv: 200.0,
             filter_tau_s: 0.03,
         }
     }
@@ -207,14 +256,11 @@ pub struct SafetyConfig {
     pub heater_ineffective_duty: f32,
     pub heater_ineffective_rise_c: f32,
     /// Temperature this far above setpoint, with the heater off and still rising
-    /// => TEMP_RUNAWAY (stuck SSR).
+    /// => TEMP_RUNAWAY (shorted heater triac).
     pub runaway_margin_c: f32,
     /// Pump at high duty, pressure below `no_water_bar` for this long => NO_WATER.
     pub no_water_s: f32,
     pub no_water_bar: f32,
-    /// Acceptable mains half period window (us). 50 Hz = 10000, 60 Hz = 8333.
-    pub min_half_period_us: u32,
-    pub max_half_period_us: u32,
     /// Hard ceiling on a brew, regardless of profile.
     pub max_brew_s: f32,
 }
@@ -233,8 +279,6 @@ impl Default for SafetyConfig {
             runaway_margin_c: 15.0,
             no_water_s: 6.0,
             no_water_bar: 0.15,
-            min_half_period_us: 7500,
-            max_half_period_us: 11500,
             max_brew_s: 120.0,
         }
     }
@@ -243,6 +287,7 @@ impl Default for SafetyConfig {
 impl Default for EngineConfig {
     fn default() -> Self {
         Self {
+            mains_hz: 60.0,
             brew_temp_c: 93.0,
             steam_temp_c: 140.0,
             hot_water_temp_c: 95.0,
@@ -274,7 +319,7 @@ impl Default for EngineConfig {
                 i_zone: f32::MAX,
                 i_max: 15.0,
             },
-            thermocouple: ThermocoupleConfig::default(),
+            ntc: NtcConfig::default(),
             pressure_sensor: PressureSensorConfig::default(),
             pump: PumpConfig::default(),
             safety: SafetyConfig::default(),

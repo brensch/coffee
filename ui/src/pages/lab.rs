@@ -286,7 +286,7 @@ fn Knobs() -> impl IntoView {
 fn Scenarios() -> impl IntoView {
     let s = store();
     let text = RwSignal::new(String::from(
-        "name \"ad-hoc: probe falls off mid-shot\"\nduration 3min\nat 1s: brew on\nat 15s: set tc.fault = detached\nat 40s: brew off\nexpect always boiler.temp < 172\n",
+        "name \"ad-hoc: probe falls off mid-shot\"\nduration 3min\nat 1s: brew on\nat 15s: set ntc.fault = detached\nat 40s: brew off\nexpect always boiler.temp < 172\n",
     ));
     view! {
         <div class="row">

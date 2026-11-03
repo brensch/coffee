@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "crates/coffee-io",
+    "crates/coffee-board",
     "crates/coffee-api",
     "crates/coffee-node",
     "crates/coffee-core",
@@ -20,6 +21,7 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 coffee-io = { path = "crates/coffee-io" }
+coffee-board = { path = "crates/coffee-board" }
 coffee-api = { path = "crates/coffee-api" }
 coffee-node = { path = "crates/coffee-node" }
 coffee-core = { path = "crates/coffee-core" }

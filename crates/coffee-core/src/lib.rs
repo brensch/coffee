@@ -1,6 +1,6 @@
 //! The engine. Pure, deterministic, `no_std` (+ `alloc`): it owns no clocks, no
 //! peripherals and no I/O. Feed it a [`coffee_io::SensorFrame`] once per mains
-//! half-cycle and apply the [`coffee_io::ActuatorFrame`] it returns.
+//! cycle and apply the [`coffee_io::ActuatorFrame`] it returns.
 //!
 //! The same code runs inside `coffee-engine` (host binary, talking to the emulator or
 //! to a USB hardware bridge) and inside the ESP32 firmware.

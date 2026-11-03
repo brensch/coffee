@@ -26,7 +26,12 @@ pub fn default_engine_path() -> PathBuf {
 
 impl EngineLink {
     /// Spawn the engine with `--emu stdio` and talk over its pipes.
-    pub fn spawn(engine: &PathBuf, extra_args: &[String], quiet: bool) -> Result<Self> {
+    pub fn spawn(
+        engine: &PathBuf,
+        extra_args: &[String],
+        quiet: bool,
+        mains_hz: u8,
+    ) -> Result<Self> {
         let mut cmd = Command::new(engine);
         cmd.arg("--emu").arg("stdio").arg("--http").arg("off");
         cmd.args(extra_args);
@@ -49,23 +54,23 @@ impl EngineLink {
             w: Box::new(BufWriter::new(stdin)),
             child: Some(child),
         };
-        link.hello()?;
+        link.hello(mains_hz)?;
         Ok(link)
     }
 
-    pub fn from_tcp(s: std::net::TcpStream) -> Result<Self> {
+    pub fn from_tcp(s: std::net::TcpStream, mains_hz: u8) -> Result<Self> {
         s.set_nodelay(true)?;
         let mut link = Self {
             r: Box::new(BufReader::new(s.try_clone()?)),
             w: Box::new(BufWriter::new(s)),
             child: None,
         };
-        link.hello()?;
+        link.hello(mains_hz)?;
         Ok(link)
     }
 
     /// Talk to an ESP32 running the firmware in `bridge` mode over USB serial.
-    pub fn from_serial(path: &str) -> Result<Self> {
+    pub fn from_serial(path: &str, mains_hz: u8) -> Result<Self> {
         let port = serialport::new(path, 921_600)
             .timeout(std::time::Duration::from_secs(2))
             .open()
@@ -76,7 +81,7 @@ impl EngineLink {
             w: Box::new(BufWriter::new(port)),
             child: None,
         };
-        link.hello()?;
+        link.hello(mains_hz)?;
         Ok(link)
     }
 
@@ -105,13 +110,15 @@ impl EngineLink {
             .0)
     }
 
-    fn hello(&mut self) -> Result<()> {
+    /// Open the session, telling the engine the mains frequency it is ticked at.
+    fn hello(&mut self, mains_hz: u8) -> Result<()> {
         self.send(&Message::Hello {
             version: PROTOCOL_VERSION,
+            mains_hz,
         })?;
         match self.recv()? {
-            Message::Hello { version } if version == PROTOCOL_VERSION => Ok(()),
-            Message::Hello { version } => {
+            Message::Hello { version, .. } if version == PROTOCOL_VERSION => Ok(()),
+            Message::Hello { version, .. } => {
                 bail!("engine speaks protocol {version}, emulator {PROTOCOL_VERSION}")
             }
             m => bail!("expected Hello, got {m:?}"),
@@ -121,12 +128,8 @@ impl EngineLink {
     pub fn exchange(&mut self, s: SensorFrame) -> Result<ActuatorFrame> {
         self.send(&Message::Sensors(s))?;
         match self.recv()? {
-            Message::Actuators(a) if a.half_cycle == s.half_cycle => Ok(a),
-            Message::Actuators(a) => bail!(
-                "engine answered half-cycle {} for {}",
-                a.half_cycle,
-                s.half_cycle
-            ),
+            Message::Actuators(a) if a.cycle == s.cycle => Ok(a),
+            Message::Actuators(a) => bail!("engine answered cycle {} for {}", a.cycle, s.cycle),
             m => bail!("expected Actuators, got {m:?}"),
         }
     }

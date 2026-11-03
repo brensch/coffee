@@ -4,8 +4,7 @@ use crate::config::EngineConfig;
 use crate::control::{Lpf, Pid, SigmaDelta};
 use crate::profile::{Observed, Profile, Target};
 use crate::pump;
-use crate::sensors::{self, PressureReading};
-use coffee_io::max31855::TcFault;
+use crate::sensors::{self, NtcReading, PressureReading};
 use coffee_io::{ActuatorFrame, EngineState, EngineStatus, SensorFrame, fault, input};
 
 /// Water specific heat, J/(g K).
@@ -82,14 +81,14 @@ pub struct Engine {
     state: EngineState,
     faults: u16,
     t: f64,
-    first_tick: bool,
+    /// Time of the first frame (power-on), for the pressure self-zero window.
+    boot_t: Option<f64>,
 
     // temperature
     temp: Lpf,
     temp_rate: Lpf,
     temp_prev: Option<f32>,
-    tc_bad_since: Option<f64>,
-    tc_last_fault: Option<TcFault>,
+    ntc_bad_since: Option<f64>,
     rejected_since: Option<f64>,
 
     // pressure
@@ -99,10 +98,16 @@ pub struct Engine {
     pressure_slow: Lpf,
     pressure_bad_since: Option<f64>,
     over_pressure_since: Option<f64>,
+    /// Accepted power-on self-zero (nominal bar at atmospheric). None: the
+    /// install calibration `pressure_sensor.zero_offset_bar` applies.
+    self_zero: Option<f32>,
+    /// Self-zero accumulator (sum of nominal bar, samples); None once decided.
+    auto_zero: Option<(f32, u32)>,
 
     // pump / flow
     stroke_frac: Lpf,
-    pump_cycle_on: bool,
+    /// The stroke decision now being executed by the hardware (last tick's output).
+    pump_on: bool,
     flow_est: f32,
 
     // weight
@@ -157,20 +162,21 @@ impl Engine {
             state: EngineState::Boot,
             faults: 0,
             t: 0.0,
-            first_tick: true,
+            boot_t: None,
             temp: Lpf::default(),
             temp_rate: Lpf::default(),
             temp_prev: None,
-            tc_bad_since: None,
-            tc_last_fault: None,
+            ntc_bad_since: None,
             rejected_since: None,
             pressure_ctl: Lpf::default(),
             pressure_disp: Lpf::default(),
             pressure_slow: Lpf::default(),
             pressure_bad_since: None,
             over_pressure_since: None,
+            self_zero: None,
+            auto_zero: Some((0.0, 0)),
             stroke_frac: Lpf::default(),
-            pump_cycle_on: false,
+            pump_on: false,
             flow_est: 0.0,
             weight: Lpf::default(),
             weight_rate: Lpf::default(),
@@ -209,6 +215,15 @@ impl Engine {
     }
     pub fn faults(&self) -> u16 {
         self.faults
+    }
+    /// Pressure zero offset in use (nominal bar at atmospheric).
+    pub fn pressure_zero(&self) -> f32 {
+        self.self_zero
+            .unwrap_or(self.cfg.pressure_sensor.zero_offset_bar)
+    }
+    /// Control period: one mains cycle.
+    pub fn dt(&self) -> f32 {
+        1.0 / self.cfg.mains_hz.clamp(40.0, 70.0)
     }
     pub fn last_shot(&self) -> Option<(u32, ShotSummary)> {
         self.last_shot.map(|s| (self.shot_counter, s))
@@ -333,24 +348,15 @@ impl Engine {
         (remaining / self.cfg.boost_taper_s).clamp(0.0, 1.0)
     }
 
-    /// Advance one mains half-cycle.
+    /// Advance one mains cycle. `s` describes the cycle that just ended; the
+    /// returned frame is applied by the hardware to the next cycle.
     pub fn tick(&mut self, s: &SensorFrame) -> ActuatorFrame {
-        let dt = if (1..=50_000).contains(&s.half_period_us) {
-            s.half_period_us as f32 * 1e-6
-        } else {
-            0.01
-        };
+        let dt = self.dt();
         self.t = s.t_us as f64 * 1e-6;
+        self.boot_t.get_or_insert(self.t);
 
-        if !self.first_tick {
-            let sc = &self.cfg.safety;
-            let ok = (sc.min_half_period_us..=sc.max_half_period_us).contains(&s.half_period_us);
-            self.set_fault(fault::MAINS, !ok);
-        }
-        self.first_tick = false;
-
-        self.update_temperature(s.max31855, dt);
-        let p = self.update_pressure(s.pressure_adc, dt);
+        self.update_temperature(s.ntc_mv, dt);
+        let p = self.update_pressure(s.pressure_mv, dt);
         self.update_weight(s, dt);
         self.update_flow(p, dt);
 
@@ -383,76 +389,116 @@ impl Engine {
             && matches!(self.state, EngineState::Brewing)
             && self.brew.as_ref().is_some_and(|b| b.ended.is_none());
 
+        // Burst firing: whole cycles of heat; one stroke per pump cycle.
         let heater = self.heater_sd.next(self.heater_duty);
-        // The pump may only *start* at the beginning of a mains cycle (even tick),
-        // but may always be cut.
-        if s.half_cycle.is_multiple_of(2) {
-            self.pump_cycle_on = self.pump_sd.next(self.pump_duty);
-        } else if self.pump_duty <= 0.0 {
-            self.pump_cycle_on = false;
-        }
-        let pump = self.pump_cycle_on;
+        self.pump_on = self.pump_sd.next(self.pump_duty);
 
         ActuatorFrame {
-            half_cycle: s.half_cycle,
+            cycle: s.cycle,
             heater,
-            pump,
+            pump: self.pump_on,
             valve,
             status: self.status(p),
         }
     }
 
-    fn update_temperature(&mut self, word: u32, dt: f32) {
+    fn update_temperature(&mut self, mv: u16, dt: f32) {
         let now = self.t;
-        match sensors::thermocouple_c(&self.cfg.thermocouple, word) {
-            Ok(t) => {
-                self.tc_bad_since = None;
-                self.tc_last_fault = None;
-                self.set_fault(fault::TC_OPEN, false);
-                self.set_fault(fault::TC_SHORT, false);
-                if let Some(f) = self.temp.value {
-                    if (t - f).abs() > self.cfg.safety.max_temp_step_c {
-                        let since = *self.rejected_since.get_or_insert(now);
-                        if now - since > self.cfg.safety.max_rejected_s as f64 {
-                            // Persistently far away: it is real (or the sensor is
-                            // lying consistently). Flag it and re-seed.
-                            self.set_fault(fault::TEMP_IMPLAUSIBLE, true);
-                            self.temp.reset();
-                            self.rejected_since = None;
-                        } else {
-                            return;
-                        }
+        let t = match sensors::ntc(&self.cfg.ntc, mv) {
+            NtcReading::Celsius(t) => t,
+            bad => {
+                let since = *self.ntc_bad_since.get_or_insert(now);
+                if now - since >= self.cfg.ntc.fault_debounce_s as f64 {
+                    let bit = if bad == NtcReading::Open {
+                        fault::NTC_OPEN
                     } else {
-                        self.rejected_since = None;
-                    }
-                }
-                let v = self.temp.update(t, dt, self.cfg.thermocouple.filter_tau_s);
-                if let Some(prev) = self.temp_prev {
-                    self.temp_rate.update((v - prev) / dt, dt, 3.0);
-                }
-                self.temp_prev = Some(v);
-            }
-            Err(e) => {
-                self.tc_last_fault = Some(e);
-                let since = *self.tc_bad_since.get_or_insert(now);
-                if now - since >= self.cfg.thermocouple.fault_debounce_s as f64 {
-                    match e {
-                        TcFault::Open => self.set_fault(fault::TC_OPEN, true),
-                        _ => self.set_fault(fault::TC_SHORT, true),
-                    }
+                        fault::NTC_SHORT
+                    };
+                    self.set_fault(bit, true);
                     self.temp.reset();
                     self.temp_prev = None;
                 }
+                return;
+            }
+        };
+        self.ntc_bad_since = None;
+        self.set_fault(fault::NTC_OPEN, false);
+        self.set_fault(fault::NTC_SHORT, false);
+        if let Some(f) = self.temp.value {
+            if (t - f).abs() > self.cfg.safety.max_temp_step_c {
+                let since = *self.rejected_since.get_or_insert(now);
+                if now - since > self.cfg.safety.max_rejected_s as f64 {
+                    // Persistently far away: it is real (or the sensor is lying
+                    // consistently). Flag it and re-seed.
+                    self.set_fault(fault::TEMP_IMPLAUSIBLE, true);
+                    self.temp.reset();
+                    self.rejected_since = None;
+                } else {
+                    return;
+                }
+            } else {
+                self.rejected_since = None;
             }
         }
+        let v = self.temp.update(t, dt, self.cfg.ntc.filter_tau_s);
+        if let Some(prev) = self.temp_prev {
+            self.temp_rate.update((v - prev) / dt, dt, 3.0);
+        }
+        self.temp_prev = Some(v);
     }
 
     fn temp_valid(&self) -> bool {
-        self.temp.value.is_some() && self.faults & (fault::TC_OPEN | fault::TC_SHORT) == 0
+        self.temp.value.is_some() && self.faults & (fault::NTC_OPEN | fault::NTC_SHORT) == 0
     }
 
-    fn update_pressure(&mut self, counts: i16, dt: f32) -> f32 {
-        match sensors::pressure(&self.cfg.pressure_sensor, counts) {
+    /// Power-on pressure self-zero. Transducers drift a few tens of mbar with
+    /// temperature and age, so re-zeroing at power-on is worthwhile, but the
+    /// reading at power-on is only "zero" when the hydraulics are at atmospheric:
+    ///
+    /// * A hot boiler holds 2-4 bar behind the closed 3-way valve (thermal
+    ///   expansion, the OPV seat) and bleeds down only slowly, so a quick power
+    ///   cycle can leave anything from 0.1 to 4 bar on the gauge. Requiring a cold
+    ///   boiler (NTC below `auto_zero_max_temp_c`) rules that out: cold water
+    ///   has not expanded and the valve has had time to vent.
+    /// * Even cold, a reading far from the install zero means a stuck valve or a
+    ///   faulty sensor, not drift, so it must also sit within
+    ///   `auto_zero_band_bar` of the install calibration.
+    ///
+    /// Only when both hold is the average of the first `auto_zero_s` adopted;
+    /// otherwise the install calibration stays. Readings during the window use
+    /// the install zero.
+    fn auto_zero_step(&mut self, mv: u16) {
+        let Some((sum, n)) = self.auto_zero.as_mut() else {
+            return;
+        };
+        let c = &self.cfg.pressure_sensor;
+        let elapsed = self.t - self.boot_t.unwrap_or(self.t);
+        if c.auto_zero_s <= 0.0 {
+            self.auto_zero = None;
+            return;
+        }
+        if elapsed < c.auto_zero_s as f64 {
+            if mv as f32 >= c.fault_low_mv {
+                *sum += sensors::pressure_nominal_bar(c, mv as f32);
+                *n += 1;
+            }
+            return;
+        }
+        let (sum, n) = (*sum, *n);
+        self.auto_zero = None;
+        if n == 0 {
+            return;
+        }
+        let mean = sum / n as f32;
+        let cold = self.temp_valid() && self.temp.get() < c.auto_zero_max_temp_c;
+        if cold && (mean - c.zero_offset_bar).abs() <= c.auto_zero_band_bar {
+            self.self_zero = Some(mean);
+        }
+    }
+
+    fn update_pressure(&mut self, mv: u16, dt: f32) -> f32 {
+        self.auto_zero_step(mv);
+        match sensors::pressure(&self.cfg.pressure_sensor, mv, self.pressure_zero()) {
             PressureReading::Bar(b) => {
                 self.pressure_bad_since = None;
                 self.set_fault(fault::PRESSURE_SENSOR, false);
@@ -491,14 +537,15 @@ impl Engine {
     }
 
     fn update_flow(&mut self, p: f32, dt: f32) {
-        let frac = self
-            .stroke_frac
-            .update(if self.pump_cycle_on { 1.0 } else { 0.0 }, dt, 0.25);
-        self.flow_est = frac * pump::max_flow_ml_s(&self.cfg.pump, p);
+        // One pump cycle is exactly one stroke, delivering curve(p) / mains_hz ml.
+        let max_flow = pump::max_flow_ml_s(&self.cfg.pump, p);
+        let stroke = if self.pump_on { 1.0 } else { 0.0 };
+        let frac = self.stroke_frac.update(stroke, dt, 0.25);
+        self.flow_est = frac * max_flow;
         if let Some(b) = self.brew.as_mut()
             && b.ended.is_none()
         {
-            b.pumped_ml += self.flow_est * dt;
+            b.pumped_ml += stroke * max_flow * dt;
             b.peak_pressure = b.peak_pressure.max(p);
             if p > 3.0 && self.flow_est > 0.2 {
                 b.resistance_sum += p / self.flow_est;
@@ -1014,5 +1061,165 @@ impl Engine {
             water_c: self.water_est.unwrap_or(f32::NAN),
             group_c: self.group_est.unwrap_or(f32::NAN),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::sensors::{ntc_mv_for_c, pressure_to_mv};
+
+    fn frame(cfg: &EngineConfig, k: u32, temp_c: f32, nominal_bar: f32, inputs: u8) -> SensorFrame {
+        // `nominal_bar` is what the uncalibrated transfer function would read.
+        let per_ns = (1e9 / cfg.mains_hz) as u64;
+        SensorFrame {
+            cycle: k,
+            t_us: (k as u64 * per_ns + 500) / 1000,
+            ntc_mv: ntc_mv_for_c(&cfg.ntc, temp_c).round() as u16,
+            pressure_mv: pressure_to_mv(&cfg.pressure_sensor, nominal_bar, 0.0).round() as u16,
+            scale_mg: 0,
+            inputs,
+        }
+    }
+
+    #[test]
+    fn one_stroke_per_pump_cycle_and_flow_follows_stroke_fraction() {
+        let cfg = EngineConfig {
+            hot_water_pump_duty: 0.6,
+            ..Default::default()
+        };
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for _ in 0..120 {
+            e.tick(&frame(&cfg, k, 93.0, 0.0, 0));
+            k += 1;
+        }
+        // Hot water: fixed duty, open wand (~0.5 bar of back-pressure).
+        let mut strokes = 0;
+        let mut last = ActuatorFrame::default();
+        let n = 600;
+        for _ in 0..n {
+            last = e.tick(&frame(&cfg, k, 93.0, 0.5, input::WATER));
+            strokes += last.pump as u32;
+            k += 1;
+        }
+        assert_eq!(e.state(), EngineState::HotWater);
+        // Sigma-delta: exactly duty x cycles, to within one stroke.
+        assert!((strokes as i32 - 360).abs() <= 1, "{strokes} strokes");
+        // Flow estimate = stroke fraction x pump curve at the line pressure.
+        let expect = 0.6 * pump::max_flow_ml_s(&cfg.pump, 0.5);
+        assert!(
+            (last.status.flow_ml_s - expect).abs() < 0.05 * expect,
+            "{} vs {expect}",
+            last.status.flow_ml_s
+        );
+    }
+
+    #[test]
+    fn pumped_volume_counts_strokes() {
+        // 50 Hz: each stroke at ~0 bar delivers curve(0)/50 ml.
+        let cfg = EngineConfig {
+            mains_hz: 50.0,
+            ..Default::default()
+        };
+        let mut e = Engine::new(cfg.clone(), Profile::flush(2.0));
+        let mut k = 0;
+        for _ in 0..100 {
+            e.tick(&frame(&cfg, k, 93.0, 0.3, 0));
+            k += 1;
+        }
+        e.command(Command::StartBrew).unwrap();
+        let mut strokes = 0u32;
+        let mut prev_pump = false;
+        loop {
+            let a = e.tick(&frame(&cfg, k, 93.0, 0.3, 0));
+            // Strokes are executed the cycle after they are decided.
+            strokes += prev_pump as u32;
+            prev_pump = a.pump;
+            k += 1;
+            if a.status.state == EngineState::BrewDone || k > 1000 {
+                break;
+            }
+        }
+        let shot = e.last_shot().unwrap().1;
+        let per_stroke = pump::max_flow_ml_s(&cfg.pump, 0.3) / 50.0;
+        let expect = strokes as f32 * per_stroke;
+        assert!(strokes > 50, "{strokes}");
+        assert!(
+            (shot.pumped_ml - expect).abs() < per_stroke * 1.5,
+            "{} vs {expect}",
+            shot.pumped_ml
+        );
+    }
+
+    fn zero_after_boot(temp_c: f32, nominal_bar: f32) -> f32 {
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for k in 0..60 {
+            e.tick(&frame(&cfg, k, temp_c, nominal_bar, 0));
+        }
+        e.pressure_zero()
+    }
+
+    #[test]
+    fn pressure_self_zero_only_when_physically_at_atmosphere() {
+        // Cold, small drift: adopted.
+        assert!((zero_after_boot(22.0, 0.2) - 0.2).abs() < 0.02);
+        // Cold but 2 bar on the gauge: a stuck valve or bad sensor, not drift.
+        assert_eq!(zero_after_boot(22.0, 2.0), 0.0);
+        // Hot boiler after a quick power cycle: trapped pressure, refuse.
+        assert_eq!(zero_after_boot(90.0, 0.2), 0.0);
+        // Disabled.
+        let cfg = EngineConfig {
+            pressure_sensor: crate::config::PressureSensorConfig {
+                auto_zero_s: 0.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for k in 0..60 {
+            e.tick(&frame(&cfg, k, 22.0, 0.2, 0));
+        }
+        assert_eq!(e.pressure_zero(), 0.0);
+    }
+
+    #[test]
+    fn ntc_faults_raise_after_debounce() {
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for _ in 0..60 {
+            e.tick(&frame(&cfg, k, 93.0, 0.0, 0));
+            k += 1;
+        }
+        let mut f = frame(&cfg, k, 93.0, 0.0, 0);
+        f.ntc_mv = 3300;
+        // Under the 0.5 s debounce: no fault yet.
+        for _ in 0..20 {
+            f.cycle = k;
+            f.t_us = frame(&cfg, k, 93.0, 0.0, 0).t_us;
+            assert_eq!(e.tick(&f).status.faults & fault::NTC_OPEN, 0);
+            k += 1;
+        }
+        for _ in 0..20 {
+            f.cycle = k;
+            f.t_us = frame(&cfg, k, 93.0, 0.0, 0).t_us;
+            e.tick(&f);
+            k += 1;
+        }
+        assert_ne!(e.faults() & fault::NTC_OPEN, 0);
+        assert_eq!(e.state(), EngineState::Fault);
+        // Shorted: the other bit.
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for k in 0..60 {
+            let mut f = frame(&cfg, k, 93.0, 0.0, 0);
+            f.ntc_mv = 3;
+            e.tick(&f);
+        }
+        assert_eq!(
+            e.faults() & (fault::NTC_SHORT | fault::NTC_OPEN),
+            fault::NTC_SHORT
+        );
     }
 }

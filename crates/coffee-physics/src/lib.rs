@@ -1,9 +1,9 @@
 //! Physical models for an emulated espresso machine.
 //!
 //! Start at [`machine::Machine`]. Parameters live in [`config::ModelConfig`] and are
-//! loaded from `models/*.toml`. Each mains half-cycle the emulator asks the machine
-//! for a [`coffee_io::SensorFrame`], gets actuator commands back from the engine,
-//! and calls [`machine::Machine::step_half_cycle`].
+//! loaded from `models/*.toml`. Each mains cycle the emulator asks the machine for
+//! a [`coffee_io::SensorFrame`], gets actuator commands back from the engine, and
+//! calls [`machine::Machine::step_cycle`].
 
 pub mod config;
 pub mod machine;
@@ -17,10 +17,10 @@ mod tests {
     use super::*;
 
     fn run(m: &mut Machine, secs: f64, act: Actuators) {
-        let n = (secs / m.half_period_s()).round() as usize;
+        let n = (secs / m.period_s()).round() as usize;
         for _ in 0..n {
             m.sensor_frame();
-            m.step_half_cycle(act);
+            m.step_cycle(act);
         }
     }
 
@@ -32,11 +32,12 @@ mod tests {
             ..Default::default()
         };
         let mut t93 = None;
-        for i in 0..(600 * 100) {
+        let dt = m.period_s();
+        for i in 0..(600.0 / dt) as usize {
             m.sensor_frame();
-            m.step_half_cycle(on);
+            m.step_cycle(on);
             if t93.is_none() && m.t_body > 93.0 {
-                t93 = Some(i as f64 * 0.01);
+                t93 = Some(i as f64 * dt);
             }
         }
         let t93 = t93.expect("never reached 93 C");
@@ -99,7 +100,11 @@ mod tests {
         Machine::new(cfg, 7)
     }
 
-    const BREW: Actuators = Actuators { pump: true, valve: true, heater: false };
+    const BREW: Actuators = Actuators {
+        pump: true,
+        valve: true,
+        heater: false,
+    };
 
     #[test]
     fn idle_seepage_returns_to_the_reservoir() {
@@ -110,14 +115,24 @@ mod tests {
         cfg.thermal.ambient_c = 60.0;
         cfg.reservoir.temp_c = 60.0;
         let mut m = Machine::new(cfg, 1);
-        run(&mut m, 0.6, Actuators { pump: true, ..Default::default() });
+        run(
+            &mut m,
+            0.6,
+            Actuators {
+                pump: true,
+                ..Default::default()
+            },
+        );
         run(&mut m, 0.2, Actuators::default());
         let c = m.cfg.hydraulics.compliance_ml_per_bar;
         let before = m.reservoir_ml + c * m.p;
         assert!(m.p > 1.0, "should have pressurised: {}", m.p);
         run(&mut m, 300.0, Actuators::default());
         let after = m.reservoir_ml + c * m.p;
-        assert!((after - before).abs() < 0.05, "water not conserved while idle: {before} -> {after}");
+        assert!(
+            (after - before).abs() < 0.05,
+            "water not conserved while idle: {before} -> {after}"
+        );
     }
 
     #[test]
@@ -130,14 +145,24 @@ mod tests {
         let c = m.cfg.hydraulics.compliance_ml_per_bar;
         let placed = m.absorbed_ml + m.through_ml + m.tray_ml + m.head_ml + c * m.p;
         // Boiler-water contraction while it cools a little is the only other term.
-        assert!((used - placed).abs() < 2.0, "pumped {used:.1} ml, found {placed:.1} ml");
+        assert!(
+            (used - placed).abs() < 2.0,
+            "pumped {used:.1} ml, found {placed:.1} ml"
+        );
     }
 
     #[test]
     fn heater_energy_goes_into_the_metal_and_water() {
         let mut m = warm(22.0);
         let (b0, w0, f0) = (m.t_body, m.t_water, m.t_pf);
-        run(&mut m, 60.0, Actuators { heater: true, ..Default::default() });
+        run(
+            &mut m,
+            60.0,
+            Actuators {
+                heater: true,
+                ..Default::default()
+            },
+        );
         let th = &m.cfg.thermal;
         let stored = (m.t_body - b0) * th.boiler_mass_kg * th.boiler_cp
             + (m.t_water - w0) * m.water_ml * 4.18
@@ -157,7 +182,11 @@ mod tests {
             assert!(m.t_body > m.cfg.thermal.ambient_c - 0.01);
             last = m.t_body;
         }
-        assert!(m.t_body < 60.0, "an hour off should cool a lot: {}", m.t_body);
+        assert!(
+            m.t_body < 60.0,
+            "an hour off should cool a lot: {}",
+            m.t_body
+        );
     }
 
     #[test]
@@ -181,7 +210,10 @@ mod tests {
             (m.cup_g, m.tray_ml)
         };
         let (shut, open) = (cup(false), cup(true));
-        assert!(open.0 < shut.0 * 0.6, "wand open: {open:?} vs shut {shut:?}");
+        assert!(
+            open.0 < shut.0 * 0.6,
+            "wand open: {open:?} vs shut {shut:?}"
+        );
         assert!(open.1 > shut.1 + 20.0);
     }
 
@@ -199,5 +231,42 @@ mod tests {
         assert!(q_sag < q_full * 0.95, "free flow {q_sag} vs {q_full}");
         // The OPV still caps it if the pump can reach it; it must not exceed nominal.
         assert!(p_sag <= p_full + 0.05, "{p_sag} vs {p_full}");
+    }
+
+    #[test]
+    fn one_pump_cycle_is_one_stroke() {
+        // Open group, no puck: the pump works against ~0 bar. Each commanded cycle
+        // must deliver one positive-half stroke, i.e. curve(0) / mains_hz ml, and
+        // the reported flow over that cycle averages to the curve.
+        let mut m = warm(60.0);
+        m.portafilter_attached = false;
+        let q0 = m.pump_curve_ml_s(0.0);
+        let per = m.period_s();
+        let r0 = m.reservoir_ml;
+        let mut strokes = 0;
+        for k in 0..120 {
+            let pump = k % 3 == 0;
+            strokes += pump as u32;
+            m.step_cycle(Actuators {
+                pump,
+                valve: true,
+                heater: false,
+            });
+            if pump {
+                assert!(
+                    (m.q_pump - q0).abs() / q0 < 0.05,
+                    "cycle flow {} vs {q0}",
+                    m.q_pump
+                );
+            } else {
+                assert_eq!(m.q_pump, 0.0);
+            }
+        }
+        let pumped = r0 - m.reservoir_ml;
+        let expect = strokes as f64 * q0 * per;
+        assert!(
+            (pumped - expect).abs() / expect < 0.05,
+            "pumped {pumped} vs {expect}"
+        );
     }
 }

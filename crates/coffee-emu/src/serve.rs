@@ -205,7 +205,7 @@ fn step_once(app: &LabShared, lab: &mut Lab) {
         }
         None => Actuators::default(),
     };
-    lab.sim.m.step_half_cycle(act);
+    lab.sim.m.step_cycle(act);
 
     let t = lab.sim.m.t;
     let mut finished = None;
@@ -263,7 +263,8 @@ fn sim_loop(app: LabApp, listener: std::net::TcpListener) {
                 && let Some(path) = app.opts.engine_serial.clone()
             {
                 last_serial_try = Instant::now();
-                match EngineLink::from_serial(&path) {
+                match EngineLink::from_serial(&path, lab.sim.m.cfg.mains.frequency_hz.round() as u8)
+                {
                     Ok(l) => {
                         eprintln!("[emu] hardware engine connected on {path}");
                         lab.link = Some(l);
@@ -280,7 +281,7 @@ fn sim_loop(app: LabApp, listener: std::net::TcpListener) {
                 && let Ok((s, addr)) = listener.accept()
             {
                 let _ = s.set_nonblocking(false);
-                match EngineLink::from_tcp(s) {
+                match EngineLink::from_tcp(s, lab.sim.m.cfg.mains.frequency_hz.round() as u8) {
                     Ok(l) => {
                         eprintln!("[emu] engine connected from {addr}");
                         lab.link = Some(l);

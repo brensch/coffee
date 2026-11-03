@@ -70,7 +70,10 @@ fn session(app: &App, mut r: impl Read, mut w: impl Write) -> Result<()> {
             BufWriter::new(
                 std::fs::File::create(p).with_context(|| format!("creating {}", p.display()))?,
             ),
-            coffee_node::tlog::LogWriter::new(100),
+            coffee_node::tlog::LogWriter::new(
+                app.node.lock().unwrap().engine.cfg.mains_hz.round() as u16,
+                app.node.lock().unwrap().engine.cfg.mains_hz,
+            ),
         )),
         None => None,
     };
@@ -82,17 +85,21 @@ fn session(app: &App, mut r: impl Read, mut w: impl Write) -> Result<()> {
             return Ok(());
         };
         match msg {
-            Message::Hello { version } => {
+            Message::Hello { version, mains_hz } => {
                 if version != PROTOCOL_VERSION {
                     bail!(
                         "protocol version mismatch: emulator {version}, engine {PROTOCOL_VERSION}"
                     );
                 }
-                app.node.lock().unwrap().reset_session();
+                app.node.lock().unwrap().reset_session(mains_hz as f32);
+                if let Some((_, lw)) = log.as_mut() {
+                    *lw = coffee_node::tlog::LogWriter::new(mains_hz as u16, mains_hz as f32);
+                }
                 write_msg(
                     &mut w,
                     &Message::Hello {
                         version: PROTOCOL_VERSION,
+                        mains_hz,
                     },
                 )?;
                 w.flush()?;

@@ -1,6 +1,11 @@
 //! The coupled machine model.
 //!
-//! Coupling, per substep (default 20 per mains half-cycle, ~0.5 ms):
+//! The machine is stepped once per mains cycle, as two half-cycles (positive, then
+//! negative) of substeps (default 20 per half, ~0.4 ms at 60 Hz). Loads switched by
+//! zero-crossing opto-triacs conduct for whole cycles; the pump's diode lets it
+//! stroke only during the positive half.
+//!
+//! Coupling, per substep:
 //!
 //! ```text
 //!  mains ──V²/R──► heater ──► boiler body ◄──► water ◄── cold inflow (enthalpy)
@@ -21,7 +26,7 @@
 use crate::config::ModelConfig;
 use crate::water::{self, CP, H_FG};
 use anyhow::{Result, bail};
-use coffee_io::{SensorFrame, ads1115, input, max31855};
+use coffee_io::{SensorFrame, input};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use std::collections::VecDeque;
@@ -54,14 +59,15 @@ impl Value {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TcMode {
+pub enum NtcMode {
     Ok,
+    /// Thermistor or wire open: the reference resistor pulls the node to 3.3 V.
     Open,
-    ShortGnd,
-    ShortVcc,
+    /// Thermistor or wire shorted: node at ground.
+    Short,
     /// Probe fell out of its hole: it now measures chassis air.
     Detached,
-    /// SPI read-out frozen.
+    /// Reading frozen (e.g. a cracked bead reading a fixed resistance).
     Stuck,
 }
 
@@ -73,13 +79,13 @@ pub enum PsMode {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum SsrMode {
+pub enum TriacMode {
     Ok,
     StuckOn,
     StuckOff,
 }
 
-/// What the actuators are doing this half-cycle.
+/// What the actuators are doing this mains cycle.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Actuators {
     pub heater: bool,
@@ -89,24 +95,24 @@ pub struct Actuators {
 
 #[derive(Clone, Debug)]
 pub struct Faults {
-    pub tc: TcMode,
+    pub ntc: NtcMode,
     pub pressure: PsMode,
-    pub ssr: SsrMode,
+    pub heater_triac: TriacMode,
     pub element_open: bool,
     pub pump_airlock: bool,
-    /// Probability per thermocouple read of an EMI spike.
-    pub tc_spike_prob: f64,
+    /// Probability per cycle of an EMI spike on the NTC reading.
+    pub ntc_spike_prob: f64,
 }
 
 impl Default for Faults {
     fn default() -> Self {
         Self {
-            tc: TcMode::Ok,
+            ntc: NtcMode::Ok,
             pressure: PsMode::Ok,
-            ssr: SsrMode::Ok,
+            heater_triac: TriacMode::Ok,
             element_open: false,
             pump_airlock: false,
-            tc_spike_prob: 0.0,
+            ntc_spike_prob: 0.0,
         }
     }
 }
@@ -117,7 +123,7 @@ pub struct Machine {
     rng: ChaCha8Rng,
 
     pub t: f64,
-    pub half_cycle: u32,
+    pub cycle: u32,
     pub act: Actuators,
     pub switch_brew: bool,
     pub switch_steam: bool,
@@ -152,7 +158,7 @@ pub struct Machine {
     pub cup_g: f64,
     pub tray_ml: f64,
 
-    // instantaneous (averaged over the last half-cycle) for observation
+    // averaged over the last mains cycle, for observation
     pub q_pump: f64,
     pub q_opv: f64,
     pub q_group: f64,
@@ -163,14 +169,15 @@ pub struct Machine {
     pub brew_water_c: f64,
     pub puck_resistance: f64,
     pub energy_in_j: f64,
-    prev_half_q: (f64, f64),
     act_queue: VecDeque<Actuators>,
 
     // sensor state
-    tc_word: u32,
-    tc_next_t: f64,
+    ntc_mv: u16,
     ps_filtered: f64,
-    ps_stuck_counts: Option<i16>,
+    /// The ADC oversamples across the whole cycle: running sums for the averages.
+    ps_sum: (f64, u32),
+    probe_sum: (f64, u32),
+    pressure_mv: u16,
     scale_hist: VecDeque<(f64, f64)>,
     scale_next_t: f64,
     scale_mg: i32,
@@ -183,7 +190,7 @@ impl Machine {
             faults: Faults::default(),
             rng: ChaCha8Rng::seed_from_u64(seed),
             t: 0.0,
-            half_cycle: 0,
+            cycle: 0,
             act: Actuators::default(),
             switch_brew: false,
             switch_steam: false,
@@ -221,18 +228,19 @@ impl Machine {
             brew_water_c: f64::NAN,
             puck_resistance: f64::NAN,
             energy_in_j: 0.0,
-            prev_half_q: (0.0, 0.0),
             act_queue: VecDeque::new(),
-            tc_word: 0,
-            tc_next_t: 0.0,
+            ntc_mv: 0,
             ps_filtered: 0.0,
-            ps_stuck_counts: None,
+            ps_sum: (0.0, 0),
+            probe_sum: (0.0, 0),
+            pressure_mv: 0,
             scale_hist: VecDeque::new(),
             scale_next_t: 0.0,
             scale_mg: 0,
             cfg,
         };
-        m.tc_word = m.make_tc_word();
+        m.ntc_mv = m.make_ntc_mv();
+        m.pressure_mv = m.make_pressure_mv();
         m
     }
 
@@ -246,8 +254,9 @@ impl Machine {
         sigma * (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
     }
 
-    pub fn half_period_s(&self) -> f64 {
-        0.5 / self.cfg.mains.frequency_hz.max(1.0)
+    /// One mains cycle, the engine's tick.
+    pub fn period_s(&self) -> f64 {
+        1.0 / self.cfg.mains.frequency_hz.max(1.0)
     }
 
     /// Reset the puck and empty the cup (a fresh shot).
@@ -352,21 +361,17 @@ impl Machine {
 
     // --------------------------------------------------------------- stepping
 
-    /// Advance one mains half-cycle with the given actuator commands.
-    pub fn step_half_cycle(&mut self, commanded: Actuators) {
-        // Model the SSR pipeline: commands take effect N half-cycles later.
+    /// Advance one mains cycle with the given actuator commands (the engine's
+    /// decision from the previous tick).
+    pub fn step_cycle(&mut self, commanded: Actuators) {
         self.act_queue.push_back(commanded);
-        let delay = self.cfg.sim.actuator_delay_half_cycles as usize;
+        let delay = self.cfg.sim.actuator_delay_cycles as usize;
         let act = if self.act_queue.len() > delay {
             self.act_queue.pop_front().unwrap_or_default()
         } else {
             Actuators::default()
         };
         self.act = act;
-        let half = self.half_period_s();
-        let n = self.cfg.sim.substeps.max(1);
-        let dt = half / n as f64;
-        let positive = self.half_cycle.is_multiple_of(2);
 
         if !act.valve && self.prev_valve {
             self.valve_closed_since = self.t;
@@ -386,30 +391,63 @@ impl Machine {
             self.fresh_puck();
         }
 
-        // Heater power for this half-cycle (zero-cross SSR: whole half-cycles).
-        let ssr_on = match self.faults.ssr {
-            SsrMode::Ok => act.heater,
-            SsrMode::StuckOn => true,
-            SsrMode::StuckOff => false,
+        let mut sums = [0.0; 6];
+        let mut brew = (0.0, 0.0);
+        let mut r_last = f64::NAN;
+        let mut p_heat = 0.0;
+        for positive in [true, false] {
+            p_heat = self.step_half(act, positive, &mut sums, &mut brew, &mut r_last);
+        }
+        let nf = 2.0 * self.cfg.sim.substeps.max(1) as f64;
+        let [s_pump, s_opv, s_group, s_bev, s_wand, s_steam] = sums;
+        self.q_pump = s_pump / nf;
+        self.q_opv = s_opv / nf;
+        self.q_group = s_group / nf;
+        self.q_bev = s_bev / nf;
+        self.q_wand = s_wand / nf;
+        self.steam_g_s = s_steam / nf;
+        self.heater_w = p_heat;
+        self.puck_resistance = r_last;
+        self.brew_water_c = if brew.1 > 0.0 {
+            brew.0 / brew.1
+        } else {
+            f64::NAN
+        };
+        self.cycle = self.cycle.wrapping_add(1);
+    }
+
+    /// One half-cycle of substeps. Returns the heater power applied.
+    fn step_half(
+        &mut self,
+        act: Actuators,
+        positive: bool,
+        sums: &mut [f64; 6],
+        brew: &mut (f64, f64),
+        r_last: &mut f64,
+    ) -> f64 {
+        let half = 0.5 * self.period_s();
+        let n = self.cfg.sim.substeps.max(1);
+        let dt = half / n as f64;
+
+        // The opto-triac conducts for whole cycles (fires at the zero crossing).
+        let triac_on = match self.faults.heater_triac {
+            TriacMode::Ok => act.heater,
+            TriacMode::StuckOn => true,
+            TriacMode::StuckOff => false,
         };
         let h = &self.cfg.heater;
         let r_el = h.rated_voltage_v * h.rated_voltage_v / h.power_w.max(1.0);
         let heater_live =
-            ssr_on && !self.faults.element_open && !self.thermostat_open && !self.fuse_blown;
+            triac_on && !self.faults.element_open && !self.thermostat_open && !self.fuse_blown;
         let p_heat = if heater_live {
             self.cfg.mains.voltage_v * self.cfg.mains.voltage_v / r_el
         } else {
             0.0
         };
 
+        // The pump's series diode: one stroke, on the positive half only.
         let pump_live =
             act.pump && positive && !self.faults.pump_airlock && self.reservoir_ml > 1.0;
-
-        let (mut s_pump, mut s_opv, mut s_group, mut s_bev, mut s_wand, mut s_steam) =
-            (0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        let mut brew_t_acc = 0.0;
-        let mut brew_q_acc = 0.0;
-        let mut r_last = f64::NAN;
 
         for i in 0..n {
             let th = self.cfg.thermal.clone();
@@ -435,7 +473,7 @@ impl Machine {
             } else {
                 (0.0, 0.0, f64::NAN)
             };
-            r_last = r;
+            *r_last = r;
             let q_wand = if self.wand_open && !has_head {
                 p / hy.wand_liquid_r
             } else {
@@ -477,8 +515,8 @@ impl Machine {
                 let eps = 1.0 - (-th.screen_ua_w_k / mdot_cp).exp();
                 let t_out = self.t_water + eps * (self.t_pf - self.t_water);
                 q_to_pf = mdot_cp * (self.t_water - t_out);
-                brew_t_acc += t_out * q_group;
-                brew_q_acc += q_group;
+                brew.0 += t_out * q_group;
+                brew.1 += q_group;
             }
 
             let d_body =
@@ -558,41 +596,27 @@ impl Machine {
             self.tray_ml += q_wand * dt;
 
             // Probe lag.
-            let (target, tau_p) = match self.faults.tc {
-                TcMode::Detached => (th.chassis_air_c, 20.0),
-                _ => (self.t_body, self.cfg.thermocouple.tau_s),
+            let (target, tau_p) = match self.faults.ntc {
+                NtcMode::Detached => (th.chassis_air_c, 20.0),
+                _ => (self.t_body, self.cfg.thermistor.tau_s),
             };
             self.t_probe += (target - self.t_probe) * (dt / tau_p.max(1e-3)).min(1.0);
 
             // Pressure transducer lag.
             let tau_s = self.cfg.pressure_sensor.tau_s.max(1e-5);
             self.ps_filtered += (self.p - self.ps_filtered) * (dt / tau_s).min(1.0);
+            self.ps_sum.0 += self.ps_filtered;
+            self.ps_sum.1 += 1;
+            self.probe_sum.0 += self.t_probe;
+            self.probe_sum.1 += 1;
 
-            s_pump += q_pump;
-            s_opv += q_opv;
-            s_group += q_group;
-            s_bev += q_bev;
-            s_wand += q_wand;
-            s_steam += steam;
+            for (acc, v) in sums
+                .iter_mut()
+                .zip([q_pump, q_opv, q_group, q_bev, q_wand, steam])
+            {
+                *acc += v;
+            }
         }
-
-        let nf = n as f64;
-        // Pump and OPV pulse once per mains cycle: report full-cycle averages.
-        let (pp, po) = self.prev_half_q;
-        self.prev_half_q = (s_pump / nf, s_opv / nf);
-        self.q_pump = 0.5 * (pp + s_pump / nf);
-        self.q_opv = 0.5 * (po + s_opv / nf);
-        self.q_group = s_group / nf;
-        self.q_bev = s_bev / nf;
-        self.q_wand = s_wand / nf;
-        self.steam_g_s = s_steam / nf;
-        self.heater_w = p_heat;
-        self.puck_resistance = r_last;
-        self.brew_water_c = if brew_q_acc > 0.0 {
-            brew_t_acc / brew_q_acc
-        } else {
-            f64::NAN
-        };
 
         // Protective devices on the boiler body.
         let h = &self.cfg.heater;
@@ -606,61 +630,67 @@ impl Machine {
         }
 
         self.t += half;
-        self.half_cycle = self.half_cycle.wrapping_add(1);
+        p_heat
     }
 
     // ---------------------------------------------------------------- sensors
 
-    fn make_tc_word(&mut self) -> u32 {
-        let internal = self.cfg.thermal.chassis_air_c;
-        let mut reading = self.t_probe + self.cfg.thermocouple.offset_c;
-        let sigma = self.cfg.thermocouple.noise_c;
-        reading += self.gauss(sigma);
-        if self.faults.tc_spike_prob > 0.0 && self.rng.r#gen::<f64>() < self.faults.tc_spike_prob {
-            reading += if self.rng.r#gen::<bool>() {
-                40.0
-            } else {
-                -40.0
-            };
-        }
-        match self.faults.tc {
-            TcMode::Open => max31855::encode(0.0, internal as f32, Some(max31855::TcFault::Open)),
-            TcMode::ShortGnd => {
-                max31855::encode(0.0, internal as f32, Some(max31855::TcFault::ShortGnd))
-            }
-            TcMode::ShortVcc => {
-                max31855::encode(0.0, internal as f32, Some(max31855::TcFault::ShortVcc))
-            }
-            TcMode::Stuck => self.tc_word,
-            TcMode::Ok | TcMode::Detached => {
-                max31855::encode(reading as f32, internal as f32, None)
-            }
-        }
+    /// NTC divider node for a probe temperature, from the part's real curve.
+    pub fn ntc_node_mv(&self, probe_c: f64) -> f64 {
+        let c = &self.cfg.thermistor;
+        let t_k = probe_c + c.offset_c + 273.15;
+        let r = c.r25_ohm * (c.beta * (1.0 / t_k - 1.0 / 298.15)).exp();
+        c.v_ref_mv * r / (c.r_ref_ohm + r)
     }
 
-    fn make_pressure_counts(&mut self) -> i16 {
-        let c = self.cfg.pressure_sensor.clone();
-        let counts = match self.faults.pressure {
-            PsMode::Disconnected => {
-                let n = self.gauss(0.002);
-                ads1115::volts_to_counts(n.abs() as f32)
-            }
-            PsMode::Stuck => {
-                if let Some(s) = self.ps_stuck_counts {
-                    return s;
+    /// Per-cycle oversampled ADC reading of the NTC node, 1 mV resolution.
+    fn make_ntc_mv(&mut self) -> u16 {
+        let vref = self.cfg.thermistor.v_ref_mv;
+        let mv = match self.faults.ntc {
+            NtcMode::Stuck => return self.ntc_mv,
+            NtcMode::Open => vref,
+            NtcMode::Short => self.gauss(1.0).abs(),
+            NtcMode::Ok | NtcMode::Detached => {
+                let probe = match core::mem::take(&mut self.probe_sum) {
+                    (s, n) if n > 0 => s / n as f64,
+                    _ => self.t_probe,
+                };
+                let mut v = self.ntc_node_mv(probe) + self.gauss(self.cfg.thermistor.noise_mv);
+                if self.faults.ntc_spike_prob > 0.0
+                    && self.rng.r#gen::<f64>() < self.faults.ntc_spike_prob
+                {
+                    // A burst of interference corrupting the cycle's average.
+                    v += if self.rng.r#gen::<bool>() {
+                        400.0
+                    } else {
+                        -400.0
+                    };
                 }
-                ads1115::volts_to_counts(0.0)
-            }
-            PsMode::Ok => {
-                let bar = self.ps_filtered + c.offset_bar + self.gauss(c.noise_bar);
-                let v = (c.v_zero + bar / c.range_bar * (c.v_full - c.v_zero)).clamp(0.0, 5.0);
-                ads1115::volts_to_counts((v * c.divider) as f32)
+                v
             }
         };
-        if self.faults.pressure != PsMode::Stuck {
-            self.ps_stuck_counts = Some(counts);
-        }
-        counts
+        mv.round().clamp(0.0, vref) as u16
+    }
+
+    /// Per-cycle oversampled ADC reading of the pressure divider, 1 mV resolution.
+    fn make_pressure_mv(&mut self) -> u16 {
+        let c = self.cfg.pressure_sensor.clone();
+        let mv = match self.faults.pressure {
+            PsMode::Stuck => return self.pressure_mv,
+            // Unplugged: the 20k leg pulls the pin to ground.
+            PsMode::Disconnected => self.gauss(2.0).abs(),
+            PsMode::Ok => {
+                let avg = match core::mem::take(&mut self.ps_sum) {
+                    (s, n) if n > 0 => s / n as f64,
+                    _ => self.ps_filtered,
+                };
+                let bar = avg + c.offset_bar + self.gauss(c.noise_bar);
+                let v = (c.v_zero_mv + bar / c.range_bar * (c.v_full_mv - c.v_zero_mv))
+                    .clamp(0.0, 5000.0);
+                v * c.divider
+            }
+        };
+        mv.round().clamp(0.0, 3300.0) as u16
     }
 
     fn update_scale(&mut self) {
@@ -689,13 +719,12 @@ impl Machine {
         }
     }
 
-    /// Sample every sensor at the zero crossing that starts the next half-cycle.
+    /// The sensors as seen over the cycle just simulated.
     pub fn sensor_frame(&mut self) -> SensorFrame {
-        if self.t >= self.tc_next_t {
-            self.tc_next_t = self.t + self.cfg.thermocouple.period_s;
-            self.tc_word = self.make_tc_word();
-        }
-        let pressure_adc = self.make_pressure_counts();
+        self.ntc_mv = self.make_ntc_mv();
+        self.pressure_mv = self.make_pressure_mv();
+        self.ps_sum = (0.0, 0);
+        self.probe_sum = (0.0, 0);
         self.update_scale();
         let mut inputs = 0;
         if self.switch_brew {
@@ -711,11 +740,10 @@ impl Machine {
             inputs |= input::SCALE_OK;
         }
         SensorFrame {
-            half_cycle: self.half_cycle,
+            cycle: self.cycle,
             t_us: (self.t * 1e6).round() as u64,
-            half_period_us: (self.half_period_s() * 1e6).round() as u32,
-            max31855: self.tc_word,
-            pressure_adc,
+            ntc_mv: self.ntc_mv,
+            pressure_mv: self.pressure_mv,
             scale_mg: self.scale_mg,
             inputs,
         }
@@ -731,6 +759,8 @@ impl Machine {
         ("portafilter.temp", "C"),
         ("brew.water_temp", "C"),
         ("probe.temp", "C"),
+        ("ntc.mv", "mV"),
+        ("pressure_sensor.mv", "mV"),
         ("hydraulics.pressure", "bar"),
         ("pump.flow", "ml/s"),
         ("opv.flow", "ml/s"),
@@ -772,6 +802,8 @@ impl Machine {
             "portafilter.temp" => self.t_pf,
             "brew.water_temp" => self.brew_water_c,
             "probe.temp" => self.t_probe,
+            "ntc.mv" => self.ntc_mv as f64,
+            "pressure_sensor.mv" => self.pressure_mv as f64,
             "hydraulics.pressure" => self.p,
             "pump.flow" => self.q_pump,
             "opv.flow" => self.q_opv,
@@ -824,10 +856,10 @@ impl Machine {
         ("puck.channel", "R multiplier, 0.5"),
         ("reservoir.ml", "ml"),
         ("cup.mass", "g"),
-        ("tc.fault", "ok|open|short_gnd|short_vcc|detached|stuck"),
-        ("tc.spikes", "prob/read, 0.02"),
+        ("ntc.fault", "ok|open|short|detached|stuck"),
+        ("ntc.spikes", "prob/cycle, 0.02"),
         ("pressure_sensor.fault", "ok|disconnected|stuck"),
-        ("ssr.fault", "ok|stuck_on|stuck_off"),
+        ("heater_triac.fault", "ok|stuck_on|stuck_off"),
         ("heater.element", "ok|open"),
         ("pump.fault", "ok|airlock"),
         ("fuse.reset", "any (action)"),
@@ -852,20 +884,16 @@ impl Machine {
                 self.cup_g = v.as_num()?;
                 self.drip_store_g = 0.0;
             }
-            "tc.spikes" => self.faults.tc_spike_prob = v.as_num()?.clamp(0.0, 1.0),
-            "tc.fault" => {
-                self.faults.tc = match v.as_word().as_str() {
-                    "ok" | "none" => TcMode::Ok,
-                    "open" => TcMode::Open,
-                    "short_gnd" => TcMode::ShortGnd,
-                    "short_vcc" => TcMode::ShortVcc,
-                    "detached" => TcMode::Detached,
-                    "stuck" => TcMode::Stuck,
-                    w => bail!("unknown tc.fault `{w}`"),
+            "ntc.spikes" => self.faults.ntc_spike_prob = v.as_num()?.clamp(0.0, 1.0),
+            "ntc.fault" => {
+                self.faults.ntc = match v.as_word().as_str() {
+                    "ok" | "none" => NtcMode::Ok,
+                    "open" => NtcMode::Open,
+                    "short" => NtcMode::Short,
+                    "detached" => NtcMode::Detached,
+                    "stuck" => NtcMode::Stuck,
+                    w => bail!("unknown ntc.fault `{w}`"),
                 };
-                if self.faults.tc == TcMode::Ok {
-                    // Re-seated probe: it is back in contact with the body.
-                }
             }
             "pressure_sensor.fault" => {
                 self.faults.pressure = match v.as_word().as_str() {
@@ -875,12 +903,12 @@ impl Machine {
                     w => bail!("unknown pressure_sensor.fault `{w}`"),
                 }
             }
-            "ssr.fault" => {
-                self.faults.ssr = match v.as_word().as_str() {
-                    "ok" | "none" => SsrMode::Ok,
-                    "stuck_on" => SsrMode::StuckOn,
-                    "stuck_off" => SsrMode::StuckOff,
-                    w => bail!("unknown ssr.fault `{w}`"),
+            "heater_triac.fault" => {
+                self.faults.heater_triac = match v.as_word().as_str() {
+                    "ok" | "none" => TriacMode::Ok,
+                    "stuck_on" => TriacMode::StuckOn,
+                    "stuck_off" => TriacMode::StuckOff,
+                    w => bail!("unknown heater_triac.fault `{w}`"),
                 }
             }
             "heater.element" => {

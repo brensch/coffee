@@ -85,14 +85,19 @@ pub fn run_file(path: &Path, opts: &RunOpts) -> Result<Report> {
         None => None,
     };
 
-    let mut link = EngineLink::spawn(&opts.engine, &engine_args, !opts.verbose_engine)?;
+    let mut link = EngineLink::spawn(
+        &opts.engine,
+        &engine_args,
+        !opts.verbose_engine,
+        sim.m.cfg.mains.frequency_hz.round() as u8,
+    )?;
     sim.engine_connected = true;
     let mut next_trace = 0.0;
     loop {
         let s = sim.m.sensor_frame();
         let a = link.exchange(s)?;
         sim.status = a.status;
-        sim.m.step_half_cycle(Actuators {
+        sim.m.step_cycle(Actuators {
             heater: a.heater,
             pump: a.pump,
             valve: a.valve,

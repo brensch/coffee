@@ -1,0 +1,9 @@
+[package]
+name = "coffee-board"
+description = "Pure, host-testable pieces of the controller firmware: cycle clock, ADC oversampling, switch debounce, status LED, grid-drift stroke model. no_std."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+coffee-io.workspace = true

@@ -2,28 +2,24 @@
 name = "coffee-firmware"
 version = "0.1.0"
 edition = "2024"
-description = "ESP32 (C6 or S3) firmware: the coffee node on the real machine, or a USB hardware-in-the-loop bridge."
+description = "ESP32-C6 firmware: the coffee node on the real machine, or a USB hardware-in-the-loop bridge."
 license = "MIT OR Apache-2.0"
 
 [dependencies]
 coffee-core = { path = "../../crates/coffee-core" }
 coffee-io = { path = "../../crates/coffee-io" }
+coffee-board = { path = "../../crates/coffee-board" }
 coffee-api = { path = "../../crates/coffee-api" }
 coffee-node = { path = "../../crates/coffee-node" }
-esp-hal = { version = "1.2", features = ["unstable"] }
-esp-bootloader-esp-idf = "0.6"
-esp-backtrace = { version = "0.20", features = ["panic-handler", "println"] }
-esp-println = "0.18"
-esp-alloc = "0.11"
+esp-hal = { version = "1.2", features = ["unstable", "esp32c6"] }
+esp-bootloader-esp-idf = { version = "0.6", features = ["esp32c6"] }
+esp-backtrace = { version = "0.20", features = ["panic-handler", "println", "esp32c6"] }
+esp-println = { version = "0.18", features = ["esp32c6"] }
+esp-alloc = { version = "0.11", features = ["esp32c6"] }
 embedded-hal = "1.0"
 nb = "1.1"
 
 [features]
-# Pick exactly one chip. C6 (RISC-V) builds on stable Rust; S3 (Xtensa) needs
-# Espressif's toolchain: `espup install`, then `cargo +esp build-s3` (see .cargo/config.toml).
-default = ["esp32c6"]
-esp32c6 = ["esp-hal/esp32c6", "esp-bootloader-esp-idf/esp32c6", "esp-backtrace/esp32c6", "esp-println/esp32c6", "esp-alloc/esp32c6"]
-esp32s3 = ["esp-hal/esp32s3", "esp-bootloader-esp-idf/esp32s3", "esp-backtrace/esp32s3", "esp-println/esp32s3", "esp-alloc/esp32s3"]
 # Hardware-in-the-loop: sensor frames arrive from `coffee-emu` over USB and
 # actuator frames go back; the machine pins stay off.
 bridge = []
