@@ -101,6 +101,30 @@ pub struct HttpResponse {
     pub body: Vec<u8>,
 }
 
+/// An HTTP reply whose expensive part (JSON encoding of history, shots or the profile
+/// library) hasn't been done yet. `Node::prepare_http` builds it while the caller holds the
+/// node (cheap: owned copies only); `finish` encodes it after the node is released, so a big
+/// request never holds up the control loop.
+pub enum PreparedHttp {
+    Done(HttpResponse),
+    History(history::HistoryColumns),
+    Shots(Vec<ShotMeta>),
+    Shot(Shot),
+    Profiles(Vec<Profile>),
+}
+
+impl PreparedHttp {
+    pub fn finish(self) -> HttpResponse {
+        match self {
+            PreparedHttp::Done(r) => r,
+            PreparedHttp::History(h) => json(200, &h),
+            PreparedHttp::Shots(v) => json(200, &v),
+            PreparedHttp::Shot(s) => json(200, &s),
+            PreparedHttp::Profiles(v) => json(200, &v),
+        }
+    }
+}
+
 pub struct Node<S: Storage> {
     pub engine: Engine,
     pub storage: S,
@@ -322,6 +346,12 @@ impl<S: Storage> Node<S> {
 
     /// The entire HTTP API. Shells pass requests through verbatim.
     pub fn handle_http(&mut self, method: &str, path: &str, body: &[u8]) -> HttpResponse {
+        self.prepare_http(method, path, body).finish()
+    }
+
+    /// Like `handle_http`, but leaves the JSON encoding of large replies to
+    /// `PreparedHttp::finish`, to run after the caller releases the node.
+    pub fn prepare_http(&mut self, method: &str, path: &str, body: &[u8]) -> PreparedHttp {
         let (path, query) = path.split_once('?').unwrap_or((path, ""));
         let param = |name: &str| {
             query.split('&').find_map(|kv| {
@@ -330,12 +360,12 @@ impl<S: Storage> Node<S> {
                     .map(|(_, v)| v)
             })
         };
-        match (method, path) {
+        let r = match (method, path) {
             ("GET", "/api/telemetry/history") => {
                 let secs = param("seconds")
                     .and_then(|v| v.parse::<f64>().ok())
                     .unwrap_or(600.0);
-                json(200, &self.history.columns(secs))
+                return PreparedHttp::History(self.history.columns(secs));
             }
             ("GET", "/api/info") => json(200, &self.opts.info),
             ("GET", "/api/status") => json(200, &self.telemetry),
@@ -354,7 +384,7 @@ impl<S: Storage> Node<S> {
                 }
                 Err(e) => json(400, &Ack::err(format!("bad profile: {e}"))),
             },
-            ("GET", "/api/profiles") => json(200, &self.library),
+            ("GET", "/api/profiles") => return PreparedHttp::Profiles(self.library.clone()),
             ("GET", "/api/config") => json(200, &self.engine.cfg),
             ("PUT", "/api/config") => match serde_json::from_slice::<EngineConfig>(body) {
                 Ok(c) => {
@@ -371,23 +401,23 @@ impl<S: Storage> Node<S> {
                 Err(e) => json(400, &Ack::err(format!("bad config: {e}"))),
             },
             ("GET", "/api/shots") => {
-                let v: Vec<&ShotMeta> = self.shots.iter().rev().map(|s| &s.0).collect();
-                json(200, &v)
+                return PreparedHttp::Shots(self.shots.iter().rev().map(|s| s.0.clone()).collect());
             }
             ("GET", "/api/shot/current") => match self.recorder.current() {
-                Some(s) => json(200, s),
+                Some(s) => return PreparedHttp::Shot(s.clone()),
                 None => json(404, &Ack::err("not brewing")),
             },
             ("GET", p) if p.starts_with("/api/shots/") => {
                 let id = p.trim_start_matches("/api/shots/").parse::<u32>().ok();
                 let found = id.and_then(|id| self.find_shot(id));
                 match found {
-                    Some(s) => json(200, &s),
+                    Some(s) => return PreparedHttp::Shot(s),
                     None => json(404, &Ack::err("no such shot")),
                 }
             }
             _ => json(404, &Ack::err("no such endpoint")),
-        }
+        };
+        PreparedHttp::Done(r)
     }
 
     pub fn command(&mut self, c: Command) -> Result<(), String> {

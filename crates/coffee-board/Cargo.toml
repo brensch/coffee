@@ -1,9 +1,20 @@
 [package]
 name = "coffee-board"
-description = "Pure, host-testable pieces of the controller firmware: cycle clock, ADC oversampling, switch debounce, status LED, grid-drift stroke model. no_std."
+description = "Pure, host-testable pieces of the controller firmware: cycle clock, ADC oversampling, switch debounce, status LED, grid-drift stroke model, USB console protocol, HTTP/WebSocket/mDNS framing, flash key/value store. no_std + alloc."
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 
 [dependencies]
 coffee-io.workspace = true
+coffee-node.workspace = true
+sha1_smol = { version = "1", default-features = false }
+embedded-storage = "0.3"
+embedded-storage-async = "0.4"
+sequential-storage = { version = "8", features = ["alloc"] }
+embassy-futures = "0.1"
+embassy-sync = "0.8"
+critical-section = "1"
+
+[dev-dependencies]
+critical-section = { version = "1", features = ["std"] }

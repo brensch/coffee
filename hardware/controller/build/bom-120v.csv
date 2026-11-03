@@ -1,57 +1,38 @@
 Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
-C1,1,100uF 16V,"105 C electrolytic, 100 uF 16 V",Capacitor_SMD:CP_Elec_6.3x7.7,Y,Electrolytic,
-C2 C4,2,10uF,C,Capacitor_SMD:C_1206_3216Metric,Y,Capacitor,
-C3,1,22uF 6.3V,C,Capacitor_SMD:C_1206_3216Metric,Y,Capacitor,
-C5 C8 C10 C11 C12 C14 C15,7,100nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,"0.1 ms RC on long leads near mains | fc ~ 240 Hz: keeps the 50 Hz pump ripple, kills RF"
-C6,1,1uF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN RC delay (Espressif guideline)
-C7,1,100pF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,
-C9,1,10nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,Differential filter (datasheet)
-C13,1,100nF,C,Capacitor_SMD:C_0603_1608Metric,opt,Capacitor,
-C21 C22,2,10nF X2,"WIMA MKP-X2 10nF 275VAC, 10x4 mm, P7.5",Capacitor_THT:C_Rect_L10.0mm_W4.0mm_P7.50mm_MKS4,Y,X2 safety capacitor 275 VAC,MAINS: snubber
-D1 D2,2,SS14,SS14,Diode_SMD:D_SMA,Y,Schottky 1 A 40 V,USB power for bench bring-up (no mains)
-D3,1,heater green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Lit = triac driven (same current as the opto LED)
-D4,1,pump green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Lit = triac driven (same current as the opto LED)
-D5,1,valve green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Lit = triac driven (same current as the opto LED)
-D6 D7 D8,3,PESD5V0S1BA,PESD5V0S1BA,Diode_SMD:D_SOD-323,Y,ESD/TVS 5 V bidirectional,
-D9,1,status blue,LED,LED_SMD:LED_0603_1608Metric,Y,LED,
-F1,1,T500mA,"Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)",Fuse:Fuse_Littelfuse_372_D8.50mm,Y,"Fuse, TR5 radial",MAINS. Protects PSU and zero-cross branch only
-H1 H2 H3 H4,4,M3,MountingHole,MountingHole:MountingHole_3.2mm_M3,Y,"M3 mounting hole (unplated, isolated)",
-J1,1,Mains in,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=L 2=N, from the machine's power switch (after its fuse). Feeds pump, valve, PSU, zero-cross only (~0.5 A)."
-J2,1,Heater,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS, HEATER CURRENT (6 A @ 230 V, 11.4 A @ 120 V). Wired IN PLACE OF the brew thermostat: the stock steam thermostat and thermal fuse stay in series as hardware cut-outs."
-J3,1,Pump / valve,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=switched L to 3-way valve, 2=switched L to pump (the wires that came from the brew switch)."
-J4,1,USB-C,GCT USB4105-GF-A,Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,Y,USB-C receptacle (USB 2.0): flashing only,Flashing only; also powers the board for bench work
-J5,1,Thermocouple K,Screw_Terminal_01x02_2.54,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal",Y,Screw_Terminal_01x02_2.54,"UNGROUNDED-junction probe only. 1=T+ (yellow, ANSI) 2=T- (red)"
-J6,1,Pressure 0-1.6MPa,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,1=+5V 2=SIG 3=GND
-J7,1,Group NTC (opt),JST_PH_2,Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,opt,JST_PH_2,100k B3950 ring-lug NTC under a group screw. 1=NTC 2=GND
-J8,1,Switches,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
-J9,1,I2C expansion,JST_PH_4,Connector_JST:JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical,opt,JST_PH_4,1=+3V3 2=SDA 3=SCL 4=GND (Qwiic order)
-PS1,1,HLK-5M05,Hi-Link HLK-5M05,Converter_ACDC:Converter_ACDC_Hi-Link_HLK-5Mxx,Y,"Isolated AC-DC 5 V 1 A (UL/CE, 3 kVAC isolation)","Certified isolated supply; straddles the slot (AC pins mains side, DC pins SELV side)"
-Q1,1,BTA16-600BW,"ST BTA16-600BWRG (16 A, insulated tab, snubberless)",Package_TO_SOT_THT:TO-220-3_Vertical,Y,"Triac, insulated tab",MAINS: HEATER
-Q2,1,BTA08-600CW,"ST BTA08-600CWRG (8 A, insulated tab, snubberless)",Package_TO_SOT_THT:TO-220-3_Vertical,Y,"Triac, insulated tab",MAINS: PUMP
-Q3,1,Z0109MN,"ST Z0109MN5AA4 (1 A, IGT 10 mA)",Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"Triac, sensitive gate",MAINS: VALVE
-Q4 Q5 Q6,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,N-MOSFET 30 V logic-level,
-R1 R2,2,22k 1W,R,Resistor_SMD:R_2512_6332Metric,Y,Resistor,"MAINS | MAINS: 2512, working voltage >= 200 V"
-R3 R6 R9,3,360,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: limits opto surge current (1 A peak)
-R4 R7 R10,3,330,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,"MAINS: gate-MT1, stops false triggering"
-R8 R11,2,100 1W,R,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: snubber (inductive load)
-R20 R21 R34 R37 R44 R46,6,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,CS deselected during boot | GPIO0 high at reset = normal boot | Pull-up (switch to GND = on)
-R22 R23,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,UFP identification
-R24,1,47k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Output HIGH for ~0.9 ms centred on each crossing
-R25 R28 R31,3,150,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
-R26 R29 R32,3,100,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate series
-R27 R30 R33 R43,4,100k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Pull-down: load OFF while the ESP32 boots/resets/flashes | Spare AIN3 tied low (expansion pad)
-R35 R36,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
-R38 R40,2,10k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3: 4.5 V -> 3.0 V
-R39 R41,2,20k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
-R42,1,10k 0.1%,R,Resistor_SMD:R_0603_1608Metric,opt,Resistor,
-R45 R47 R48,3,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Series: limits ESD current into the GPIO
-RV1,1,10D271K,Bourns MOV-10D561K / 10D271K,Varistor:RV_Disc_D7mm_W4.2mm_P5mm,Y,Varistor,MAINS. Surge clamp across the PSU input
-SW1,1,RESET,SW_Push,Button_Switch_SMD:SW_SPST_TL3342,Y,Tactile switch,
-SW2,1,BOOT,SW_Push,Button_Switch_SMD:SW_SPST_TL3342,Y,Tactile switch,GPIO0 low at reset = download mode
-U1,1,H11AA1,"onsemi H11AA1TVM (0.4"" leads)",Package_DIP:DIP-6_W10.16mm,Y,AC-input optocoupler (zero cross),"Isolation barrier: pins 1-2 mains, 4-6 SELV"
-U2 U3 U4,3,MOC3063,"onsemi MOC3063TVM (0.4"" leads)",Package_DIP:DIP-6_W10.16mm,Y,"Zero-cross triac driver opto, 600 V, 5 mA","HEATER: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | PUMP: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | VALVE: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing"
-U7,1,AMS1117-3.3,AMS1117-3.3,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,LDO 3.3 V 1 A,Tab pour is the heatsink
-U8,1,ESP32-S3-WROOM-1-N8,ESP32-S3-WROOM-1-N8,RF_Module:ESP32-S3-WROOM-1,Y,"Wi-Fi / BLE 5 module, dual core",
-U9,1,USBLC6-2SC6,USBLC6-2SC6,Package_TO_SOT_SMD:SOT-23-6,Y,USB ESD protection,
-U10,1,MAX31855KASA+,MAX31855KASA+T,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,Y,K-type thermocouple to digital,"Keep away from the LDO, PSU and triacs: its cold junction is the board"
-U11,1,ADS1115IDGSR,ADS1115IDGSR,Package_SO:MSOP-10_3x3mm_P0.5mm,Y,"16-bit 4-ch ADC, I2C",
+C1 C2,2,10nF X2,"Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)",Capacitor_SMD:C_2220_5750Metric,Y,"X2 safety capacitor, ceramic, 250 VAC",MAINS: snubber
+C3,1,10uF,C,Capacitor_SMD:C_1206_3216Metric,Y,Capacitor,Module decoupling at the 3V3 pin
+C4 C8 C9,3,100nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses | ADC sampling reservoir / noise filter | Module decoupling at the 3V3 pin
+C5,1,1uF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
+C6,1,22uF 10V,C,Capacitor_SMD:C_1206_3216Metric,Y,Capacitor,Ceramic bulk (no electrolytics to age at 60-70 C)
+C7,1,22uF 6.3V,C,Capacitor_SMD:C_1206_3216Metric,Y,Capacitor,Ceramic bulk (no electrolytics to age at 60-70 C)
+D1,1,green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)
+D2,1,SS14,SS14,Diode_SMD:D_SMA,Y,Schottky 1 A 40 V,USB bench power
+F1,1,T500mA,"Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)",Fuse:Fuse_Littelfuse_372_D8.50mm,Y,"Fuse, TR5 radial",MAINS. Protects the PSU branch
+H1 H2 H3,3,M3,MountingHole,MountingHole:MountingHole_3.2mm_M3,Y,M3 mounting hole (unplated),
+J1,1,Mains in,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
+J2,1,Heater,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series."
+J3,1,Valve / pump,Screw_Terminal_01x02_5.08,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump."
+J4,1,USB-C,GCT USB4105-GF-A,Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
+J5,1,Thermistor,JST_PH_2,Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,Y,JST_PH_2,100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity)
+J6,1,Pressure,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,"0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND"
+J7,1,Switches,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
+PS1,1,HLK-PM05,Hi-Link HLK-PM05,Converter_ACDC:Converter_ACDC_Hi-Link_HLK-PMxx,Y,"Isolated AC-DC 5 V 0.6 A, 3 W (UL/CE, 3 kVAC isolation)",Isolated supply; straddles the slot
+Q1,1,BTA24-800BW,"ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)",Package_TO_SOT_THT:TO-220-3_Vertical,Y,"Triac, insulated tab",MAINS: HEATER
+Q2,1,BTA08-800CW,"ST BTA08-800CWRG (8 A, 800 V, insulated tab, snubberless)",Package_TO_SOT_THT:TO-220-3_Vertical,Y,"Triac, insulated tab",MAINS: PUMP
+Q3,1,Z0109NN,"ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)",Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"Triac, sensitive gate",MAINS: VALVE
+R1 R2 R4,3,360,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: limits opto surge current (1 A peak)
+R3 R6,2,100 1W,R,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: snubber (inductive load)
+R5,1,330,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: gate-MT1 for a sensitive-gate triac
+R7 R8 R9,3,150,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Opto LED current from the GPIO
+R10 R11,2,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad
+R12,1,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
+R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
+R15,1,8.2k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
+R16,1,10k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3
+R17,1,20k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
+RV1,1,10D271K,Bourns MOV-10D271K (120 V) / 10D561K (230 V),Varistor:RV_Disc_D7mm_W4.2mm_P5mm,Y,Varistor,MAINS. Surge clamp across the PSU input
+TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.5mm,Y,Bare test pad,Recovery only: short to TP2 (GND) while plugging USB in
+TP2,1,GND,TestPad,TestPoint:TestPoint_Pad_D1.5mm,Y,Bare test pad,
+U1 U2 U3,3,MOC3083,"onsemi MOC3083TVM (0.4"" leads)",Package_DIP:DIP-6_W10.16mm,Y,"Zero-cross triac driver opto, 800 V, IFT 5 mA max","HEATER: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | PUMP: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | VALVE: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing"
+U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, U.FL antenna connector, 4 MB flash, 105 C rated",U.FL antenna: pigtail to a 2.4 GHz antenna outside the steel case
+U5,1,AMS1117-3.3,AMS1117-3.3,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,LDO 3.3 V 1 A,Tab pour is the heatsink

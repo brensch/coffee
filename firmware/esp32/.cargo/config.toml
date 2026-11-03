@@ -2,7 +2,7 @@
 target = "riscv32imac-unknown-none-elf"
 
 [target.riscv32imac-unknown-none-elf]
-runner = "espflash flash --monitor --chip esp32c6 --flash-size 4mb"  # ESP32-C6-MINI-1U-H4
+runner = "espflash flash --monitor --chip esp32c6 --flash-size 4mb --partition-table partitions.csv --erase-parts otadata"  # ESP32-C6-MINI-1U-H4
 rustflags = ["-C", "link-arg=-Tlinkall.x", "-C", "force-frame-pointers"]
 
 [env]

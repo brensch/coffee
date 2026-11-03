@@ -1,0 +1,26 @@
+* Triac driver: +5V (after the OR-ing Schottky) -> R -> green indicator LED -> MOC3063 LED -> AO3400 -> GND
+* Sweeps supply and LED forward-voltage corners; MOC3063 needs IF >= 5 mA (IFT max) to guarantee triggering.
+.param rser=150
+.model LGRN D(IS=1e-20 N=2.0 RS=10)     ; green 0603: ~2.0 V at 10 mA (typ)
+.model LGRN_HI D(IS=1e-22 N=2.1 RS=12)  ; high-Vf green: ~2.4 V at 10 mA
+.model LOPTO D(IS=1e-14 N=1.6 RS=3)     ; MOC3063 IR LED: ~1.15 V at 10 mA
+.model LOPTO_HI D(IS=1e-16 N=1.8 RS=4)  ; ~1.45 V at 10 mA (datasheet max 1.5 V)
+.model SS14 D(IS=5e-6 N=1.1 RS=0.05)
+Vpsu psu 0 DC 5.0
+D1 psu v5 SS14
+Rload v5 0 25        ; rest of the board ~0.2 A
+R1 v5 a {rser}
+Dled a k LGRN
+Dopto k d LOPTO
+Rds d 0 0.05         ; AO3400 on (Vgs 3.3 V)
+.control
+echo "supply  Vf-corner  +5V(V)  IF(mA)  verdict"
+foreach vs 5.25 5.0 4.75
+  alter vpsu dc = $vs
+  op
+  let i = (v(a)-v(k))/1 * 0
+  let ifm = (v(v5)-v(a))/150*1000
+  echo "$vs typ $&v(v5) $&ifm"
+end
+.endc
+.end

@@ -2,7 +2,7 @@
 name = "coffee-firmware"
 version = "0.1.0"
 edition = "2024"
-description = "ESP32-C6 firmware: the coffee node on the real machine, or a USB hardware-in-the-loop bridge."
+description = "ESP32-C6 firmware: the coffee node on the real machine (Wi-Fi UI + API, flash storage, OTA), or a USB hardware-in-the-loop bridge."
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -18,6 +18,25 @@ esp-println = { version = "0.18", features = ["esp32c6"] }
 esp-alloc = { version = "0.11", features = ["esp32c6"] }
 embedded-hal = "1.0"
 nb = "1.1"
+esp-rtos = { version = "0.4", features = ["esp32c6", "embassy", "esp-radio", "esp-alloc"] }
+esp-radio = { version = "1.0.0-beta.1", features = ["esp32c6", "wifi"] }
+esp-storage = { version = "0.10", features = ["esp32c6", "embedded-storage"] }
+embassy-executor = "0.10"
+embassy-time = "0.5"
+embassy-sync = "0.8"
+embassy-futures = "0.1"
+embassy-net = { version = "0.9", features = ["dhcpv4", "dhcpv4-hostname", "medium-ethernet", "tcp", "udp", "proto-ipv4", "multicast"] }
+embedded-storage = "0.3"
+sequential-storage = "8"
+static_cell = "2.1"
+heapless = "0.9"
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+critical-section = "1"
+embedded-io-async = "0.7"
+
+[build-dependencies]
+flate2 = "1"
 
 [features]
 # Hardware-in-the-loop: sensor frames arrive from `coffee-emu` over USB and

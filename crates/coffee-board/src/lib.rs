@@ -9,9 +9,46 @@
 //! and the pump (diode in series) makes exactly one stroke. [`grid`] models what
 //! happens when the grid is not exactly at nominal frequency.
 
+//!
+//! Networking and provisioning are here too, for the same reason: the USB
+//! [`console`] protocol, the [`http`] server's request parsing, [`ws`] framing,
+//! the [`mdns`] responder, the flash key/value store ([`kv`]), and the [`link`]
+//! between the network tasks and the control loop (no lock the loop can wait on).
+
 #![no_std]
 
+extern crate alloc;
+
+pub mod console;
+pub mod http;
+pub mod kv;
+pub mod link;
+pub mod mdns;
+pub mod ws;
+
 use coffee_io::EngineState;
+
+/// `coffee_node::Storage` over a shared [`kv::Kv`] (the firmware keeps the store in a
+/// static so the flush task and the node can both reach it).
+pub struct KvStorage<'a, F: embedded_storage::nor_flash::NorFlash>(
+    pub &'a critical_section::Mutex<core::cell::RefCell<kv::Kv<F>>>,
+);
+
+impl<F: embedded_storage::nor_flash::NorFlash> coffee_node::Storage for KvStorage<'_, F>
+where
+    F::Error: core::fmt::Debug,
+{
+    fn load(&mut self, key: &str) -> Option<alloc::vec::Vec<u8>> {
+        critical_section::with(|cs| self.0.borrow_ref_mut(cs).get(key))
+    }
+    fn save(&mut self, key: &str, data: &[u8]) -> Result<(), alloc::string::String> {
+        critical_section::with(|cs| self.0.borrow_ref_mut(cs).put(key, data));
+        Ok(())
+    }
+    fn list(&mut self, prefix: &str) -> alloc::vec::Vec<alloc::string::String> {
+        critical_section::with(|cs| self.0.borrow_ref(cs).list(prefix))
+    }
+}
 
 /// Crystal-timed tick schedule. Tick `k` is at `t0 + round(k * period_ns / 1000)`
 /// microseconds: no accumulated rounding error, and exactly the timestamps the

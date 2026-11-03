@@ -1,0 +1,17 @@
+[package]
+name = "coffee-cli"
+description = "`coffee`: flash, provision and inspect the ESP32-C6 controller over USB or Wi-Fi. Non-interactive, JSON output, built for scripts and AI agents."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "coffee"
+path = "src/main.rs"
+
+[dependencies]
+coffee-board.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+serialport = { version = "4", default-features = false }

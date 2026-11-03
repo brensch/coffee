@@ -10,6 +10,7 @@ members = [
     "crates/coffee-physics",
     "crates/coffee-scenario",
     "crates/coffee-emu",
+    "crates/coffee-cli",
 ]
 # The ESP32 firmware targets riscv32imac-unknown-none-elf and is built on its own.
 exclude = ["firmware/esp32", "ui"]

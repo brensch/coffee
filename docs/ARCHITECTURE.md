@@ -34,9 +34,20 @@ The NTC and pressure models, fault detection (open is the node at the rail, a sh
 | | PC (`coffee-engine`) | ESP32 (`firmware/esp32`) |
 |---|---|---|
 | Frames | emulator over stdio/TCP | real pins, or USB bridge |
-| Storage | files under `--data` (memory if omitted) | RAM (flash backend next) |
-| HTTP | axum: `/api/*` → `handle_http`; `/api/ws` streams `drain_events()` | not yet (planned: picoserve → `handle_http`) |
+| Storage | files under `--data` (memory if omitted) | flash key/value store; writes deferred while brewing |
+| HTTP | axum: `/api/*` → `handle_http`; `/api/ws` streams `drain_events()` | queued to the control task → `prepare_http`; encoded by the HTTP worker; `/api/ws` streams events |
 | Log | `--log file.clog` | streamed over USB → `coffee-emu capture` |
+
+### Firmware ownership: the control task owns the node
+
+On the ESP32 the control task (high-priority interrupt executor) owns the `Node` by value. Nothing else holds it and there is no lock, so the network can never delay a tick. The control task awaits only its own timers: the ADC sample points and the cycle tick.
+
+- **Requests in** (`coffee_board::link`). HTTP workers and the USB console queue `(method, path, body)` into a bounded channel (8 deep) and wait on their own reply slot, with a 1.5 s timeout.
+  - A full queue is answered 503 straight away, and a missed reply 504.
+  - Replies carry a sequence number, so a late reply can't be mistaken for the next one.
+- **Handled after the outputs.** Once per cycle, after the outputs are applied, the control task handles at most 2 requests, and only while it's within 1 ms of starting (the check runs before each request). The handler is `Node::prepare_http`, which routes the request and makes owned copies (history columns, shot list, a decoded shot, the profile library). The JSON encoding (`PreparedHttp::finish`) runs in the HTTP worker.
+- **State out.** Node events go to a pub/sub channel that never blocks the publisher (WebSocket clients lag rather than block). The latest telemetry is a snapshot (`link::Latest`) for `/api/device`, the USB `status` command and the first WebSocket message.
+- **Flash.** The control task never touches flash: node saves go to the store's RAM map, and a background task writes them out only while no shot is running.
 
 ## History formats
 

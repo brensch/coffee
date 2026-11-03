@@ -19,3 +19,7 @@ hardware/controller/build/*.dsn
 hardware/controller/build/*-freerouting.log
 hardware/controller/build/*-placed.*
 hardware/controller/build/*.kicad_prl
+hardware/controller/build/*.ses.log
+hardware/controller/build/*-check.*
+hardware/controller/build/*-a[0-9]*
+hardware/controller/build/audit-120v/
