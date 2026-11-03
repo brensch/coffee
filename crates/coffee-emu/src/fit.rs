@@ -39,7 +39,7 @@ impl Decoder {
     /// None for open/short readings.
     pub fn temp_c(&self, mv: u16) -> Option<f64> {
         let v = mv as f64;
-        if !(100.0..3250.0).contains(&v) {
+        if !(100.0..3270.0).contains(&v) {
             return None;
         }
         let r = self.th.r_ref_ohm * v / (self.th.v_ref_mv - v);

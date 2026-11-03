@@ -32,59 +32,17 @@ FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
 
 # ---------------------------------------------------------------- geometry (mm)
-W, H = 64.5, 56.5           # board
-BAND = (34.5, 41.5)         # creepage band: no copper on any layer (7 mm > 5 mm reinforced, 250 V PD2)
-SLOT_X = 38.0               # milled isolation slot (2 mm) through the band, under the optos and PSU
+# The floorplan comes from the layout sandbox (sb.py / opt.py): board size, the barrier and every
+# part's (x, y, rotation, side). Mains zone is x < BAND[0], SELV x > BAND[1].
+PLAN = os.environ.get("PLACE_JSON", os.path.join(HERE, "plan.json"))
+_plan = json.load(open(PLAN))
+W, H = _plan["W"], _plan["H"]
+BAND = (max(x for x, _ in _plan["mains"]), min(x for x, _ in _plan["selv"]))   # 7 mm, no copper on any layer
+SLOT_X = (BAND[0] + BAND[1]) / 2                 # milled isolation slot through the band
 SLOT_W = 2.0
-SLOTS = [(2.5, 22.5), (24.0, 53.5)]   # y ranges; a web of board is left between slots for stiffness
-
-# ref: (x, y, rotation_deg, side) - side 'F' (top) or 'B'. Mains x < 34.5, SELV x > 41.5.
-PLACE = {
-    # ================= MAINS =================
-    # supply: J1 -> F1 -> RV1 -> PS1
-    "J1": (5.05, 4.0, 270, "F"),    # L (5.05,4), N (5.05,9.08)
-    "F1": (12.75, 4.7, 0, "F"),     # AC_L 12.75, AC_L_FUSED 17.83
-    "RV1": (23.2, 4.4, 270, "F"),   # between the fuse and the PSU, standing up
-    "PS1": (29.0, 21.3, 0, "F"),    # RECOM RAC03E: AC pins (29.0, 31.54 @ y 21.3), DC pins (49.32 +V, 54.4 -V @ y 3.52)
-    # valve lane: U3 gate pin 4 (32.92,26.92), opto pin 6 (32.92,32)
-    "U3": (43.08, 32.0, 180, "F"),
-    "C2": (15.2, 14.4, 180, "F"), "R6": (22.8, 16.4, 90, "F"),     # valve snubber 100 R + 10 nF (SMD X2)
-    "J3": (5.2, 25.0, 270, "F"),    # valve (5.2,25), pump (5.2,30.08)
-    "Q3": (15.0, 23.5, 90, "F"),    # SOT-223 pins y=26.65, tab (MT2) y=20.35
-    "R5": (15.0, 30.6, 180, "F"),   # valve gate-MT1 (2 mm below Q3's MT2 pin)
-    "R4": (29.5, 30.5, 0, "F"),     # valve opto series
-    # pump lane: U2 gate (32.92,38.92), opto (32.92,44.0)
-    "U2": (43.08, 40.8, 180, "F"),
-    "Q2": (14.0, 36.3, 0, "F"),     # TO-220 tab up: MT1 14, MT2 16.54, G 19.08
-    "R2": (29.2, 40.8, 270, "F"),   # AC_L at the top, PUMP_OPTO beside U2 pin 6
-    "R3": (24.0, 35.5, 270, "F"), "C1": (24.2, 44.8, 180, "F"),   # pump snubber 100 R + 10 nF (SMD X2)
-    # heater: Q1 on the left edge (bolts to the chassis), J2 on the bottom edge, pours between
-    "U1": (43.08, 51.6, 180, "F"),  # gate (32.92,50.52), opto (32.92,55.6)
-    "Q1": (3.6, 47.0, 90, "F"),     # MT1 (3.6,51) HTR_A, MT2 (3.6,48.46) HTR_B, G (3.6,45.92)
-    "J2": (10.5, 50.5, 0, "F"),
-    "R1": (22.6, 53.8, 0, "F"),     # heater opto series; pad 1 sits in the HTR_B pour
-    # ================= SELV =================
-    # Top side: only the module, the connectors and USB. Every small SMD part sits on the BOTTOM side,
-    # in the otherwise wasted area under the PSU.
-    "U4": (53.5, 33.3, 180, "F"),                                   # IO18/19/20 face the optos
-    "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 40.8, 90, "F"), "R7": (45.0, 49.6, 90, "F"),   # opto LED resistors
-    "D1": (62.2, 29.6, 90, "F"), "R12": (62.2, 33.2, 90, "F"),      # status LED, right edge (light pipe)
-    # one row of sensor/switch connectors under the module, wires leave downward
-    "J6": (48.6, 44.8, 90, "F"), "J5": (54.3, 44.8, 90, "F"), "J7": (60.0, 44.8, 90, "F"),
-    # bottom edge: USB-C (flashing only) and a fixing
-    "J4": (52.0, 52.3, 0, "F"),
-    # ---- bottom side, under the PSU ----
-    "U5": (47.0, 9.5, 0, "B"), "C7": (53.6, 12.0, 90, "B"), "C6": (44.6, 16.0, 90, "B"),
-    "D2": (47.2, 19.8, 0, "B"),
-    "C9": (57.0, 22.2, 90, "B"), "R17": (58.8, 22.2, 90, "B"), "R16": (60.6, 22.2, 90, "B"),   # pressure divider at IO0
-    "C8": (57.0, 18.8, 90, "B"), "R15": (58.8, 18.8, 90, "B"),                                  # thermistor at IO1
-    "R10": (60.6, 18.8, 90, "B"), "C5": (60.6, 15.6, 90, "B"),                                  # EN RC
-    "C4": (58.8, 15.6, 90, "B"), "C3": (57.0, 15.4, 90, "B"),                                   # 3V3 decoupling
-    "R11": (52.6, 22.2, 90, "B"),                                                               # GPIO8 pull-up
-    "R13": (46.4, 41.0, 90, "B"), "R14": (59.0, 49.6, 90, "B"),                                 # USB CC
-    "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),       # BOOT recovery pads
-    # holes (the heater triac's tab bolt is the fourth fixing)
-}
+SLOTS = [(2.0, H / 2 - 0.75), (H / 2 + 0.75, H - 2.0)]   # a web of board in the middle for stiffness
+PLACE = {r: tuple(v) for r, v in _plan["place"].items()}
+SWAP = set(_plan.get("swap", []))   # two-pin terminals whose pins are interchangeable (heater, valve/pump): swap 1<->2
 
 
 def load_fp(spec):
@@ -244,7 +202,10 @@ def build(spec, mains_v):
             fp.Flip(fp.GetPosition(), False)
         fp.SetOrientationDegrees(rot)
         for pad in fp.Pads():
-            net = p["pins"].get(pad.GetNumber())
+            num = pad.GetNumber()
+            if ref in SWAP and num in ("1", "2"):
+                num = "2" if num == "1" else "1"
+            net = p["pins"].get(num)
             if net:
                 pad.SetNet(nets[net])
     if missing:
@@ -256,26 +217,28 @@ def build(spec, mains_v):
         seg(board, pcbnew.Edge_Cuts, rect(SLOT_X - SLOT_W / 2, y0, SLOT_X + SLOT_W / 2, y1))
     zone(board, None, pcbnew.F_Cu, rect(BAND[0], 0, BAND[1], H), keepout=True, name="ISOLATION BAND")
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        for i, r in enumerate((rect(0, 0, W, 0.8), rect(0, H - 0.8, W, H), rect(W - 0.8, 0, W, H))):
+        for i, r in enumerate((rect(0, 0, W, 0.8), rect(0, H - 0.8, W, H), rect(W - 0.8, 0, W, H), rect(0, 0, 0.8, H))):
             guard(board, layer, r, f"edge {i}")
 
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
     # the pour connects every GND pad, and the real fill leaves islands. The module's exposed
     # pad (9 sub-pads) gets its own small GND patch with two vias down to the B.Cu plane.
     u4 = board.FindFootprintByReference("U4")
-    epad = [pcbnew.ToMM(p.GetPosition().x) for p in u4.Pads() if p.GetNumber() == "49"], \
-           [pcbnew.ToMM(p.GetPosition().y) for p in u4.Pads() if p.GetNumber() == "49"]
-    ex0, ex1, ey0, ey1 = min(epad[0]) - 0.5, max(epad[0]) + 0.5, min(epad[1]) - 0.5, max(epad[1]) + 0.5
-    zone(board, nets["GND"], pcbnew.F_Cu, rect(ex0, ey0, ex1, ey1 + 1.6), clearance=0.2, priority=3, name="EPAD")
-    for vx in (ex0 + 0.6, ex1 - 0.6):
-        v = pcbnew.PCB_VIA(board)
-        v.SetPosition(V(mm(vx), mm(ey1 + 0.9)))
-        v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(nets["GND"]); v.SetLocked(True)
-        board.Add(v)
+    ep = [p for p in u4.Pads() if p.GetNumber() == "49"]
+    exs = sorted({round(pcbnew.ToMM(p.GetPosition().x), 3) for p in ep}); eys = sorted({round(pcbnew.ToMM(p.GetPosition().y), 3) for p in ep})
+    ex0, ex1, ey0, ey1 = exs[0] - 0.75, exs[-1] + 0.75, eys[0] - 0.75, eys[-1] + 0.75
+    elayer = pcbnew.B_Cu if u4.IsFlipped() else pcbnew.F_Cu
+    zone(board, nets["GND"], elayer, rect(ex0, ey0, ex1, ey1), clearance=0.2, priority=3, name="EPAD")
+    for vx in ((exs[0] + exs[1]) / 2, (exs[1] + exs[2]) / 2):
+        for vy in ((eys[0] + eys[1]) / 2, (eys[1] + eys[2]) / 2):
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(V(mm(vx), mm(vy)))
+            v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(nets["GND"]); v.SetLocked(True)
+            board.Add(v)
 
     # silkscreen: mark the barrier and the mains side
-    for txt, x, y, size in (("MAINS", 29.5, 54.8, 1.2), ("SELV", 49.0, 38.6, 1.0),
-                            (f"coffee v10 {mains_v} V", 57.0, 38.6, 0.6)):
+    for txt, x, y, size in (("MAINS", BAND[0] - 3.5, H - 1.6, 1.0), ("SELV", BAND[1] + 3.0, H / 2, 1.0),
+                            (f"coffee {mains_v} V", SLOT_X, H - 1.0, 0.6)):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt)
         t.SetPosition(V(mm(x), mm(y)))
@@ -288,133 +251,102 @@ def build(spec, mains_v):
 
     if os.environ.get("PLACE_ONLY"):   # floorplanning: footprints, outline and band only
         return board
-    # Heater current path as copper pours (solid pad connections). HTR_B leaves the triac's
-    # middle pin as wide as the TO-220 pin pitch allows (~2 mm, the pad width) and widens to
-    # 4.5 mm once clear of the neighbouring pins.
-    def pour(net, layer, pts, clearance):
-        z = zone(board, nets[net], layer, pts, clearance=clearance, priority=2, name=net)
-        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
-        z.SetMinThickness(mm(0.3))
-    dy = -6.0   # v5 heater geometry, moved with the lanes
-    sh = lambda pts: [(x, y + dy) for x, y in pts]
-    band = sh([(2.0, 49.42), (14.4, 49.42), (20.5, 49.42), (20.5, 57.8), (23.0, 57.8), (23.0, 61.9), (14.4, 61.9), (14.4, 51.5), (2.0, 51.5)])
-    band_b = sh([(5.2, 49.42), (20.5, 49.42), (20.5, 61.9), (14.4, 61.9), (14.4, 51.5), (5.2, 51.5)])
-    pocket = sh([(0.6, 52.5), (13.2, 52.5), (13.2, 61.9), (0.6, 61.9)])
-    pour("HTR_B", pcbnew.F_Cu, band, 0.5)
-    pour("HTR_B", pcbnew.B_Cu, band_b, 0.5)
-    pour("HTR_A", pcbnew.F_Cu, pocket, 0.5)
-    pour("HTR_A", pcbnew.B_Cu, sh([(0.6, 52.5), (13.2, 52.5), (13.2, 61.9), (0.6, 61.9)]), 0.5)
-    # Keep other nets' tracks and vias ~1 mm off the heater copper so nothing nibbles the band.
-    guard(board, pcbnew.F_Cu, sh([(1.0, 48.4), (21.5, 48.4), (21.5, 56.8), (23.5, 56.8), (23.5, 62.5), (0.0, 62.5), (0.0, 52.4), (1.0, 52.4)]), "heater guard F")
-    guard(board, pcbnew.B_Cu, sh([(4.2, 48.4), (21.5, 48.4), (21.5, 62.5), (0.0, 62.5), (0.0, 52.4), (4.2, 52.4)]), "heater guard B")
-
-    # Heater gate, hand-routed on B.Cu: Q1.G -> along the top of the heater band -> U1 pin 4.
-    g = nets["HEATER_GATE"]
-    q1g, u1g = pad_pos(board, "Q1", "3"), pad_pos(board, "U1", "4")
-    gw, yb, yc = 0.4, q1g[1], 53.0 + dy
-    for a_, b_ in ((q1g, (22.0, yb)), ((22.0, yb), (22.0, yc)),
-                   ((22.0, yc), (31.6, yc)), ((31.6, yc), (31.6, u1g[1])), ((31.6, u1g[1]), u1g)):
-        track(board, g, pcbnew.B_Cu, a_, b_, gw)
-    # Heater opto feed (HTR_B via R1 -> U1 pin 6), hand-routed along the bottom edge: the pour,
-    # the pump snubber and the 2 mm mains spacing leave the router no way in (v5's last unrouted net).
-    o = nets["HEATER_OPTO"]
-    r1o, u1o = pad_pos(board, "R1", "2"), pad_pos(board, "U1", "6")
-    yo = 54.6
-    for a_, b_ in ((r1o, (r1o[0] + 0.8, yo)), ((r1o[0] + 0.8, yo), (u1o[0] - 1.9, yo)),
-                   ((u1o[0] - 1.9, yo), (u1o[0], yo - 1.9)), ((u1o[0], yo - 1.9), u1o)):
-        track(board, o, pcbnew.F_Cu, a_, b_, 0.8)
-
-    # Fan-out stubs (F.Cu, 0.8 mm) out of tight mains pins; the router joins at the stub ends.
-    def stub(ref, pin, end):
-        a_ = pad_pos(board, ref, pin)
-        net = board.FindFootprintByReference(ref).FindPadByNumber(pin).GetNetname()
-        track(board, nets[net], pcbnew.F_Cu, a_, end, 0.8)
-
-    # ---- Mains side, hand-routed (0/45/90 only). Freerouting 2.1 throws inside its maze search
-    # on these nets (NullPointerException in find_connection) and leaves the same few unrouted,
-    # so the mains copper is drawn here and checked by the DRC rules; the router only does SELV.
-    def run(net, layer, *pts, w=0.8):
-        for a_, b_ in zip(pts, pts[1:]):
+    # ---- Mains side: grid-routed here (mainsroute.py), checked by the same DRC rules; Freerouting
+    # only does SELV. Heater first and on both layers, then the supply, the load lines and the rest.
+    import mainsroute
+    # Hand routes from the plan (heater corner): drawn first, locked, obstacles for the router.
+    pre = _plan.get("preroute", [])
+    for r in pre:
+        L = pcbnew.F_Cu if r["layer"] == "F" else pcbnew.B_Cu
+        for a_, b_ in zip(r["pts"], r["pts"][1:]):
             dx, dy = b_[0] - a_[0], b_[1] - a_[1]
-            assert abs(dx) < 1e-6 or abs(dy) < 1e-6 or abs(abs(dx) - abs(dy)) < 0.02, f"{net}: {a_}->{b_} is not 0/45/90"
-            track(board, nets[net], layer, a_, b_, w)
-    def via(net, xy, d=1.2, drill=0.6):
-        v = pcbnew.PCB_VIA(board)
-        v.SetPosition(V(mm(xy[0]), mm(xy[1]))); v.SetWidth(mm(d)); v.SetDrill(mm(drill))
-        v.SetNet(nets[net]); v.SetLocked(True); board.Add(v)
-    P = lambda r, n: pad_pos(board, r, n)
-    F, B = pcbnew.F_Cu, pcbnew.B_Cu
-    d45 = lambda p, dx, dy: (p[0] + dx, p[1] + dy)
-
-    # Supply. L: terminal -> fuse (B). Fused L: fuse -> MOV -> PSU (B). N: terminal -> MOV (F), MOV -> PSU (B).
-    j11, f11, f12, rv1, rv2, ps1, ps2, j12 = P("J1", "1"), P("F1", "1"), P("F1", "2"), P("RV1", "1"), P("RV1", "2"), P("PS1", "1"), P("PS1", "2"), P("J1", "2")
-    run("AC_L", B, j11, (f11[0] - (f11[1] - j11[1]), j11[1]), f11)
-    run("AC_L_FUSED", B, f12, (rv1[0] - (f12[1] - rv1[1]), f12[1]), rv1)
-    # into the PSU's AC pins from outside the pair: L from the left, N (bottom layer) from the right
-    run("AC_L_FUSED", F, rv1, (rv1[0] + 3.8, rv1[1] + 3.8), (rv1[0] + 3.8, ps1[1] - (ps1[0] - rv1[0] - 3.8)), ps1)
-    run("AC_N", F, j12, (rv2[0] - (rv2[1] - j12[1]), j12[1]), rv2)
-    run("AC_N", B, rv2, (24.0, rv2[1]), (33.5, rv2[1] + 33.5 - 24.0), (33.5, ps2[1]), ps2)
-
-    # L trunk on B: fuse -> down the middle (under C2) -> via at the valve triac -> pump triac MT2.
-    q22 = P("Q2", "2")
-    run("AC_L", B, f11, (15.0, f11[1] + 15.0 - f11[0]), (15.0, 22.3), (15.0, 33.0), (q22[0], 33.0 + q22[0] - 15.0), q22)
-    via("AC_L", (15.0, 22.3))
-    tab, q32, r61 = (15.0, 20.35), P("Q3", "2"), P("R6", "1")
-    run("AC_L", F, (15.0, 22.3), tab)                     # valve triac tab (MT2)
-    run("AC_L", F, (15.0, 22.3), q32)                     # and its middle pin (same terminal)
-    run("AC_L", F, tab, (r61[0] - (tab[1] - r61[1]), tab[1]), r61)   # valve snubber resistor
-
-    # Pump MT2 -> R3 (pump snubber) -> R4 (valve opto feed) and R2 (pump opto feed).
-    r31, r41, r21, r42, u36, r22, u26 = P("R3", "1"), P("R4", "1"), P("R2", "1"), P("R4", "2"), P("U3", "6"), P("R2", "2"), P("U2", "6")
-    # R3/R4/R2 cluster joins L by a short branch off the trunk (bottom layer), clear of the valve gate parts
-    via("AC_L", (r31[0] - 2.6, r31[1]))
-    run("AC_L", B, (15.0, r31[1] - 1.54), (16.54, r31[1]), (r31[0] - 2.6, r31[1]))
-    run("AC_L", F, (r31[0] - 2.6, r31[1]), r31)
-    run("AC_L", F, r31, (r41[0], r31[1] - (r41[0] - r31[0])), r41)
-    run("AC_L", F, r31, (r31[0] + 1.2, r31[1]), (r21[0], r31[1] + r21[0] - r31[0] - 1.2), r21)
-    run("VALVE_OPTO", F, r42, (r42[0] + u36[1] - r42[1], u36[1]), u36)
-    run("PUMP_OPTO", F, r22, (r22[0] + r22[1] - u26[1], u26[1]), u26)
-
-    # Valve snubber: C2 (snubber side, right pad) straight across to R6.
-    c21, r62 = P("C2", "1"), P("R6", "2")
-    run("VALVE_SNUB", F, (c21[0], r62[1]), r62)
-    # Valve load: C2 (load side, left pad) -> down the left -> J3.1 and Q3.1 -> R5.
-    c22, j31, q31, r52 = P("C2", "2"), P("J3", "1"), P("Q3", "1"), P("R5", "2")
-    y0 = 16.6
-    run("VALVE_L", F, (c22[0] - 0.45, y0), (10.5, y0 + c22[0] - 0.45 - 10.5), (10.5, 24.5), (j31[0] + 0.5, 24.5), j31)
-    run("VALVE_L", F, (10.5, 24.5), (10.5 + q31[1] - 24.5, q31[1]), q31)
-    run("VALVE_L", F, q31, (q31[0], r52[1] - (r52[0] - q31[0])), r52)
-    # Valve gate: Q3.3 -> y 25.35 -> U3.4; Q3.3 -> R5.1 (gate-MT1 resistor).
-    q33, u34, r51 = P("Q3", "3"), P("U3", "4"), P("R5", "1")
-    yg = q33[1] - 1.3
-    run("VALVE_GATE", F, q33, (q33[0] + 1.3, yg), (u34[0] - (u34[1] - yg), yg), u34)
-    run("VALVE_GATE", F, q33, (q33[0], r51[1] - (q33[0] - r51[0])), r51)
-
-    # Pump gate on B: Q2.3 -> U2.4.
-    q23, u24 = P("Q2", "3"), P("U2", "4")
-    run("PUMP_GATE", B, q23, (q23[0] + q23[1] - u24[1], u24[1]), u24)
-    # Pump load: Q2.1 -> J3.2 (45 deg up-left); Q2.1 -> y 43.6 -> C1 (load side, left pad).
-    q21, j32, c1l = P("Q2", "1"), P("J3", "2"), P("C1", "2")
-    run("PUMP_L", F, q21, (j32[0] + (q21[1] - j32[1]), q21[1]), j32)
-    run("PUMP_L", F, q21, (q21[0] - 1.0, q21[1] + 1.0), (13.0, 40.4), (c1l[0] - 1.4, 40.4), (c1l[0] + 0.4, 42.2), (c1l[0] + 0.4, 42.6))   # ends inside the pad, clear of the heater keep-out
-    # Pump snubber: R3.2 -> C1 (snubber side, right pad).
-    r32, c1r = P("R3", "2"), P("C1", "1")
-    run("PUMP_SNUB", F, r32, (c1r[0] - (42.3 - r32[1]), r32[1]), (c1r[0], 42.3), (c1r[0], 42.8))
-
-    # Lint: no foreign pad inside a heater guard (the router could never reach it: v5's last
-    # unconnected net was exactly this).
-    bad = []
-    for z in board.Zones():
-        if not z.GetZoneName().startswith("heater guard"):
-            continue
-        layer = z.GetLayerSet().Seq()[0]
-        for fp in board.GetFootprints():
-            for pad in fp.Pads():
-                if pad.IsOnLayer(layer) and pad.GetNetname() not in ("HTR_A", "HTR_B", "") \
-                        and z.Outline().Collide(pad.GetPosition()):
-                    bad.append(f"{fp.GetReference()}.{pad.GetNumber()} [{pad.GetNetname()}] in {z.GetZoneName()}")
-    if bad:
-        raise SystemExit("pads inside heater guards:\n  " + "\n  ".join(bad))
+            assert abs(dx) < 1e-6 or abs(dy) < 1e-6 or abs(abs(dx) - abs(dy)) < 0.02, f"preroute {r['net']}: {a_}->{b_} not 0/45/90"
+            track(board, nets[r["net"]], L, a_, b_, r["w"])
+    rt = mainsroute.Router(board, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS)
+    for r in pre:
+        L = pcbnew.F_Cu if r["layer"] == "F" else pcbnew.B_Cu
+        for a_, b_ in zip(r["pts"], r["pts"][1:]):
+            x0, x1 = sorted((a_[0], b_[0])); y0, y1 = sorted((a_[1], b_[1]))
+            o = dict(kind="seg", net=r["net"], layers=[L], a=tuple(a_), b=tuple(b_), w=r["w"])
+            o["courts"] = rt._touch((x0 - r["w"] / 2, y0 - r["w"] / 2, x1 + r["w"] / 2, y1 + r["w"] / 2))
+            rt.obs.append(o)
+    rt.base_obs = list(rt.obs)
+    done = {r["net"] for r in pre}
+    # Rip-up and reroute: nets that fail move to the front of the order, up to ROUNDS times; keep the
+    # best order (fewest failures, then fewest vias) and route it once more for real.
+    base = [o for o in MAINS_ORDER]
+    order, best, seen = list(base), None, set()
+    for rnd in range(int(os.environ.get("ROUTE_ROUNDS", "12"))):
+        rt.failed = set()
+        fails = 0
+        for net, w, layers in order:
+            if net in rt.pads and net not in done:
+                for L in layers:
+                    fails += rt.route_net(net, w, [L] if L is not None else None, optional=L is not None)
+        key = (fails, rt.vias())
+        print(f"  mains round {rnd}: {fails} pads unrouted, {rt.vias()} vias; failed {sorted(rt.failed)}", flush=True)
+        if best is None or key < best[0]:
+            best = (key, list(order))
+        if fails == 0 and rt.vias() == 0:
+            break
+        nxt = [o for o in order if o[0] in rt.failed] + [o for o in order if o[0] not in rt.failed]
+        if not rt.failed or tuple(n for n, *_ in nxt) in seen:
+            import random
+            nxt = list(order); random.Random(rnd).shuffle(nxt)
+        seen.add(tuple(n for n, *_ in nxt))
+        rt.reset()
+        order = nxt
+    if order != best[1] or rt.failed:
+        rt.reset(); rt.failed = set(); fails = 0
+        for net, w, layers in best[1]:
+            if net in rt.pads and net not in done:
+                for L in layers:
+                    fails += rt.route_net(net, w, [L] if L is not None else None, optional=L is not None)
+    # ---- SELV side, same router: 0.2 mm, pad-centre exits, vias only when needed. GND is a pour.
+    if os.environ.get("OWN_SELV", "0") == "1":
+        sel = [n for n in sorted(rt.pads) if n not in spec["mains_nets"] and n != "GND"]   # GND is added last (tree + pours)
+        first = ["USB_D+", "USB_D-", "CC1", "CC2", "EN", "IO8_STRAP", "IO9_BOOT"]
+        power = {"+3V3": 0.4, "+5V": 0.5, "VBUS": 0.4}
+        fine = {"USB_D+": 0.2, "USB_D-": 0.2, "CC1": 0.2, "CC2": 0.2}   # USB-C pads: 0.3 wide on 0.5 pitch
+        sorder = [n for n in first if n in sel] + [n for n in sel if n not in first and n not in power] + [n for n in power if n in sel]
+        sbest, sfail = None, None
+        smark = len(rt.added)
+        for srnd in range(int(os.environ.get("SELV_ROUNDS", "6"))):
+            rt.failed = set()
+            f = 0
+            for n in sorder:
+                f += rt.route_net(n, power.get(n, fine.get(n, 0.25)))
+            print(f"  selv round {srnd}: {f} pads unrouted, {rt.vias()} vias total; failed {sorted(rt.failed)}", flush=True)
+            if sbest is None or f < sbest[0]:
+                sbest = (f, list(sorder))
+            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "6")) - 1:
+                break
+            # rip up only the SELV copper and retry with the failures first
+            for it in rt.added[smark:]:
+                rt.b.Remove(it)
+            keep = set(map(id, rt.added[:smark]))
+            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep) and not (o["kind"] == "via" and o["net"] not in spec["mains_nets"])]
+            rt.added = rt.added[:smark]
+            sorder = [n for n in sorder if n in rt.failed] + [n for n in sorder if n not in rt.failed]
+        if f and sbest[0] < f:                  # replay the best order
+            for it in rt.added[smark:]:
+                rt.b.Remove(it)
+            keep = set(map(id, rt.added[:smark]))
+            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep) and not (o["kind"] == "via" and o["net"] not in spec["mains_nets"])]
+            rt.added = rt.added[:smark]
+            rt.failed = set(); f = 0
+            for n in sbest[1]:
+                f += rt.route_net(n, power.get(n, fine.get(n, 0.25)))
+            print(f"  selv replay of the best order: {f} pads unrouted", flush=True)
+        sfail = f
+        fails += sfail
+    rt.widen(set(spec["heater_nets"]))
+    rt.widen({"AC_L", "PUMP_L"}, widths=(1.5, 1.2))
+    if fails:
+        print(f"mainsroute: {fails} pads unrouted", flush=True)
+        if not os.environ.get("KEEP_GOING"):
+            pcbnew.SaveBoard(os.path.join(BUILD, "mains-fail.kicad_pcb"), board)
+            raise SystemExit("mains routing incomplete: build/mains-fail.kicad_pcb")
     return board
 
 
@@ -471,7 +403,9 @@ def remove_stubs(board):
 def add_pours(board):
     gnd = board.GetNetsByName()["GND"]
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        zone(board, gnd, layer, rect(BAND[1] + 0.5, 0.5, W - 0.5, H - 0.5), name="GND")
+        z = zone(board, gnd, layer, rect(BAND[1] + 0.5, 0.8, W - 0.8, H - 0.8), name="GND")
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+        z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
 
 
 # Mains nets within a few volts of each other in normal operation: 0.5 mm between them is enough.
@@ -486,6 +420,14 @@ SAME_POTENTIAL_GROUPS = [
 ]
 SAME_POTENTIAL = [(g[i], g[j]) for g in SAME_POTENTIAL_GROUPS for i in range(len(g)) for j in range(i + 1, len(g))]
 MAINS_PARTS = ["Q1", "Q2", "Q3", "U1", "U2", "U3", "PS1"]   # parts whose own pin pitch governs inside their courtyard
+F_, B_ = pcbnew.F_Cu, pcbnew.B_Cu
+# (net, width, layers): None = router picks layers (vias allowed); heater copper on both layers
+MAINS_ORDER = [("HTR_A", 2.0, [None, F_, B_]), ("HTR_B", 2.0, [None, F_, B_]),
+               ("AC_L_FUSED", 0.8, [None]), ("AC_N", 0.8, [None]), ("AC_L", 0.8, [None]),
+               ("PUMP_L", 0.8, [None]), ("VALVE_L", 0.8, [None]),
+               ("HEATER_GATE", 0.5, [None]), ("PUMP_GATE", 0.5, [None]), ("VALVE_GATE", 0.5, [None]),
+               ("HEATER_OPTO", 0.5, [None]), ("PUMP_OPTO", 0.5, [None]), ("VALVE_OPTO", 0.5, [None]),
+               ("PUMP_SNUB", 0.8, [None]), ("VALVE_SNUB", 0.8, [None])]
 
 
 def write_rules(path, spec):
@@ -617,6 +559,189 @@ def fab_outputs(pcb, stem):
 JOB_TIMEOUT = [120]
 
 
+def obstacles(board, net="GND"):
+    """Other-net copper (and every hole) as simple shapes, for placing GND vias/tracks."""
+    items = []
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetNetname() != "GND" or p.GetDrillSize().x > 0:     # holes: keep vias clear of them too
+                bb = p.GetBoundingBox()
+                g = 0.25 if p.GetNetname() == "GND" else 0.0
+                items.append(("r", [pcbnew.ToMM(v) for v in (bb.GetLeft(), bb.GetTop(), bb.GetRight(), bb.GetBottom())]))
+                if g:
+                    items[-1] = ("r", [items[-1][1][0] - g, items[-1][1][1] - g, items[-1][1][2] + g, items[-1][1][3] + g])
+    for t in board.GetTracks():
+        if t.GetNetname() == "GND":
+            continue
+        if t.Type() == pcbnew.PCB_VIA_T:
+            c = t.GetPosition(); items.append(("c", (pcbnew.ToMM(c.x), pcbnew.ToMM(c.y), pcbnew.ToMM(t.GetWidth()) / 2)))
+        else:
+            a, b = t.GetStart(), t.GetEnd()
+            items.append(("s", (pcbnew.ToMM(a.x), pcbnew.ToMM(a.y), pcbnew.ToMM(b.x), pcbnew.ToMM(b.y), pcbnew.ToMM(t.GetWidth()) / 2)))
+    return items
+
+
+def is_free(items, x, y, r):
+    """True if a disc of radius r at (x, y) clears every obstacle."""
+    import math
+    for k, g in items:
+        if k == "r":
+            dx = max(g[0] - x, 0, x - g[2]); dy = max(g[1] - y, 0, y - g[3])
+            if math.hypot(dx, dy) < r:
+                return False
+        elif k == "c":
+            if math.hypot(x - g[0], y - g[1]) < r + g[2]:
+                return False
+        else:
+            ax, ay, bx, by, h = g
+            vx, vy = bx - ax, by - ay
+            L2 = vx * vx + vy * vy
+            t_ = 0 if L2 == 0 else max(0, min(1, ((x - ax) * vx + (y - ay) * vy) / L2))
+            if math.hypot(x - ax - t_ * vx, y - ay - t_ * vy) < r + h:
+                return False
+    return True
+
+
+def stitch(board, pitch=2.5, d=0.6, drill=0.3, clr=0.3):
+    """GND stitching vias on a grid over the SELV pours, wherever both layers are free of other nets."""
+    gnd = board.GetNetsByName()["GND"]
+    items = obstacles(board)
+    n = 0
+    x = BAND[1] + 1.5
+    while x < W - 1.2:
+        y = 1.5
+        while y < H - 1.2:
+            if is_free(items, x, y, d / 2 + clr):
+                v = pcbnew.PCB_VIA(board)
+                v.SetPosition(V(mm(x), mm(y))); v.SetWidth(mm(d)); v.SetDrill(mm(drill)); v.SetNet(gnd)
+                board.Add(v); n += 1
+                items.append(("c", (x, y, d / 2)))
+            y += pitch
+        x += pitch
+    return n
+
+
+def gnd_islands(b, tmp):
+    """GND pads the DRC reports as unconnected (the binding's connectivity queries aren't reliable)."""
+    pcbnew.SaveBoard(tmp + ".kicad_pcb", b)
+    bb = pcbnew.LoadBoard(tmp + ".kicad_pcb")
+    pcbnew.WriteDRCReport(bb, tmp + ".rpt", pcbnew.EDA_UNITS_MILLIMETRES, True)
+    found = set()
+    for blk in re.split(r"\n(?=\[)", open(tmp + ".rpt").read()):
+        if not blk.startswith("[unconnected_items"):
+            continue
+        for m in re.finditer(r"Pad (\S+) \[GND\] of (\S+) on", blk):
+            found.add((m.group(2), m.group(1)))
+    pads = []
+    for ref, num in sorted(found):
+        fp = b.FindFootprintByReference(ref)
+        pads += [p for p in fp.Pads() if p.GetNumber() == num and p.GetNetname() == "GND"][:1]
+    return pads
+
+
+def dogbones(b, pads, d=0.6, clr=0.3, w=0.3):
+    """For each isolated GND pad: a via within ~1.6 mm (both layers clear) and a short track to it."""
+    import math
+    gnd = b.GetNetsByName()["GND"]
+    items = obstacles(b)
+    added = 0
+    for p in pads:
+        c = p.GetPosition(); px, py = pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)
+        bb = p.GetBoundingBox(); half = max(pcbnew.ToMM(bb.GetWidth()), pcbnew.ToMM(bb.GetHeight())) / 2
+        layer = pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+        done = False
+        for rr in (half + 0.55, half + 0.9, half + 1.3, half + 1.7, half + 2.2, half + 2.8):
+            for k in range(32):
+                a_ = k * math.pi / 16
+                vx, vy = round((px + rr * math.cos(a_)) * 20) / 20, round((py + rr * math.sin(a_)) * 20) / 20
+                if not (BAND[1] + 0.8 < vx < W - 1.0 and 1.0 < vy < H - 1.0):
+                    continue
+                if not is_free(items, vx, vy, d / 2 + clr):
+                    continue
+                # the track from the pad centre to the via must clear other nets too
+                ok = all(is_free(items, px + (vx - px) * t, py + (vy - py) * t, w / 2 + 0.2) for t in [i / 20 for i in range(4, 20)])
+                if not ok:
+                    continue
+                v = pcbnew.PCB_VIA(b); v.SetPosition(V(mm(vx), mm(vy))); v.SetWidth(mm(d)); v.SetDrill(mm(0.3)); v.SetNet(gnd); v.SetLocked(True); b.Add(v)
+                track(b, gnd, layer, (px, py), (vx, vy), w)
+                items.append(("c", (vx, vy, d / 2)))
+                added += 1; done = True
+                break
+            if done:
+                break
+    return added
+
+
+def finish_own(spec, stem):
+    placed = stem + "-placed.kicad_pcb"
+    b = pcbnew.LoadBoard(placed)
+    add_pours(b)
+    n = stitch(b)
+    pcb = stem + ".kicad_pcb"
+    pcbnew.SaveBoard(pcb, b)
+    write_rules(stem + ".kicad_dru", spec)
+    b = pcbnew.LoadBoard(pcb)
+    b.BuildConnectivity()
+    pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    # drop GND vias that ended up in pour on only one layer (dangling), then refill
+    zs = [z for z in b.Zones() if z.GetNetname() == "GND" and not z.GetIsRuleArea()]
+    dead = []
+    for t in b.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == "GND" and not t.IsLocked():
+            on = [L for L in (pcbnew.F_Cu, pcbnew.B_Cu) if any(z.IsOnLayer(L) and z.GetFilledPolysList(L).Contains(t.GetPosition()) for z in zs)]
+            if len(on) < 2:
+                dead.append(t)
+    for t in dead:
+        b.Remove(t)
+    pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    for it in range(4):                     # isolated GND pads: dogbones, then routed joins
+        iso = gnd_islands(b, stem + "-iso")
+        print(f"  GND islands round {it}: {len(iso)} pads", flush=True)
+        if not iso:
+            break
+        if it < 2 and dogbones(b, iso):
+            pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+            continue
+        import mainsroute
+        rt = mainsroute.Router(b, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS, BAND[1])
+        rt.load_tracks()
+        pos = [(pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in iso]
+        src = [o for o in rt.pads["GND"] if any(abs((o["rect"][0] + o["rect"][2]) / 2 - x) < 0.02 and abs((o["rect"][1] + o["rect"][3]) / 2 - y) < 0.02 for x, y in pos)]
+        tgt = set()     # only the main pour: other GND pads may sit on islands themselves
+        # the main pour on each layer (its largest filled outline), rasterised: the place real ground is
+        R = mainsroute.RES
+        for z in b.Zones():
+            if z.GetNetname() != "GND" or z.GetIsRuleArea():
+                continue
+            for L in (pcbnew.F_Cu, pcbnew.B_Cu):
+                if not z.IsOnLayer(L):
+                    continue
+                ps = z.GetFilledPolysList(L)
+                if ps.OutlineCount() == 0:
+                    continue
+                k = max(range(ps.OutlineCount()), key=lambda i: abs(ps.Outline(i).Area()))
+                main = pcbnew.SHAPE_POLY_SET(); main.AddOutline(ps.Outline(k))
+                for h in range(ps.HoleCount(k)):
+                    main.AddHole(ps.Hole(k, h))
+                bb = ps.Outline(k).BBox()
+                x0, x1 = pcbnew.ToMM(bb.GetLeft()), pcbnew.ToMM(bb.GetRight()); y0, y1 = pcbnew.ToMM(bb.GetTop()), pcbnew.ToMM(bb.GetBottom())
+                for i in range(int(x0 / R) + 1, int(x1 / R), 2):
+                    for j in range(int(y0 / R) + 1, int(y1 / R), 2):
+                        if main.Contains(V(mm(i * R), mm(j * R))):
+                            tgt.add((i, j, L))
+        n_join = rt.join("GND", src, tgt)
+        print(f"  routed {n_join} of {len(src)} island pads to the main GND pour", flush=True)
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    pcbnew.SaveBoard(pcb, b)
+    rpt = stem + "-drc.rpt"
+    pcbnew.WriteDRCReport(b, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
+    b.BuildConnectivity()
+    un = b.GetConnectivity().GetUnconnectedCount(False)
+    vias = sum(1 for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T)
+    fab_outputs(pcb, stem)
+    print(f"own route: {n} GND stitching vias, {vias} vias total, unconnected {un}\nwrote {pcb}\nDRC: {rpt}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mains", type=int, default=120)
@@ -631,12 +756,16 @@ def main():
     JOB_TIMEOUT[0] = a.timeout
     spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
     stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
+    if os.environ.get("FINISH_ONLY"):          # reuse the routed board: pour, stitch, islands, DRC, fab
+        return finish_own(spec, stem)
     board = build(spec, a.mains)
     pcbnew.SaveBoard(stem + "-placed.kicad_pcb", board)
     write_rules(stem + "-placed.kicad_dru", spec)
     if a.no_route:
         print("placed:", stem + "-placed.kicad_pcb")
         return
+    if os.environ.get("OWN_SELV", "0") == "1":     # everything routed in build(): pour, stitch, fill, DRC, fab
+        return finish_own(spec, stem)
     dsn, ses = stem + ".dsn", stem + ".ses"
     # Fill the heater pours first, so the router sees them as copper to keep clear of.
     board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")

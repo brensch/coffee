@@ -17,12 +17,12 @@ the design: schematic as code, hand-constrained placement, autorouting, script c
 **Nobody has built it yet.** Please be blunt.
 
 ## What the board does (one paragraph)
-An ESP32-C6 module (external antenna via U.FL) runs a temperature/pressure controller. On the
+An ESP32-C6 module (external antenna via W.FL / MHF III) runs a temperature/pressure controller. On the
 mains side, three zero-cross opto-triacs (MOC3083, 800 V) fire three 800 V triacs straight from
 GPIOs:
 - **heater** (1370 W, BTA24-800BW, wired in place of the brew thermostat; the machine's steam
   thermostat and thermal fuse stay in series);
-- **vibratory pump** (Ulka, half-wave diode inside; BTA08-800CW + 100 Ω/10 nF snubber);
+- **vibratory pump** (Ulka, half-wave diode inside; BTA08-800BW + 100 Ω/10 nF snubber);
 - **3-way solenoid valve** (Z0109NN + 100 Ω/10 nF snubber; both snubber caps are Murata GA355 SMD X2).
 
 Loads are switched in whole mains cycles. The firmware runs one control tick per mains cycle from

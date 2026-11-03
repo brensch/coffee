@@ -54,7 +54,7 @@ valve itself. The design rule is that anything the firmware can do, the firmware
 the board:
 - isolation;
 - three zero-cross triacs (800 V parts);
-- an ESP32-C6-MINI-1U (105 °C rated, U.FL antenna);
+- an ESP32-C6-MINI-1U (105 °C rated, W.FL / MHF III antenna connector);
 - a certified 5 V module;
 - a thermistor input and a pressure input, read by the C6's own ADC.
 
@@ -63,7 +63,7 @@ the board:
 | Board | v6 controller, JLCPCB assembles the SMD side | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. You hand-solder the through-hole parts. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
 | Boiler temperature | 100k B3950 NTC thermistor, M4 thread or ring lug | Goes in the brew-thermostat hole, hand-tight. Two-point calibration. |
 | Pressure | Transducer 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
-| Antenna | 2.4 GHz, U.FL pigtail | Outside the steel case. |
+| Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |
 | Scale *(optional)* | Bluetooth scale (Decent / Bookoo / Acaia) | Weight stop. Firmware driver not written yet. |
 
 The full list and the reasons behind it are in [docs/HARDWARE.md](docs/HARDWARE.md); fitting it is

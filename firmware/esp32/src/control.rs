@@ -5,7 +5,11 @@
 //! Ticks come from the crystal, once per nominal mains cycle
 //! (`EngineConfig::mains_hz`). During each cycle both analog channels are sampled
 //! `SAMPLES` times, evenly spread over the cycle (averaging out the pump's ripple
-//! exactly), with ADC1 curve calibration (eFuse) giving millivolts. At the tick
+//! exactly), with ADC1 curve calibration (eFuse) giving millivolts. Both rails are
+//! sampled too (3.3 V through 1/2, 5 V through 1/3), and the thermistor and
+//! pressure readings are rescaled to the nominal rails: the NTC divider is
+//! ratiometric to 3.3 V and the transducer to 5 V, so this removes rail and ADC
+//! gain error and makes an open thermistor read exactly full scale. At the tick
 //! that ends cycle `k` the averages and the debounced switches form a
 //! `SensorFrame`, the node is ticked, and its `ActuatorFrame` is applied at once,
 //! for cycle `k + 1`: each opto-triac fires at its next zero crossing.
@@ -23,7 +27,7 @@ use crate::link::{self, BUDGET_US, LINK, MAX_PER_CYCLE, TELEMETRY};
 use crate::store::{BUSY, NodeT};
 use crate::usb;
 use coffee_api::ServerMsg;
-use coffee_board::{CycleClock, Debounce, Oversample, status_led};
+use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
 use coffee_io::{EngineState, SensorFrame, input};
 use coffee_node::tlog::{LogWriter, Outputs};
 use core::sync::atomic::Ordering;
@@ -47,6 +51,8 @@ pub struct Pins {
     pub adc1: ADC1<'static>,
     pub pressure: peripherals::GPIO0<'static>,
     pub ntc: peripherals::GPIO1<'static>,
+    pub v3_sense: peripherals::GPIO2<'static>,
+    pub v5_sense: peripherals::GPIO3<'static>,
     pub valve: peripherals::GPIO18<'static>,
     pub pump: peripherals::GPIO19<'static>,
     pub heater: peripherals::GPIO20<'static>,
@@ -82,6 +88,8 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut adc_cfg = AdcConfig::new();
     let mut ch_pressure = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.pressure, Attenuation::_11dB);
     let mut ch_ntc = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.ntc, Attenuation::_11dB);
+    let mut ch_v3 = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.v3_sense, Attenuation::_11dB);
+    let mut ch_v5 = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.v5_sense, Attenuation::_11dB);
     let mut adc = Adc::new(p.adc1, adc_cfg);
 
     let mains_hz = node.engine.cfg.mains_hz;
@@ -96,7 +104,9 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut brew = Debounce::new(DEBOUNCE_CYCLES);
     let mut steam = Debounce::new(DEBOUNCE_CYCLES);
     let (mut ntc_acc, mut p_acc) = (Oversample::default(), Oversample::default());
+    let (mut v3_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
     let (mut ntc_mv, mut pressure_mv) = (0u16, 0u16);
+    let (mut v3_mv, mut v5_mv) = (0u16, 0u16);
     let mut k: u32 = 0;
 
     loop {
@@ -109,14 +119,25 @@ pub async fn run(p: Pins, mut node: NodeT) {
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_ntc)) {
                 ntc_acc.push(mv);
             }
+            // The rails move slowly: one sample of each per 4 slots is plenty.
+            if i % 4 == 0 {
+                if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_v3)) {
+                    v3_acc.push(mv);
+                }
+                if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_v5)) {
+                    v5_acc.push(mv);
+                }
+            }
         }
         k = k.wrapping_add(1);
         let t = clock.tick_us(k);
         until(t).await;
 
         // ---- tick k: frame for the cycle that just ended ----
-        ntc_mv = ntc_acc.take(ntc_mv);
-        pressure_mv = p_acc.take(pressure_mv);
+        v3_mv = v3_acc.take(v3_mv);
+        v5_mv = v5_acc.take(v5_mv);
+        ntc_mv = ratiometric(ntc_acc.take(ntc_mv), v3_mv, 2, 3300);
+        pressure_mv = ratiometric(p_acc.take(pressure_mv), v5_mv, 3, 5000);
         let mut inputs = 0u8;
         if brew.update(brew_sw.is_low()) {
             inputs |= input::BREW;

@@ -1,0 +1,10 @@
+name "co-sim source: 120 V machine, warm-up then a 9 bar shot, every mains cycle traced"
+machine "../../../models/gaggia_classic_pro_e24_120v.toml"
+duration 9min
+trace_every 16ms
+trace time, heater.on, pump.on, valve.open, engine.state, engine.heater_duty, engine.pump_duty, hydraulics.pressure, boiler.water_temp, heater.power, mains.voltage
+
+when engine.state == ready for 30s as warm: brew on
+when engine.state == brew_done as done: mark "shot finished"
+at done+3s: brew off
+expect eventually engine.state == brew_done by 8min

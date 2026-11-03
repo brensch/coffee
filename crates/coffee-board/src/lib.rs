@@ -157,6 +157,20 @@ impl Debounce {
 
 /// Status LED: fast blink on any fault, slow heartbeat while warming up, solid
 /// once the machine is usable (ready, brewing, steaming, ...).
+/// Rescale a sensor reading taken against a rail measured as `sense_mv * ratio`
+/// (through a 1/`ratio` divider) to what it would read on the nominal rail.
+/// The thermistor divider is ratiometric to 3.3 V and the pressure transducer to
+/// 5 V, so this cancels rail tolerance and ADC gain error. Falls back to the raw
+/// reading when the rail measurement is more than 15 % off nominal, so a broken
+/// sense divider can't distort the sensors.
+pub fn ratiometric(raw: u16, sense_mv: u16, ratio: u32, nominal_mv: u32) -> u16 {
+    let rail = sense_mv as u32 * ratio;
+    if rail * 100 < nominal_mv * 85 || rail * 100 > nominal_mv * 115 {
+        return raw;
+    }
+    ((raw as u32 * nominal_mv + rail / 2) / rail).min(u16::MAX as u32) as u16
+}
+
 pub fn status_led(state: EngineState, faults: u16, t_ms: u64) -> bool {
     match state {
         _ if faults != 0 => t_ms % 200 < 100,
@@ -191,6 +205,21 @@ pub mod grid {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn ratiometric_rescales_to_the_nominal_rail() {
+        use super::ratiometric;
+        // 3.3 V rail reading 1.6 V through 1/2 = 3.2 V: an open thermistor (node = rail)
+        // reads 3200 mV raw and exactly 3300 after rescaling.
+        assert_eq!(ratiometric(3200, 1600, 2, 3300), 3300);
+        // Nominal rail: unchanged.
+        assert_eq!(ratiometric(1650, 1650, 2, 3300), 1650);
+        // 5 V rail at 5.1 V (1700 mV through 1/3): 3000 mV raw pressure -> 2941 mV.
+        assert_eq!(ratiometric(3000, 1700, 3, 5000), 2941);
+        // Broken sense divider (reads 0 or far off): raw passes through.
+        assert_eq!(ratiometric(1234, 0, 2, 3300), 1234);
+        assert_eq!(ratiometric(1234, 2500, 2, 3300), 1234);
+    }
+
     use super::*;
 
     #[test]

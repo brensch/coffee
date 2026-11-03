@@ -59,27 +59,28 @@ Layout adds two more:
 | Gate resistors on the heater and pump triacs | Only sensitive-gate triacs need one (onsemi AN-3004). The Z0109 on the valve keeps its 330 Ω. |
 | Switch RC filters and series resistors | Debounced in firmware; the switches are dry contacts on internal pull-ups. |
 | Second 5 V bulk capacitor, OR-ing diode on the PSU | One 22 µF is enough (simulated). |
-| ESP32-S3-WROOM-1U | ESP32-C6-MINI-1U-H4: 105 °C rated, half the size, U.FL antenna, in stock at JLCPCB. Single core is plenty for one control loop per mains cycle. |
+| ESP32-S3-WROOM-1U | ESP32-C6-MINI-1U-H4: 105 °C rated, half the size, W.FL (MHF III) antenna connector, in stock at JLCPCB. Single core is plenty for one control loop per mains cycle. |
 
 | Changed | Why |
 |---|---|
-| 800 V opto-triacs and triacs (MOC3083, BTA24-800BW, BTA08-800CW, Z0109NN) | Simulation showed the valve's triac sees ~2× the line peak when it turns off: up to 410 V at 132 V mains. A coil's current lags its voltage, so the current reaches zero (where the triac lets go) near the voltage peak, and the snubber then rings. 600 V parts left too little margin; the opto-triac sees the same voltage. 800 V parts also ride out surges that the MOV clamps at ~450–700 V. They cost the same. |
+| 800 V opto-triacs and triacs (MOC3083, BTA24-800BW, BTA08-800BW, Z0109NN) | Simulation showed the valve's triac sees ~2× the line peak when it turns off: up to 410 V at 132 V mains. A coil's current lags its voltage, so the current reaches zero (where the triac lets go) near the voltage peak, and the snubber then rings. 600 V parts left too little margin; the opto-triac sees the same voltage. 800 V parts also take line surges unclamped: there is no MOV (see below). They cost the same. |
 | Snubber capacitors: through-hole film → one surface-mount X2 part (Murata GA355QR7GB103, 10 nF, 250 VAC, 2220) for both | They're a third of the size, have no bottom-layer pads, and are fab-assembled. The valve still has margin on 10 nF (≤ 477 V at 132 V even with the ceramic's capacitance derated to 8 nF); without any snubber it reaches ~2 kV. |
 | Heater triac BTA16 → BTA24 | 25 A part, lower thermal resistance; runs cooler at 11.4 A. |
-| 120 V is the default build | The machine is a US Gaggia Classic Pro. The 230 V variant only changes the MOV. |
+| 120 V is the default build | The machine is a US Gaggia Classic Pro. The 230 V variant changes the heater power and the snubber check only. |
 
 ## Blocks
 
 ```
  MAINS (left)                                         │ band │  SELV (right)
  J1 L ─┬─ F1 T500mA ─┬─ PS1 RECOM RAC03E (AC) ════════╪══════╪═ PS1 (DC) ─ +5V ─ U5 TLV1117LV33 ─ +3V3
-       │             └─ RV1 MOV ─ N                   │      │       USB-C VBUS ─ D2 ─┘
+       │                                              │      │       USB-C VBUS ─ D2 ─┘
        ├─ Q3 Z0109NN ── J3.1 valve ◀ U3 MOC3083 ══════╪══════╪═ R9 150Ω ◀ GPIO18
        └─ Q2 BTA08 ──── J3.2 pump  ◀ U2 MOC3083 ══════╪══════╪═ R8 150Ω ◀ GPIO19
  J2 (brew-thermostat wires) ─ Q1 BTA24 ◀ U1 MOC3083 ══╪══════╪═ R7 150Ω ◀ GPIO20
                                                       │      │  J5 thermistor ─ R15 8.2k to 3V3 ─ GPIO1
                                                       │      │  J6 pressure ─ R16/R17 (⅔) ─ GPIO0
-                                                      │      │  J7 brew / steam (dry contacts) ─ GPIO6 / 7
+                                                      │      │  J7 brew / steam (dry contacts, 4.7k pull-ups, 1k series) ─ GPIO6 / 7
+                                                      │      │  3V3 ÷2 ─ GPIO2, +5V ÷3 ─ GPIO3 (rail sense: NTC and pressure read ratiometrically)
                                                       │      │  D1 status LED ─ GPIO23
 ```
 
@@ -91,14 +92,14 @@ Layout adds two more:
   - Resistive load, so no snubber.
   - The heater current runs in copper pours on both layers, from the triac to J2 on the bottom edge. They're ~2 mm wide where they leave the triac's middle pin (the TO-220 pin pitch allows no more), then 4.5–6 mm.
   - The board doesn't replace any protection: the **stock steam thermostat and thermal fuse stay in series** with the heater. A triac that fails shorted still can't run the boiler past them.
-- **Pump: Q2 BTA08-800CW.** The Ulka pump is inductive, with a diode inside; about 0.4 A at 120 V.
+- **Pump: Q2 BTA08-800BW.** (ST makes the CW gate grade only at 600 V in the insulated package.) The Ulka pump is inductive, with a diode inside; about 0.4 A at 120 V.
   - Snubber R3 100 Ω + C1 10 nF X2 (surface-mount).
   - Without it, the triac sees ~574 V at turn-off; with it, 170 V.
 - **Valve: Q3 Z0109NN** (sensitive gate, SOT-223), with a 330 Ω gate–MT1 resistor R5.
   - Snubber R6 100 Ω + C2 10 nF X2.
 - **Triac drive, all three channels:** MOC3083 zero-cross opto-triac (fires only within ±20 V of a crossing), with a 360 Ω resistor from MT2 to the opto (R1, R2, R4) to limit its surge current.
 - **Supply branch:**
-  - F1 T500mA (TR5), then RV1 MOV 10D271K.
+  - F1 T500mA (TR5). No MOV: behind a 500 mA fuse a failing MOV can burn at 60–110 W before the fuse opens, and a real surge would blow the fuse anyway. The RECOM passes its 1 kV surge test (EN 61000-4-5) unaided, and every triac and opto-triac is an 800 V part.
   - Then the **RECOM RAC03E-05SK/277**: 3 W (0.6 A), 4 kVAC reinforced, EN60335-1 household-certified, rated to 85 °C (full load to 75 °C) with a built-in input fuse. It replaced the HLK-PM05, which is only rated to about 60 °C; the case runs at 60–70 °C.
   - F1 protects only this branch. The loads are protected by the machine's own fuse and thermal
     fuses.
@@ -108,7 +109,7 @@ Layout adds two more:
   than the 5 mm reinforced creepage for 250 V, pollution degree 2, material group III
   (IEC 60664-1).
 - **Two milled slots** run down the band, 2 mm wide: one under the PSU, one under the optos.
-- **Parts that cross the band:** three MOC3083s (5.3 kV RMS isolation, wide 0.4" leads, ~8.6 mm
+- **Parts that cross the band:** three MOC3083s (4170 VAC RMS for 1 minute (onsemi MOC3083M datasheet), wide 0.4" leads, ~8.6 mm
   pad to pad) and the RECOM RAC03E (4 kV reinforced).
 - **Between mains nets** (functional insulation): **2.0 mm minimum, enforced as a design rule**
   (the lint below). IEC 60664-1 asks ~1.6 mm at 120 V, uncoated, pollution degree 2. Exempt:
@@ -121,7 +122,7 @@ Layout adds two more:
 
 ### SELV side
 - **ESP32-C6-MINI-1U-H4**, rated −40 to 105 °C, so the 60–70 °C inside the case is comfortable.
-  - It has a U.FL connector instead of a printed antenna. The Gaggia's case is steel, so run a
+  - It has a W.FL (MHF III) connector instead of a printed antenna (smaller than U.FL; the plugs don't mate). The Gaggia's case is steel, so run a
     short pigtail to a 2.4 GHz antenna on a plastic part or vent.
   - 4 MB flash: enough for the firmware plus two OTA slots.
 - **Programming, logs and JTAG** all go over the one USB-C port, using the C6's built-in USB
@@ -165,7 +166,7 @@ The drive pins are ordered so that, along the module's edge, they line up with t
 ## Layout
 - **Board:** 64.5 × 56.5 mm, 2 layers, 2 oz copper.
 - **Mains side, left: horizontal lanes**, top to bottom:
-  - supply: mains-in terminal → fuse → MOV → PSU;
+  - supply: mains-in terminal → fuse → PSU;
   - valve;
   - pump;
   - heater.
@@ -239,5 +240,29 @@ The results are margins, not exact waveforms. What simulation doesn't replace:
   - Check the J2/J3 terminals and the Q1 tab position against the machine's side panel.
   - Confirm footprints for the parts you actually buy: the MOC3083 is the 0.4" "TVM" lead option.
 - **Assembly split:** JLCPCB places the SMD parts, including the C6 module and the USB connector.
-  You hand-solder the through-hole parts: terminals, triacs, optos, PSU, fuse, MOV, JST
+  You hand-solder the through-hole parts: terminals, triacs, optos, PSU, fuse, JST
   connectors. See `build/jlc-120v/`.
+
+
+## Firmware-to-mains co-simulation
+
+`hardware/controller/cosim/cosim.py` checks that the firmware's output bits drive the hardware as intended
+([report](../hardware/controller/cosim/REPORT.md)). The emulator runs the same `coffee-node` engine as the firmware
+on a 120 V warm-up and shot (`cosim/cosim_120v.scn`) and records the three output bits every mains cycle: exactly
+what `control.rs` writes to GPIO20/19/18 at each tick. The script then simulates everything after the pin:
+
+- **Timing.** Ticks come from the crystal at the nominal 60 Hz. The board has no zero-cross detector, so each GPIO
+  edge lands at an arbitrary, slowly drifting mains phase (59.95–60.05 Hz mains, ±10 ppm crystal, 20–300 µs latency).
+- **Drive.** GPIO (VOH ≥ 2.64 V) → 25 Ω pin → 150 Ω → MOC3083 LED (Vf ≤ 1.5 V): 6.5 mA worst case against the
+  5 mA trigger current.
+- **Zero-cross opto.** It can only start conducting while the line is under its 20 V inhibit voltage. Once on, it
+  feeds the triac gate through 360 Ω until the triac latches (heater/pump at ~21 V, 8° into the half-cycle; valve at 7 V).
+- **Loads.** Heater: resistive, per half-cycle over the whole run. Pump: Ulka with its internal diode, one stroke per
+  positive half-cycle. Valve: R-L coil with the 100 Ω + 8 nF snubber, integrated at 1 µs (backward Euler) through
+  each commutation and re-fire.
+
+Results: heater energy error 0–1.5 % and never more than one half-cycle of DC per on-run. Pump stroke count within 1 %
+(up to 5 % of commanded cycles land their stroke in the neighbouring cycle when mains and crystal drift; pressure
+is closed-loop, so this averages out). Valve: no DC in the coil at any corner. If the opto turns on slowly (20 µs,
+not in the datasheet), it misses the re-fire window right after commutation and fires at the next voltage zero
+instead, which costs ~10 % of coil current. Worth a bench check at 108 V.

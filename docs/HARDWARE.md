@@ -43,7 +43,7 @@ The full list with MPNs is `build/bom-120v.csv`. In short:
 | Who fits it | Parts |
 |---|---|
 | JLC (SMD) | ESP32-C6-MINI-1U-H4, USB-C, TLV1117LV33, SS14, Z0109NN valve triac, 2 × 10 nF X2 snubber caps (2220), 0603/1206/2512 passives, status LED |
-| You (through-hole) | 3 screw terminals (heater: MKDS 3), BTA24-800BW + BTA08-800CW triacs, 3× MOC3083 (0.4" "TVM" leads), RECOM RAC03E-05SK/277 (from Digi-Key/Mouser), TR5 fuse, MOV, 3 JST-PH headers |
+| You (through-hole) | 3 screw terminals (heater: MKDS 3), BTA24-800BW + BTA08-800BW triacs, 3× MOC3083 (0.4" "TVM" leads), RECOM RAC03E-05SK/277 (from Digi-Key/Mouser), TR5 fuse, 3 JST-PH headers |
 
 Rough cost: about $30–50 for five assembled boards, plus about $25 of through-hole parts.
 
@@ -57,12 +57,11 @@ Every part was checked against two questions: is it rated for a 70 °C ambient w
 | Regulator: **TI TLV1117LV33** | 125 °C junction | 0.2 W average (junction ~80 °C) | Stable with the ceramic capacitors we use. *Replaced the AMS1117, which needs a tantalum output capacitor and can oscillate on ceramics.* |
 | ESP32-C6-MINI-1U-**H4** | 105 °C | — | The "H" high-temperature grade. Flash wear: ~60 KB/day of settings and shots over a 640 KB wear-levelled partition is centuries of life. |
 | Opto-triacs MOC3083 | 85 °C ambient | 8–12 mA LED drive | Trigger needs ≤ 5 mA, so the LED can lose over a third of its light with age before it matters. |
-| Triacs BTA24-800BW / BTA08-800CW / Z0109NN | 125 °C junction | heater ~11 W into the chassis; pump ~0.4 W; valve ~0.03 W | 800 V parts: the worst simulated spike is 477 V. |
+| Triacs BTA24-800BW / BTA08-800BW / Z0109NN | 125 °C junction | heater ~11 W into the chassis; pump ~0.4 W; valve ~0.1–0.2 W | 800 V parts: the worst simulated spike is 477 V. |
 | Snubber caps Murata GA355 (X2, ceramic) | 125 °C | — | Ceramic safety caps don't lose capacitance over the years the way film X2 caps do. |
 | Bulk caps Murata GRM21 22 µF **X7R** (0805) | 125 °C | — | There are no electrolytics anywhere on the board (they dry out in heat). X7R, not X5R (85 °C). |
 | Heater terminal **Phoenix MKDS 3** | 24 A | 11.4 A at 60–70 °C | *Was MKDS 1,5 (17.5 A), which is too close once derated for heat.* Use ferrules and re-tighten after the first few heat cycles. |
 | Supply/load terminals Phoenix MKDS 1,5 | 17.5 A | < 1 A | — |
-| MOV Bourns 10D271K | 85 °C | — | MOVs wear a little with each large surge. F1 sits upstream, so a worn-out MOV that shorts blows the fuse instead of burning. |
 | Fuse Littelfuse 372 (TR5, T500mA) | 85 °C | ~80 mA | — |
 | Divider resistors (0.1 % thin film) | 125 °C | — | Drift is far below the two-point calibration's correction. |
 | JST-PH sensor connectors | 85 °C | mA | — |
@@ -75,7 +74,7 @@ Every part was checked against two questions: is it rated for a 70 °C ambient w
 | **100k NTC thermistor, B3950, ±1 %**, insulated sensor, ≥ 150 °C, M4 thread *or* 4 mm ring lug | 1 | 3–8 | Goes in the brew-thermostat hole. **Hand-tight**: the M4 stud snaps. The firmware does Steinhart–Hart plus a two-point calibration (room temperature + boiling water). Measures the boiler *wall*; the engine estimates the water. |
 | **Pressure transducer**, 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 | 1 | 15 | Ratiometric. Read by the C6's ADC through a 2/3 divider, with a careful self-zero (the idle boiler holds 2–4 bar). |
 | GaggiMate-style T plumbing kit (pump outlet) | 1 | 15 | |
-| **2.4 GHz antenna, U.FL pigtail** 100–150 mm | 1 | 3 | Mounted on a plastic part or vent: the case is steel. |
+| **2.4 GHz antenna, W.FL (MHF III) pigtail** 100–150 mm, ≤ 2.33 dBi | 1 | 3 | Mounted on a plastic part or vent: the case is steel. |
 | Wire, Faston receptacles, ferrules, JST-PH crimps, fibreglass sleeve | | 15 | See INSTALL.md §0. |
 | Flame-retardant filament (PC, or V-0 PETG/ASA) | | | Enclosure. |
 | Optional: Bluetooth scale (Acaia / Decent / Bookoo) | 1 | 50–150 | Weight-based stopping; the engine already supports it. |

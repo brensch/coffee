@@ -12,7 +12,7 @@ a 7 mm copper-free band with milled slots. Notes and calculations: docs/CIRCUIT.
 
     python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
     .venv/bin/python controller.py                 # 120 V (the target machine): checks -> build/
-    MAINS_V=230 .venv/bin/python controller.py     # 230 V variant (different MOV only)
+    MAINS_V=230 .venv/bin/python controller.py     # 230 V variant
 
 Outputs in build/: KiCad netlist, BOM CSV, parts-<V>v.json (input to layout.py, audit.py and
 schematic_svg.py).
@@ -71,7 +71,6 @@ CX2 = tmpl("C_X2", "C", "Capacitor_SMD:C_2220_5750Metric", TWO, "X2 safety capac
 LED = tmpl("LED", "D", "LED_SMD:LED_0603_1608Metric", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "LED")
 SCHOTTKY = tmpl("SS14", "D", "Diode_SMD:D_SMA", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Schottky 1 A 40 V")
 FUSE = tmpl("Fuse_TR5", "F", "Fuse:Fuse_Littelfuse_372_D8.50mm", TWO, "Fuse, TR5 radial")
-MOV = tmpl("Varistor", "RV", "Varistor:RV_Disc_D7mm_W4.2mm_P5mm", TWO, "Varistor")
 TESTPAD = tmpl("TestPad", "TP", "TestPoint:TestPoint_Pad_D1.5mm", [(1, "1", T.PASSIVE)], "Bare test pad")
 HOLE = tmpl("MountingHole", "H", "MountingHole:MountingHole_3.2mm_M3", [], "M3 mounting hole (unplated)")
 HOLE_M25 = tmpl("MountingHole_M2.5", "H", "MountingHole:MountingHole_2.7mm_M2.5", [], "M2.5 mounting hole (unplated), beside the PSU")
@@ -105,7 +104,7 @@ _uniq = lambda n, nm: f"{nm}{n}" if nm in ("GND", "NC") else nm
 ESP32C6 = tmpl("ESP32-C6-MINI-1U", "U", "Espressif:ESP32-C6-MINI-1U",
                [(n, _uniq(n, nm), T.PWRIN if nm in ("GND", "3V3") else (T.NOCONNECT if nm == "NC" else T.BIDIR))
                 for n, nm in _c6.items()],
-               "Wi-Fi 6 / BLE 5 RISC-V module, U.FL antenna connector, 4 MB flash, 105 C rated")
+               "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated")
 MOC3083 = tmpl("MOC3083", "U", "Package_DIP:DIP-6_W10.16mm",
                [(1, "A", T.PASSIVE), (2, "K", T.PASSIVE), (3, "NC", T.NOCONNECT),
                 (4, "MT1", T.PASSIVE), (5, "NC2", T.NOCONNECT), (6, "MT2", T.PASSIVE)],
@@ -133,7 +132,7 @@ j_ac = part(TB2_MAINS, "J1", "Mains in", mains=True, mpn="Phoenix Contact MKDS 1
             notes="MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A).")
 j_ac[1, 2] += l_in, n_in
 htr_a, htr_b = Net("HTR_A"), Net("HTR_B")
-j_htr = part(TB2_HEATER, "J2", "Heater", mains=True, mpn="Phoenix Contact MKDS 3/2-5.08 (1711026), 24 A, 4 mm2",
+j_htr = part(TB2_HEATER, "J2", "Heater", mains=True, mpn="Phoenix Contact MKDS 3/2-5.08 (1711725), 24 A IEC / UL 15 A, 4 mm2",
              notes="MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series.")
 j_htr[1, 2] += htr_a, htr_b
 pump_out, valve_out = Net("PUMP_L"), Net("VALVE_L")
@@ -145,9 +144,9 @@ l_f.drive = 100
 f1 = part(FUSE, "F1", "T500mA", mpn="Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)", mains=True,
           notes="MAINS. Protects the PSU branch")
 f1[1, 2] += l_in, l_f
-rv1 = part(MOV, "RV1", "10D271K" if MAINS_V < 200 else "10D561K", mpn="Bourns MOV-10D271K (120 V) / 10D561K (230 V)", mains=True,
-           notes="MAINS. Surge clamp across the PSU input")
-rv1[1, 2] += l_f, n_in
+# No MOV: behind a T500mA fuse a failing MOV can burn at 60-110 W before the fuse opens, a real surge
+# blows the fuse anyway, and the RECOM passes its 1 kV surge test unaided (EN 61000-4-5). The triacs
+# and opto-triacs are 800 V parts.
 ps1 = part(PSU, "PS1", "RAC03E-05SK/277", mpn="RECOM RAC03E-05SK/277", mains=["1", "2"],
            notes="Isolated supply; straddles the slot. Rated to 85 C: the machine's case runs at 60-70 C")
 ps1["NC"] += NC
@@ -188,10 +187,10 @@ def triac_channel(name, n, mt2_net, mt1_net, triac_tpl, triac_val, triac_mpn, rs
 
 # Heater (resistive): BTA24, 25 A, Rth(j-c) 1.7 C/W; ~11 W at 11.4 A -> ~24 C over the chassis it is bolted to.
 u_h = triac_channel("HEATER", 1, htr_b, htr_a, TRIAC_TO220, "BTA24-800BW", "ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)", "R1")
-# All three channels use 800 V parts: the MOV clamps surges at ~450-700 V, and an inductive load
+# All three channels use 800 V parts: line surges reach them unclamped (no MOV), and an inductive load
 # turned off near the line peak rings to ~2x that peak (sim/REPORT.md).
 # Pump (Ulka, diode inside: inductive). Without a snubber the triac sees ~574 V at turn-off.
-u_p = triac_channel("PUMP", 2, l_in, pump_out, TRIAC_TO220, "BTA08-800CW", "ST BTA08-800CWRG (8 A, 800 V, insulated tab, snubberless)", "R2",
+u_p = triac_channel("PUMP", 2, l_in, pump_out, TRIAC_TO220, "BTA08-800BW", "ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)", "R2",
                     snub=("R3", "C1", "10nF"))
 # Valve (AC solenoid). The triac drops out at its holding current with the coil still carrying it:
 # ~2 kV without a snubber, <= 477 V with 100 R + 10 nF (8 nF after ceramic derating). Z0109 is
@@ -201,7 +200,7 @@ u_v = triac_channel("VALVE", 3, l_in, valve_out, TRIAC_SOT223, "Z0109NN", "ST Z0
 
 # ================================================================ SELV SIDE
 u_mcu = part(ESP32C6, "U4", "ESP32-C6-MINI-1U-H4", mpn="ESP32-C6-MINI-1U-H4",
-             notes="U.FL antenna: pigtail to a 2.4 GHz antenna outside the steel case")
+             notes="W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case")
 for pin in u_mcu.pins:
     if pin.name.startswith("GND"):
         pin += gnd
@@ -229,7 +228,7 @@ tp = part(TESTPAD, "TP2", "GND")
 tp[1] += gnd
 st, st_a = Net("STATUS"), Net("STATUS_A")
 u_mcu["IO23"] += st
-r = part(R, "R12", "1k")
+r = part(R, "R12", "100", notes="green LED Vf ~2.9-3.1 V: ~2-4 mA from 3.3 V")
 r[1, 2] += st, st_a
 led = part(LED, "D1", "green", notes="Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)")
 led["A"] += st_a
@@ -300,13 +299,32 @@ u_mcu["IO0"] += p_adc   # ADC1_CH0
 j_sw = part(JST3, "J7", "Switches", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
 # GPIO6/7: plain GPIOs on the module edge beside the analog pins, so all three sensor/switch
 # connectors sit together on the right edge (GPIO21/22 face the optos and are boxed in).
-for i, (name, gpio) in enumerate((("BREW", "IO6"), ("STEAM", "IO7"))):
-    wire = Net(f"SW_{name}")
+# 4.7k pull-up at the connector: ~0.7 mA wetting current keeps old switch contacts clean. 1k series
+# into the GPIO: a 5 V plug in the wrong socket only pushes ~1.7 mA into the pin's clamp diode.
+for i, (name, gpio, rpu, rs) in enumerate((("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
+    wire, pin = Net(f"SW_{name}_IN"), Net(f"SW_{name}")
     j_sw[i + 1] += wire
-    u_mcu[gpio] += wire
+    r = part(R, rpu, "4.7k", notes="switch pull-up / wetting current")
+    r[1, 2] += v3, wire
+    r = part(R, rs, "1k", notes="GPIO series protection")
+    r[1, 2] += wire, pin
+    u_mcu[gpio] += pin
 j_sw[3] += gnd
 
-for p in ("IO2", "IO3", "IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
+# Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
+# measures absolute volts. Measuring both rails lets the firmware divide them out, so an open
+# thermistor reads exactly full scale (3300 mV) whatever the rail, and 0 C stays well clear of it.
+for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", "10k 0.1%", "C10"), ("V5_SNS", v5, "IO3", "R24", "R25", "20k 0.1%", "C11")):
+    sns = Net(net)
+    r = part(R, rt_, vt, notes=f"{net} divider top")
+    r[1, 2] += rail, sns
+    r = part(R, rb_, "10k 0.1%", notes=f"{net} divider bottom")
+    r[1, 2] += sns, gnd
+    c = part(C, cref, "100nF", notes="ADC reservoir")
+    c[1, 2] += sns, gnd
+    u_mcu[gpio] += sns
+
+for p in ("IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
 # No mounting holes: the enclosure holds the board by its edges (and the heater triac's tab is bolted
 # to the chassis), so no copper is given up to screws.
@@ -317,7 +335,7 @@ def nets():
     return builtins.default_circuit.nets
 
 
-FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
+FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
                  "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+"}
 STRAPS = ("IO4", "IO5", "IO8", "IO9", "IO15")   # ESP32-C6 strapping pins
 ADC1 = ("IO0", "IO1", "IO2", "IO3", "IO4", "IO5", "IO6")

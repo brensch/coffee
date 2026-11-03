@@ -16,7 +16,7 @@ the machine directly. The machine is a US 120 V Gaggia Classic Pro. A module bui
 | Board | v6 controller (order: §1), in a 3D-printed enclosure: **flame-retardant** filament (PC, or a V-0 rated PETG/ASA), not PLA |
 | Thermistor | **100 kΩ NTC, B = 3950, ±1 %**, sensor **insulated from the probe body**, rated to ≥ 150 °C, PTFE or silicone leads, ~300 mm. Two mounts work: an **M4 × 0.7 threaded probe** that screws straight into the brew-thermostat hole, or a **ring-lug (eye) sensor with a 4 mm hole**, clamped to the boiler under an M4 stainless screw in that hole, with thermal paste. Fit a JST-PH-2 plug. (No specific listing has been verified yet.) |
 | Pressure transducer | 0–1.6 MPa (0–16 bar), 5 V supply, 0.5–4.5 V output, G1/4. Plus a GaggiMate-style T plumbing kit |
-| Antenna | 2.4 GHz antenna with a U.FL (IPEX MHF1) pigtail, ~100–150 mm |
+| Antenna | 2.4 GHz antenna, ≤ 2.33 dBi (the module's certification limit), with a **W.FL / MHF III** pigtail, ~100–150 mm. Not U.FL (MHF I): the -1U module uses the smaller connector and a U.FL plug won't mate. |
 | Wire | 1.0 mm² (18 AWG) silicone for heater, pump and valve; 0.5 mm² for L/N supply; 24 AWG for signals; fibreglass sleeve near the boiler |
 | Crimps | 6.3 mm Faston receptacles, fully insulated (the stock harness uses 6.3 mm tabs); bootlace ferrules for the screw terminals; JST-PH housings and crimps |
 | Hardware | M3 screw + nylon shoulder washer + thermal pad for the heater triac tab (the board itself has no mounting holes: the enclosure holds it by its edges) |
@@ -40,7 +40,7 @@ the machine directly. The machine is a US 120 V Gaggia Classic Pro. A module bui
    module, USB-C, LDO, valve triac and passives. Check rotations in JLC's preview.
 5. **You hand-solder** the through-hole parts listed in `build/jlc-120v/hand.csv`:
    - terminals, triacs Q1/Q2, optos U1–U3;
-   - PSU, fuse, MOV, JST connectors.
+   - PSU, fuse, JST connectors.
 6. **Conformal coat the mains half** (left of the band) after testing.
 
 ## 2. Software and emulation (your PC)
@@ -97,7 +97,7 @@ Power over USB-C. D2 feeds the board from VBUS, and nothing on the mains side is
 | **J7 Switches** (1 brew, 2 steam, 3 GND) | the brew and steam switches, **disconnected from mains** and rewired as dry contacts | The switch lamps go dark. The steam switch must no longer bypass anything: the board owns the heater |
 | **J5 Thermistor** (1, 2) | the NTC probe | No polarity |
 | **J6 Pressure** (1 = +5 V, 2 = signal, 3 = GND) | the transducer | |
-| **U4 antenna** (U.FL) | the antenna pigtail, out through a plastic part or vent | The case is steel: an antenna left inside it won't reach the Wi-Fi |
+| **U4 antenna** (W.FL / MHF III) | the antenna pigtail, out through a plastic part or vent | The case is steel: an antenna left inside it won't reach the Wi-Fi |
 
 Make up short pigtails: a ferrule on one end into the screw terminal, a fully insulated 6.3 mm
 Faston receptacle on the other onto the stock harness. Nothing in the machine gets cut.

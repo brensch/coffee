@@ -31,17 +31,19 @@
 //! (lockstep wire protocol) and actuator frames go back; the machine pins stay
 //! off and there is no Wi-Fi (`bridge.rs`).
 //!
-//! # Pin map (controller v6)
+//! # Pin map (controller v12)
 //!
 //! | Signal          | GPIO  | Notes                                                 |
 //! |-----------------|-------|-------------------------------------------------------|
 //! | Pressure        | 0     | ADC1_CH0, transducer through 10k/20k (x2/3)           |
 //! | Boiler NTC      | 1     | ADC1_CH1, 100k B3950 to GND, 8.2k 0.1 % to 3.3 V       |
+//! | 3.3 V sense     | 2     | ADC1_CH2, 10k/10k (x1/2): NTC reading made ratiometric |
+//! | 5 V sense       | 3     | ADC1_CH3, 20k/10k (x1/3): pressure made ratiometric    |
 //! | Valve           | 18    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
 //! | Pump            | 19    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
 //! | Heater          | 20    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
-//! | Brew switch     | 21    | dry contact to GND, internal pull-up, low = closed    |
-//! | Steam switch    | 22    | dry contact to GND, internal pull-up, low = closed    |
+//! | Brew switch     | 6     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
+//! | Steam switch    | 7     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
 //! | Status LED      | 23    | heartbeat heating, solid ready, fast blink fault      |
 //! | USB D- / D+     | 12/13 | native USB Serial/JTAG (flashing, console, log)       |
 //!
@@ -134,6 +136,8 @@ mod machine {
                     adc1: p.ADC1,
                     pressure: p.GPIO0,
                     ntc: p.GPIO1,
+                    v3_sense: p.GPIO2,
+                    v5_sense: p.GPIO3,
                     valve: p.GPIO18,
                     pump: p.GPIO19,
                     heater: p.GPIO20,

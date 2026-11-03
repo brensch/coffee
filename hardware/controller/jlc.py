@@ -39,8 +39,8 @@ MPN_HINTS = {
     "Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)": "GA355QR7GB103",
     "ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)": "Z0109NN",
     "ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)": "BTA24-800BW",
-    "ST BTA08-800CWRG (8 A, 800 V, insulated tab, snubberless)": "BTA08-800CW",
-    "onsemi MOC3083TVM (0.4\" leads)": "MOC3083", "Hi-Link HLK-PM05": "HLK-PM05",
+    "ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)": "BTA08-800BWRG",
+    "onsemi MOC3083TVM (0.4\" leads)": "MOC3083TVM", "Hi-Link HLK-PM05": "HLK-PM05",
     "Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)": "37205000411",
     "Bourns MOV-10D271K (120 V) / 10D561K (230 V)": "10D271K",
 }
