@@ -146,16 +146,28 @@ board needs a human review before it is ordered.
 
 ## Layout
 - **Board:** 120 × 80 mm, 2 layers, 2 oz copper.
-- **Mains side, left (x < 42.5 mm):**
-  - terminals along the bottom edge (J2 heater, J3 pump/valve, J1 mains in);
-  - triacs on the left edge;
-  - the optos stacked down the band.
+- **Mains side, left: horizontal lanes**, top to bottom:
+  - supply: mains-in terminal → fuse → MOV → PSU;
+  - zero cross;
+  - valve;
+  - pump;
+  - heater.
+
+  Each lane runs from its opto on the band, through its resistors and snubber, to its triac and
+  its terminal on the left edge, so every mains connection is short and local.
+  - The heater triac sits in the bottom-left corner. Its tab is at the board edge, ready to bolt
+    to the chassis.
+  - Its 2.5 mm double-layer copper runs to J2 on the bottom edge.
 - **SELV side, right:**
   - ESP32 top right, antenna at the edge;
-  - the analog front end and JST connectors along the bottom;
-  - thermocouple at the far right;
+  - triac drivers lined up against their optos;
+  - analog front end and JST connectors along the bottom;
+  - thermocouple at the far right, away from the heat sources;
   - GND pours on both layers.
-- **Routing:** the heater path is hand-routed; Freerouting routes everything else.
+- **Routing:**
+  - The heater path is hand-routed.
+  - Freerouting routes everything else **with 90° corners only**. A 45° clean-up pass runs only
+    if anything is left unrouted.
   - Mains nets: 0.8 mm tracks, 1.0 mm clearance.
   - SELV power: 0.6 mm.
   - SELV signals: 0.25 mm.

@@ -19,7 +19,7 @@ calculations are in [docs/CIRCUIT.md](../../docs/CIRCUIT.md), and the install pl
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python controller.py            # schematic: ERC + design checks -> netlist, BOM, parts.json
-source ~/opt/kienv.sh && python3 layout.py # place, route (Freerouting), fill, DRC, fab outputs
+source ~/opt/kienv.sh && python3 layout.py # place, route (Freerouting, 90° corners), fill, DRC, fab outputs
 MAINS_V=120 .venv/bin/python controller.py && python3 layout.py --mains 120
 ```
 

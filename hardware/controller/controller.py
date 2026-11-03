@@ -165,8 +165,8 @@ j_htr = part(TB2_MAINS, "J2", "Heater", mains=True,
 j_htr[1, 2] += htr_a, htr_b
 pump_out, valve_out = Net("PUMP_L"), Net("VALVE_L")
 j_load = part(TB2_MAINS, "J3", "Pump / valve", mains=True,
-              notes="MAINS. 1=switched L to pump, 2=switched L to 3-way valve (the wires that came from the brew switch).")
-j_load[1, 2] += pump_out, valve_out
+              notes="MAINS. 1=switched L to 3-way valve, 2=switched L to pump (the wires that came from the brew switch).")
+j_load[1, 2] += valve_out, pump_out
 
 # Board supply branch: fuse + MOV, then PSU and zero-cross.
 l_f = Net("AC_L_FUSED")

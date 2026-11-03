@@ -40,29 +40,34 @@ SLOTS = [(3.0, 26.5), (28.5, 68.5)]   # y ranges; a web of board is left between
 # ref: (x, y, rotation_deg, side) - side 'F' (top) or 'B'. Mains side is x < 42.5.
 PLACE = {
     # ================= MAINS (x < 42.5) =================
-    # machine connections along the bottom edge (wires exit downwards)
-    "J2": (8.0, 74.5, 0, "F"),      # heater: in place of the brew thermostat
-    "J3": (21.0, 74.5, 0, "F"),     # pump / valve (switched L)
-    "J1": (34.0, 74.5, 0, "F"),     # mains in (L, N)
-    # triacs on the left edge, tabs outward: Q1 bolts to the chassis (heatsink)
-    "Q1": (3.6, 62.0, 90, "F"),     # heater BTA16: pin1 MT1 y=62, pin2 MT2 y=59.46, pin3 G y=56.92
-    "Q2": (3.6, 46.0, 90, "F"),     # pump BTA08
-    "Q3": (8.0, 30.0, 0, "F"),      # valve Z0109 (SOT-223)
-    # heater channel: R3 opto series, R4 gate-MT1
-    "R3": (18.0, 66.0, 0, "F"), "R4": (9.0, 54.0, 90, "F"),
-    # pump channel: R6 opto series, R7 gate-MT1, R8 + C21 snubber
-    "R6": (22.0, 54.0, 0, "F"), "R7": (10.0, 39.0, 90, "F"), "R8": (14.0, 49.0, 90, "F"), "C21": (19.0, 44.0, 0, "F"),
-    # valve channel
-    "R9": (26.0, 40.0, 0, "F"), "R10": (16.0, 34.5, 90, "F"), "R11": (14.5, 24.0, 90, "F"), "C22": (19.0, 19.0, 0, "F"),
-    # board supply branch + zero-cross
-    "F1": (14.0, 8.0, 0, "F"), "RV1": (25.0, 13.0, 0, "F"),
-    "R1": (31.0, 32.0, 90, "F"), "R2": (35.5, 32.0, 90, "F"),
-    "PS1": (37.0, 11.0, 0, "F"),    # AC pins x=37 (mains), DC pins x=70.6 (SELV); body straddles the slot
-    # optos straddling the band: mains pins x=40.92, SELV pins x=51.08
-    "U1": (40.92, 31.0, 0, "F"),    # H11AA1 zero cross: AC1 (40.92,31), AC2 (40.92,33.54)
-    "U4": (51.08, 46.0, 180, "F"),  # valve MOC3063: MT2 side pin6 (40.92,46), gate pin4 (40.92,40.92)
-    "U3": (51.08, 56.0, 180, "F"),  # pump MOC3063
-    "U2": (51.08, 66.0, 180, "F"),  # heater MOC3063
+    # Horizontal lanes, top to bottom: supply, zero cross, valve, pump, heater. Each lane runs
+    # from its opto on the band, through its resistors, to its triac and the terminal on the
+    # left edge (wires enter from the left). The heater keeps the bottom-left corner.
+    # -- supply: mains in -> fuse -> MOV -> PSU AC pins
+    "J1": (5.2, 7.0, 270, "F"),     # L (5.2,7), N (5.2,12.08)
+    "F1": (14.0, 7.0, 0, "F"),
+    "RV1": (25.0, 9.0, 270, "F"),   # L_F (25,9), N (25,14)
+    "PS1": (37.0, 11.0, 0, "F"),    # AC pins x=37 (mains), DC pins x=70.6 (SELV)
+    # -- zero cross
+    "R1": (32.0, 30.5, 0, "F"), "R2": (32.0, 35.0, 0, "F"),
+    "U1": (40.92, 31.0, 0, "F"),    # H11AA1: AC1 (40.92,31), AC2 (40.92,33.54)
+    # -- valve lane: opto U4 (gate pin4 y=40.92, opto pin6 y=46)
+    "U4": (51.08, 46.0, 180, "F"),
+    "Q3": (20.0, 40.0, 90, "F"),    # pins y=43.15: MT1 x17.7, MT2 x20, G x22.3; tab (MT2) at y=36.85
+    "R10": (20.0, 47.0, 180, "F"),  # gate-MT1
+    "R9": (33.0, 46.0, 0, "F"),     # MT2 -> opto
+    "R11": (12.0, 22.0, 90, "F"), "C22": (15.0, 31.0, 0, "F"),   # snubber
+    "J3": (5.2, 44.0, 270, "F"),    # valve (5.2,44), pump (5.2,49.08)
+    # -- pump lane: opto U3 (gate y=50.92, opto y=56)
+    "U3": (51.08, 56.0, 180, "F"),
+    "Q2": (18.0, 53.0, 0, "F"),     # TO-220 lying in the lane: MT1 x18, MT2 x20.54, G x23.08
+    "R7": (29.0, 51.0, 0, "F"), "R6": (33.0, 56.0, 0, "F"),
+    "R8": (36.5, 61.0, 90, "F"), "C21": (18.5, 59.5, 0, "F"),   # snubber
+    # -- heater: corner as before, opto U2 (gate y=60.92, opto y=66)
+    "U2": (51.08, 66.0, 180, "F"),
+    "J2": (8.0, 74.5, 0, "F"),      # heater (brew-thermostat wires), wires exit downwards
+    "Q1": (3.6, 62.0, 90, "F"),     # tab flush with the left edge, bolts to the chassis
+    "R3": (24.0, 66.0, 0, "F"), "R4": (24.0, 70.0, 0, "F"),
     # ================= SELV (x > 49.5) =================
     # power: PSU 5 V (70.6, 23) -> D1 -> +5V; USB VBUS -> D2
     "D1": (77.0, 29.5, 0, "F"), "D2": (77.0, 34.0, 0, "F"), "C1": (68.0, 33.0, 90, "F"),
@@ -93,7 +98,7 @@ PLACE = {
     "J9": (87.5, 76.0, 0, "F"),
     "R48": (90.0, 36.0, 90, "F"), "D9": (90.0, 40.0, 90, "F"),
     # mounting holes, clear of mains copper (the chassis standoffs are earthed)
-    "H1": (4.0, 4.0, 0, "F"), "H2": (116.0, 30.0, 0, "F"), "H3": (97.0, 50.0, 0, "F"), "H4": (116.0, 76.0, 0, "F"),
+    "H1": (4.0, 27.0, 0, "F"), "H2": (116.0, 30.0, 0, "F"), "H3": (97.0, 50.0, 0, "F"), "H4": (116.0, 76.0, 0, "F"),
 }
 
 
@@ -250,7 +255,7 @@ def build(spec, mains_v):
         seg(board, pcbnew.Edge_Cuts, rect(SLOT_X - SLOT_W / 2, y0, SLOT_X + SLOT_W / 2, y1))
     zone(board, None, pcbnew.F_Cu, rect(BAND[0], 0, BAND[1], H), keepout=True, name="ISOLATION BAND")
     # keep copper away from the M3 holes on the mains side (earthed chassis standoffs)
-    zone(board, None, pcbnew.F_Cu, rect(0, 0, 8.5, 8.5), keepout=True, name="H1 clearance", pads_ok=True)
+    zone(board, None, pcbnew.F_Cu, rect(0, 22.5, 8.5, 31.5), keepout=True, name="H1 clearance", pads_ok=True)
 
     # The ESP32-S3 footprint carries Espressif's antenna keep-out itself.
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
@@ -423,6 +428,7 @@ def main():
     ap.add_argument("--passes", type=int, default=40)
     ap.add_argument("--no-route", action="store_true")
     ap.add_argument("--attempts", type=int, default=6)
+    ap.add_argument("--snap", choices=["90", "45"], default="90")
     a = ap.parse_args()
     spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
     stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
@@ -434,34 +440,58 @@ def main():
     dsn, ses = stem + ".dsn", stem + ".ses"
     if not pcbnew.ExportSpecctraDSN(board, dsn):
         raise SystemExit("DSN export failed")
-    # Freerouting is multi-threaded and not deterministic: retry until everything connects.
-    best = None
-    for attempt in range(1, a.attempts + 1):
-        if os.path.exists(ses):
-            os.remove(ses)
+    # Manhattan routing (90-degree corners only) reads far neater than 45-degree spaghetti.
+    if a.snap == "90":
+        txt = open(dsn).read()
+        txt = txt.replace("(structure", "(structure\n    (snap_angle ninety_degree)", 1)
+        open(dsn, "w").write(txt)
+    def freeroute(dsn_path, ses_path, passes, timeout):
+        if os.path.exists(ses_path):
+            os.remove(ses_path)
         try:
             r = subprocess.run(["java", "-Djava.awt.headless=true", "-jar", FREEROUTING_JAR, "--gui.enabled=false",
-                                "-de", dsn, "-do", ses, "-mp", str(a.passes), "-mt", "4"],
-                               capture_output=True, text=True, timeout=1800)
-            open(stem + "-freerouting.log", "w").write(r.stdout + r.stderr)
+                                "-de", dsn_path, "-do", ses_path, "-mp", str(passes), "-mt", "4"],
+                               capture_output=True, text=True, timeout=timeout)
+            open(stem + "-freerouting.log", "a").write(r.stdout + r.stderr)
         except subprocess.TimeoutExpired:
-            print(f"attempt {attempt}: freerouting timed out")
-            continue
-        if not os.path.exists(ses):
-            print(f"attempt {attempt}: no session written")
+            return False
+        return os.path.exists(ses_path)
+
+    def finish(board):
+        board.BuildListOfNets()
+        board.BuildConnectivity()
+        return board.GetConnectivity().GetUnconnectedCount(False)
+
+    # Stage 1: Manhattan (90 degree) for the bulk of the board. Stage 2: whatever is left
+    # gets a 45-degree pass on top, with the stage-1 copper kept. Freerouting is
+    # multi-threaded and not deterministic, so the whole thing retries.
+    open(stem + "-freerouting.log", "w").close()
+    best = None
+    for attempt in range(1, a.attempts + 1):
+        if not freeroute(dsn, ses, a.passes, 600):
+            print(f"attempt {attempt}: stage 1 produced no session", flush=True)
             continue
         # Work on the board as KiCad loads it from disk: zone filling segfaults on a board
         # that was only ever built in memory (KiCad 7 standalone pcbnew).
         board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
         n_t, n_v = import_ses(board, ses)
         stubs = remove_stubs(board)
+        unrouted = finish(board)
+        stage = "90"
+        if unrouted:
+            dsn2, ses2 = stem + "-stage2.dsn", stem + "-stage2.ses"
+            pcbnew.ExportSpecctraDSN(board, dsn2)   # existing copper goes along as wiring
+            if freeroute(dsn2, ses2, 20, 300):
+                board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
+                n_t, n_v = import_ses(board, ses2)
+                stubs = remove_stubs(board)
+                unrouted = finish(board)
+                stage = "90+45"
         add_pours(board)
-        board.BuildListOfNets()
         board.BuildConnectivity()
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-        board.BuildConnectivity()
-        unrouted = board.GetConnectivity().GetUnconnectedCount(False)
-        print(f"attempt {attempt}: {n_t} segments, {n_v} vias, {stubs} stubs removed, unconnected {unrouted}")
+        unrouted = finish(board)
+        print(f"attempt {attempt}: {n_t} segments, {n_v} vias, {stubs} stubs removed, unconnected {unrouted} ({stage})", flush=True)
         if best is None or unrouted < best[0]:
             best = (unrouted, board, n_t, n_v, stubs)
         if unrouted == 0:

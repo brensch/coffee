@@ -31,8 +31,8 @@
    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
    "value": "Pump / valve",
    "pins": {
-    "1": "PUMP_L",
-    "2": "VALVE_L"
+    "1": "VALVE_L",
+    "2": "PUMP_L"
    },
    "mains": [
     "1",

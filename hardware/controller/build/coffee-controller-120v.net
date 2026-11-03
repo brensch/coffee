@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/02/2026 09:33 AM")
+    (date "11/02/2026 07:20 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -3015,7 +3015,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J3")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "Q2")
@@ -3451,7 +3451,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J3")
-        (pin "2")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "Q3")
