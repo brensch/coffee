@@ -286,6 +286,8 @@ def build(spec, mains_v):
     seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
     seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
 
+    if os.environ.get("PLACE_ONLY"):   # floorplanning: footprints, outline and band only
+        return board
     # Heater current path as copper pours (solid pad connections). HTR_B leaves the triac's
     # middle pin as wide as the TO-220 pin pitch allows (~2 mm, the pad width) and widens to
     # 4.5 mm once clear of the neighbouring pins.
