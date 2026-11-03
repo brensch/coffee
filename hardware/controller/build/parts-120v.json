@@ -1048,28 +1048,6 @@
    "desc": "JST_PH_3",
    "mpn": "",
    "notes": "1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts"
-  },
-  "H1": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": ""
-  },
-  "H3": {
-   "footprint": "MountingHole:MountingHole_2.7mm_M2.5",
-   "value": "M2.5",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M2.5 mounting hole (unplated), beside the PSU",
-   "mpn": "",
-   "notes": ""
   }
  },
  "mains_nets": [

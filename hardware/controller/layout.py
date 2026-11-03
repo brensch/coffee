@@ -72,7 +72,7 @@ PLACE = {
     # one row of sensor/switch connectors under the module, wires leave downward
     "J6": (48.6, 44.8, 90, "F"), "J5": (54.3, 44.8, 90, "F"), "J7": (60.0, 44.8, 90, "F"),
     # bottom edge: USB-C (flashing only) and a fixing
-    "J4": (52.0, 52.3, 0, "F"), "H3": (61.3, 53.4, 0, "F"),
+    "J4": (52.0, 52.3, 0, "F"),
     # ---- bottom side, under the PSU ----
     "U5": (47.0, 9.5, 0, "B"), "C7": (53.6, 12.0, 90, "B"), "C6": (44.6, 16.0, 90, "B"),
     "D2": (47.2, 19.8, 0, "B"),
@@ -84,7 +84,6 @@ PLACE = {
     "R13": (46.4, 41.0, 90, "B"), "R14": (59.0, 49.6, 90, "B"),                                 # USB CC
     "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),       # BOOT recovery pads
     # holes (the heater triac's tab bolt is the fourth fixing)
-    "H1": (4.0, 16.4, 0, "F"),
 }
 
 
@@ -259,8 +258,6 @@ def build(spec, mains_v):
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         for i, r in enumerate((rect(0, 0, W, 0.8), rect(0, H - 0.8, W, H), rect(W - 0.8, 0, W, H))):
             guard(board, layer, r, f"edge {i}")
-    # keep copper away from the M3 hole on the mains side (earthed chassis standoff)
-    zone(board, None, pcbnew.F_Cu, rect(0, 12.6, 8.2, 20.2), keepout=True, name="H1 clearance", pads_ok=True)
 
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
     # the pour connects every GND pad, and the real fill leaves islands. The module's exposed

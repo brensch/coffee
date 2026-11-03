@@ -19,7 +19,7 @@ the machine directly. The machine is a US 120 V Gaggia Classic Pro. A module bui
 | Antenna | 2.4 GHz antenna with a U.FL (IPEX MHF1) pigtail, ~100–150 mm |
 | Wire | 1.0 mm² (18 AWG) silicone for heater, pump and valve; 0.5 mm² for L/N supply; 24 AWG for signals; fibreglass sleeve near the boiler |
 | Crimps | 6.3 mm Faston receptacles, fully insulated (the stock harness uses 6.3 mm tabs); bootlace ferrules for the screw terminals; JST-PH housings and crimps |
-| Hardware | M3 nylon standoffs (×3); M3 screw + nylon shoulder washer + thermal pad for the heater triac tab |
+| Hardware | M3 screw + nylon shoulder washer + thermal pad for the heater triac tab (the board itself has no mounting holes: the enclosure holds it by its edges) |
 | Tools | crimper, multimeter, power meter (Kill-A-Watt), 0.1 g scale, blind basket, thermometer for calibration |
 
 ## 1. Order the board
@@ -103,8 +103,7 @@ Make up short pigtails: a ferrule on one end into the screw terminal, a fully in
 Faston receptacle on the other onto the stock harness. Nothing in the machine gets cut.
 
 **Mounting**
-- The board sits in its printed enclosure on three nylon standoffs on the side panel, away from
-  the boiler.
+- The board slides into grooves in its printed enclosure, which mounts on the side panel away from the boiler.
 - **Bolt the heater triac Q1's tab to the chassis** with a thermal pad and a nylon shoulder washer.
   - The BTA24's tab is insulated; the washer keeps the screw from biting into it.
   - It dissipates ~11 W, and the chassis is the heatsink.

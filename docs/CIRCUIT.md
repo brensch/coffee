@@ -116,8 +116,7 @@ Layout adds two more:
   - net pairs within a few volts of each other (gate↔MT1, opto↔MT2, either side of the fuse).
 
   Conformal coating is still recommended.
-- **Mounting holes are unplated.** The one on the mains side (H1) has a copper keep-out, because
-  the chassis standoff is earthed. The heater triac's tab bolt is the fourth fixing.
+- **No mounting holes.** The printed enclosure holds the board by its edges (slide-in grooves plus a clip or the lid); the heater triac's tab is bolted to the chassis.
 - The **mains half gets a printed cover**. Silkscreen marks the band, "MAINS" and "SELV".
 
 ### SELV side

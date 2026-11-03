@@ -8,8 +8,6 @@ C8 C9,2,100nF,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir; ~240 
 D1,1,green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)
 D2,1,SS14,SS14,Diode_SMD:D_SMA,Y,Schottky 1 A 40 V,USB bench power
 F1,1,T500mA,"Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)",Fuse:Fuse_Littelfuse_372_D8.50mm,Y,"Fuse, TR5 radial",MAINS. Protects the PSU branch
-H1,1,M3,MountingHole,MountingHole:MountingHole_3.2mm_M3,Y,M3 mounting hole (unplated),
-H3,1,M2.5,MountingHole_M2.5,MountingHole:MountingHole_2.7mm_M2.5,Y,"M2.5 mounting hole (unplated), beside the PSU",
 J1,1,Mains in,"Phoenix Contact MKDS 1,5/2-5.08 (1715721)","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
 J2,1,Heater,"Phoenix Contact MKDS 3/2-5.08 (1711026), 24 A, 4 mm2",TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal,Y,Screw_Terminal_01x02_5.08_24A,"MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series."
 J3,1,Valve / pump,"Phoenix Contact MKDS 1,5/2-5.08 (1715721)","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump."

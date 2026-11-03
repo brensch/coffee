@@ -308,8 +308,8 @@ j_sw[3] += gnd
 
 for p in ("IO2", "IO3", "IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
-part(HOLE, "H1", "M3")          # mains side; the heater triac's tab bolt is another fixing
-part(HOLE_M25, "H3", "M2.5")    # bottom-right corner
+# No mounting holes: the enclosure holds the board by its edges (and the heater triac's tab is bolted
+# to the chassis), so no copper is given up to screws.
 
 
 # ================================================================ checks + outputs
