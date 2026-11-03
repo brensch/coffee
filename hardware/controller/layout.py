@@ -67,23 +67,23 @@ PLACE = {
     # ESP32-C6-MINI-1U under the PSU, turned 180: IO18/19/20 at its top-left corner face the optos,
     # USB in the middle of the top row, analog at the top right, 3V3/EN on the right side.
     "U4": (53.5, 32.5, 180, "F"),
-    "R9": (45.3, 32.0, 90, "F"), "R8": (45.3, 44.0, 90, "F"), "R7": (45.3, 52.6, 90, "F"),   # opto LED resistors
+    "R9": (45.0, 32.0, 90, "F"), "R8": (45.0, 44.0, 90, "F"), "R7": (45.0, 52.6, 90, "F"),   # opto LED resistors
     # right of the module: sensor dividers by the analog pins, EN RC, strap pull-up, 3V3 decoupling
     "R15": (61.6, 25.4, 90, "F"), "C8": (63.4, 25.4, 90, "F"), "R16": (65.2, 25.4, 90, "F"), "R17": (67.0, 25.4, 90, "F"),
     "C9": (68.8, 25.4, 90, "F"),
     "R10": (61.6, 29.0, 90, "F"), "C5": (63.4, 29.0, 90, "F"), "R11": (65.2, 29.0, 90, "F"),
     "C4": (61.6, 32.6, 90, "F"), "C3": (63.6, 33.1, 90, "F"),
     # power: LDO and bulk caps below the module
-    "U5": (56.0, 43.3, 0, "F"), "C6": (62.0, 42.9, 90, "F"), "C7": (50.0, 42.9, 90, "F"),
+    "U5": (56.0, 43.3, 0, "F"), "C6": (47.6, 46.6, 90, "F"), "C7": (50.0, 42.9, 90, "F"),
     "D1": (48.4, 38.6, 0, "F"), "R12": (51.6, 38.6, 180, "F"),   # status LED
     # top right: USB-C on the right edge, CC resistors, VBUS diode
     "J4": (67.8, 13.0, 90, "F"), "R13": (63.8, 2.6, 90, "F"), "R14": (63.8, 5.9, 90, "F"),
     "D2": (67.0, 21.2, 0, "F"),
     # bottom edge: switches, pressure, thermistor
-    "J7": (46.9, 56.6, 0, "F"), "J6": (56.0, 56.6, 0, "F"), "J5": (65.0, 56.6, 0, "F"),
+    "J6": (63.4, 39.4, 0, "F"), "J5": (63.4, 45.0, 0, "F"), "J7": (63.4, 50.6, 0, "F"),   # all on the right, beside the divider pins
     "TP1": (50.5, 30.0, 0, "B"), "TP2": (53.5, 30.0, 0, "B"),    # BOOT recovery pads, underneath
     # holes (the heater triac's tab bolt is the fourth fixing)
-    "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (68.6, 46.0, 0, "F"),
+    "H1": (4.0, 16.4, 0, "F"), "H2": (68.6, 3.4, 0, "F"), "H3": (68.6, 57.4, 0, "F"),
 }
 
 
@@ -311,8 +311,8 @@ def build(spec, mains_v):
     # Heater gate, hand-routed on B.Cu: Q1.G -> along the top of the heater band -> U1 pin 4.
     g = nets["HEATER_GATE"]
     q1g, u1g = pad_pos(board, "Q1", "3"), pad_pos(board, "U1", "4")
-    gw, yb, yc = 0.4, 47.8 + dy, 53.0 + dy
-    for a_, b_ in ((q1g, (q1g[0] + 1.0, yb)), ((q1g[0] + 1.0, yb), (22.0, yb)), ((22.0, yb), (22.0, yc)),
+    gw, yb, yc = 0.4, q1g[1], 53.0 + dy
+    for a_, b_ in ((q1g, (22.0, yb)), ((22.0, yb), (22.0, yc)),
                    ((22.0, yc), (31.6, yc)), ((31.6, yc), (31.6, u1g[1])), ((31.6, u1g[1]), u1g)):
         track(board, g, pcbnew.B_Cu, a_, b_, gw)
     # Heater opto feed (HTR_B via R1 -> U1 pin 6), hand-routed along the bottom edge: the pour,
@@ -329,16 +329,14 @@ def build(spec, mains_v):
         a_ = pad_pos(board, ref, pin)
         net = board.FindFootprintByReference(ref).FindPadByNumber(pin).GetNetname()
         track(board, nets[net], pcbnew.F_Cu, a_, end, 0.8)
-    # valve triac (SOT-223): fan MT1 and G apart (the hand-routed mains below join them)
-    q3 = [pad_pos(board, "Q3", n) for n in ("1", "3")]
-    stub("Q3", "1", (q3[0][0] - 1.6, q3[0][1] + 2.8))
-    stub("Q3", "3", (q3[1][0] + 1.6, q3[1][1] + 2.8))
 
-    # ---- Mains side, hand-routed. Freerouting 2.1 throws inside its maze search on these
-    # nets (NullPointerException in find_connection) and leaves the same few unrouted, so the
-    # mains copper is drawn here and checked by the DRC rules; the router only does SELV.
+    # ---- Mains side, hand-routed (0/45/90 only). Freerouting 2.1 throws inside its maze search
+    # on these nets (NullPointerException in find_connection) and leaves the same few unrouted,
+    # so the mains copper is drawn here and checked by the DRC rules; the router only does SELV.
     def run(net, layer, *pts, w=0.8):
         for a_, b_ in zip(pts, pts[1:]):
+            dx, dy = b_[0] - a_[0], b_[1] - a_[1]
+            assert abs(dx) < 1e-6 or abs(dy) < 1e-6 or abs(abs(dx) - abs(dy)) < 0.02, f"{net}: {a_}->{b_} is not 0/45/90"
             track(board, nets[net], layer, a_, b_, w)
     def via(net, xy, d=1.2, drill=0.6):
         v = pcbnew.PCB_VIA(board)
@@ -346,52 +344,58 @@ def build(spec, mains_v):
         v.SetNet(nets[net]); v.SetLocked(True); board.Add(v)
     P = lambda r, n: pad_pos(board, r, n)
     F, B = pcbnew.F_Cu, pcbnew.B_Cu
-    tab = (15.0, 20.35)
-    # supply: L terminal -> fuse (B); fuse -> MOV -> PSU (B); N terminal -> MOV (F) -> PSU (B)
-    run("AC_L", B, P("J1", "1"), P("F1", "1"))
-    run("AC_L_FUSED", B, P("F1", "2"), (P("RV1", "1")[0] - 0.3, P("F1", "2")[1]), P("RV1", "1"))
-    run("AC_L_FUSED", B, P("RV1", "1"), (P("RV1", "1")[0] + 1.0, P("RV1", "1")[1]), (P("PS1", "1")[0], P("RV1", "1")[1] + 1.0 + P("PS1", "1")[0] - P("RV1", "1")[0] - 1.0 - 0.0), P("PS1", "1"))
-    run("AC_N", F, P("J1", "2"), (P("RV1", "2")[0], P("J1", "2")[1]), P("RV1", "2"))
-    rv2, ps2 = P("RV1", "2"), P("PS1", "2")
+    d45 = lambda p, dx, dy: (p[0] + dx, p[1] + dy)
+
+    # Supply. L: terminal -> fuse (B). Fused L: fuse -> MOV -> PSU (B). N: terminal -> MOV (F), MOV -> PSU (B).
+    j11, f11, f12, rv1, rv2, ps1, ps2, j12 = P("J1", "1"), P("F1", "1"), P("F1", "2"), P("RV1", "1"), P("RV1", "2"), P("PS1", "1"), P("PS1", "2"), P("J1", "2")
+    run("AC_L", B, j11, (f11[0] - (f11[1] - j11[1]), j11[1]), f11)
+    run("AC_L_FUSED", B, f12, (rv1[0] - (f12[1] - rv1[1]), f12[1]), rv1)
+    run("AC_L_FUSED", B, rv1, (ps1[0] - (ps1[1] - rv1[1]), rv1[1]), ps1)
+    run("AC_N", F, j12, (rv2[0] - (rv2[1] - j12[1]), j12[1]), rv2)
     run("AC_N", B, rv2, (rv2[0] + ps2[1] - rv2[1], ps2[1]), ps2)
-    # L trunk on B: fuse -> down the middle (under C2) -> via at the valve triac -> pump triac MT2
-    f1 = P("F1", "1"); q22 = P("Q2", "2")
-    run("AC_L", B, f1, (15.0, f1[1] + 15.0 - f1[0]), (15.0, 22.3), (15.0, 33.0), (q22[0], 33.0 + q22[0] - 15.0), q22)
+
+    # L trunk on B: fuse -> down the middle (under C2) -> via at the valve triac -> pump triac MT2.
+    q22 = P("Q2", "2")
+    run("AC_L", B, f11, (15.0, f11[1] + 15.0 - f11[0]), (15.0, 22.3), (15.0, 33.0), (q22[0], 33.0 + q22[0] - 15.0), q22)
     via("AC_L", (15.0, 22.3))
-    run("AC_L", F, (15.0, 22.3), tab)
-    run("AC_L", F, (15.0, 22.3), P("Q3", "2"))
-    r61 = P("R6", "1")
-    run("AC_L", F, tab, (r61[0] - 1.0, tab[1]), r61)
-    # pump MT2 -> R3 (snubber) -> R4 (valve opto feed) and R2 (pump opto feed)
-    r31, r41, r21 = P("R3", "1"), P("R4", "1"), P("R2", "1")
+    tab, q32, r61 = (15.0, 20.35), P("Q3", "2"), P("R6", "1")
+    run("AC_L", F, (15.0, 22.3), tab)                     # valve triac tab (MT2)
+    run("AC_L", F, (15.0, 22.3), q32)                     # and its middle pin (same terminal)
+    run("AC_L", F, tab, (r61[0] - (tab[1] - r61[1]), tab[1]), r61)   # valve snubber resistor
+
+    # Pump MT2 -> R3 (pump snubber) -> R4 (valve opto feed) and R2 (pump opto feed).
+    r31, r41, r21, r42, u36, r22, u26 = P("R3", "1"), P("R4", "1"), P("R2", "1"), P("R4", "2"), P("U3", "6"), P("R2", "2"), P("U2", "6")
     run("AC_L", F, q22, (q22[0], r31[1] + 1.16), (q22[0] + 1.16, r31[1]), r31)
-    run("AC_L", F, r31, (r41[0], r41[1] + 1.2), r41)
+    run("AC_L", F, r31, (r41[0], r31[1] - (r41[0] - r31[0])), r41)
     run("AC_L", F, r31, (r31[0] + 1.2, r31[1]), (r21[0], r31[1] + r21[0] - r31[0] - 1.2), r21)
-    r42, u36 = P("R4", "2"), P("U3", "6")
-    run("VALVE_OPTO", F, r42, (u36[0] - 0.5, r42[1] + u36[0] - 0.5 - r42[0]), u36)
-    r22, u26 = P("R2", "2"), P("U2", "6")
+    run("VALVE_OPTO", F, r42, (r42[0] + u36[1] - r42[1], u36[1]), u36)
     run("PUMP_OPTO", F, r22, (r22[0] + r22[1] - u26[1], u26[1]), u26)
-    # valve snubber: C2 (snubber side, now on the right) -> R6
-    run("VALVE_SNUB", F, P("C2", "1"), P("R6", "2"))
-    # valve load: C2 (load side, left) -> down the left -> J3.1 and Q3.1; Q3.1 stub -> R5
-    c22, j31, q31, r52, r51 = P("C2", "2"), P("J3", "1"), P("Q3", "1"), P("R5", "2"), P("R5", "1")
-    run("VALVE_L", F, (c22[0] - 0.75, c22[1] + 2.7), (10.5, c22[1] + 4.1), (10.5, 24.5), (j31[0], 24.5), j31)
-    run("VALVE_L", F, (10.5, 24.5), (q31[0] - 0.7, q31[1] - 0.7), q31)
-    run("VALVE_L", F, (q3[0][0] - 1.6, q3[0][1] + 2.8), (r52[0] - 1.2, r52[1]), r52)
-    # valve gate: Q3.3 -> along y 25.35 -> U3.4; stub end -> R5.1
-    q33, u34 = P("Q3", "3"), P("U3", "4")
-    run("VALVE_GATE", F, q33, (q33[0] + 1.3, 25.35), (u34[0] - 1.5, 25.35), u34)
-    run("VALVE_GATE", F, (q3[1][0] + 1.6, q3[1][1] + 2.8), r51)
-    # pump gate on B: Q2.3 -> U2.4
+
+    # Valve snubber: C2 (snubber side, right pad) straight across to R6.
+    c21, r62 = P("C2", "1"), P("R6", "2")
+    run("VALVE_SNUB", F, (c21[0], r62[1]), r62)
+    # Valve load: C2 (load side, left pad) -> down the left -> J3.1 and Q3.1 -> R5.
+    c22, j31, q31, r52 = P("C2", "2"), P("J3", "1"), P("Q3", "1"), P("R5", "2")
+    y0 = 16.6
+    run("VALVE_L", F, (c22[0] - 0.45, y0), (10.5, y0 + c22[0] - 0.45 - 10.5), (10.5, 24.5), (j31[0] + 0.5, 24.5), j31)
+    run("VALVE_L", F, (10.5, 24.5), (10.5 + q31[1] - 24.5, q31[1]), q31)
+    run("VALVE_L", F, q31, (q31[0], r52[1] - (r52[0] - q31[0])), r52)
+    # Valve gate: Q3.3 -> y 25.35 -> U3.4; Q3.3 -> R5.1 (gate-MT1 resistor).
+    q33, u34, r51 = P("Q3", "3"), P("U3", "4"), P("R5", "1")
+    yg = q33[1] - 1.3
+    run("VALVE_GATE", F, q33, (q33[0] + 1.3, yg), (u34[0] - (u34[1] - yg), yg), u34)
+    run("VALVE_GATE", F, q33, (q33[0], r51[1] - (q33[0] - r51[0])), r51)
+
+    # Pump gate on B: Q2.3 -> U2.4.
     q23, u24 = P("Q2", "3"), P("U2", "4")
     run("PUMP_GATE", B, q23, (q23[0] + q23[1] - u24[1], u24[1]), u24)
-    # pump load: Q2.1 -> J3.2 (up-left); Q2.1 -> along y 43.6 -> C1 (load side, left pad)
+    # Pump load: Q2.1 -> J3.2 (45 deg up-left); Q2.1 -> y 43.6 -> C1 (load side, left pad).
     q21, j32, c1l = P("Q2", "1"), P("J3", "2"), P("C1", "2")
-    run("PUMP_L", F, q21, (q21[0] - 2.0, q21[1] - 2.0), (j32[0] + 1.8, j32[1] + 2.4), (j32[0], j32[1] + 0.6), j32)
-    run("PUMP_L", F, q21, (q21[0] - 1.0, q21[1] + 1.0), (13.0, 43.6), (c1l[0] - 1.5, 43.6), (c1l[0] + 0.4, 45.5), (c1l[0] + 0.4, 46.0))   # ends inside the pad, clear of the heater keep-out
-    # pump snubber: R3.2 -> C1 (snubber side, right pad)
+    run("PUMP_L", F, q21, (j32[0], q21[1] - (q21[0] - j32[0])), j32)
+    run("PUMP_L", F, q21, (q21[0] - 1.0, q21[1] + 1.0), (13.0, 43.6), (c1l[0] - 1.8, 43.6), (c1l[0], 45.4), (c1l[0], 45.8))
+    # Pump snubber: R3.2 -> C1 (snubber side, right pad).
     r32, c1r = P("R3", "2"), P("C1", "1")
-    run("PUMP_SNUB", F, r32, (r32[0] + 0.5, r32[1]), (c1r[0], r32[1] + c1r[0] - r32[0] - 0.5), c1r)
+    run("PUMP_SNUB", F, r32, (c1r[0] - (45.5 - r32[1]), r32[1]), (c1r[0], 45.5), (c1r[0], 46.0))
 
     # Lint: no foreign pad inside a heater guard (the router could never reach it: v5's last
     # unconnected net was exactly this).
@@ -606,6 +610,9 @@ def fab_outputs(pcb, stem):
     run("pdf", pcb, "-o", stem + ".pdf", "-l", "F.Cu,B.Cu,F.SilkS,Edge.Cuts")
 
 
+JOB_TIMEOUT = [120]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mains", type=int, default=120)
@@ -617,6 +624,7 @@ def main():
     ap.add_argument("--timeout", type=int, default=360, help="seconds per routing attempt (fail fast)")
     ap.add_argument("--no-stage2", action="store_true", help="skip the sequential finishing pass (quick checks)")
     a = ap.parse_args()
+    JOB_TIMEOUT[0] = a.timeout
     spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
     stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
     board = build(spec, a.mains)
@@ -662,7 +670,9 @@ def main():
         if os.path.exists(ses_path):
             os.remove(ses_path)
         return subprocess.Popen(["java", "-Xmx3g", "-Djava.awt.headless=true", "-jar", FREEROUTING_JAR, "--gui.enabled=false",
-                                 "-de", dsn_path, "-do", ses_path, "-mp", str(passes), "-mt", "2"],
+                                 "-de", dsn_path, "-do", ses_path, "-mt", "2",
+                                 # Freerouting 2.1 ignores -mp; its job timeout does stop it AND writes the session
+                                 f"--router.job_timeout={JOB_TIMEOUT[0] // 3600:02d}:{JOB_TIMEOUT[0] // 60 % 60:02d}:{JOB_TIMEOUT[0] % 60:02d}"],
                                 stdout=open(ses_path + ".log", "w"), stderr=subprocess.STDOUT)   # live progress per attempt
 
     def evaluate(ses_path):
@@ -683,7 +693,7 @@ def main():
     best = None
     for batch in range(1, a.attempts + 1):
         procs = {i: launch(dsn, f"{stem}-a{i}.ses", a.passes) for i in range(a.parallel)}
-        deadline = time.time() + a.timeout   # one deadline for the whole batch, not per attempt
+        deadline = time.time() + a.timeout + 30   # routers stop themselves at a.timeout; 30 s to write out
         for i, pr in procs.items():
             try:
                 pr.wait(timeout=max(0.1, deadline - time.time()))
@@ -710,15 +720,17 @@ def main():
                         board, n_t, n_v, stubs, unrouted, stage = b2, t2, v2, s2, u2, "2"
             bad = violations(board)
             print(f"batch {batch} attempt {i}: {n_t} segments, {n_v} vias, unconnected {unrouted}, violations {bad} (stage {stage})", flush=True)
-            if best is None or (unrouted, bad) < (best[0], best[5]):
-                best = (unrouted, board, n_t, n_v, stubs, bad)
+            if best is None or (unrouted, bad, n_v) < (best[0], best[5], best[3]):   # fewest vias breaks ties
+                pcbnew.SaveBoard(stem + "-best.kicad_pcb", board)   # finish from disk: pcbnew aborts filling a board juggled in memory
+                best = (unrouted, None, n_t, n_v, stubs, bad)
         if best and best[0] == 0:
             break
     if best is not None:
-        add_pours(best[1])
-        best[1].BuildConnectivity()
-        pcbnew.ZONE_FILLER(best[1]).Fill(best[1].Zones())
-        best = (finish(best[1]),) + best[1:]
+        b_ = pcbnew.LoadBoard(stem + "-best.kicad_pcb")
+        add_pours(b_)
+        b_.BuildConnectivity()
+        pcbnew.ZONE_FILLER(b_).Fill(b_.Zones())
+        best = (finish(b_), b_) + best[2:]
     if best is None:
         raise SystemExit("routing failed")
     unrouted, board, n_t, n_v, stubs, _ = best

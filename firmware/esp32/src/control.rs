@@ -50,8 +50,8 @@ pub struct Pins {
     pub valve: peripherals::GPIO18<'static>,
     pub pump: peripherals::GPIO19<'static>,
     pub heater: peripherals::GPIO20<'static>,
-    pub brew: peripherals::GPIO21<'static>,
-    pub steam: peripherals::GPIO22<'static>,
+    pub brew: peripherals::GPIO6<'static>,
+    pub steam: peripherals::GPIO7<'static>,
     pub led: peripherals::GPIO23<'static>,
 }
 

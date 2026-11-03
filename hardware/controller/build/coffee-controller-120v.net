@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 12:19 AM")
+    (date "11/03/2026 12:45 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -1838,7 +1838,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "U4")
-        (pin "27")
+        (pin "15")
         (pintype "BIDIRECTIONAL")))
     (net
       (code 30)
@@ -1850,7 +1850,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "U4")
-        (pin "28")
+        (pin "16")
         (pintype "BIDIRECTIONAL")))
     (net
       (code 31)

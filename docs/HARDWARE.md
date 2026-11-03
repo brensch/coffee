@@ -77,7 +77,7 @@ The full table, pigtails and pre-power checks are in INSTALL.md §5.
 |---|---|
 | Valve / pump / heater | 18 / 19 / 20 |
 | Pressure (ADC1_CH0) / thermistor (ADC1_CH1) | 0 / 1 |
-| Brew / steam switch | 21 / 22 |
+| Brew / steam switch | 6 / 7 |
 | Status LED | 23 |
 | USB D− / D+ (flashing, logs, JTAG) | 12 / 13 |
 | BOOT pad / GPIO8 strap | 9 / 8 |

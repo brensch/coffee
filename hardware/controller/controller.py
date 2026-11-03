@@ -290,13 +290,15 @@ u_mcu["IO0"] += p_adc   # ADC1_CH0
 
 # Front-panel switches: dry contacts to GND; internal pull-ups, debounced in firmware.
 j_sw = part(JST3, "J7", "Switches", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
-for i, (name, gpio) in enumerate((("BREW", "IO21"), ("STEAM", "IO22"))):
+# GPIO6/7: plain GPIOs on the module edge beside the analog pins, so all three sensor/switch
+# connectors sit together on the right edge (GPIO21/22 face the optos and are boxed in).
+for i, (name, gpio) in enumerate((("BREW", "IO6"), ("STEAM", "IO7"))):
     wire = Net(f"SW_{name}")
     j_sw[i + 1] += wire
     u_mcu[gpio] += wire
 j_sw[3] += gnd
 
-for p in ("IO2", "IO3", "IO4", "IO5", "IO6", "IO7", "IO14", "IO15", "RXD0", "TXD0"):
+for p in ("IO2", "IO3", "IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
 for i in range(3):   # the heater triac's tab bolt anchors the fourth corner
     part(HOLE, f"H{i + 1}", "M3")
@@ -308,7 +310,7 @@ def nets():
 
 
 FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
-                 "IO21": "SW_BREW", "IO22": "SW_STEAM", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+"}
+                 "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+"}
 STRAPS = ("IO4", "IO5", "IO8", "IO9", "IO15")   # ESP32-C6 strapping pins
 ADC1 = ("IO0", "IO1", "IO2", "IO3", "IO4", "IO5", "IO6")
 

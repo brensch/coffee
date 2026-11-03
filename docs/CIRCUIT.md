@@ -79,7 +79,7 @@ Layout adds two more:
  J2 (brew-thermostat wires) ─ Q1 BTA24 ◀ U1 MOC3083 ══╪══════╪═ R7 150Ω ◀ GPIO20
                                                       │      │  J5 thermistor ─ R15 8.2k to 3V3 ─ GPIO1
                                                       │      │  J6 pressure ─ R16/R17 (⅔) ─ GPIO0
-                                                      │      │  J7 brew / steam (dry contacts) ─ GPIO21 / 22
+                                                      │      │  J7 brew / steam (dry contacts) ─ GPIO6 / 7
                                                       │      │  D1 status LED ─ GPIO23
 ```
 
@@ -156,7 +156,7 @@ Layout adds two more:
 | Signal | GPIO | | Signal | GPIO |
 |---|---|---|---|---|
 | Valve / pump / heater | 18 / 19 / 20 | | Pressure (ADC1_CH0) | 0 |
-| Brew / steam switch | 21 / 22 | | Thermistor (ADC1_CH1) | 1 |
+| Brew / steam switch | 6 / 7 | | Thermistor (ADC1_CH1) | 1 |
 | Status LED | 23 | | USB D− / D+ | 12 / 13 |
 | BOOT pad | 9 | | GPIO8 strap (pull-up) | 8 |
 
