@@ -193,6 +193,13 @@ def main():
     print(r.stdout.strip().splitlines()[-1] if r.stdout else r.stderr[-500:])
     if r.returncode:
         raise SystemExit("CPL check failed: see jlc_cpl.py output")
+    # and every polarised pin's function checked against JLC's own symbol (catches pad numbers that agree
+    # while functions don't, e.g. an LED numbered anode-first by JLC and cathode-first by KiCad)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_pins.py")], capture_output=True, text=True)
+    print(r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-500:])
+    if r.returncode:
+        print(r.stdout)
+        raise SystemExit("pin-function check failed: see jlc_pins.py output")
     print(f"wrote {out}: {len(smd)} SMD lines, {len(hand)} hand-solder lines, "
           f"{sum(1 for r in report if 'NO MATCH' in r)} unmatched")
 
