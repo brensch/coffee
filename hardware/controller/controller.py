@@ -186,9 +186,9 @@ for ref, cc in (("R13", "CC1"), ("R14", "CC2")):
 u_mcu["IO12"] += dn
 u_mcu["IO13"] += dp
 
-# Outputs: GPIO -> 100 R -> AO3400A gate, 100k gate pull-down. The FET sinks the module's input:
+# Outputs: GPIO -> 100 R -> AO3400A gate, 3.3k gate pull-down. The FET sinks the module's input:
 # connector 1 = +5V, 2 = switched low (OUT), 3 = GND. Off by hardware during reset, boot and flashing
-# (the pull-down holds the gate at 0 V while the pin floats). 1N4148W flyback across the load for a
+# (3.3k pull-down: under 0.5 V at the gate even against a 20k internal pull-up). 1N4148W flyback across the load for a
 # relay coil; red LED + 1k from +5V to OUT lights when the output is on (visible with nothing plugged in).
 # GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
 for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
@@ -199,7 +199,7 @@ for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
     u_mcu[gpio] += cmd
     r = part(R, rg_, "100", notes="Gate series resistor")
     r[1, 2] += cmd, gate
-    r = part(R, rpd, "100k", notes="Gate pull-down: output off while the GPIO floats")
+    r = part(R, rpd, "3.3k", notes="Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)")
     r[1, 2] += gate, gnd
     q = part(NMOS, qref, "AO3400A", mpn="AO3400A", notes=f"{name} output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)")
     q["G"] += gate

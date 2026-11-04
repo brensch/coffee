@@ -41,127 +41,70 @@ def check(block, case, value, limit, ok, unit=""):
     results.append((block, case, f"{value:.3g} {unit}".strip(), limit, ok))
 
 
-# --------------------------------------------------------------- 1. triac drive current
-DIODES = {  # Is, N, Rs fitted to Vf @ 10 mA
-    "green_typ": (1e-20, 2.0, 10), "green_max": (2e-23, 2.0, 15),   # ~2.0 V / ~2.45 V
-    "ir_typ": (1e-14, 1.6, 3), "ir_max": (2e-17, 1.75, 5),           # ~1.15 V / ~1.5 V (MOC3083 max)
-}
-def drive(vgpio, ir, rgpio=25, ropto=150):
-    """ESP32 GPIO (VOH vgpio, ~25 ohm at drive strength 3) -> 150 R -> MOC3083 LED -> GND."""
-    i = DIODES[ir]
-    net = f"""* triac drive straight from the GPIO
-.model DI D(IS={i[0]} N={i[1]} RS={i[2]})
-Vg g 0 DC {vgpio}
-Rg g pin {rgpio}
-Ro pin a {ropto}
-Dopto a 0 DI
+# --------------------------------------------------------------- 1. output stage (GPIO -> AO3400A -> module input)
+# AO3400A (datasheet): Vth 0.65 / 1.05 / 1.45 V min/typ/max, 48 mOhm at Vgs 2.5 V (typ). Level-1 fit.
+NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): Rds(2.5 V) = 1/(KP (2.5 - VTO))
+def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
+    """GPIO (25 ohm) -> 100 R -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
+    load: 'ssr_ez' (Crydom EZ240D5: 4-15 V, ~15 mA regulated), 'ssr_sch' (Schneider SSP1A125BDT: 3-32 V, ~10 mA),
+          'relay' (5 V coil 70 ohm, 72 mA, 50 mH), each with the 1N4148W flyback and the 1k + red LED indicator."""
+    vto, kp = NMOS[fet]
+    loads = {
+        "ssr_ez": "Bssr v5 out I = min(0.015, max(0, (v(v5)-v(out)-1.2)/150))",
+        "ssr_sch": "Bssr v5 out I = min(0.010, max(0, (v(v5)-v(out)-1.2)/150))",
+        "relay": "Rcoil v5 mid 70\nLcoil mid out 50m",
+    }
+    drive = f"Vg g 0 PULSE(0 {vgpio} 1m 1u 1u 8m 20m)\nRgpio g pin 25" if rpu is None else f"Rpu v33 pin {rpu}\nVv33 v33 0 3.3"
+    net = f"""* output stage
+.model N3400 NMOS(LEVEL=1 VTO={vto} KP={kp} CGSO=1.5n CGDO=0.3n)
+.model D4148 D(IS=2.5n N=1.75 RS=0.6 BV=75 CJO=2p TT=4n)
+.model DRED D(IS=1e-19 N=1.8 RS=8)
+V5 v5 0 DC {v5}
+{drive}
+Rgs pin gate 100
+Rpd gate 0 {rpd}
+M1 out gate 0 0 N3400 L=1u W=1u
+{loads[load]}
+Dfb out v5 D4148
+Rled v5 lk 1k
+Dled lk out DRED
+.tran 2u {tstop} 0 2u
 .control
-op
-let ifm = (v(pin)-v(a))/{ropto}*1000
-echo "RESULT $&ifm $&v(pin)"
+run
+let vin = v(v5) - v(out)
+meas tran vgate_on FIND v(gate) AT=5m
+meas tran vin_on FIND vin AT=8.5m
+meas tran vds_on FIND v(out) AT=8.5m
+meas tran vdrain_pk MAX v(out) from=9m to=20m
+meas tran vin_off FIND vin AT=19m
+meas tran vgate_rst AVG v(gate) from=0.1m to=20m
 .endc
 .end
 """
     v, out = spice(net)
-    m = re.search(r"RESULT\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)", out)
-    return float(m.group(1)), float(m.group(2))
+    return v
 
 
-# --------------------------------------------------------------- 3. pump snubber
-def snubber(with_rc, vrms=120.0, L=1.2, R=220.0):
-    """Pump (diode + coil + stray C) on a triac modelled as a gated diode: it conducts until its
-    current falls to zero after the gate is removed. Returns max |dv/dt| (V/us) and peak |V| across it."""
-    vpk = vrms * 2 ** 0.5
-    rc = "Rsn mt2 s 100\nCsn s mt1 10n" if with_rc else ""
-    net = f"""* triac commutation with an inductive half-wave pump
-.model DP D(IS=1e-12 N=1.5 RS=0.5 CJO=40p TT=2u)
-.model DT D(IS=1e-12 N=1.3 RS=0.02)
-.model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
-Vline mt2 0 SIN(0 {vpk} 60)
-* triac: gate held for 2 cycles, then removed; it keeps conducting until its current reaches zero
-Vg g 0 PWL(0 1 40.6m 1 40.61m 0)
-Vsense mt2 xs 0
-Bctl c 0 V = max(v(g), abs(i(Vsense)) > 0.035 ? 1 : 0)
-S1 xs x c 0 SW
-Dt x mt1 DT
-Ctr mt2 mt1 60p
-Roff mt2 mt1 50meg
-{rc}
-* pump: series diode, coil with winding capacitance
-Dp mt1 p DP
-Lp p q {L}
-Cw p q 150p
-Rp q 0 {R}
-.tran 0.05u 80m 30m 0.05u
+# --------------------------------------------------------------- 2. reverse-polarity P-FET (AO3401A)
+def revpol(vin):
+    net = f"""* J1 -> AO3401A (D to J1, S to rail, G to GND via 10k) -> +5V rail with ~0.25 A load
+.model P3401 PMOS(LEVEL=1 VTO=-0.9 KP=12)
+Vin in 0 DC {vin}
+M1 in g v5 v5 P3401 L=1u W=1u
+Rg g 0 10k
+Rload v5 0 20
+C1 v5 0 22u
 .control
-run
-@WRDATA@
+op
+print v(v5)
+print i(Vin)
 .endc
 .end
 """
-    w = wave(net, ["v(mt2,mt1)"], 0.08)
-    t, v = w["time"], w["v(mt2,mt1)"]
-    dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
-    return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
-
-
-VALVE_DIDT = []
-
-
-def didt_at_dropout(t, i, ih):
-    """Current slope (A/ms) as the triac's current falls through IH after the gate is removed."""
-    # the coil current's own slope on its way down (4*IH -> 1.5*IH), not the model's snap at IH
-    ka = kb = None
-    for k in range(1, len(t)):
-        if t[k] <= 40.6e-3:
-            continue
-        if ka is None and abs(i[k]) < 4 * ih <= abs(i[k - 1]):
-            ka = k
-        if ka is not None and abs(i[k]) < 1.5 * ih <= abs(i[k - 1]):
-            kb = k
-            break
-    if ka is None or kb is None or t[kb] <= t[ka]:
-        return 0.0
-    return abs((i[kb] - i[ka]) / (t[kb] - t[ka])) / 1e3
-
-
-def valve(with_rc, vrms=120.0, L=4.4, R=300.0, csn="10n", ih=0.010):
-    """3-way valve: AC solenoid, NO diode. Triac (modelled as a gated antiparallel diode pair) stops
-    at a current zero after the gate is removed. Returns max |dv/dt| (V/us) and peak |V| across it."""
-    vpk = vrms * 2 ** 0.5
-    rc = f"Rsn mt2 s 100\nCsn s mt1 {csn}" if with_rc else ""
-    net = f"""* valve turn-off
-.model DT D(IS=1e-12 N=1.3 RS=0.05)
-.model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
-Vline mt2 0 SIN(0 {vpk} 60)
-Vg g 0 PWL(0 1 40.6m 1 40.61m 0)
-* triac: on while gated, and latched on while |I| > IH (10 mA); it drops out at a current zero
-Vsense mt2 xs 0
-Bctl c 0 V = max(v(g), abs(i(Vsense)) > {ih} ? 1 : 0)
-S1 xs x c 0 SW
-Dt1 x mt1 DT
-Dt2 mt1 x DT
-Ctr mt2 mt1 30p
-Roff mt2 mt1 50meg
-{rc}
-Lv mt1 q {L}
-Cw mt1 q 100p
-Rv q 0 {R}
-.tran 0.05u 80m 30m 0.05u
-.control
-run
-@WRDATA@
-.endc
-.end
-"""
-    w = wave(net, ["v(mt2,mt1)", "i(vsense)"], 0.08)
-    t, v = w["time"], w["v(mt2,mt1)"]
-    dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
-    VALVE_DIDT.append(didt_at_dropout(t, w["i(vsense)"], ih))
-    return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
-
-
-VALVE_DIDT = []
+    v, out = spice(net)
+    v5 = float(re.findall(r"v\(v5\)\s*=\s*([-+0-9.eE]+)", out)[0])
+    i = float(re.findall(r"i\(vin\)\s*=\s*([-+0-9.eE]+)", out)[0])
+    return v5, i
 
 
 # --------------------------------------------------------------- 4. pressure input
@@ -192,10 +135,10 @@ def rails(vpsu, label):
     net = f"""* PSU -> 22u -> TLV1117LV33 (dropout ~0.18 V @ 0.1 A, ~0.3 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
 .model SS14 D(IS=5e-6 N=1.1 RS=0.05)
 Vpsu psu 0 DC {vpsu}
-Rpsu psu v5 0.15             ; PSU + wiring output resistance (est); PSU feeds +5V directly (v5: no OR diode)
+Rpsu psu v5 0.21             ; PSU + wiring (0.15) + AO3401A (0.06) in series
 C1 v5 0 22u
-* other 5 V loads: transducer (~10 mA); the opto LEDs now run from 3.3 V GPIOs
-Rl5 v5 0 300
+* other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 72 + 3 LEDs 9 mA
+Rl5 v5 0 41
 * LDO: tracks 3.3 V unless dropout bites
 Bldo v33r 0 V = min(3.3, v(v5) - (0.15 + 0.3*i(Vsense)))   ; TLV1117LV33: 455 mV dropout at 1 A
 Rout v33r v33s 0.02
@@ -204,7 +147,7 @@ Bin v5 0 I = i(Vsense)        ; LDO input current = output current
 C3 v33 0 22u
 C4 v33 0 10u
 * ESP32: 80 mA idle, Wi-Fi TX bursts to 500 mA (1 ms, every 5 ms)
-Iesp v33 0 PULSE(0.11 0.53 2m 2u 2u 1m 5m)   ; ESP32 + 3 opto LEDs (~10 mA each)
+Iesp v33 0 PULSE(0.085 0.505 2m 2u 2u 1m 5m)   ; ESP32 (80 mA idle, 500 mA TX) + status LED + gate pull-downs
 .tran 2u 20m 0 2u
 .control
 run
@@ -234,31 +177,32 @@ def ntc_from_v(v, rref=8.2e3, vref=3.3, r25=100e3, beta=3950.0):
 
 
 def main():
-    # 1. drive
-    for vg, lab in ((3.3, "VDD 3.3 V"), (3.0, "VDD 3.0 V (rail at its simulated minimum)")):
-        for ir in ("ir_typ", "ir_max"):
-            ifm, vpin = drive(vg, ir)
-            check("Triac drive (opto LED current from GPIO)", f"{lab}, {ir}", ifm, "5-20 mA (MOC3083 IFT max 5; GPIO comfortable)", 5.0 <= ifm <= 20, "mA")
-    # 2. pump snubber (Ulka: diode inside, inductive)
-    for vr, with_rc in ((120.0, False), (120.0, True), (132.0, True)):
-        dv, peak = snubber(with_rc, vrms=vr)
-        label = f"{vr:.0f} V, " + ("with 100R+10nF snubber" if with_rc else "no snubber")
-        check("Pump turn-off dv/dt across triac/opto", label, dv, "< 300 V/us (MOC3083 static dv/dt 600 min; 2x margin)", dv < 300, "V/us")
-        if with_rc:
-            check("Pump turn-off peak voltage", label, peak, "< 533 V (2/3 of the 800 V triac/opto rating)", peak < 533, "V")
-        else:
-            check("Pump turn-off peak voltage", label, peak, "reference only: why the snubber is fitted", True, "V")
-    # 3. valve snubber (AC solenoid; the triac drops out at its holding current with the coil still carrying it)
-    dv, peak = valve(False, vrms=120.0)
-    check("Valve turn-off peak voltage", "120 V, no snubber", peak, "reference only: why the snubber is fitted", True, "V")
-    for vr in (120.0, 132.0):
-        for ih, csn in ((0.005, "10n"), (0.010, "10n"), (0.010, "8n")):   # Z0109 IH typ / max; 8 nF = 10 nF X7R derated at voltage
-            dv, peak = valve(True, vrms=vr, csn=csn, ih=ih)
-            label = f"{vr:.0f} V, 100R+{csn}F, IH {ih * 1e3:.0f} mA"
-            check("Valve turn-off dv/dt (opto)", label, dv, "< 300 V/us (MOC3083 static dv/dt 600 min; 2x margin)", dv < 300, "V/us")
-            di = VALVE_DIDT[-1]
-            check("Valve commutation (Z0109)", label + f", {dv:.0f} V/us", di, "< 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10)", di < 0.37, "A/ms")
-            check("Valve turn-off peak voltage", label, peak, "< 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber)", peak < 533, "V")
+    # 1. outputs: on-state at the corners, with each module type
+    for load, vmin, lab in (("ssr_ez", 4.0, "pump SSR (Crydom EZ240D5, must-operate 4.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
+                            ("relay", 3.5, "valve relay coil (5 V, 72 mA; 70 % must-operate)")):
+        for vg in (3.0, 3.3):
+            for fet in ("vth_typ", "vth_max"):
+                for v5 in (4.6, 5.0):
+                    r = output(vg, fet, v5, load)
+                    check("Output on: voltage across the module input", f"{lab}, GPIO {vg} V, {fet}, +5V {v5} V", r["vin_on"], f">= {vmin} V", r["vin_on"] >= vmin, "V")
+        r = output(3.0, "vth_max", 5.0, load)
+        check("Output off: voltage left across the module", lab, r["vin_off"], "< 1.0 V (SSR/relay must-release)", abs(r["vin_off"]) < 1.0, "V")
+        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating, 1N4148W flyback)", r["vdrain_pk"] < 20, "V")
+    # boot/reset: GPIO high-Z with a weak internal pull-up fighting the 4.7k pull-down
+    for rpu in ("45k", "20k"):
+        r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpu=rpu)
+        check("Output during reset (GPIO high-Z)", f"internal pull-up {rpu} vs 3.3k pull-down", r["vgate_rst"], "< 0.6 V (AO3400A Vth min 0.65 V): load stays off", r["vgate_rst"] < 0.6, "V")
+        check("Output during reset: load voltage", f"internal pull-up {rpu}", r["vin_off"], "< 1.0 V (off)", abs(r["vin_off"]) < 1.0, "V")
+    r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpd="100k", rpu="45k")
+    check("Output during reset, 100k pull-down (rejected value)", "internal pull-up 45k", r["vgate_rst"], "reference only: why the pull-down is 3.3k", True, "V")
+    # 2. reverse polarity
+    v5, i = revpol(5.0)
+    check("Reverse-polarity P-FET", "J1 at +5.0 V, 250 mA load", v5, ">= 4.95 V (drop < 50 mV)", v5 >= 4.95, "V")
+    v5, i = revpol(-5.0)
+    check("Reverse-polarity P-FET", "J1 wired backwards (-5 V)", abs(i) * 1e3, "< 0.01 mA into the board", abs(i) * 1e3 < 0.01, "mA")
+    # status LED
+    i_led = (3.3 - 2.0) / 1000 * 1e3
+    check("Status LED (red, 1k from GPIO23)", "3.3 V", i_led, "1-3 mA (visible, well within GPIO drive)", 1 <= i_led <= 3, "mA")
     # 4. pressure into the C6's ADC1
     v, out = pressure()
     va = float(re.findall(r"v\(a\)\s*=\s*([-+0-9.eE]+)", out)[0])
@@ -270,7 +214,7 @@ def main():
     check("Pressure filter", "60 Hz pump ripple", g60, "> -1 dB (the pulses stay visible to firmware)", g60 > -1.0, "dB")
     kick = 3.0 * 10e-12 / 100e-9 * 1e3   # 10 pF sampling cap charge-sharing with the 100 nF reservoir
     check("Pressure ADC kick-back", "10 pF sample cap vs 100 nF", kick, "< 0.8 mV (1 LSB of 12 bits over 3.3 V)", kick < 0.8, "mV")
-    # 5. thermistor (100k B3950 to GND, 8.2k 0.1% to 3V3)
+    # 5. thermistor (100k B3950 to GND, 8.2k 1% to 3V3)
     for t in (20.0, 93.0, 125.0, 150.0):
         vt = ntc_v(t)
         check("Thermistor divider voltage", f"{t:.0f} C", vt, "0.15-3.15 V (inside the ADC's usable range)", 0.15 <= vt <= 3.15, "V")
@@ -284,10 +228,12 @@ def main():
     check("Thermistor self-heating", f"93 C, {p:.2f} mW", err, "< 0.5 C worst case (constant, so the boiling-water calibration point cancels it)", err < 0.5, "C")
     worst = max(abs(ntc_from_v(ntc_v(93.0, r25=r25, beta=b)) - 93.0) for r25 in (99e3, 101e3) for b in (3910.0, 3990.0))
     check("Thermistor error before calibration", "93 C, R25 +-1 %, B +-1 %", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
-    r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=8.2e3 * 1.001)) - 93.0)
-    check("Thermistor error from the reference resistor", "93 C, 0.1 % resistor", r_ref_err, "< 0.1 C", r_ref_err < 0.1, "C")
+    r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=8.2e3 * 1.01)) - 93.0)
+    check("Thermistor error from the reference resistor", "93 C, 1 % resistor", r_ref_err, "< 0.5 C before calibration (the boiling-water point removes it)", r_ref_err < 0.5, "C")
+    gain = (20 * 1.01 / (20 * 1.01 + 10 * 0.99)) / (20 / 30) - 1
+    check("Pressure gain error from 1 % divider resistors", "worst-case ratio", abs(gain) * 9.0, "< 0.15 bar at 9 bar (zero is calibrated at power-up)", abs(gain) * 9.0 < 0.15, "bar")
     # 6. rails
-    for vpsu, label in ((5.0, "PSU 5.0 V"), (4.75, "PSU 4.75 V (-5%)"), (4.6, "USB 5.0 V through D2 (~4.6 V)")):
+    for vpsu, label in ((5.0, "PSU 5.0 V"), (4.75, "PSU 4.75 V (-5%)"), (4.65, "USB 5.0 V through D2 (~4.65 V)")):
         v, out = rails(vpsu, label)
         check("3.3 V rail under Wi-Fi bursts", label, v.get("v33min", 0), ">= 3.0 V (ESP32-C6 min)", v.get("v33min", 0) >= 3.0, "V")
         check("5 V rail", label, v.get("v5min", 0), ">= 4.2 V (pressure transducer)", v.get("v5min", 0) >= 4.2, "V")

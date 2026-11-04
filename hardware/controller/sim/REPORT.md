@@ -4,35 +4,44 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 
 | Block | Case | Result | Requirement | |
 |---|---|---|---|---|
-| Triac drive (opto LED current from GPIO) | VDD 3.3 V, ir_typ | 12.1 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
-| Triac drive (opto LED current from GPIO) | VDD 3.3 V, ir_max | 9.83 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
-| Triac drive (opto LED current from GPIO) | VDD 3.0 V (rail at its simulated minimum), ir_typ | 10.4 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
-| Triac drive (opto LED current from GPIO) | VDD 3.0 V (rail at its simulated minimum), ir_max | 8.21 mA | 5-20 mA (MOC3083 IFT max 5; GPIO comfortable) | ✅ |
-| Pump turn-off dv/dt across triac/opto | 120 V, no snubber | 198 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 120 V, no snubber | 2.49e+03 V | reference only: why the snubber is fitted | ✅ |
-| Pump turn-off dv/dt across triac/opto | 120 V, with 100R+10nF snubber | 47.5 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 120 V, with 100R+10nF snubber | 251 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
-| Pump turn-off dv/dt across triac/opto | 132 V, with 100R+10nF snubber | 47.5 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Pump turn-off peak voltage | 132 V, with 100R+10nF snubber | 242 V | < 533 V (2/3 of the 800 V triac/opto rating) | ✅ |
-| Valve turn-off peak voltage | 120 V, no snubber | 1.99e+03 V | reference only: why the snubber is fitted | ✅ |
-| Valve turn-off dv/dt (opto) | 120 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 120 V, 100R+10nF, IH 5 mA, 8 V/us | 0.0382 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 120 V, 100R+10nF, IH 5 mA | 363 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt (opto) | 120 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 120 V, 100R+10nF, IH 10 mA, 16 V/us | 0.0372 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 120 V, 100R+10nF, IH 10 mA | 430 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt (opto) | 120 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 120 V, 100R+8nF, IH 10 mA, 16 V/us | 0.0372 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 120 V, 100R+8nF, IH 10 mA | 450 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt (opto) | 132 V, 100R+10nF, IH 5 mA | 7.83 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 132 V, 100R+10nF, IH 5 mA, 8 V/us | 0.042 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 132 V, 100R+10nF, IH 5 mA | 394 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt (opto) | 132 V, 100R+10nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 132 V, 100R+10nF, IH 10 mA, 16 V/us | 0.0412 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 132 V, 100R+10nF, IH 10 mA | 458 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
-| Valve turn-off dv/dt (opto) | 132 V, 100R+8nF, IH 10 mA | 15.7 V/us | < 300 V/us (MOC3083 static dv/dt 600 min; 2x margin) | ✅ |
-| Valve commutation (Z0109) | 132 V, 100R+8nF, IH 10 mA, 16 V/us | 0.0412 A/ms | < 0.37 A/ms ((dI/dt)c allowed at 10-16 V/us, 110 C: Z01 datasheet Fig. 10) | ✅ |
-| Valve turn-off peak voltage | 132 V, 100R+8nF, IH 10 mA | 477 V | < 533 V (2/3 of the 800 V triac/opto rating; ~2x line peak is physics, not the snubber) | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output off: voltage left across the module | pump SSR (Crydom EZ240D5, must-operate 4.0 V) | 9.08e-05 V | < 1.0 V (SSR/relay must-release) | ✅ |
+| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, must-operate 4.0 V) | 5.29 V | < 20 V (AO3400A 30 V rating, 1N4148W flyback) | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output off: voltage left across the module | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 9.08e-05 V | < 1.0 V (SSR/relay must-release) | ✅ |
+| Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 5.29 V | < 20 V (AO3400A 30 V rating, 1N4148W flyback) | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
+| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
+| Output off: voltage left across the module | valve relay coil (5 V, 72 mA; 70 % must-operate) | 5.34e-10 V | < 1.0 V (SSR/relay must-release) | ✅ |
+| Output turn-off spike at the drain | valve relay coil (5 V, 72 mA; 70 % must-operate) | 5.82 V | < 20 V (AO3400A 30 V rating, 1N4148W flyback) | ✅ |
+| Output during reset (GPIO high-Z) | internal pull-up 45k vs 3.3k pull-down | 0.225 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
+| Output during reset: load voltage | internal pull-up 45k | 9.08e-05 V | < 1.0 V (off) | ✅ |
+| Output during reset (GPIO high-Z) | internal pull-up 20k vs 3.3k pull-down | 0.465 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
+| Output during reset: load voltage | internal pull-up 20k | 9.08e-05 V | < 1.0 V (off) | ✅ |
+| Output during reset, 100k pull-down (rejected value) | internal pull-up 45k | 2.27 V | reference only: why the pull-down is 3.3k | ✅ |
+| Reverse-polarity P-FET | J1 at +5.0 V, 250 mA load | 4.99 V | >= 4.95 V (drop < 50 mV) | ✅ |
+| Reverse-polarity P-FET | J1 wired backwards (-5 V) | 5.01e-09 mA | < 0.01 mA into the board | ✅ |
+| Status LED (red, 1k from GPIO23) | 3.3 V | 1.3 mA | 1-3 mA (visible, well within GPIO drive) | ✅ |
 | Pressure input | 4.5 V full scale -> GPIO0 | 2.97 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
 | Pressure input | 0.5 V (0 bar) -> GPIO0 | 0.333 V | >= 0.1 V (clear of the ADC's non-linear bottom) | ✅ |
 | Pressure filter | -3 dB corner | 233 Hz | 150-400 Hz (keeps the pump's 60 Hz pulses, kills RF) | ✅ |
@@ -46,12 +55,13 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Thermistor sensitivity | 140 C | 13.7 mV/C | > 10 mV/C (0.015 C per oversampled LSB) | ✅ |
 | Thermistor self-heating | 93 C, 0.33 mW | 0.221 C | < 0.5 C worst case (constant, so the boiling-water calibration point cancels it) | ✅ |
 | Thermistor error before calibration | 93 C, R25 +-1 %, B +-1 % | 1.19 C | info: the 2-point calibration (room + boiling water) removes this | ✅ |
-| Thermistor error from the reference resistor | 93 C, 0.1 % resistor | 0.0339 C | < 0.1 C | ✅ |
+| Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.338 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
+| Pressure gain error from 1 % divider resistors | worst-case ratio | 0.0598 bar | < 0.15 bar at 9 bar (zero is calibrated at power-up) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 5.0 V | 4.92 V | >= 4.2 V (pressure transducer) | ✅ |
+| 5 V rail | PSU 5.0 V | 4.87 V | >= 4.2 V (pressure transducer) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 4.75 V (-5%) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 4.75 V (-5%) | 4.67 V | >= 4.2 V (pressure transducer) | ✅ |
-| 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.6 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | USB 5.0 V through D2 (~4.6 V) | 4.52 V | >= 4.2 V (pressure transducer) | ✅ |
+| 5 V rail | PSU 4.75 V (-5%) | 4.62 V | >= 4.2 V (pressure transducer) | ✅ |
+| 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
+| 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.52 V | >= 4.2 V (pressure transducer) | ✅ |
 
-**49 / 49 checks pass.**
+**59 / 59 checks pass.**
