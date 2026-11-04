@@ -508,6 +508,12 @@ def finish_own(spec, stem):
     add_pours(b)
     n = stitch(b)
     pcb = stem + ".kicad_pcb"
+    # fastroute routes at 0.2 mm; the DRC checks against 0.15 mm (JLC standard minimum is 0.127 mm), so
+    # the few router neck-downs widened to 0.2 mm by ext_route still pass with margin.
+    ns = b.GetDesignSettings().m_NetSettings
+    ns.m_DefaultNetClass.SetClearance(mm(0.15))
+    for name, nc in ns.m_NetClasses.items():
+        nc.SetClearance(mm(0.15))
     pcbnew.SaveBoard(pcb, b)
     write_rules(stem + ".kicad_dru", spec)
     b = pcbnew.LoadBoard(pcb)
