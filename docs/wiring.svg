@@ -80,7 +80,7 @@
   <text x="50" y="941" class="s">in the brew-thermostat hole, hand-tight</text>
 
   <rect x="40" y="970" width="270" height="48" class="mach"/>
-  <text x="50" y="989" class="t">Pressure transducer 0–1.6 MPa</text>
+  <text x="50" y="989" class="t">Pressure transducer TE M3200, 17 bar</text>
   <text x="50" y="1006" class="s">G1/4 on the pump-outlet T</text>
 
   <!-- existing wiring hints -->

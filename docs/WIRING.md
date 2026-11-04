@@ -61,7 +61,10 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
 
 ### Mains side
 
-All mains crimps are fully insulated nylon (from the Nilight kit in BUY.md §8: red = 22-18 AWG, blue = 16-14 AWG). Use 16 AWG (1.3 mm²) silicone for the heater path and the valve live, and 18 AWG for everything else (≤ 0.5 A).
+All mains crimps are TE fully insulated nylon FASTONs (BUY.md §8: 2-520183-2 for 22-18 AWG, 3-520107-2 for 16-14 AWG). Wire is UL 3135 silicone (200 °C):
+- **14 AWG for the heater-SSR legs M10/M11.** TE rates these terminals at 15 A on 14 AWG but only 10 A on 16 AWG, and the heater draws 11.4 A;
+- 16 AWG for M1, M4, M9;
+- 18 AWG for everything else (≤ 0.5 A).
 
 | # | From (terminal) | Wire | To (terminal) | Crimp at each end | Notes |
 |---|---|---|---|---|---|
@@ -74,8 +77,8 @@ All mains crimps are fully insulated nylon (from the Nilight kit in BUY.md §8: 
 | M7 | pump SSR load tab 2 | 18 AWG | pump live tab (where grey PMP.B was) | insulated female 22-18 / insulated female 22-18 | |
 | M8 | WAGO L, port 4 | 18 AWG | relay **11 (COM)** | bare / bare stranded or ferrule in screw clamp | |
 | M9 | relay **14 (NO)** | 16 AWG (fits the 16-14 male tab) | grey PMP.B free end (female receptacle) | bare/ferrule / insulated **male** tab | Valve live. Leave **12 (NC)** empty |
-| M10 | brew-thermostat wire 1 (white, female) | 16 AWG | heater SSR **1/L1** | insulated **male** tab / insulated **#8 fork** | Replaces the thermostat. **Joint off the boiler:** see the note below |
-| M11 | brew-thermostat wire 2 (black, female) | 16 AWG | heater SSR **2/T1** | insulated **male** tab / insulated **#8 fork** | |
+| M10 | brew-thermostat wire 1 (white, female) | **14 AWG** | heater SSR **1/L1** | insulated **male** tab / insulated **#8 fork** | Replaces the thermostat. **Joint off the boiler:** see the note below |
+| M11 | brew-thermostat wire 2 (black, female) | **14 AWG** | heater SSR **2/T1** | insulated **male** tab / insulated **#8 fork** | |
 | — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | — | unchanged | — | Don't touch |
 | — | WAGO L port 5, WAGO N ports 3–5 | — | spare | — | Levers closed, nothing inserted |
 
@@ -95,12 +98,12 @@ Mechanical:
   - pull them at least 50 mm away from the boiler, as far as their wires reach, and tie the joint to the frame there;
   - slide fibreglass sleeve over each joint.
 
-  If the stock wires are too short for that, don't leave a nylon joint on the boiler. Run the new 16 AWG silicone all the way and use bare (uninsulated) tabs under fibreglass sleeve.
+  If the stock wires are too short for that, stop: don't leave a nylon joint on the boiler, and don't extend the stock heater wiring with unrated parts.
 
-**Crimp count** (all from the one Nilight kit, BUY.md §8):
-- 22-18 female, red: **11** (M2, M3, M6 ×1, M7 ×2, J3 ×2, J7 ×4);
-- 16-14 male, blue: **5** (M1, M4, M9, M10, M11);
-- #8 insulated forks, 16-14: **2** (M10, M11).
+**Crimp count** (BUY.md §8):
+- 22-18 female (TE 2-520183-2): **11** (M2, M3, M6, M7 ×2, J3 ×2, J7 ×4);
+- 16-14 male (TE 3-520107-2): **5** (M1, M4, M9, M10, M11);
+- #8 forks, 16-14 (TE 325199): **2** (M10, M11).
 
 ### Low-voltage side
 
@@ -139,9 +142,9 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
 | J5.1 | NTC | Molex 218537-3919 lead (PTFE, 28 AWG) | No polarity. Solder + heat-shrink, with the joint well away from the boiler (the probe's 300 mm leads reach). The firmware defaults are this probe's (Steinhart-Hart from Molex's table, BUY.md §10a) |
 | J5.2 | GND | thermistor lead | |
 | J5.3 | — | — | Unused |
-| J6.1 | +5 V | transducer supply (often red) | **Check the transducer's colours with a meter**: the listing gives no pinout |
-| J6.2 | signal | transducer output (often green or yellow) | 0.5 V at 0 bar |
-| J6.3 | GND | transducer ground (often black) | |
+| J6.1 | +5 V | TE M3200: **red** wire (cable versions) or Packard pin **A** | TE M3200 datasheet p.4 |
+| J6.2 | signal | **white** wire, or Packard pin **C** | 0.5 V at 0 bar. Green (cable versions) is not connected: leave it insulated |
+| J6.3 | GND | **black** wire, or Packard pin **B** | Keep the cable's vent end in a dry place (TE: the vent is in the cable) |
 | J4 | USB-C | flashing / bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
 | U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail (MHF III → SMA bulkhead) + Taoglas GW.15.2113 2 dBi SMA dipole (BUY.md §11) | Mount the SMA bulkhead in a **plastic** part: on the steel case the dipole's gain can exceed the module's 2.33 dBi limit (Taoglas plots). Press the MHF III plug straight down onto the socket; don't force it |
 

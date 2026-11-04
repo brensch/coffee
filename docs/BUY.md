@@ -153,26 +153,37 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 
 ## 8. Mains wiring and terminals
 
-| What | Exact part | Qty | Buy (opened 2026-11-04) | Price / stock | Specs checked (product page; no datasheets) |
-|---|---|---|---|---|---|
-| 16 AWG silicone wire (heater path, L/N feeds, valve live) | BNTECHGO 16 AWG silicone, red + black, 10 ft each | 1 | <https://www.amazon.com/dp/B017TFR664> | **$9.98**, In Stock | "200 degree C … Rated Voltage: 600 volts", OD 3.0 mm, tinned stranded. **No UL style number given: UNVERIFIED as a listed appliance wire** |
-| 18 AWG silicone wire (pump, valve COM, supply) | BNTECHGO 18 AWG silicone, red + black, 25 ft each | 1 | <https://www.amazon.com/dp/B07HGTKQ89> | **$13.98**, In Stock | "200 degree C … Rated Voltage: 600 volts", OD 2.3 mm. Same caveat |
-| Fully insulated nylon 6.3 mm spade kit, male + female, 22-18 and 16-14 AWG | **Nilight 400PCS** nylon quick-disconnect male and female spade terminals, ASIN B0B3T8VNLB | 1 kit | <https://www.amazon.com/dp/B0B3T8VNLB> | **$19.77** (list $21.99), In Stock, shipped and sold by Amazon.com | Listing: "fully insulated male and female crimp terminals", insulation **nylon**, tinned brass. Red = 22-18 AWG, blue = 16-14 AWG, yellow = 12-10 AWG. "200PCS Male and 200PCS female … 80pcs each for 22-18 and 16-14 gauge wires. 40pcs each for 12-10". **The 6.3 mm (0.250") tab width isn't stated in the listing text: check one against an SSR tab before crimping** |
-| Insulated fork, #8 (M4), 16-14 AWG (heater SSR output) | Baomain **SNYBS2-4** nylon fork, 100-pack | 1 | <https://www.amazon.com/dp/B09WXLMNZW> | **$7.59**, In Stock | Title: nylon insulated fork, 16-14 AWG, USA #8 |
-| L and N junctions | WAGO **221-415** lever nuts (5-conductor), 25-pack | 1 (uses 2) | <https://www.amazon.com/dp/B0107SYYGU> | **$22.03**, add-to-cart available, delivery Nov 10–14 (no stock count shown) | Title: "ENEC & UL certified, all conductor types, 450V, 32A" |
-| Fibreglass sleeving, 6 mm | uxcell fibreglass braid sleeving, 6 mm, 16.4 ft | 1 | <https://www.amazon.com/dp/B082YKWPSL> | **$8.54**, In Stock | Title: high-temp fibreglass sleeve. **Temperature rating not stated: UNVERIFIED** |
+Every item here is checked against the maker's own datasheet or product page. GaggiMate (an open
+controller for this machine) confirms the machine side: all switch, thermostat and pump
+connections are 6.35 mm quick-connects (gaggimate docs).
 
-**What the build uses from the spade kit** (matches WIRING.md):
-- **22-18 female (red), 9:** M6 ×1, M7 ×2, J3 ×2 (pump SSR input), J7 ×4 (C.1, C.2, S.4, S.5).
-- **16-14 male (blue), 5:** M1, M4, M9, M10, M11.
-- The kit has about 40 of each colour and sex, so there are plenty of spares for practice crimps.
+| What | Exact part | Qty | Buy (seen 2026-11-04) | Price / stock | Datasheet (verified) |
+|---|---|---|---|---|---|
+| **14 AWG** silicone, heater-SSR legs M10/M11 (11.4 A) | Tensility **30-03445** (red), cut to length | 1 m | <https://www.digikey.com/en/products/detail/tensility-international-corp/30-03445/25572263> (open by hand) | ~€3.50/m, 121 m in stock (Digi-Key EU site; US price not seen) | Tensility spec sheet rev A 2024: **UL AWM 3530, file E339579, 200 °C, 600 V**, cUL, FT2; 41 × 0.254 mm tinned, OD 3.44 mm (fits the 16-14 FASTONs: TE allows insulation to 6.6 mm) |
+| 16 AWG silicone (M1, M4, M9) | CnC Tech **3135-16-1-0500-004-1-TS** (red), by the foot | 10 ft | <https://www.digikey.com/en/products/detail/cnc-tech/3135-16-1-0500-004-1-TS/28739631> (Digi-Key: open by hand, it shows automated browsers a verification page) | ~€1.38/ft, 351 ft in stock (Digi-Key's EU site; US price not seen) | CnC datasheet <https://www.cnctech.us/pdfs/3135-XX-1-0500-0XX-1-TS_.pdf> p.1: **UL AWM 3135, 600 V, 200 °C**, C-UL SEWF-2, UL file **E205197**, VW-1/FT1, OD 3.02 mm. (Digi-Key's listing says 150 °C; the datasheet governs.) |
+| 18 AWG silicone (M2, M3, M6, M7, M8) | CnC Tech **3135-18-1-0500-005-1-TS** (blue), by the foot | 15 ft | <https://www.digikey.com/en/products/detail/cnc-tech/3135-18-1-0500-005-1-TS/3766970> (open by hand) | ~€1.33/ft, 3,613 ft in stock (EU site) | same datasheet, OD 2.72 mm |
+| 22-18 AWG insulated female 6.35 mm | TE **2-520183-2** | 12 | <https://www.te.com/en/product-2-520183-2.html> (TE store, min 1) | $0.516, 323,686 in stock | TE page: nylon, 600 V, −40…110 °C, UL. 22-18 AWG only |
+| 16-14 AWG insulated male 6.35 mm | TE **3-520107-2** | 6 | <https://www.te.com/en/product-3-520107-2.html> | $0.664, 36,922 in stock | TE page: nylon, 600 V, UL; **TE spec 108-2017 p.3: 10 A on 16 AWG, 15 A on 14 AWG, 105 °C max** |
+| #8 fork, 16-14 AWG (heater SSR output) | TE **325199** (PIDG) | 3 | <https://www.te.com/en/product-325199.html> | $2.11, 2,558 in stock | TE page: #8 / M4 stud, 300 V, 0…105 °C, UL file E13288 |
+| L and N junctions | WAGO **221-415** lever nuts, 25-pack | 1 (uses 2) | <https://www.amazon.com/dp/B0107SYYGU> (third-party seller) | $22.03 | WAGO page <https://www.wago.com/us/wire-splicing-connectors/compact-splicing-connector/p/221-415> + UL certificate: **US rating 600 V / 20 A**, UL 486C, file E69654; 24-12 AWG, 11 mm strip; **max ambient 85 °C**, so mount them away from the boiler |
+| Fibreglass sleeve, wire runs | Techflex **SFAG.08** (3.4 mm), 10 ft | 1 | <https://www.wirecare.com/product-lines/fr-silicone-flex-glass-grade-a> (dealer listed on techflex.com) | $16.52 | Techflex catalog <https://assets.techflex.com/assets/products/catalogs/pdf/sfg.pdf>: silicone-coated fibreglass, **200 °C**, Grade A 8 kV, VW-1 |
+| Fibreglass sleeve, joints | Techflex **SFAG.02** (6.7 mm), 10 ft | 1 | same dealer | $25.82 | same |
+
+**Why 14 AWG on the heater legs:** TE rates these 6.35 mm FASTONs at **10 A on 16 AWG and 15 A on 14 AWG**
+(product specs 108-2017 and 108-2043). The heater draws 11.4 A, so 16 AWG would run the terminals over
+their rating. Everything else on the mains side carries under 1 A.
+
+**Crimps used** (matches WIRING.md):
+- 22-18 female (2-520183-2): **11**: M2, M3, M6, M7 ×2, J3 ×2, J7 ×4;
+- 16-14 male (3-520107-2): **5**: M1, M4, M9 (16 AWG) and M10, M11 (14 AWG);
+- #8 fork (325199): **2**: M10, M11.
+
+Buy one or two spares of each for practice crimps.
 
 Notes:
-- **Cheaper kit, contents not itemised:** Nilight 160PCS male/female nylon fully insulated kit (22-18, 16-14, 12-10 AWG), <https://www.amazon.com/dp/B07PM3825J>, **$11.69**, In Stock. The listing doesn't say how many of each size are in it.
-- **Rejected:** BAOMAIN 1/4" fully insulated male/female kits (<https://www.amazon.com/dp/B01G8BMZA2>). The listing does state 6.3 mm, but the insulation is **PVC**, not nylon.
-- Nylon Faston insulation is typically rated about 105 °C. Keep crimps off the boiler and sleeve the wire runs instead.
-- No #6 forks are needed: the heater SSR input takes the GH lead's folded strands (or a ferrule) directly, and the pump SSR has Faston tabs.
-- **Optional, not in the total:** if you already own a ferrule crimper, use 0.25 mm² (24 AWG) insulated ferrules on the folded GH-lead ends at the heater SSR input and the relay coil, and 1.5 mm² (16 AWG) ferrules on the relay contacts.
+- **Joints near the boiler:** the nylon terminals are rated 105–110 °C and the boiler runs at 93–145 °C, so every nylon joint stays ≥ 50 mm off it, under SFAG.02 sleeve (WIRING.md).
+- **Not chosen** (no maker datasheet): the BNTECHGO silicone wire, Nilight spade kit, Baomain forks and uxcell sleeve of earlier versions. Also rejected: TE 63301-1 bare high-temperature tab (made for solid nichrome heater wire on machine-crimp strips, no current rating), and GaggiMate's 18 AWG for the heater path (TE allows 7 A per terminal there).
+- **Optional, not in the total:** with a ferrule crimper, 0.25 mm² ferrules on the GH-lead ends at the heater SSR input and the relay coil, and 1.5 mm² on the relay contacts.
 
 ## 9. Low-voltage leads: genuine JST **GH** 1.25 mm, 3-pin
 
@@ -201,18 +212,31 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 - **Board and firmware:** R15 is 4.7 kΩ to match (1.50 V at 93 °C). The firmware default is a Steinhart-Hart fit to Molex's table, within 0.2 °C from 25 to 200 °C; the two-point calibration removes the rest (tolerance, mounting).
 - **To check on the machine:** that the thermostat's screws are M4 (INSTALL.md §4).
 
-### 10b. Pressure transducer, 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4, qty 1
+### 10b. Pressure transducer: TE Connectivity M3200 series, qty 1 (**variant: your choice, see below**)
 
-- **Part:** "XYNLHZQ" pressure sensor transmitter, variant **0–1.6 MPa**, ASIN B0DLVP141L (generic, no manufacturer part number).
-- **Buy:** <https://www.amazon.com/dp/B0DLVP141L>. **$24.34**, **In Stock**.
-- **Specs (product page; no datasheet):**
-  - G1/4 thread, stainless body, ceramic sensor;
-  - supply 5 V DC (or 12 V);
-  - output **0.5–4.5 V**;
-  - accuracy ±1.0 % FS;
-  - operating −40…105 °C, compensation −20…80 °C.
-- **UNVERIFIED:** wire colours and pinout, and that the output is truly ratiometric. The firmware self-zeroes; confirm 0.5 V at 0 bar on the bench.
-- **Rejected:** Jeanoko 1.6 MPa (<https://www.amazon.com/dp/B0GVHLQL4R>, $31.89, in stock) has an **M10 × 1.5** thread, not G1/4.
+**Requirement:** 0–~17 bar gauge, 5 V supply, 0.5–4.5 V ratiometric, G1/4 into GaggiMate-style tee
+(GaggiMate's pressure tee takes a G1/4 male transducer and sits between the pump outlet and the
+OPV, which are G1/8: gaggimate docs), water above 95 °C, load ≤ the board's 147 kΩ.
+
+**Datasheet (verified):** TE M3200, 06/2026 (local copy in the research notes; te.com product pages):
+0.5–4.5 V ratiometric on 5 ± 0.25 V (p.8); **load > 100 kΩ** (p.2; the board's divider is 147 kΩ);
+±0.25 % FS, total error band ±1.5 % FS (p.2); proof 2×, burst 5×; −40…125 °C (cable versions 105 °C);
+17-4PH stainless wetted parts. Every variant below is in this one datasheet.
+
+| Variant | Connection | Port | Buy | Catch |
+|---|---|---|---|---|
+| **M323M-000004-017BG** | 1 m cable: red +5 V, black GND, white output; vent in the cable (p.4) | 7/16-20 UNF male, O-ring (p.5) | Digi-Key via te.com <https://www.te.com/en/product-20014203-07.html>: **$104.81**, 36 in stock | Needs a 7/16-20 UNF female → G1/4 male adapter. No stainless adapter with its own datasheet found yet (Adaptall 9036-04-04 is carbon steel, unrated) |
+| **M3234-000002-250PG** | Packard A connector: A +5 V, B GND, C output; vent through the connector | 1/4-19 BSPP = G1/4 (p.5) | Digi-Key via te.com <https://www.te.com/en/product-20005027-00.html>: **$90.84**, 4 in stock | TE names no mating plug. Sibling TE datasheets (M5200, U5300) name Aptiv **12078090** + 3 × **12103881**, but that plug's seals may block the gauge vent |
+| **M323M-000002-017BG** | 1 m cable | G1/4 | factory order only (no stock found) | Lead time |
+
+- **Firmware:** `range_bar` is 17.24 for the 250 psi part and 17.0 for the 017BG parts (set it in the config).
+- **Not chosen:**
+  - GaggiMate's own transducer, an unbranded AliExpress 0–1.6 MPa part with no datasheet;
+  - the XYNLHZQ listing in earlier versions of this list (no datasheet);
+  - WIKA A-10: its ratiometric version is limited to 0–80 °C water;
+  - Gems 3500: $330, minimum 5;
+  - Variohm EPT3100: its current datasheet sits behind a form, and the 2013 sheet doesn't state the load or ratiometric output;
+  - Honeywell PX2 (not for water) and PX3 (no cable version).
 
 ## 11. Antenna: Taoglas CAB.A02 pigtail + Taoglas GW.15.2113 2 dBi dipole
 
@@ -229,49 +253,35 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 
 ---
 
-## Cost total (verified lines only, 2026-11-04)
+## Cost total (2026-11-04, prices as seen; several Digi-Key prices still to confirm by hand)
 
 | # | Item | Cost |
 |---|---|---|
 | 1 | Schneider SSP1A125BDT | $24.97 |
 | 2 | Auber HS25ET | $13.49 |
 | 3 | Crydom EZ240D5 (Enrgtech, £23.05 ≈ $30, FX unverified) | ~$30.00 |
-| 4 | Phoenix 1119897, **1 unit** (eBay, saleaxis) | $33.07 |
+| 4 | Phoenix 1119897, 1 unit (eBay) | $33.07 |
 | 5 | RECOM RAC05-05SK/277/W | $13.85 |
-| 6 | Bussmann HTB-26M-R holder + S505-1-R ceramic fuse | $13.82 + $4.38 |
+| 6 | Bussmann HTB-26M-R holder + S505-1-R fuse | $13.82 + $4.38 |
 | 7 | DIN rail DN-R35S-150-4 | $8.00 |
-| 8 | Wire 16 + 18 AWG | $9.98 + $13.98 |
-| 8 | Nilight 400-pc nylon spade kit | $19.77 |
-| 8 | Baomain #8 forks, WAGO 221-415, fibreglass sleeve | $7.59 + $22.03 + $8.54 |
-| 9 | JST GH 3-pin 300 mm leads, 10-pack (compatible) | $1.14 |
-| 10a | Trianglelab 104NT-4 M4 thermistor (regular price) | $6.66 |
-| 10b | 1.6 MPa transducer | $24.34 |
-| 11 | MHF3→RP-SMA 15 cm pigtail + Bingfu 2 dBi antenna 2-pack | $3.32 + $8.89 |
-| | **Total** | **≈ $267.82** |
+| 8 | Wire: Tensility 14 AWG 1 m + CnC 16 AWG 10 ft + 18 AWG 15 ft (EU prices ×1.1) | ~$4 + ~$15 + ~$22 |
+| 8 | TE terminals (12 + 6 + 3) | $6.19 + $3.98 + $6.32 |
+| 8 | WAGO 221-415 25-pack | $22.03 |
+| 8 | Techflex SFAG.08 + SFAG.02 sleeve | $16.52 + $25.82 |
+| 9 | JST AGHGH28K305 ×21 + GHR-03V-S ×7 (Digi-Key, price not seen) | ~$30 (estimate, check) |
+| 10a | Molex 218537-3919 | $9.76 |
+| 10b | TE M3200 transducer (variant to choose) | $90.84–$104.81 |
+| 11 | Taoglas CAB.A02 + GW.15.2113 | $2.97 + $4.76 |
+| | **Total** | **≈ $400–415**, plus shipping |
 
-**Shipping seen on the pages, not in the total:**
-- eBay relay $3.99;
-- AliExpress: GH leads $5.80, pigtail $2.93, thermistor free;
-- Amazon: free over $35 for items shipped by Amazon.
-- Enrgtech's UK shipping wasn't recorded.
-
-With those it comes to about **$280**, plus Digi-Key and Crimp Supply shipping, plus Enrgtech shipping, tax and tariffs.
-
-**Ways to cut it further:**
-- Nilight 160-pc kit instead of the 400-pc kit: −$8.08 (contents not itemised);
-- thermistor at the $1.09 first-piece promo: −$5.57;
-- EZ240D5 from RS/Allied at $15.70 (check by hand): about −$14.
+The verified parts cost more than the earlier unverified ones (≈ $268), mostly the transducer
+(+$70–80), the sleeve (+$34) and genuine JST leads.
 
 ## Couldn't verify
 
-1. **Thermistor (10a):** M4 thread pitch, thread and lead length, and the insulation between the leads and the screw body (meter-check it). The element's 100 kΩ / B 4267 K / −50…300 °C figures are datasheet-verified; the probe assembly is listing-only.
-2. **Antenna (11):** the generic MHF3 plug's fit on the W.FL receptacle (test-fit), and the Bingfu 2 dBi gain (listing only, no datasheet). The Pulse W3921T0150 and Adafruit 5444 + 944 are still out of stock or unlisted.
-3. **Phoenix PLC-RSC-5DC/21:** datasheet verified from Phoenix's French and Chinese catalog exports (English page blocked). The eBay seller isn't an authorised distributor: check the label on arrival.
-4. **EZ240D5 US single-unit source:** RS/Allied at $15.70 was seen via Findchips only (check by hand). The opened source is UK-based Enrgtech, with a £→$ conversion I didn't verify.
-5. **Fuse and holder:** both datasheet-verified (Eaton TD 2037, TD 2119). Prices at Digi-Key and Crimp Supply as seen, not re-checked at checkout.
-6. **Silicone wire:** 600 V / 200 °C from the listing text only, no UL style number. Fibreglass sleeve temperature rating not stated.
-7. **JST GH leads:** clone housings, not genuine JST. Check the latch fit in SM03B-GHS-TB before wiring. Genuine JST parts (AGHGH28K305 + GHR-03V-S) are on Digi-Key only (check by hand).
-8. **Spade kit:** the 6.3 mm tab width isn't printed in the Nilight listing text. Check one on an SSR tab first.
-9. **Pressure transducer:** no datasheet; pinout and ratiometric behaviour unconfirmed.
-10. **HS25ET:** stock status not shown on Auber's page.
-11. **Mean Well HDR-15-5 alternative:** not checked.
+Everything above was checked against the maker's own datasheet or product page, except:
+1. **Prices behind human-verification pages** (Digi-Key, Mouser): the 14/16/18 AWG wire, the JST GH leads, the S505-1-R fuse, and the TE transducer's Digi-Key stock. Open those links yourself.
+2. **Transducer:** the M323M's G1/4 adapter (no stainless part with a datasheet found yet) or the M3234's mating plug (only named in sibling TE datasheets). See §10b.
+3. **The machine itself:** no datasheet exists. Machine facts come from GaggiMate's docs (6.35 mm quick-connects, M4 at the brew-thermostat hole, G1/8 at the pump/OPV, G1/4 tee port). Check the thermostat screws are M4 before fitting the probe.
+4. **Phoenix relay:** read from Phoenix's French and Chinese datasheet exports (the English page is blocked). The eBay seller isn't an authorised distributor.
+5. **EZ240D5 on the Ulka pump:** the datasheet doesn't cover a half-wave (diode) pump load; bench-test it (INSTALL.md §6).
