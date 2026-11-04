@@ -372,7 +372,8 @@ mod tests {
     #[test]
     fn recovers_thermistor_parameters() {
         let mut truth = ModelConfig::default();
-        truth.thermistor.beta = 3880.0;
+        let beta0 = truth.thermistor.beta;      // the default probe's B
+        truth.thermistor.beta = beta0 - 70.0;
         truth.thermistor.tau_s = 5.0;
         let dt = 1.0 / truth.mains.frequency_hz;
         let mut rows: Vec<Row> = (0..(150.0 / dt) as usize)
@@ -395,7 +396,7 @@ mod tests {
             r.tc = tc;
         }
         let mut guess = truth.clone();
-        guess.thermistor.beta = 3950.0;
+        guess.thermistor.beta = beta0;
         guess.thermistor.tau_s = 2.0;
         let w = Weights {
             temp: 1.0,
@@ -414,7 +415,7 @@ mod tests {
         .unwrap();
         let beta = r.cfg.thermistor.beta;
         let tau = r.cfg.thermistor.tau_s;
-        assert!((beta - 3880.0).abs() < 15.0, "beta {beta}");
+        assert!((beta - (beta0 - 70.0)).abs() < 15.0, "beta {beta}");
         assert!((tau - 5.0).abs() < 1.0, "tau {tau}");
     }
 }

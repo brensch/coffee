@@ -1,0 +1,158 @@
+# Wiring: v7 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
+
+![wiring diagram](wiring.svg)
+
+This replaces INSTALL.md §5 for the v7 board. The v7 board carries no mains: certified modules
+switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INSTALL.md §4
+(sensors, plumbing) and §6–§7 still apply.
+
+> ⚠️ **Mains voltage.** Work with the machine unplugged, and cooled if it has been on. Photograph
+> the stock wiring before you touch it. The thermal fuse and steam thermostat stay in series with
+> the heater: they're the protection that doesn't depend on software. If you aren't comfortable
+> with mains wiring, have this checked by an electrician before first power-on.
+
+## Sources and confidence
+
+- Machine wire names (C.4, S.5, PMP.B, BT, ST) and colours come from GaggiMate's Classic Pro guide,
+  <https://docs.gaggimate.eu/docs/installation-gcp> (opened 2026-11-04), and its 100/120 V diagram
+  "SIN035R 100/120V". On that US diagram:
+  - the brew thermostat (107 °C) has a **white** and a **black** wire;
+  - the steam thermostat (145 °C) has a **grey** and a **black** wire;
+  - the thermal fuse is 184 °C;
+  - the pump's two wires are **white** and **grey** (grey = PMP.B, the switched live);
+  - the brew-switch line feed is **C.4 brown**, and the steam switch carries **S.5 white** and **S.4 black**.
+- **US steam-switch difference** (GaggiMate, §4): *"On a US machine the double white will be on
+  the other side. Follow the labeling and modifications of the switch positions regardless of
+  that!"* So go by GaggiMate's position labels (S.1–S.5), not by where the white wires sit.
+- GaggiMate's heater method differs from ours, but the circuit is equivalent:
+  - **GaggiMate:** bridges the two brew-thermostat wires and puts its SSR in the steam-thermostat wires.
+  - **This build:** puts the SSR in the brew-thermostat wires and leaves the steam thermostat and thermal fuse untouched.
+- Items marked **UNSURE** are not confirmed for a US machine. Check each with a meter, machine unplugged.
+
+## What changes in the machine
+
+1. **Brew thermostat**
+   - Unscrew it from the left side of the boiler.
+   - Keep its two spade wires (white, black). They go to the heater SSR's load terminals, so the SSR takes the thermostat's place.
+   - The NTC probe goes into the thermostat's M4 hole (INSTALL.md §4).
+2. **Steam thermostat and thermal fuse:** leave them, and their wiring, exactly as they are.
+3. **Switched live (L):** unplug **C.4 (brown)** from the brew switch. It becomes the live feed for everything we add. GaggiMate uses the same wire as its board's L.
+   **UNSURE:** confirm with a meter that C.4 is live only when the power switch is ON (plug in, power switch off, measure C.4 to N; then on).
+4. **Neutral (N):** unplug **S.5 (white)** from the steam switch. It becomes the neutral feed for the 5 V supply. GaggiMate uses the same wire as its board's N.
+   **UNSURE:** confirm it reads ~120 V to C.4 with the power switch on, and ~0 V to chassis earth.
+5. **Pump**
+   - Unplug the **grey PMP.B** wire from the pump: the one that does *not* go to the pump's thermal fuse.
+   - A new wire from the pump SSR goes onto that pump tab.
+   - The pump's white wire stays where it is.
+6. **Valve**
+   - The free end of the grey PMP.B wire now feeds the 3-way valve's live (as in GaggiMate, where this wire goes to its "V" output).
+   - It goes to the relay's NO contact.
+   - The valve neutral stays where it is.
+   - **UNSURE:** with the machine unplugged, check that the grey wire's free end has continuity through the valve coil to neutral, a few hundred Ω to a few kΩ. If it doesn't, find the valve's own live wire and use that.
+7. **Brew and steam switches**
+   - Remove **every** mains wire from both switches.
+   - Insulate each freed end (they already have insulated receptacles; add heat-shrink over any that don't) and tie them back.
+   - The switches then carry only the 5 V J7 signals, and the switch lamps go dark.
+   - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
+   - **UNSURE:** whether S.4 is part of the steam-thermostat path on a US machine. If parking it breaks the heater circuit, the heater simply won't heat (fail-safe), and the "heater circuit" check below catches it.
+
+## Terminal-by-terminal table
+
+### Mains side
+
+All mains crimps are fully insulated nylon (from the Nilight kit in BUY.md §8: red = 22-18 AWG, blue = 16-14 AWG). Use 16 AWG (1.3 mm²) silicone for the heater path and the valve live, and 18 AWG for everything else (≤ 0.5 A).
+
+| # | From (terminal) | Wire | To (terminal) | Crimp at each end | Notes |
+|---|---|---|---|---|---|
+| M1 | C.4 brown (female receptacle, ex brew switch) | 16 AWG, brown/red | WAGO 221-415 "L", port 1 | insulated **male** 6.3 mm tab, 16-14 (blue) ← C.4 / bare 11 mm strip into WAGO | Switched L feed |
+| M2 | WAGO L, port 2 | 18 AWG (RECOM lead extended or direct) | fuse holder, lead 1 | bare into WAGO / per holder | |
+| M3 | fuse holder, lead 2 | — | RECOM **brown** lead (L in) | solder + heat-shrink, or butt splice | 1 A slow-blow 5×20 fuse in holder |
+| M4 | S.5 white (female receptacle, ex steam switch) | 16 AWG, blue | WAGO 221-415 "N", port 1 | insulated **male** tab ← S.5 / bare into WAGO | Neutral feed |
+| M5 | WAGO N, port 2 | RECOM **blue** lead | — | bare into WAGO | RECOM N in |
+| M6 | WAGO L, port 3 | 18 AWG | pump SSR (EZ240D5) load tab 1 | bare / insulated **female** 6.3 mm, 22-18 (red) | Load polarity doesn't matter |
+| M7 | pump SSR load tab 2 | 18 AWG | pump live tab (where grey PMP.B was) | insulated female 22-18 / insulated female 22-18 | |
+| M8 | WAGO L, port 4 | 18 AWG | relay **11 (COM)** | bare / bare stranded or ferrule in screw clamp | |
+| M9 | relay **14 (NO)** | 16 AWG (fits the 16-14 male tab) | grey PMP.B free end (female receptacle) | bare/ferrule / insulated **male** tab | Valve live. Leave **12 (NC)** empty |
+| M10 | brew-thermostat wire 1 (white, female) | 16 AWG | heater SSR **1/L1** | insulated **male** tab / insulated **#8 fork** | Replaces the thermostat |
+| M11 | brew-thermostat wire 2 (black, female) | 16 AWG | heater SSR **2/T1** | insulated **male** tab / insulated **#8 fork** | |
+| — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | — | unchanged | — | Don't touch |
+| — | WAGO L port 5, WAGO N ports 3–5 | — | spare | — | Levers closed, nothing inserted |
+
+Mechanical:
+- **Heater SSR:**
+  - Bolt it to the HS25ET heatsink with the two M4 screws. Schneider fits a thermal pad at the factory; **don't** add grease on top of it.
+  - Mount the heatsink inside the case on the rear panel, fins in free air. The HS25ET is sold as an "external-mount" sink that pokes through a 70 × 55 mm cutout; mounting it fully inside needs no cutout, but leave air space round the fins.
+  - Its baseplate and the heatsink are bonded to the chassis by the mounting screws.
+- **Pump SSR:**
+  - Bolt it to a flat chassis panel with 8-32 screws (datasheet torque 1.1–1.5 N·m).
+  - It dissipates < 1 W at 0.45 A.
+- **Relay and supply:**
+  - Clip the relay onto the 150 mm DIN rail, and screw the rail to the side panel away from the boiler.
+  - Fix the RECOM module next to it with a cable tie or a printed clip. The wired version has no mounting flange.
+- **Mains wires:** sleeve them in fibreglass wherever they pass within ~50 mm of the boiler.
+
+**Crimp count** (all from the one Nilight kit, BUY.md §8):
+- 22-18 female, red: **9** (M6 ×1, M7 ×2, J3 ×2, J7 ×4);
+- 16-14 male, blue: **5** (M1, M4, M9, M10, M11);
+- #8 insulated forks, 16-14: **2** (M10, M11).
+
+### Low-voltage side
+
+Every board connector is a JST **GH** 1.25 mm 3-pin side-entry header (SM03B-GHS-TB). Every cable is a pre-crimped JST GH 3-pin lead (GHR-03V-S housing), about 300 mm, with the far end stripped (BUY.md §9).
+
+#### Joining the GH leads
+
+GH leads are thin: **26–28 AWG** (the ones in BUY.md are 28 AWG). The module terminals are made for heavier wire, so:
+- **Heater SSR input (screw clamp, rated 24–12 AWG):** strip ~12 mm and fold the strands back on themselves two or three times so the clamp bites a 22-ish AWG bundle. Or crimp a 0.25 mm² (24 AWG) ferrule over the folded end. Tug-test it.
+- **Pump SSR input (6.3 mm Faston tabs):** an insulated **22-18 female receptacle** (red). Strip ~6 mm, fold the strands to double or triple thickness so they fill the barrel, then crimp. Tug-test it.
+- **Relay coil A1/A2 (screw clamp):** a 0.25 mm² ferrule, or folded strands as for the heater SSR.
+- **Brew/steam switch tabs:** insulated 22-18 female receptacles, folded strands as for the pump SSR.
+- **RECOM output, thermistor, transducer:** solder + heat-shrink, then sleeve the joint.
+
+| Board pin | Signal | Goes to | Notes |
+|---|---|---|---|
+| J1.1 | +5 V in | RECOM **red** (+Vout) | Solder + heat-shrink the 28 AWG GH lead to the 18 AWG RECOM lead, then sleeve the joint |
+| J1.2 | GND | RECOM **black** (−Vout) | |
+| J1.3 | GND | RECOM **black** too (recommended) | Joining J1.2 and J1.3 to the same black lead halves the ground-return resistance of the thin lead. Or cut it back and insulate it |
+| J2.1 | +5 V | heater SSR **3 (+)** input | Folded strands or 0.25 mm² ferrule (see above) |
+| J2.2 | OUT (pulled low = ON) | heater SSR **4 (−)** input | |
+| J2.3 | GND | — | Unused. Cut back and insulate |
+| J3.1 | +5 V | pump SSR **+** input tab | Insulated 22-18 female 6.3 mm receptacle, strands folded |
+| J3.2 | OUT | pump SSR **−** input tab | |
+| J3.3 | GND | — | Unused |
+| J8.1 | +5 V | relay **A1 (+)** | Coil ≈ 38 mA at 5 V (distributor listing; datasheet UNVERIFIED) |
+| J8.2 | OUT | relay **A2 (−)** | Polarity matters: the module has an LED and a suppression diode |
+| J8.3 | GND | — | Unused |
+| J7.1 | BREW | brew switch, terminal **C.1** | Insulated 22-18 female receptacle |
+| J7.2 | STEAM | steam switch, terminal **S.4** | |
+| J7.3 | GND | brew switch **C.2** *and* steam switch **S.5** | Splice the one GND lead into two short tails (solder + heat-shrink). C.1/C.2 and S.4/S.5 are the pole positions GaggiMate uses for its LV button wires; **UNSURE** for your switch: check with a meter that each pair closes when its switch is pressed |
+| J5.1 | NTC | thermistor lead | No polarity. Solder + heat-shrink, with the joint well away from the boiler. Firmware: R25 = 100 kΩ, **B = 4267 K** for the Trianglelab/Semitec 104NT-4 (BUY.md §10a) |
+| J5.2 | GND | thermistor lead | |
+| J5.3 | — | — | Unused |
+| J6.1 | +5 V | transducer supply (often red) | **Check the transducer's colours with a meter**: the listing gives no pinout |
+| J6.2 | signal | transducer output (often green or yellow) | 0.5 V at 0 bar |
+| J6.3 | GND | transducer ground (often black) | |
+| J4 | USB-C | flashing / bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
+| U4 | W.FL / MHF III | 15 cm MHF3→RP-SMA pigtail + 2 dBi RP-SMA antenna (BUY.md §11), ≤ 2.33 dBi | Mount the RP-SMA jack in a plastic part, or through the steel case with the antenna outside it. Don't force the MHF3 plug onto the W.FL socket |
+
+## Checks before mains (multimeter, machine unplugged)
+
+1. **Supply input:** across RECOM brown and blue (through the fuse), expect a high reading (several kΩ or more), not a short.
+2. **Heater SSR open:** the 1/L1–2/T1 load terminals read open or very high on the Ω range.
+3. **Heater circuit intact:** temporarily short the two brew-thermostat wires (SSR out of circuit). From C.4 through the heater to neutral you should now read the heater's ~10 Ω. Remove the short afterwards. If it reads open, a parked wire (e.g. S.4) was part of the heater path. Stop and re-check against GaggiMate's diagram before going further.
+4. **Pump SSR and relay open:** pump SSR load tabs open; relay 11–14 open, 11–12 closed.
+5. **Isolation:** no continuity from any mains wire, SSR load terminal or relay contact to:
+   - J1–J8 pins;
+   - the RECOM red/black leads;
+   - the switch dry contacts.
+   No continuity from any mains wire to the chassis.
+6. **Earth:** chassis to the plug's earth pin < 0.5 Ω.
+7. **Switches:** J7.1–J7.3 closes when brew is pressed; J7.2–J7.3 closes when steam is pressed.
+8. **Thermistor:** before fitting it, ~100 kΩ between its two leads at room temperature (25 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
+
+## First power-on
+
+Follow INSTALL.md §6:
+1. The SSR LEDs should be off at power-on. The board should boot from the RECOM output (≈ 5.0 V at J1).
+2. Then command the heater, pump and valve one at a time, briefly, and watch each SSR/relay LED.
+3. Listen for pump hum while the pump is "off". The EZ240D5's 0.1 mA leakage should give none. If the pump hums, something is bypassing the SSR.

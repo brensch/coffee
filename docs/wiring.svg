@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1180" viewBox="0 0 1500 1180" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <title>Coffee controller v7 wiring (US Gaggia Classic Pro, 120 V)</title>
+  <defs>
+    <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2.5" fill="#222"/></marker>
+  </defs>
+  <style>
+    .box { fill: #ffffff; stroke: #333; stroke-width: 1.5; }
+    .mach { fill: #fff8ec; stroke: #9a6b2f; stroke-width: 1.5; }
+    .mod { fill: #eef4ff; stroke: #2b4f8a; stroke-width: 1.5; }
+    .brd { fill: #eefaf0; stroke: #2c7a3c; stroke-width: 2; }
+    .conn { fill: #ffffff; stroke: #2c7a3c; stroke-width: 1.5; }
+    .t { fill: #111; }
+    .s { fill: #444; font-size: 11px; }
+    .h { font-weight: bold; font-size: 14px; }
+    .L { fill: none; stroke: #8b3a0e; stroke-width: 4.5; stroke-linejoin: round; }
+    .N { fill: none; stroke: #1f5fbf; stroke-width: 4.5; stroke-linejoin: round; }
+    .H { fill: none; stroke: #c0392b; stroke-width: 5.5; stroke-linejoin: round; }
+    .ex { fill: none; stroke: #999; stroke-width: 2; stroke-dasharray: 2 4; }
+    .lv { fill: none; stroke: #1e8449; stroke-width: 2.2; stroke-dasharray: 7 4; stroke-linejoin: round; }
+    .lab { font-size: 11px; fill: #222; }
+    .labL { font-size: 11px; fill: #8b3a0e; font-weight: bold; }
+    .labN { font-size: 11px; fill: #1f5fbf; font-weight: bold; }
+    .labH { font-size: 11px; fill: #c0392b; font-weight: bold; }
+    .labV { font-size: 11px; fill: #1e8449; }
+    .warn { fill: #fff3cd; stroke: #b8860b; stroke-width: 1.2; }
+  </style>
+
+  <rect x="0" y="0" width="1500" height="1180" fill="#fbfbf8"/>
+
+  <text x="30" y="34" class="t" font-size="20" font-weight="bold">Coffee controller v7: off-board wiring, US Gaggia Classic Pro (120 V / 60 Hz)</text>
+  <text x="30" y="56" class="s">Board is low-voltage only. Certified modules switch mains. Thick solid lines = MAINS (brown = live, blue = neutral, red = heater current). Thin dashed green = 5 V low-voltage cables (JST GH 3-pin). Dotted grey = existing machine wiring, left alone.</text>
+
+  <!-- ===================== MACHINE SIDE ===================== -->
+  <text x="40" y="88" class="h">Machine side (stock harness)</text>
+
+  <rect x="40" y="100" width="270" height="52" class="mach"/>
+  <text x="50" y="120" class="t">IEC inlet → power (ON/OFF) switch</text>
+  <text x="50" y="138" class="s">earth stays on chassis; nothing changed here</text>
+
+  <rect x="40" y="172" width="270" height="48" class="mach"/>
+  <text x="50" y="191" class="t">Brew switch: wire C.4 (brown)</text>
+  <text x="50" y="208" class="s">unplug from switch → this is switched L (verify)</text>
+
+  <rect x="40" y="240" width="270" height="48" class="mach"/>
+  <text x="50" y="259" class="t">Steam switch: wire S.5 (white)</text>
+  <text x="50" y="276" class="s">unplug from switch → this is N (as GaggiMate)</text>
+
+  <rect x="40" y="318" width="270" height="62" class="mach"/>
+  <text x="50" y="337" class="t">Brew-thermostat wires (2 spades)</text>
+  <text x="50" y="354" class="s">US diagram: white + black. Thermostat removed,</text>
+  <text x="50" y="369" class="s">NTC probe goes in its hole.</text>
+
+  <rect x="40" y="400" width="270" height="70" class="mach"/>
+  <text x="50" y="419" class="t">Heater circuit, UNTOUCHED, in series:</text>
+  <text x="50" y="436" class="s">thermal fuse 184 °C, steam thermostat 145 °C,</text>
+  <text x="50" y="451" class="s">heater elements (~1425 W). Their wiring stays</text>
+  <text x="50" y="465" class="s">exactly as it is.</text>
+
+  <rect x="40" y="505" width="270" height="70" class="mach"/>
+  <text x="50" y="524" class="t">Pump (Ulka EX5, internal diode)</text>
+  <text x="50" y="541" class="s">live tab: grey wire PMP.B unplugged, new wire here</text>
+  <text x="50" y="556" class="s">white (neutral side, via pump thermal fuse):</text>
+  <text x="50" y="570" class="s">stays where it is</text>
+
+  <rect x="40" y="600" width="270" height="62" class="mach"/>
+  <text x="50" y="619" class="t">3-way solenoid valve</text>
+  <text x="50" y="636" class="s">live = the grey PMP.B wire (free end, female)</text>
+  <text x="50" y="651" class="s">neutral stays where it is</text>
+
+  <rect x="40" y="765" width="270" height="48" class="mach"/>
+  <text x="50" y="784" class="t">Brew switch, dry contact (C.1 / C.2)</text>
+  <text x="50" y="801" class="s">ALL mains wires removed from this switch</text>
+
+  <rect x="40" y="833" width="270" height="48" class="mach"/>
+  <text x="50" y="852" class="t">Steam switch, dry contact (S.4 / S.5)</text>
+  <text x="50" y="869" class="s">ALL mains wires removed from this switch</text>
+
+  <rect x="40" y="905" width="270" height="48" class="mach"/>
+  <text x="50" y="924" class="t">NTC 100 kΩ probe (Semitec 104NT, B 4267)</text>
+  <text x="50" y="941" class="s">in the brew-thermostat hole, hand-tight</text>
+
+  <rect x="40" y="970" width="270" height="48" class="mach"/>
+  <text x="50" y="989" class="t">Pressure transducer 0–1.6 MPa</text>
+  <text x="50" y="1006" class="s">G1/4 on the pump-outlet T</text>
+
+  <!-- existing wiring hints -->
+  <path class="ex" d="M 175 152 L 175 172"/>
+  <path class="ex" d="M 25 126 L 25 264 L 40 264"/>
+  <path class="ex" d="M 25 126 L 40 126"/>
+  <path class="ex" d="M 175 380 L 175 400"/>
+  <text x="185" y="394" class="s">series (existing)</text>
+
+  <!-- ===================== MODULES ===================== -->
+  <text x="430" y="88" class="h">Off-board modules (mains side)</text>
+
+  <rect x="430" y="168" width="130" height="56" class="mod"/>
+  <text x="440" y="188" class="t">WAGO 221-415</text>
+  <text x="440" y="205" class="labL">L junction</text>
+  <text x="440" y="218" class="s">5 ports</text>
+
+  <rect x="430" y="240" width="130" height="50" class="mod"/>
+  <text x="440" y="260" class="t">WAGO 221-415</text>
+  <text x="440" y="277" class="labN">N junction</text>
+
+  <rect x="640" y="104" width="150" height="40" class="mod"/>
+  <text x="650" y="122" class="t">Fuse holder 5×20</text>
+  <text x="650" y="137" class="s">1 A slow-blow (T1A)</text>
+
+  <rect x="640" y="168" width="170" height="124" class="mod"/>
+  <text x="650" y="188" class="t" font-weight="bold">5 V supply</text>
+  <text x="650" y="204" class="s">RECOM RAC05-05SK/277/W</text>
+  <text x="650" y="222" class="labL">brown = L in</text>
+  <text x="650" y="260" class="labN">blue = N in</text>
+  <text x="730" y="222" class="s">red = +5 V</text>
+  <text x="730" y="240" class="s">black = 0 V</text>
+  <text x="650" y="282" class="s">flying leads, 18 AWG</text>
+
+  <rect x="640" y="318" width="170" height="122" class="mod"/>
+  <text x="650" y="338" class="t" font-weight="bold">Heater SSR</text>
+  <text x="650" y="354" class="s">Schneider SSP1A125BDT</text>
+  <text x="650" y="369" class="s">on Auber HS25ET heatsink</text>
+  <text x="650" y="390" class="labH">load 1/L1, 2/T1 (AC)</text>
+  <text x="650" y="410" class="s">input 3 (+), 4 (−)</text>
+  <text x="650" y="430" class="s">25 A, zero-cross, 3–32 V DC in</text>
+
+  <rect x="640" y="492" width="170" height="108" class="mod"/>
+  <text x="650" y="512" class="t" font-weight="bold">Pump SSR</text>
+  <text x="650" y="528" class="s">Crydom EZ240D5 (no snubber)</text>
+  <text x="650" y="548" class="labL">load tabs (AC, 6.3 mm)</text>
+  <text x="650" y="568" class="s">input + / − (6.3 mm tabs)</text>
+  <text x="650" y="588" class="s">bolt to chassis, 8-32</text>
+
+  <rect x="640" y="630" width="170" height="112" class="mod"/>
+  <text x="650" y="650" class="t" font-weight="bold">Valve relay (DIN rail)</text>
+  <text x="650" y="666" class="s">Phoenix PLC-RSC-5DC/21</text>
+  <text x="650" y="686" class="labL">11 = COM, 14 = NO</text>
+  <text x="650" y="706" class="s">(12 = NC, leave empty)</text>
+  <text x="650" y="726" class="s">coil A1 (+), A2 (−)</text>
+
+  <!-- ===================== BOARD ===================== -->
+  <rect x="1050" y="90" width="300" height="940" class="brd"/>
+  <text x="1064" y="118" class="h">Controller board v7</text>
+  <text x="1064" y="136" class="s">low voltage only, in its printed enclosure</text>
+  <text x="1064" y="152" class="s">J4 USB-C: flashing / bench power</text>
+
+  <rect x="1240" y="38" width="185" height="44" class="box"/>
+  <text x="1258" y="57" class="s">U4 ESP32-C6-MINI-1U: W.FL /</text>
+  <text x="1258" y="71" class="s">MHF III antenna, ≤ 2.33 dBi</text>
+  <path d="M 1300 80 L 1300 90" stroke="#555" stroke-width="2"/>
+
+  <!-- connectors -->
+  <rect x="1050" y="210" width="122" height="56" class="conn"/>
+  <text x="1058" y="228" class="t" font-weight="bold">J1 5V in</text>
+  <text x="1058" y="244" class="s">1 +5V, 2 GND</text>
+  <text x="1058" y="258" class="s">3 GND</text>
+
+  <rect x="1050" y="350" width="122" height="56" class="conn"/>
+  <text x="1058" y="368" class="t" font-weight="bold">J2 Heater</text>
+  <text x="1058" y="384" class="s">1 +5V, 2 OUT</text>
+  <text x="1058" y="398" class="s">3 GND (unused)</text>
+
+  <rect x="1050" y="520" width="122" height="56" class="conn"/>
+  <text x="1058" y="538" class="t" font-weight="bold">J3 Pump</text>
+  <text x="1058" y="554" class="s">1 +5V, 2 OUT</text>
+  <text x="1058" y="568" class="s">3 GND (unused)</text>
+
+  <rect x="1050" y="660" width="122" height="56" class="conn"/>
+  <text x="1058" y="678" class="t" font-weight="bold">J8 Valve</text>
+  <text x="1058" y="694" class="s">1 +5V, 2 OUT</text>
+  <text x="1058" y="708" class="s">3 GND (unused)</text>
+
+  <rect x="1050" y="790" width="122" height="56" class="conn"/>
+  <text x="1058" y="808" class="t" font-weight="bold">J7 Switches</text>
+  <text x="1058" y="824" class="s">1 BREW, 2 STEAM</text>
+  <text x="1058" y="838" class="s">3 GND</text>
+
+  <rect x="1050" y="890" width="122" height="50" class="conn"/>
+  <text x="1058" y="908" class="t" font-weight="bold">J5 Thermistor</text>
+  <text x="1058" y="924" class="s">1 NTC, 2 GND, 3 n/c</text>
+
+  <rect x="1050" y="960" width="122" height="56" class="conn"/>
+  <text x="1058" y="978" class="t" font-weight="bold">J6 Pressure</text>
+  <text x="1058" y="994" class="s">1 +5V, 2 SIG</text>
+  <text x="1058" y="1008" class="s">3 GND</text>
+
+  <!-- ===================== MAINS WIRES ===================== -->
+  <!-- C.4 brown into L junction -->
+  <path class="L" d="M 310 196 L 430 196"/>
+  <text x="318" y="189" class="labL">L (C.4)</text>
+  <!-- S.5 white into N junction -->
+  <path class="N" d="M 310 264 L 430 264"/>
+  <text x="318" y="257" class="labN">N (S.5)</text>
+
+  <!-- L junction to fuse -> PSU -->
+  <path class="L" d="M 560 180 L 610 180 L 610 124 L 640 124"/>
+  <path class="L" d="M 715 144 L 715 168"/>
+  <text x="722" y="160" class="labL">brown lead</text>
+  <!-- N junction to PSU blue -->
+  <path class="N" d="M 560 264 L 640 264"/>
+
+  <!-- L junction to pump SSR -->
+  <path class="L" d="M 560 198 L 596 198 L 596 538 L 640 538"/>
+  <!-- L junction to relay COM -->
+  <path class="L" d="M 560 214 L 582 214 L 582 682 L 640 682"/>
+  <text x="430" y="112" class="labL">L junction feeds (18 AWG):</text>
+  <text x="430" y="126" class="labL">fuse → PSU, pump SSR,</text>
+  <text x="430" y="140" class="labL">relay 11 (COM)</text>
+
+  <!-- heater: brew-thermostat spade wires to SSR load -->
+  <path class="H" d="M 310 340 L 470 340 L 470 384 L 640 384"/>
+  <path class="H" d="M 310 362 L 455 362 L 455 400 L 640 400"/>
+  <text x="318" y="333" class="labH">16 AWG, male tab ↔ #8 fork</text>
+  <text x="472" y="378" class="labH">to 1/L1</text>
+  <text x="472" y="414" class="labH">to 2/T1</text>
+
+  <!-- pump SSR second load tab to pump live tab -->
+  <path class="L" d="M 640 556 L 380 556 L 380 540 L 310 540"/>
+  <text x="388" y="572" class="labL">pump live, 18 AWG</text>
+
+  <!-- relay NO to valve grey wire -->
+  <path class="L" d="M 640 700 L 360 700 L 360 632 L 310 632"/>
+  <text x="368" y="716" class="labL">valve live: 14 (NO) → grey PMP.B</text>
+
+  <!-- ===================== LOW-VOLTAGE WIRES ===================== -->
+  <!-- PSU to J1 -->
+  <path class="lv" d="M 810 232 L 1050 232"/>
+  <text x="822" y="225" class="labV">red → J1.1 (+5V), black → J1.2 + J1.3 (GND)</text>
+  <text x="822" y="248" class="labV">solder + heat-shrink to the GH lead</text>
+
+  <!-- J2 to heater SSR input -->
+  <path class="lv" d="M 1050 378 L 810 378"/>
+  <text x="822" y="371" class="labV">J2.1 +5V → SSR 3 (+)</text>
+  <text x="822" y="395" class="labV">J2.2 OUT → SSR 4 (−)</text>
+
+  <!-- J3 to pump SSR input -->
+  <path class="lv" d="M 1050 548 L 810 548"/>
+  <text x="822" y="541" class="labV">J3.1 +5V → EZ240D5 (+)</text>
+  <text x="822" y="565" class="labV">J3.2 OUT → EZ240D5 (−)</text>
+
+  <!-- J8 to relay coil -->
+  <path class="lv" d="M 1050 688 L 810 688"/>
+  <text x="822" y="681" class="labV">J8.1 +5V → A1 (+)</text>
+  <text x="822" y="705" class="labV">J8.2 OUT → A2 (−)</text>
+
+  <!-- J7 to switches -->
+  <path class="lv" d="M 1050 818 L 420 818 L 420 789 L 310 789"/>
+  <path class="lv" d="M 420 818 L 420 857 L 310 857"/>
+  <text x="440" y="811" class="labV">J7.1 BREW → brew switch C.1; J7.2 STEAM → steam switch S.4;</text>
+  <text x="440" y="834" class="labV">J7.3 GND → spliced to C.2 and S.5 (other side of each contact)</text>
+
+  <!-- J5 to NTC -->
+  <path class="lv" d="M 1050 915 L 330 915 L 330 929 L 310 929"/>
+  <text x="440" y="908" class="labV">J5.1 NTC, J5.2 GND (no polarity), J5.3 unused</text>
+
+  <!-- J6 to transducer -->
+  <path class="lv" d="M 1050 988 L 310 988"/>
+  <text x="440" y="981" class="labV">J6.1 +5V → transducer supply, J6.2 → signal, J6.3 → GND (check colours with a meter)</text>
+
+  <!-- ===================== LEGEND / NOTES ===================== -->
+  <rect x="30" y="1040" width="1440" height="128" class="warn"/>
+  <path class="L" d="M 45 1062 L 95 1062"/><text x="104" y="1066" class="lab">mains live (switched L)</text>
+  <path class="N" d="M 45 1084 L 95 1084"/><text x="104" y="1088" class="lab">mains neutral</text>
+  <path class="H" d="M 45 1106 L 95 1106"/><text x="104" y="1110" class="lab">heater current, ~12 A (16 AWG)</text>
+  <path class="lv" d="M 45 1128 L 95 1128"/><text x="104" y="1132" class="lab">5 V low voltage, JST GH 3-pin lead</text>
+  <path class="ex" d="M 45 1150 L 95 1150"/><text x="104" y="1154" class="lab">existing machine wiring (unchanged)</text>
+  <text x="330" y="1066" class="lab">• Mains and low-voltage leads never share a terminal, a switch or a cable tie. Keep the 5 V leads ≥ 6 mm from bare mains parts and away from the boiler.</text>
+  <text x="330" y="1086" class="lab">• Heater SSR replaces the brew thermostat only. Thermal fuse and steam thermostat stay in series: they still cut the heater if the SSR fails shorted.</text>
+  <text x="330" y="1106" class="lab">• Pump and valve neutrals stay where they are. Chassis earth stays as built; the heatsink and SSR baseplates are bonded to the chassis by their mounting screws.</text>
+  <text x="330" y="1126" class="lab">• UNVERIFIED on a real US machine: that C.4 (brown) is live only after the power switch, and S.5 (white) is neutral. Check both with a meter before connecting.</text>
+  <text x="330" y="1146" class="lab">• SSR and relay terminal numbers are as printed on each housing (typical numbers shown). Go by the housing markings if they differ.</text>
+</svg>

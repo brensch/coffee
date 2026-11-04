@@ -282,7 +282,7 @@ impl Default for Thermistor {
         Self {
             tau_s: 3.0,
             r25_ohm: 100_000.0,
-            beta: 3950.0,
+            beta: 4267.0,   // Semitec 104NT-4 glass bead (Trianglelab M4 probe, docs/BUY.md)
             r_ref_ohm: 8200.0,
             v_ref_mv: 3300.0,
             offset_c: 0.0,

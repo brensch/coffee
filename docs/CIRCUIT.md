@@ -70,7 +70,7 @@ Notes per part:
 ### Sensors
 | Input | Parts | Notes |
 |---|---|---|
-| Thermistor, J5 → GPIO1 (ADC1) | R15 8.2k to 3V3, C8 100 nF | 100 kΩ B3950 probe in the brew-thermostat hole. 1.68 V at 93 °C, 24 mV/°C there |
+| Thermistor, J5 → GPIO1 (ADC1) | R15 8.2k to 3V3, C8 100 nF | 100 kΩ probe (Semitec 104NT glass bead, B 4267; firmware default) in the brew-thermostat hole. 1.52 V at 93 °C, 26 mV/°C there |
 | Pressure, J6 → GPIO0 (ADC1) | R16 10k / R17 20k divider, C9 100 nF | 0.5–4.5 V ratiometric transducer on +5 V. 4.5 V → 2.97 V; −3 dB at 233 Hz keeps the pump's 60 Hz pulses |
 | Switches, J7 → GPIO6/7 | R20/R21 4.7k pull-ups, R18/R19 1k series | the stock brew/steam switches as dry contacts. 0.7 mA wetting current; a 5 V plug in the wrong socket pushes ~1.7 mA into a clamp diode |
 | Rail sense → GPIO2/3 | R22/R23 (3V3/2), R24/R25 (5V/3), C10, C11 | the ADC measures absolute volts; measuring both rails lets the firmware divide them out (ratiometric) |
@@ -140,5 +140,5 @@ The models are behavioural and fitted to datasheet values, so the point is the m
 - **D2 orientation:** check it in JLC's placement preview. EasyEDA's API refused this machine when D2 was added, so its rotation came from the same-package 1N4148W record.
 - **Pump SSR on the real pump:** on the first install, count strokes and listen for hum while it's off. This is the one module behaviour not verified against the Ulka's half-wave diode load.
 - **Valve coil:** read its label to confirm the current (expected 80–150 mA; the relay's contacts have huge margin).
-- **Thermistor:** if the probe bought has a B value other than 3950, set it in the firmware; the two-point calibration removes the rest.
+- **Thermistor:** the firmware default B is 4267 (the Semitec 104NT probe in BUY.md); a different probe needs its B set. The two-point calibration removes the rest.
 - **First article:** bench bring-up on USB (INSTALL.md §3) before anything touches the machine.

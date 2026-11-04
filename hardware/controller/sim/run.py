@@ -161,7 +161,7 @@ meas tran v33min MIN v(v33) from=1m to=20m
 
 
 # --------------------------------------------------------------- 6. thermistor input
-def ntc_r(t_c, r25=100e3, beta=3950.0):
+def ntc_r(t_c, r25=100e3, beta=4267.0):   # Semitec 104NT (docs/BUY.md)
     return r25 * 2.718281828459045 ** (beta * (1 / (t_c + 273.15) - 1 / 298.15))
 
 
@@ -170,7 +170,7 @@ def ntc_v(t_c, rref=8.2e3, vref=3.3, **kw):
     return vref * r / (r + rref)
 
 
-def ntc_from_v(v, rref=8.2e3, vref=3.3, r25=100e3, beta=3950.0):
+def ntc_from_v(v, rref=8.2e3, vref=3.3, r25=100e3, beta=4267.0):
     import math
     r = rref * v / (vref - v)
     return 1 / (1 / 298.15 + math.log(r / r25) / beta) - 273.15
@@ -214,7 +214,7 @@ def main():
     check("Pressure filter", "60 Hz pump ripple", g60, "> -1 dB (the pulses stay visible to firmware)", g60 > -1.0, "dB")
     kick = 3.0 * 10e-12 / 100e-9 * 1e3   # 10 pF sampling cap charge-sharing with the 100 nF reservoir
     check("Pressure ADC kick-back", "10 pF sample cap vs 100 nF", kick, "< 0.8 mV (1 LSB of 12 bits over 3.3 V)", kick < 0.8, "mV")
-    # 5. thermistor (100k B3950 to GND, 8.2k 1% to 3V3)
+    # 5. thermistor (100k B4267 to GND, 8.2k 1% to 3V3)
     for t in (20.0, 93.0, 125.0, 150.0):
         vt = ntc_v(t)
         check("Thermistor divider voltage", f"{t:.0f} C", vt, "0.15-3.15 V (inside the ADC's usable range)", 0.15 <= vt <= 3.15, "V")
@@ -226,8 +226,8 @@ def main():
     p = (3.3 / (8.2e3 + r93)) ** 2 * r93 * 1e3
     err = p / 1.5   # free-air dissipation constant 1.5 mW/C: worst case (a probe in brass sinks far better)
     check("Thermistor self-heating", f"93 C, {p:.2f} mW", err, "< 0.5 C worst case (constant, so the boiling-water calibration point cancels it)", err < 0.5, "C")
-    worst = max(abs(ntc_from_v(ntc_v(93.0, r25=r25, beta=b)) - 93.0) for r25 in (99e3, 101e3) for b in (3910.0, 3990.0))
-    check("Thermistor error before calibration", "93 C, R25 +-1 %, B +-1 %", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
+    worst = max(abs(ntc_from_v(ntc_v(93.0, r25=r25, beta=b)) - 93.0) for r25 in (99e3, 101e3) for b in (4182.0, 4352.0))
+    check("Thermistor error before calibration", "93 C, R25 +-1 %, B +-2 %", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
     r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=8.2e3 * 1.01)) - 93.0)
     check("Thermistor error from the reference resistor", "93 C, 1 % resistor", r_ref_err, "< 0.5 C before calibration (the boiling-water point removes it)", r_ref_err < 0.5, "C")
     gain = (20 * 1.01 / (20 * 1.01 + 10 * 0.99)) / (20 / 30) - 1

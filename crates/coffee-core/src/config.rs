@@ -136,7 +136,7 @@ pub struct NtcConfig {
     /// Node above this => open thermistor / broken wire (pulled to 3.3 V).
     /// The firmware rescales the node to the measured 3.3 V rail, so an open
     /// thermistor reads 3300 mV within the ADC's ratio error (~±15 mV); 0 C is
-    /// 3221 mV and -5 C ~3240 mV for a 100k B3950, so 3270 mV separates them.
+    /// 3221 mV and -5 C ~3246 mV for a 100k B4267 (~3240 for B3950), so 3270 mV separates them.
     pub open_mv: f32,
     /// Node below this => shorted thermistor / wire to GND. 100 mV is ~230 C,
     /// far above anything the boiler can reach.
@@ -153,7 +153,7 @@ impl Default for NtcConfig {
             r_ref_ohm: 8200.0,
             v_ref_mv: 3300.0,
             r25_ohm: 100_000.0,
-            beta: 3950.0,
+            beta: 4267.0,   // Semitec 104NT-4 glass bead (Trianglelab M4 probe, docs/BUY.md)
             steinhart_hart: None,
             cal_gain: 1.0,
             cal_offset_c: 0.0,

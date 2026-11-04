@@ -48,14 +48,14 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Pressure filter | 60 Hz pump ripple | -0.355 dB | > -1 dB (the pulses stay visible to firmware) | ✅ |
 | Pressure ADC kick-back | 10 pF sample cap vs 100 nF | 0.3 mV | < 0.8 mV (1 LSB of 12 bits over 3.3 V) | ✅ |
 | Thermistor divider voltage | 20 C | 3.1 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 93 C | 1.68 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 125 C | 1 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 150 C | 0.646 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor sensitivity | 93 C | 24.3 mV/C | > 10 mV/C (0.008 C per oversampled LSB) | ✅ |
-| Thermistor sensitivity | 140 C | 13.7 mV/C | > 10 mV/C (0.015 C per oversampled LSB) | ✅ |
-| Thermistor self-heating | 93 C, 0.33 mW | 0.221 C | < 0.5 C worst case (constant, so the boiling-water calibration point cancels it) | ✅ |
-| Thermistor error before calibration | 93 C, R25 +-1 %, B +-1 % | 1.19 C | info: the 2-point calibration (room + boiling water) removes this | ✅ |
-| Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.338 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
+| Thermistor divider voltage | 93 C | 1.52 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
+| Thermistor divider voltage | 125 C | 0.828 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
+| Thermistor divider voltage | 150 C | 0.498 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
+| Thermistor sensitivity | 93 C | 26.1 mV/C | > 10 mV/C (0.008 C per oversampled LSB) | ✅ |
+| Thermistor sensitivity | 140 C | 12.4 mV/C | > 10 mV/C (0.016 C per oversampled LSB) | ✅ |
+| Thermistor self-heating | 93 C, 0.33 mW | 0.22 C | < 0.5 C worst case (constant, so the boiling-water calibration point cancels it) | ✅ |
+| Thermistor error before calibration | 93 C, R25 +-1 %, B +-2 % | 1.99 C | info: the 2-point calibration (room + boiling water) removes this | ✅ |
+| Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.313 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
 | Pressure gain error from 1 % divider resistors | worst-case ratio | 0.0598 bar | < 0.15 bar at 9 bar (zero is calibrated at power-up) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | PSU 5.0 V | 4.87 V | >= 4.2 V (pressure transducer) | ✅ |
