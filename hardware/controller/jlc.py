@@ -18,6 +18,7 @@ import csv
 import json
 import os
 import re
+import sys
 import time
 import urllib.request
 
@@ -78,6 +79,8 @@ def norm_value(v):
 
 
 BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
+# JLC's part models whose zero orientation differs from KiCad's footprint (checked in JLC's preview)
+ROT_FIX = {"J4": 180}   # USB4105: JLC's model faces the other way
 FIXED = {"LED_0603|green": "C12624", "SOT-223|TLV1117LV33": "C15578"}   # genuine TI part (another listing claims 12 V / 1.2 V dropout: a clone)   # KT-0603G green 0603 LED (my remembered C72043 is out of stock)
 
 
@@ -179,8 +182,9 @@ def main():
             p = pos.get(ref)
             if p:
                 x, y = centre.get(ref, (float(p['PosX']), float(p['PosY'])))
+                rot = (float(p['Rot']) + ROT_FIX.get(ref, 0)) % 360
                 w.writerow([ref, f"{x:.3f}mm", f"{y:.3f}mm",
-                            "Top" if p["Side"].lower().startswith("top") else "Bottom", f"{float(p['Rot']):.0f}"])
+                            "Top" if p["Side"].lower().startswith("top") else "Bottom", f"{rot:.0f}"])
     with open(os.path.join(out, "report.md"), "w") as f:
         f.write(f"# JLCPCB parts, {a.mains} V board\n\n"
                 "Looked up live in JLCPCB's library. 'base' = basic part (no setup fee), 'expand' = extended "
@@ -188,6 +192,12 @@ def main():
                 "orientations differ between KiCad and JLC for some packages (SOT-223, USB-C, the ESP32 module).\n\n"
                 "| Refs | Value | JLC part | LCSC | library | stock | who |\n|---|---|---|---|---|---|---|\n")
         f.write("\n".join(report) + "\n")
+    # the CPL is then re-solved against JLC's own footprints (jlc_cpl.py): angles and positions proven
+    import subprocess
+    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_cpl.py")], capture_output=True, text=True)
+    print(r.stdout.strip().splitlines()[-1] if r.stdout else r.stderr[-500:])
+    if r.returncode:
+        raise SystemExit("CPL check failed: see jlc_cpl.py output")
     print(f"wrote {out}: {len(smd)} SMD lines, {len(hand)} hand-solder lines, "
           f"{sum(1 for r in report if 'NO MATCH' in r)} unmatched")
 

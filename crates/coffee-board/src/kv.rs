@@ -2,8 +2,11 @@
 //!
 //! The storage partition holds a `sequential-storage` map (wear-levelled, power-
 //! loss safe) keyed by strings. Values longer than one flash page are split into
-//! chunks: the first record is `[n_chunks: u8][data]`, the rest live under
-//! `"{key}\x01{i}"`. An empty record is a tombstone.
+//! chunks. The head record, `[n_chunks: u8][generation: u32][crc32: u32][chunk 0]`, is
+//! written last and is the commit: chunks 1.. live under `"{key}\x01{generation}\x01{i}"`,
+//! so a power cut mid-write leaves the previous generation intact and readable.
+//! Reads check the CRC over the whole value and return nothing rather than a torn
+//! or corrupted value. An empty record is a tombstone.
 //!
 //! Writes never touch flash directly. `Storage::save` only updates a RAM map of
 //! dirty keys, so the node can save from inside the control loop at no cost.
@@ -14,6 +17,8 @@
 //! When the map fills up, the oldest persisted shot is evicted and the write
 //! retried; shots are the only thing that grows without bound.
 
+#[cfg(test)]
+extern crate std;
 use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::format;
 use alloc::string::{String, ToString};
@@ -28,9 +33,25 @@ use sequential_storage::map::{MapConfig, MapStorage};
 pub const CHUNK: usize = 3584;
 const BUF: usize = 4096;
 const SEP: char = '\u{1}';
+const HEAD: usize = 9; // n_chunks + generation + crc32
+
+fn crc32(data: &[u8]) -> u32 {
+    let mut c = 0xFFFF_FFFFu32;
+    for &b in data {
+        c ^= b as u32;
+        for _ in 0..8 {
+            c = if c & 1 != 0 { (c >> 1) ^ 0xEDB8_8320 } else { c >> 1 };
+        }
+    }
+    !c
+}
 /// Persisted shots kept before the oldest is evicted.
 pub const KEEP_SHOTS: usize = 60;
 const SHOT_PREFIX: &str = "shots/";
+
+fn chunk_key(key: &str, generation: u32, i: usize) -> String {
+    format!("{key}{SEP}{generation:08x}{SEP}{i}")
+}
 
 /// Blocking `NorFlash` seen through the async traits `sequential-storage` wants.
 /// Every call completes immediately, so `block_on` drives it.
@@ -115,13 +136,25 @@ where
             dirty: BTreeMap::new(),
             keys: BTreeSet::new(),
         };
-        match kv.index() {
-            Ok(()) => {}
-            Err(KvError::Corrupted) => {
-                embassy_futures::block_on(kv.m().erase_all()).map_err(map_err)?;
-                kv.keys.clear();
+        // A power cut mid-write or mid-erase leaves a page half done. Listing all items doesn't
+        // run sequential-storage's repair, but a single fetch does: so on "corrupted", let a fetch
+        // repair the map and list again. Only a map that is still corrupted after repair (real
+        // flash damage) is erased, and then the machine keeps working with default settings.
+        let mut tries = 0;
+        loop {
+            match kv.index() {
+                Ok(()) => break,
+                Err(KvError::Corrupted) if tries < 3 => {
+                    tries += 1;
+                    let _ = kv.fetch_raw("\u{2}repair");
+                }
+                Err(KvError::Corrupted) => {
+                    embassy_futures::block_on(kv.m().erase_all()).map_err(map_err)?;
+                    kv.keys.clear();
+                    break;
+                }
+                Err(e) => return Err(e),
             }
-            Err(e) => return Err(e),
         }
         Ok(kv)
     }
@@ -182,13 +215,24 @@ where
         if let Some(d) = self.dirty.get(key) {
             return d.clone();
         }
+        self.read_value(key)
+    }
+
+    /// Read a committed value from flash: the head names its generation and CRC; a missing
+    /// chunk or a CRC mismatch means "no value" (never a torn one).
+    fn read_value(&mut self, key: &str) -> Option<Vec<u8>> {
         let head = self.fetch_raw(key).ok()??;
-        let (&n, first) = head.split_first()?;
-        let mut out = first.to_vec();
-        for i in 1..n as usize {
-            out.extend(self.fetch_raw(&format!("{key}{SEP}{i}")).ok()??);
+        if head.len() < HEAD {
+            return None;
         }
-        Some(out)
+        let n = head[0] as usize;
+        let generation = u32::from_le_bytes(head[1..5].try_into().ok()?);
+        let crc = u32::from_le_bytes(head[5..9].try_into().ok()?);
+        let mut out = head[HEAD..].to_vec();
+        for i in 1..n {
+            out.extend(self.fetch_raw(&chunk_key(key, generation, i)).ok()??);
+        }
+        (crc32(&out) == crc).then_some(out)
     }
 
     /// Queue a write. Takes effect for `get`/`list` at once, on flash at the next flush.
@@ -218,7 +262,7 @@ where
         };
         let r = match &val {
             Some(data) => self.write_chunks(&key, data),
-            None => self.store_raw(&key, &[]),
+            None => self.delete_value(&key),
         };
         match r {
             Ok(()) => {
@@ -245,16 +289,31 @@ where
         if chunks.len() > 255 {
             return Err(KvError::Other("value too large".into()));
         }
+        // The previous generation stays untouched until the new head (the commit) is on flash.
+        let prev = self.fetch_raw(key).ok().flatten().filter(|h| h.len() >= HEAD)
+            .map(|h| (h[0] as usize, u32::from_le_bytes([h[1], h[2], h[3], h[4]])));
+        let generation = prev.map_or(1, |(_, g)| g.wrapping_add(1));
+        let crc = crc32(data);
         for attempt in 0..4 {
             let r = (|| {
                 for (i, c) in chunks.iter().enumerate().skip(1) {
-                    self.store_raw(&format!("{key}{SEP}{i}"), c)?;
+                    self.store_raw(&chunk_key(key, generation, i), c)?;
                 }
-                let mut head = Vec::with_capacity(chunks[0].len() + 1);
+                let mut head = Vec::with_capacity(chunks[0].len() + HEAD);
                 head.push(chunks.len() as u8);
+                head.extend_from_slice(&generation.to_le_bytes());
+                head.extend_from_slice(&crc.to_le_bytes());
                 head.extend_from_slice(chunks[0]);
                 self.store_raw(key, &head)
             })();
+            if r.is_ok() {
+                // committed: tombstone the old generation's chunks (a crash here only leaves garbage)
+                if let Some((n, g)) = prev {
+                    for i in 1..n {
+                        let _ = self.store_raw(&chunk_key(key, g, i), &[]);
+                    }
+                }
+            }
             match r {
                 Err(KvError::Full) if attempt < 3 => {
                     if !self.evict_oldest_shot(key)? {
@@ -267,13 +326,26 @@ where
         Err(KvError::Full)
     }
 
+    /// Tombstone the head first (the value is gone from then on), then its chunks.
+    fn delete_value(&mut self, key: &str) -> Result<(), KvError> {
+        let prev = self.fetch_raw(key).ok().flatten().filter(|h| h.len() >= HEAD)
+            .map(|h| (h[0] as usize, u32::from_le_bytes([h[1], h[2], h[3], h[4]])));
+        self.store_raw(key, &[])?;
+        if let Some((n, g)) = prev {
+            for i in 1..n {
+                let _ = self.store_raw(&chunk_key(key, g, i), &[]);
+            }
+        }
+        Ok(())
+    }
+
     fn evict_oldest_shot(&mut self, except: &str) -> Result<bool, KvError> {
         let Some(old) = self.list(SHOT_PREFIX).into_iter().find(|k| k != except) else {
             return Ok(false);
         };
         self.keys.remove(&old);
         self.dirty.remove(&old);
-        self.store_raw(&old, &[])?;
+        self.delete_value(&old)?;
         Ok(true)
     }
 
@@ -282,7 +354,7 @@ where
         if shots.len() > KEEP_SHOTS {
             for k in &shots[..shots.len() - KEEP_SHOTS] {
                 self.keys.remove(k);
-                let _ = self.store_raw(k, &[]);
+                let _ = self.delete_value(k);
             }
         }
     }
@@ -436,5 +508,129 @@ mod tests {
         }
         let mut k = reopen(k, 4);
         assert_eq!(k.get("active_profile").as_deref(), Some(&b"p199"[..]));
+    }
+
+    /// RAM flash that loses power after `budget` write/erase operations: the operation in
+    /// flight is left half done (a write programs only its first half; an erase clears only
+    /// its first half), and every later operation fails, like a chip whose supply collapsed.
+    struct CutFlash {
+        f: RamFlash,
+        budget: usize,
+    }
+
+    impl ErrorType for CutFlash {
+        type Error = RamFlashError;
+    }
+
+    impl ReadNorFlash for CutFlash {
+        const READ_SIZE: usize = 1;
+        fn read(&mut self, offset: u32, bytes: &mut [u8]) -> Result<(), Self::Error> {
+            self.f.read(offset, bytes)
+        }
+        fn capacity(&self) -> usize {
+            self.f.capacity()
+        }
+    }
+
+    impl NorFlash for CutFlash {
+        const WRITE_SIZE: usize = 4;
+        const ERASE_SIZE: usize = 4096;
+        fn erase(&mut self, from: u32, to: u32) -> Result<(), Self::Error> {
+            if self.budget == 0 {
+                return Err(RamFlashError);
+            }
+            self.budget -= 1;
+            if self.budget == 0 {
+                let mid = from + (to - from) / 2;
+                self.f.data[from as usize..mid as usize].fill(0xFF);
+                return Err(RamFlashError);
+            }
+            self.f.erase(from, to)
+        }
+        fn write(&mut self, offset: u32, bytes: &[u8]) -> Result<(), Self::Error> {
+            if self.budget == 0 {
+                return Err(RamFlashError);
+            }
+            self.budget -= 1;
+            if self.budget == 0 {
+                let half = (bytes.len() / 2) & !3;
+                let _ = self.f.write(offset, &bytes[..half]);
+                return Err(RamFlashError);
+            }
+            self.f.write(offset, bytes)
+        }
+    }
+
+    fn value(tag: u8, len: usize) -> Vec<u8> {
+        (0..len).map(|i| tag.wrapping_mul(31).wrapping_add(i as u8)).collect()
+    }
+
+    /// Cut power at every single flash operation of a realistic save sequence (settings
+    /// rewritten, multi-chunk shots added past the eviction point, a delete) and check that
+    /// the store always reopens without being erased and every key reads as one of the
+    /// complete values it ever held, never a torn mix.
+    #[test]
+    fn survives_power_cut_at_every_flash_operation() {
+        const SECTORS: usize = 8;
+        // the history each key may legitimately read back as
+        let ops: Vec<(String, Option<Vec<u8>>)> = {
+            let mut v = Vec::new();
+            for i in 0..12u8 {
+                v.push(("config.json".to_string(), Some(value(i, 300 + i as usize * 40))));
+                v.push((format!("shots/{i:05}.cshot"), Some(value(100 + i, 2600 + i as usize * 900)))); // 1-2 chunks
+                if i == 6 {
+                    v.push(("shots/00002.cshot".to_string(), None));
+                }
+            }
+            v
+        };
+        // run once with no cut to count the flash operations
+        let total = {
+            let mut base = RamFlash::new(SECTORS * 4096);
+            let mut k = Kv::open(CutFlash { f: core::mem::replace(&mut base, RamFlash::new(0)), budget: usize::MAX }, 0..(SECTORS * 4096) as u32).unwrap();
+            for (key, val) in &ops {
+                match val { Some(d) => k.put(key, d), None => k.remove(key) }
+                k.flush_all().unwrap();
+            }
+            usize::MAX - k.with_flash(|f| f.budget)
+        };
+        assert!(total > 50, "only {total} flash operations");
+        let mut cuts = 0;
+        for cut in 1..=total {
+            let mut k = Kv::open(CutFlash { f: RamFlash::new(SECTORS * 4096), budget: cut }, 0..(SECTORS * 4096) as u32).unwrap();
+            let mut done = 0; // ops fully on flash before the power went
+            for (key, val) in &ops {
+                match val { Some(d) => k.put(key, d), None => k.remove(key) }
+                if k.flush_all().is_err() {
+                    break;
+                }
+                done += 1;
+            }
+            let flash = k.with_flash(|f| core::mem::replace(&mut f.f, RamFlash::new(0)));
+            let mut r = Kv::open(CutFlash { f: flash, budget: usize::MAX }, 0..(SECTORS * 4096) as u32)
+                .unwrap_or_else(|e| panic!("cut at op {cut}: reopen failed: {e:?}"));
+            // Every key: committed state = its last op among ops[..done]; the op in flight
+            // (ops[done]) may or may not have landed. Shots may also have been evicted for space.
+            let mut keys: Vec<&String> = ops.iter().map(|(k, _)| k).collect();
+            keys.sort();
+            keys.dedup();
+            for key in keys {
+                let committed = ops[..done].iter().rev().find(|(k, _)| k == key).map(|(_, v)| v.clone());
+                let inflight = ops.get(done).filter(|(k, _)| k == key).map(|(_, v)| v.clone());
+                let got = r.get(key);
+                let ok = match (&got, &committed) {
+                    (g, Some(c)) if g == c => true,
+                    (g, _) if inflight.as_ref().is_some_and(|i| i == g) => true,
+                    (None, _) if key.starts_with("shots/") => true, // evicted to make room
+                    (None, None) => true,
+                    _ => false,
+                };
+                assert!(ok, "cut at op {cut} (after {done} ops): {key} read {:?} bytes, committed {:?}",
+                        got.as_ref().map(|g| g.len()), committed.as_ref().map(|c| c.as_ref().map(|c| c.len())));
+            }
+            assert!(r.get("config.json").is_some() || done == 0, "cut at op {cut}: settings lost");
+            cuts += 1;
+        }
+        assert_eq!(cuts, total);
     }
 }
