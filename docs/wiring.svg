@@ -76,7 +76,7 @@
   <text x="50" y="869" class="s">ALL mains wires removed from this switch</text>
 
   <rect x="40" y="905" width="270" height="48" class="mach"/>
-  <text x="50" y="924" class="t">NTC 100 kΩ probe (Semitec 104NT, B 4267)</text>
+  <text x="50" y="924" class="t">NTC 50 kΩ ring-tab probe (Molex 218537-3919)</text>
   <text x="50" y="941" class="s">in the brew-thermostat hole, hand-tight</text>
 
   <rect x="40" y="970" width="270" height="48" class="mach"/>

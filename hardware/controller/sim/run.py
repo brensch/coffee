@@ -42,7 +42,8 @@ def check(block, case, value, limit, ok, unit=""):
 
 
 # --------------------------------------------------------------- 1. output stage (GPIO -> AO3400A -> module input)
-# AO3400A (datasheet): Vth 0.65 / 1.05 / 1.45 V min/typ/max, 48 mOhm at Vgs 2.5 V (typ). Level-1 fit.
+# AO3400A (datasheet): Vth 0.65 / 1.05 / 1.45 V min/typ/max; Rds(on) at Vgs 2.5 V: 24 typ, 48 max mOhm.
+# Level-1 fit: 48 mOhm at 2.5 V with typical Vth, 66 mOhm with max Vth (worse than the datasheet max).
 NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): Rds(2.5 V) = 1/(KP (2.5 - VTO))
 def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
     """GPIO (25 ohm) -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
@@ -88,7 +89,7 @@ meas tran vgate_rst AVG v(gate) from=0.1m to=20m
 # --------------------------------------------------------------- 2. reverse-polarity P-FET (AO3401A)
 def revpol(vin):
     net = f"""* J1 -> AO3401A (D to J1, S to rail, G to GND via 10k) -> +5V rail with ~0.25 A load
-.model P3401 PMOS(LEVEL=1 VTO=-0.9 KP=12)
+.model P3401 PMOS(LEVEL=1 VTO=-0.9 KP=4.07)   ; 60 mOhm at Vgs -5 V: the AO3401A's max Rds(on) (47 typ)
 Vin in 0 DC {vin}
 M1 in g v5 v5 P3401 L=1u W=1u
 Rg g 0 10k
@@ -109,18 +110,18 @@ print i(Vin)
 
 # --------------------------------------------------------------- 4. pressure input
 def pressure():
-    net = """* transducer -> 10k/20k -> 100 nF -> ESP32-C6 ADC1 (high-impedance SAR input; leakage modelled as 1 Mohm)
+    net = """* transducer -> 47k/100k -> 22 nF -> ESP32-C6 ADC1 (high-impedance SAR input; leakage modelled as 1 Mohm)
 Vt t 0 DC 4.5 AC 1
 Rs t s 100          ; transducer output impedance (est)
-R1 s a 10k
-R2 a 0 20k
-C1 a 0 100n
+R1 s a 47k
+R2 a 0 100k
+C1 a 0 22n
 Rin a 0 1meg
 .control
 op
 print v(a)
 ac dec 50 1 10k
-meas ac f3db WHEN vdb(a)=-6.52 FALL=1
+meas ac f3db WHEN vdb(a)=-6.95 FALL=1
 meas ac g60 FIND vdb(a) AT=60
 meas ac g100 FIND vdb(a) AT=100
 .endc
@@ -132,7 +133,7 @@ meas ac g100 FIND vdb(a) AT=100
 
 # --------------------------------------------------------------- 5. 5 V / 3.3 V rails under load steps
 def rails(vpsu, label):
-    net = f"""* PSU -> P-FET -> 22u -> ME6211C33 (dropout ~0.12 V @ 0.1 A, ~0.55 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
+    net = f"""* PSU -> P-FET -> 22u -> TLV1117LV33 (dropout <= 0.7 V at 1 A max, modelled linear: 0.35 V at 0.5 A) -> 22u||10u||0.1u -> ESP32
 .model SS14 D(IS=5e-6 N=1.1 RS=0.05)
 Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.21             ; PSU + wiring (0.15) + AO3401A (0.06) in series
@@ -140,7 +141,7 @@ C1 v5 0 22u
 * other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 38 + 3 LEDs 9 mA
 Rl5 v5 0 41
 * LDO: tracks 3.3 V unless dropout bites
-Bldo v33r 0 V = min(3.3, v(v5) - (0.03 + 1.05*i(Vsense)))   ; ME6211C33: 120 mV at 100 mA, ~0.55 V at 500 mA (datasheet curve)
+Bldo v33r 0 V = min(3.3, v(v5) - 0.7*i(Vsense))   ; TLV1117LV33: 230 mV typ at 500 mA, 700 mV max at 1 A (SBVS160C table 6.5)
 Rout v33r v33s 0.02
 Vsense v33s v33 0
 Bin v5 0 I = i(Vsense)        ; LDO input current = output current
@@ -161,31 +162,42 @@ meas tran v33min MIN v(v33) from=1m to=20m
 
 
 # --------------------------------------------------------------- 6. thermistor input
-def ntc_r(t_c, r25=100e3, beta=4267.0):   # Semitec 104NT (docs/BUY.md)
-    return r25 * 2.718281828459045 ** (beta * (1 / (t_c + 273.15) - 1 / 298.15))
+SH = (8.965973e-4, 2.145003e-4, 1.078228e-7)   # Molex 218537-3919, fitted to its R-T table (25/100/140 C)
 
 
-def ntc_v(t_c, rref=8.2e3, vref=3.3, **kw):
+def sh_c(r):
+    import math
+    l = math.log(r)
+    return 1 / (SH[0] + SH[1] * l + SH[2] * l ** 3) - 273.15
+
+
+def ntc_r(t_c, scale=1.0):   # Molex 218537-3919 (docs/BUY.md); scale = R tolerance
+    lo, hi = 10.0, 1e7
+    for _ in range(200):
+        m = (lo * hi) ** 0.5
+        lo, hi = (m, hi) if sh_c(m) > t_c else (lo, m)
+    return m * scale
+
+
+def ntc_v(t_c, rref=4.7e3, vref=3.3, **kw):
     r = ntc_r(t_c, **kw)
     return vref * r / (r + rref)
 
 
-def ntc_from_v(v, rref=8.2e3, vref=3.3, r25=100e3, beta=4267.0):
-    import math
-    r = rref * v / (vref - v)
-    return 1 / (1 / 298.15 + math.log(r / r25) / beta) - 273.15
+def ntc_from_v(v, rref=4.7e3, vref=3.3):
+    return sh_c(rref * v / (vref - v))
 
 
 def main():
     # 1. outputs: on-state at the corners, with each module type
     for load, vmin, lab in (("ssr_ez", 3.0, "pump SSR (Crydom EZ240D5, min turn-on 3.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
                             ("relay", 4.2, "valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V)")):
-        for vg in (3.0, 3.3):
+        for vg in (2.64, 3.3):   # C6 datasheet guarantees VOH >= 0.8 x VDD = 2.64 V
             for fet in ("vth_typ", "vth_max"):
                 for v5 in (4.6, 5.0):
                     r = output(vg, fet, v5, load)
                     check("Output on: voltage across the module input", f"{lab}, GPIO {vg} V, {fet}, +5V {v5} V", r["vin_on"], f">= {vmin} V", r["vin_on"] >= vmin, "V")
-        r = output(3.0, "vth_max", 5.0, load)
+        r = output(2.64, "vth_max", 5.0, load)
         check("Output off: current left through the module input", lab, abs(r["iin_off"]) * 1e3, "< 0.1 mA (SSR/relay must-release ~1 mA)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
         check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; flyback diode on the relay output only)", r["vdrain_pk"] < 20, "V")
     # boot/reset: GPIO high-Z with a weak internal pull-up fighting the 4.7k pull-down
@@ -210,14 +222,17 @@ def main():
     v, out = pressure()
     va = float(re.findall(r"v\(a\)\s*=\s*([-+0-9.eE]+)", out)[0])
     check("Pressure input", "4.5 V full scale -> GPIO0", va, "<= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail)", va <= 3.1, "V")
-    check("Pressure input", "0.5 V (0 bar) -> GPIO0", 0.5 * 2 / 3, ">= 0.1 V (clear of the ADC's non-linear bottom)", 0.5 * 2 / 3 >= 0.1, "V")
+    check("Pressure input", "0.5 V (0 bar) -> GPIO0", 0.5 * 100 / 147, ">= 0.1 V (clear of the ADC's non-linear bottom)", 0.5 * 100 / 147 >= 0.1, "V")
+    check("Pressure transducer load", "R16 + R17", 147, "> 100 kOhm (TE M3200 datasheet p2, voltage output)", 147 > 100, "kOhm")
     f3 = v.get("f3db", 0)
     check("Pressure filter", "-3 dB corner", f3, "150-400 Hz (keeps the pump's 60 Hz pulses, kills RF)", 150 <= f3 <= 400, "Hz")
-    g60 = v.get("g60", 0) + 3.52   # relative to the 2/3 divider's DC gain (-3.52 dB)
+    g60 = v.get("g60", 0) + 3.95   # relative to the divider's DC gain with the 1 Mohm leakage model (-3.95 dB)
     check("Pressure filter", "60 Hz pump ripple", g60, "> -1 dB (the pulses stay visible to firmware)", g60 > -1.0, "dB")
-    kick = 3.0 * 10e-12 / 100e-9 * 1e3   # 10 pF sampling cap charge-sharing with the 100 nF reservoir
-    check("Pressure ADC kick-back", "10 pF sample cap vs 100 nF", kick, "< 0.8 mV (1 LSB of 12 bits over 3.3 V)", kick < 0.8, "mV")
-    # 5. thermistor (100k B4267 to GND, 8.2k 1% to 3V3)
+    # The C6 datasheet doesn't give the ADC's sampling capacitance: 10 pF is an ESTIMATE (typical SAR
+    # input). The criterion is a tenth of the transducer's own +-0.25 % FS accuracy at the pin (2.7 mV).
+    kick = 3.0 * 10e-12 / 22e-9 * 1e3
+    check("Pressure ADC kick-back (estimate)", "10 pF sample cap (assumed) vs 22 nF", kick, "< 2.7 mV (1/10 of the transducer's +-0.25 % FS at the pin)", kick < 2.7, "mV")
+    # 5. thermistor (Molex 218537-3919 50k to GND, 4.7k 1% to 3V3)
     for t in (20.0, 93.0, 125.0, 150.0):
         vt = ntc_v(t)
         check("Thermistor divider voltage", f"{t:.0f} C", vt, "0.15-3.15 V (inside the ADC's usable range)", 0.15 <= vt <= 3.15, "V")
@@ -226,14 +241,14 @@ def main():
         lsb = 3300 / 4096 / 4   # 12-bit, 16x oversampled -> ~2 extra bits
         check("Thermistor sensitivity", f"{t:.0f} C", slope, f"> 10 mV/C ({lsb / slope:.3f} C per oversampled LSB)", slope > 10, "mV/C")
     r93 = ntc_r(93.0)
-    p = (3.3 / (8.2e3 + r93)) ** 2 * r93 * 1e3
-    err = p / 1.5   # free-air dissipation constant 1.5 mW/C: worst case (a probe in brass sinks far better)
-    check("Thermistor self-heating", f"93 C, {p:.2f} mW", err, "< 0.5 C worst case (constant, so the boiling-water calibration point cancels it)", err < 0.5, "C")
-    worst = max(abs(ntc_from_v(ntc_v(93.0, r25=r25, beta=b)) - 93.0) for r25 in (99e3, 101e3) for b in (4182.0, 4352.0))
-    check("Thermistor error before calibration", "93 C, R25 +-1 %, B +-2 %", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
-    r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=8.2e3 * 1.01)) - 93.0)
+    p = (3.3 / (4.7e3 + r93)) ** 2 * r93 * 1e3
+    err = p / 1.0   # Molex dissipation constant 1 mW/C (sales drawing note 7); clamped to the boiler it sinks far better
+    check("Thermistor self-heating", f"93 C, {p:.2f} mW, still air", err, "< 1 C (constant, so the boiling-water calibration point cancels it; clamped to the boiler it is far lower)", err < 1.0, "C")
+    worst = max(abs(ntc_from_v(ntc_v(93.0, scale=k)) - 93.0) for k in (0.99, 1.01))
+    check("Thermistor error before calibration", "93 C, R +-1 % (Molex R25 tolerance)", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
+    r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=4.7e3 * 1.01)) - 93.0)
     check("Thermistor error from the reference resistor", "93 C, 1 % resistor", r_ref_err, "< 0.5 C before calibration (the boiling-water point removes it)", r_ref_err < 0.5, "C")
-    gain = (20 * 1.01 / (20 * 1.01 + 10 * 0.99)) / (20 / 30) - 1
+    gain = (100 * 1.01 / (100 * 1.01 + 47 * 0.99)) / (100 / 147) - 1
     check("Pressure gain error from 1 % divider resistors", "worst-case ratio", abs(gain) * 9.0, "< 0.15 bar at 9 bar (zero is calibrated at power-up)", abs(gain) * 9.0 < 0.15, "bar")
     # 6. rails
     for vpsu, label in ((5.0, "PSU 5.0 V"), (4.75, "PSU 4.75 V (-5%)"), (4.65, "USB 5.0 V through D2 (~4.65 V)")):

@@ -174,42 +174,32 @@ Notes:
 - No #6 forks are needed: the heater SSR input takes the GH lead's folded strands (or a ferrule) directly, and the pump SSR has Faston tabs.
 - **Optional, not in the total:** if you already own a ferrule crimper, use 0.25 mm² (24 AWG) insulated ferrules on the folded GH-lead ends at the heater SSR input and the relay coil, and 1.5 mm² (16 AWG) ferrules on the relay contacts.
 
-## 9. Low-voltage leads: JST **GH** 1.25 mm, 3-pin, pre-crimped, ~300 mm
+## 9. Low-voltage leads: genuine JST **GH** 1.25 mm, 3-pin
 
 Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB). The mating cable housing is the **GHR-03V-S**.
 
-- **Part:** Denke Electronic Store, "10Pcs GH1.25 2P/3P/4P/5P/6 Pin JST GH Series 1.25 Connector With Wire 10CM/20CM/30CM 1007 28 AWG 1.25MM". Variant selected on the page: **Color 3P, Pins "Single head", Package Quantity 300mm**. One pack is 10 leads (≥ 7 needed: J1, J2, J3, J5, J6, J7, J8).
-- **Buy:** <https://www.aliexpress.us/item/3256809108366050.html>. **$1.14** per pack of 10 (5 % off $1.20), **9936 available**, Standard shipping **$5.80**, delivery Nov 13–20. Listing: 1,000+ sold, 4.6 stars from 36 reviews.
-- **What it is:** a **JST-GH-compatible clone, not genuine JST.** The listing says "Compatible with JST GH Series", 1.25 mm pitch, 28 AWG UL1007 wire, one housing per lead (single head), other end stripped and tinned (per a buyer review: "the ends are lightly soldered with tin").
-- **UNVERIFIED:** that the housing is a true GHR-03V-S equivalent with the latch that locks into SM03B-GHS-TB. Test-fit one before wiring.
-- **Genuine JST alternative (check by hand, Digi-Key blocked):** JST **AGHGH28K305** pre-crimped jumper (305 mm, 28 AWG, SSHL-002T-P0.2 contact both ends; Digi-Key 455-3074-ND) plus **GHR-03V-S** housings. Use three jumpers per lead, push one end of each into a housing and cut off the far contact: 21 jumpers + 7 housings.
-- **Wire gauge:** GH leads are 26–28 AWG (these are 28 AWG). How to join them to each module is in WIRING.md, "Joining the GH leads".
+- **Datasheet (verified):** JST GH catalogue <https://www.jst-mfg.com/product/pdf/eng/eGH.pdf> (April 2026): housing **GHR-03V-S**, contact **SSHL-002T-P0.2**, header SM03B-GHS-TB; **1.0 A** (26 AWG), **50 V**, **−40 to +105 °C**, wire 30–26 AWG.
+- **Part:** JST **AGHGH28K305** pre-crimped jumper (305 mm, 28 AWG UL1571, SSHL-002T-P0.2 at both ends; JST drawing) + **GHR-03V-S** housings. Per lead: push three jumpers' contacts into one housing; the far ends then go to the module (cut off the far contacts and strip). 7 leads = **21 jumpers + 7 housings**.
+- **Buy (check by hand: Digi-Key shows a human-verification page to automated browsers):** <https://www.digikey.com/en/products/detail/jst-sales-america-inc/AGHGH28K305/6009450> and <https://www.digikey.com/en/products/result?keywords=GHR-03V-S>. LCSC showed 1 jumper and 0 housings in stock, so it isn't an alternative.
+- **Not chosen:** the AliExpress "JST GH compatible" clone leads in earlier versions of this list (no datasheet; latch fit unknown).
+- **Wire gauge:** 28 AWG. How to join the leads to each module is in WIRING.md, "Joining the GH leads".
 
 ## 10. Sensors
 
-### 10a. NTC thermistor: Trianglelab **104NT-4-R025H42G** (Semitec 104GT-2 type) M4 screw probe, qty 1
+### 10a. NTC thermistor: Molex **218537-3919** ring-tab probe, qty 1
 
-**Requirement:** 100 kΩ NTC, B ≈ 3950 or a stated B value (the firmware can be configured), ≥ 150 °C (ideally ≥ 200 °C), insulated from the mounting, M4 × 0.7 thread or a 4 mm ring lug under an M4 screw.
+**Requirement:** NTC with a datasheet R–T table, ≥ 150 °C, body insulated from the leads, mountable at the brew-thermostat seat under an M4 screw. (No M4 *screw-in* 100 kΩ probe rated ≥ 150 °C with a manufacturer datasheet was found; the earlier Trianglelab probe has none.)
 
-- **Buy:** <https://www.aliexpress.us/item/3256804661589698.html> (DFORCE **Trianglelab** Store, 98.0 % positive). Title: "Trianglelab 104GT-2 104NT-4-R025H42G Thermistor M3/M4 280℃ 3D Printer Accessories Screw Temperature Sensor". Variant selected on the page: **Size M4**.
-  - **$6.66** regular price. The page showed **$1.09** as a promotional price, "Max. 1 pcs/shopper at this price".
-  - Free shipping, delivery Nov 13–19. Buy button active; no stock count shown. 19 sold, 1 review.
-- **Datasheet for the sensing element** (Semitec NT-4 series, third-party mirror <https://static.chipdip.ru/lib/224/DOC027224955.pdf>, opened):
-  - "glass encapsulated thermistor", "high heat resistance";
-  - **104NT-4-R025H42G: R25 = 100 kΩ, B25/85 = 4267 K ± 2 %**;
-  - operating temperature **−50 to 300 °C**; dry-heat test 1000 h at 300 °C.
-- **What's verified:** the element's resistance, B value and temperature range (datasheet), and the M4 variant, the 280 °C rating and the Trianglelab brand (listing).
-- **The firmware default is B = 4267 K (B25/85) for this probe** (`NtcConfig::beta`); the two-point calibration removes what is left.
-- **UNVERIFIED:**
-  - **thread pitch:** the listing says "M4", not "M4 × 0.7" (0.7 is the standard coarse pitch);
-  - thread length and lead length, and whether the leads end in a connector (no specs beyond the title);
-  - **electrical insulation between the leads and the screw body.** The bead is glass-encapsulated, but the potting isn't described. Check it with a meter (WIRING.md, check 8).
-- **Alternative (US shipping address, slower):** the same probe on Amazon, "104GT-2 104NT-4-R025H42G Thermistor M3/M4 280℃ … (M4 104NT Thermistor, 1PC)", **$15.02** on the search page, free delivery Nov 23–Dec 3 (product page not opened).
-- **Rejected:**
-  - **Vishay NTCASCWE3104F** (M4 screw-threaded, 100 kΩ, insulated, UL). Datasheet <https://www.vishay.com/docs/29065/ntcascw.pdf>, opened: operating range only **−25 to +100 °C**. **Fails** the temperature requirement.
-  - **"Upgrade M3 Hex Screw in Fixing Thermistor 104NT-4-R025H42G"** on Amazon ($7.99, 14 left): **M3**, won't hold in the M4 hole.
-  - **AliExpress "M4 surface fixed / wire ear" 100 kΩ B3950 sensors:** ring-lug, but no temperature rating or insulation stated.
-  - **Ring-lug 100 kΩ parts rated to 150 °C** (Littelfuse USUR1000-104G, Vishay NTCALUG01A104F): only on blocked distributors, and exactly at the 150 °C limit.
+- **Buy:** Heilind Electronics (authorised Molex distributor) <https://www.heilind.com/npi/stocking-package/2040>: **$9.76** (qty 1), "Immediate Shipment: 50", seen 2026-11-04.
+- **Datasheet (verified):** Molex sales drawing 2185373919 rev B4 <https://www.molex.com/content/dam/molex/molex-dot-com/products/automated/en-us/salesdrawingpdf/218/21853/2185373919_sd.pdf>, sheets 1–2; product page <https://www.molex.com/en-us/products/part-detail/2185373919>.
+  - **R25 = 50 kΩ ± 1 %**, B0/50 = 4035 K ± 1 %, full R–T table on sheet 2 (25 °C 50.000 k, 95 °C 3.638 k, 140 °C 1.029 k, 200 °C 0.266 k);
+  - **−40 to +250 °C**;
+  - **body isolation 1500 VAC for 3 s, ≥ 100 MΩ at 500 VDC**;
+  - stainless housing with a ring tab, hole **Ø4.2 ± 0.1 mm** (takes an M4 screw);
+  - lead 300 mm, 28 AWG PTFE (UL10344) in fibreglass sleeve, ends stripped;
+  - time constant 15 s in water; dissipation constant 1 mW/°C.
+- **Board and firmware:** R15 is 4.7 kΩ to match (1.50 V at 93 °C). The firmware default is a Steinhart-Hart fit to Molex's table, within 0.2 °C from 25 to 200 °C; the two-point calibration removes the rest (tolerance, mounting).
+- **To check on the machine:** that the thermostat's screws are M4 (INSTALL.md §4).
 
 ### 10b. Pressure transducer, 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4, qty 1
 
@@ -224,25 +214,18 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 - **UNVERIFIED:** wire colours and pinout, and that the output is truly ratiometric. The firmware self-zeroes; confirm 0.5 V at 0 bar on the bench.
 - **Rejected:** Jeanoko 1.6 MPa (<https://www.amazon.com/dp/B0GVHLQL4R>, $31.89, in stock) has an **M10 × 1.5** thread, not G1/4.
 
-## 11. Antenna: W.FL/MHF III-to-RP-SMA pigtail + 2 dBi RP-SMA antenna
+## 11. Antenna: Taoglas CAB.A02 pigtail + Taoglas GW.15.2113 2 dBi dipole
 
-- **Connector confirmed:** the ESP32-C6-MINI-1U datasheet (<https://documentation.espressif.com/esp32-c6-mini-1_mini-1u_datasheet_en.pdf>, opened) says the -1U uses a connector compatible with **Hirose W.FL**, **I-PEX MHF III** and Amphenol AMMC, and the antenna gain must not exceed **2.33 dBi**.
+- **Module side (verified):** the ESP32-C6-MINI-1U datasheet v1.5 (<https://www.espressif.com/sites/default/files/documentation/esp32-c6-mini-1_mini-1u_datasheet_en.pdf>) §10.2: the -1U's connector is compatible with Hirose W.FL, I-PEX MHF III and Amphenol AMMC; **antenna gain must not exceed 2.33 dBi** (the gain used for certification).
 
-| Item | Part | Buy (opened 2026-11-04) | Price / stock | Specs (listing; no datasheets) |
+| Item | Part | Buy (opened 2026-11-04) | Price / stock | Datasheet (verified) |
 |---|---|---|---|---|
-| Adapter cable | LCdatalink Store "1Pcs MHF3 to RP SMA Female RF Connector 0.81mm Pigtail Cable for PCI WiFi Antenna", variant **15CM** | <https://www.aliexpress.us/item/3256802248957450.html> | **$3.32** (15 cm), Standard shipping **$2.93**, delivery Nov 13–20; 379 sold, 4.8 stars | **MHF3** to **RP-SMA female**, 0.81 mm coax, 50 Ω, DC–3 GHz, lengths 5–50 cm |
-| Antenna | **Bingfu** mini dual-band WiFi antenna, RP-SMA male, right angle, 2-pack, ASIN B0B1PNJ8XX | <https://www.amazon.com/dp/B0B1PNJ8XX> | **$8.89**, In Stock, ships from Amazon, sold by Bingfu-us | "2.4GHz (2400 - 2485 MHz) … **Gain: 2dBi**; Omni Directional; RP-SMA Male Right Angle". ≤ 2.33 dBi. The 0.81 mm cable only adds loss |
+| Pigtail | Taoglas **CAB.A02**: I-PEX MHF III (W.FL compatible) to **SMA female** bulkhead, 0.81 mm coax, 96.4 mm, nut + washer included | <https://www.sager.com/product/caba02-taoglas/7168042> (Sager, authorised) | **$2.97**, 100 in stock | <https://www.taoglas.com/datasheets/CAB.A02.pdf> (SPE-11-8-118-D): connectors p.1/p.7, 50 Ω p.5, ~0.5 dB over its length |
+| Antenna | Taoglas **GW.15.2113**: 2.4–2.5 GHz dipole, **SMA male**, 2 dBi peak | <https://www.sager.com/product/gw152113-taoglas/7168348> (Sager, authorised) | **$4.76**, 530 in stock | <https://www.taoglas.com/datasheets/GW.15.2113.pdf> (SPE-13-8-034-H): 2 dBi peak (500 × 500 mm ground plane), VSWR ≤ 1.8, −40 to +85 °C, p.4 |
 
-- Mount the RP-SMA jack through a hole in a plastic part, or through the steel case so that the antenna is outside it.
-- **UNVERIFIED:**
-  - that the "MHF3" plug really mates with the module's W.FL receptacle. MHF III and W.FL are specified as compatible, but this is a generic part: test-fit it gently, don't force it;
-  - that the RP-SMA end is a bulkhead with a nut (the listing doesn't say);
-  - the antenna gain, which comes from the listing only.
-- **Also looked at:**
-  - **Bydpete "IPX3 MHF III MHF3 Female Pigtail 2.4GHz Antenna … for ESP32-C6-MINI-1U"** (<https://www.aliexpress.us/item/3256810385458644.html>), $1.78 (10 cm), 12 available. It's the simplest fit (MHF3, 0.81 mm cable, 10–80 cm), but neither the listing nor its description gives a **gain**, so it's not chosen.
-  - **Adafruit 5444** RP-SMA to w.FL/MHF3 adapter ($2.95) and **944** 2 dBi RP-SMA dipole ($7.95): both "Out of stock" at Adafruit; 5444 also out of stock at Pimoroni.
-  - **Pulse W3921T0150** (W.FL, 150 mm, 1 dBi ± 1 dB per datasheet <https://cdn.eicom.ru/media/PDF/4767450.pdf>): no distributor stock found.
-- **Rejected:** Adafruit/Pimoroni w.FL stick-on antenna (4 dBi peak); Adafruit 2308 u.FL flex antenna (4 dBi, and U.FL); MHF4 pigtails (different, smaller connector). U.FL (MHF I) parts won't mate with W.FL.
+- **These are plain SMA, not RP-SMA:** buy the two together.
+- **Mount the SMA bulkhead in a plastic part, not through the steel case.** Taoglas's own plots show the dipole's gain rising with the ground plane under it: about 1.5 dBi in free space, about 2.7 dBi on a 150 × 90 mm plane and up to about 6 dBi on a 500 × 500 mm one (datasheet §3.5, §5.4). The steel case would be such a plane and could take it past the module's 2.33 dBi limit. In a plastic part, with the cable's ~0.5 dB loss, it stays under.
+- **Not chosen:** the generic AliExpress MHF3 pigtail and Bingfu antenna in earlier versions of this list (no datasheets).
 
 ---
 

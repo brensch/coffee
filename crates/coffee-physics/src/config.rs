@@ -264,7 +264,7 @@ impl Default for Scale {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Thermistor {
-    /// Probe lag relative to the boiler body (bead in a brass screw probe).
+    /// Probe lag relative to the boiler body (ring-tab probe under an M4 screw).
     pub tau_s: f64,
     /// The real part's curve (beta model). The engine's `ntc` config holds what
     /// it *believes*; a mismatch is what the two-point calibration removes.
@@ -280,10 +280,10 @@ pub struct Thermistor {
 impl Default for Thermistor {
     fn default() -> Self {
         Self {
-            tau_s: 3.0,
-            r25_ohm: 100_000.0,
-            beta: 4267.0,   // Semitec 104NT-4 glass bead (Trianglelab M4 probe, docs/BUY.md)
-            r_ref_ohm: 8200.0,
+            tau_s: 15.0,    // Molex 218537-3919: 15 s time constant in water (sales drawing note 4)
+            r25_ohm: 50_000.0,
+            beta: 4109.0,   // Molex 218537-3919, B25/95 from its R-T table
+            r_ref_ohm: 4700.0,
             v_ref_mv: 3300.0,
             offset_c: 0.0,
             noise_mv: 1.5,
@@ -291,7 +291,7 @@ impl Default for Thermistor {
     }
 }
 
-/// 0.5-4.5 V ratiometric transducer on 5 V, through the 10k/20k divider.
+/// 0.5-4.5 V ratiometric transducer on 5 V, through the 47k/100k divider.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PressureSensor {
@@ -308,10 +308,10 @@ pub struct PressureSensor {
 impl Default for PressureSensor {
     fn default() -> Self {
         Self {
-            range_bar: 16.0,
+            range_bar: 17.24, // TE M3234-000002-250PG: 250 psi
             v_zero_mv: 500.0,
             v_full_mv: 4500.0,
-            divider: 2.0 / 3.0,
+            divider: 100.0 / 147.0,
             noise_bar: 0.02,
             tau_s: 0.003,
             offset_bar: 0.0,

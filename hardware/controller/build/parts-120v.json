@@ -327,27 +327,23 @@
    "notes": "USB bench power"
   },
   "U5": {
-   "footprint": "Package_TO_SOT_SMD:SOT-23-5",
-   "value": "ME6211C33M5G-N",
+   "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "value": "TLV1117LV33DCYR",
    "pins": {
-    "1": "+5V",
-    "2": "GND",
-    "3": "+5V",
-    "4": null,
-    "5": "+3V3"
+    "1": "GND",
+    "2": "+3V3",
+    "3": "+5V"
    },
    "pin_names": {
-    "1": "VIN",
-    "2": "GND",
-    "3": "EN",
-    "4": "NC",
-    "5": "VOUT"
+    "1": "GND",
+    "2": "VOUT",
+    "3": "VIN"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "LDO 3.3 V 500 mA, ceramic-stable",
-   "mpn": "Microne ME6211C33M5G-N",
-   "notes": "EN tied to VIN"
+   "desc": "LDO 3.3 V 1 A, ceramic-stable",
+   "mpn": "TI TLV1117LV33DCYR",
+   "notes": "SOT-223 for heat: ~0.17 W average, +11 C"
   },
   "C6": {
    "footprint": "Capacitor_SMD:C_0805_2012Metric",
@@ -659,11 +655,11 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "NTC probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
+   "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused"
   },
   "R15": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "8.2k",
+   "value": "4.7k",
    "pins": {
     "1": "+3V3",
     "2": "NTC"
@@ -676,7 +672,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "NTC reference: 3.10 V at 20 C, 1.52 V at 93 C, 0.50 V at 150 C (B 4267)"
+   "notes": "NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)"
   },
   "C8": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -729,11 +725,11 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND"
+   "notes": "TE M3234-000002-250PG, 250 psi, 5 V, 0.5-4.5 V ratiometric. 1=+5V 2=SIG 3=GND"
   },
   "R16": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "10k",
+   "value": "47k",
    "pins": {
     "1": "P_SIG",
     "2": "P_ADC"
@@ -746,11 +742,11 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "Divider 2/3"
+   "notes": "Divider 100/147 (147k load: TE M3200 needs > 100k)"
   },
   "R17": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "20k",
+   "value": "100k",
    "pins": {
     "1": "P_ADC",
     "2": "GND"
@@ -767,7 +763,7 @@
   },
   "C9": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF X7R",
+   "value": "22nF X7R",
    "pins": {
     "1": "P_ADC",
     "2": "GND"
@@ -780,7 +776,7 @@
    "populate": "Y",
    "desc": "Capacitor",
    "mpn": "",
-   "notes": "ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses"
+   "notes": "ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses"
   },
   "J7": {
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",

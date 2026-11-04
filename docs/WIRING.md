@@ -136,14 +136,14 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
 | J7.1 | BREW | brew switch, terminal **C.1** | Insulated 22-18 female receptacle |
 | J7.2 | STEAM | steam switch, terminal **S.4** | |
 | J7.3 | GND | brew switch **C.2** *and* steam switch **S.5** | Splice the one GND lead into two short tails (solder + heat-shrink). C.1/C.2 and S.4/S.5 are the pole positions GaggiMate uses for its LV button wires; **UNSURE** for your switch: check with a meter that each pair closes when its switch is pressed |
-| J5.1 | NTC | thermistor lead | No polarity. Solder + heat-shrink, with the joint well away from the boiler. Firmware: resistance at 25 °C = 100 kΩ, **B = 4267 K** (the default) for the Trianglelab/Semitec 104NT-4 (BUY.md §10a) |
+| J5.1 | NTC | Molex 218537-3919 lead (PTFE, 28 AWG) | No polarity. Solder + heat-shrink, with the joint well away from the boiler (the probe's 300 mm leads reach). The firmware defaults are this probe's (Steinhart-Hart from Molex's table, BUY.md §10a) |
 | J5.2 | GND | thermistor lead | |
 | J5.3 | — | — | Unused |
 | J6.1 | +5 V | transducer supply (often red) | **Check the transducer's colours with a meter**: the listing gives no pinout |
 | J6.2 | signal | transducer output (often green or yellow) | 0.5 V at 0 bar |
 | J6.3 | GND | transducer ground (often black) | |
 | J4 | USB-C | flashing / bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
-| U4 | W.FL / MHF III | 15 cm MHF3→RP-SMA pigtail + 2 dBi RP-SMA antenna (BUY.md §11), ≤ 2.33 dBi | Mount the RP-SMA jack in a plastic part, or through the steel case with the antenna outside it. Don't force the MHF3 plug onto the W.FL socket |
+| U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail (MHF III → SMA bulkhead) + Taoglas GW.15.2113 2 dBi SMA dipole (BUY.md §11) | Mount the SMA bulkhead in a **plastic** part: on the steel case the dipole's gain can exceed the module's 2.33 dBi limit (Taoglas plots). Press the MHF III plug straight down onto the socket; don't force it |
 
 ## Checks before mains (multimeter, machine unplugged)
 

@@ -32,6 +32,8 @@ def norm(n):
 
 
 def same(a, b):
+    if "/" in a:                              # a shared symbol pin, e.g. TI's "ADJ/GND" (GND on the fixed part)
+        return any(same(x, b) for x in a.split("/"))
     a, b = norm(a), norm(b)
     if a == b:
         return True

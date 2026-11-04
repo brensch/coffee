@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/04/2026 01:10 PM")
+    (date "11/04/2026 02:37 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -228,7 +228,7 @@
       (tstamps "5745235a-c3ad-560a-9498-c294be8e78c3"))
     (comp
       (ref "C9")
-      (value "100nF X7R")
+      (value "22nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
@@ -711,7 +711,7 @@
       (tstamps "fc87fb8d-6ec9-5f6a-ba62-fc9d37c462e7"))
     (comp
       (ref "R15")
-      (value "8.2k")
+      (value "4.7k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0603_1608Metric")
       (fields
@@ -734,7 +734,7 @@
       (tstamps "17eaf0a6-9932-5348-b523-0122128974c2"))
     (comp
       (ref "R16")
-      (value "10k")
+      (value "47k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0603_1608Metric")
       (fields
@@ -757,7 +757,7 @@
       (tstamps "0ffe9dd6-18d7-5bd8-8f5c-a4cd816c10e4"))
     (comp
       (ref "R17")
-      (value "20k")
+      (value "100k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0603_1608Metric")
       (fields
@@ -1125,14 +1125,14 @@
       (tstamps "b2699459-f172-5b2a-8b70-5ef993fb2f77"))
     (comp
       (ref "U5")
-      (value "ME6211C33M5G-N")
-      (description "LDO 3.3 V 500 mA, ceramic-stable")
-      (footprint "Package_TO_SOT_SMD:SOT-23-5")
+      (value "TLV1117LV33DCYR")
+      (description "LDO 3.3 V 1 A, ceramic-stable")
+      (footprint "Package_TO_SOT_SMD:SOT-223-3_TabPin2")
       (fields
         (field
-          (name "Description") "LDO 3.3 V 500 mA, ceramic-stable")
+          (name "Description") "LDO 3.3 V 1 A, ceramic-stable")
         (field
-          (name "Footprint") "Package_TO_SOT_SMD:SOT-23-5")
+          (name "Footprint") "Package_TO_SOT_SMD:SOT-223-3_TabPin2")
         (field
           (name "Datasheet"))
         (field
@@ -1141,7 +1141,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "ME6211C33M5G-N"))
+        (part "TLV1117LV33DCYR"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -1193,7 +1193,7 @@
         (pintype "POWER-IN"))
       (node
         (ref "U5")
-        (pin "5")
+        (pin "2")
         (pintype "POWER-OUT")))
     (net
       (code 2)
@@ -1237,12 +1237,8 @@
         (pintype "PASSIVE"))
       (node
         (ref "U5")
-        (pin "1")
-        (pintype "POWER-IN"))
-      (node
-        (ref "U5")
         (pin "3")
-        (pintype "INPUT")))
+        (pintype "POWER-IN")))
     (net
       (code 3)
       (name "+5V_IN")
@@ -1529,7 +1525,7 @@
         (pintype "POWER-IN"))
       (node
         (ref "U5")
-        (pin "2")
+        (pin "1")
         (pintype "POWER-IN")))
     (net
       (code 8)

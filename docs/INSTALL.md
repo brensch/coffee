@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v17 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v18 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -26,19 +26,19 @@ Gaggia Classic Pro.
    ```sh
    cd hardware/controller
    .venv/bin/python controller.py                      # schematic + checks -> build/parts-120v.json
-   python3 sim/run.py                                  # circuit simulations (60 checks)
+   python3 sim/run.py                                  # circuit simulations (61 checks)
    source ~/opt/kienv.sh
    PLACE_JSON=plan.json FASTROUTE=… python3 ext_route.py fastroute 120   # place, route (fastroute), DRC, gerbers
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v17-gerbers.zip`;
-   - `coffee-v17-bom.csv`;
-   - `coffee-v17-cpl.csv`.
+   - `coffee-v18-gerbers.zip`;
+   - `coffee-v18-bom.csv`;
+   - `coffee-v18-cpl.csv`.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 37.3 × 27 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - 43 × 27 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
    - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **left and right short edges only**, and add the remark "J4 USB-C overhangs the bottom long edge by 0.46 mm; no rail or V-cut on the bottom edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
@@ -71,7 +71,7 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
    - This is the only time the board needs a PC. Later updates go over Wi-Fi (`coffee ota`).
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
-   - temperature reads room temperature, and rises when you hold the probe;
+   - temperature reads room temperature, and rises when you hold the probe's tab;
    - pressure reads about 0 bar;
    - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3;
    - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
@@ -83,9 +83,15 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
 ## 4. Fit sensors and plumbing (machine unplugged)
 1. Unplug, drain, cool. **Photograph all the wiring** before touching it.
 2. **Thermistor:** remove the brew thermostat (the 107 °C one on the boiler).
-   - Fit the probe into its M4 hole **hand-tight plus a nip**: the boss is soft, and over-tightening
-     can shear the stud.
-   - Use a dab of thermal paste.
+   - The probe (Molex 218537-3919) is a stainless ring tab with a Ø4.2 mm hole (Molex drawing), so it
+     fits under an M4 screw. Check the thermostat's screws are M4 before you start. If they're
+     larger, use a stainless M4 screw in one of the holes only if the hole is M4-threaded; otherwise
+     stop and ask.
+   - Clean the seat, add a thin film of thermal paste, then put the ring tab flat on the seat under
+     one screw, **hand-tight plus a nip**: the boss is soft, and over-tightening can strip it.
+   - The probe's body is isolated from its leads (1500 VAC, Molex drawing), so the earthed boiler
+     doesn't touch the NTC circuit. Its 300 mm PTFE leads go to J5's GH lead with a soldered,
+     heat-shrunk splice away from the boiler (WIRING.md).
    - Keep the thermostat's two spade wires: they become the heater feed in §5.
 3. **Pressure:** fit the plumbing kit's T at the pump outlet, with the transducer on the G1/4 port.
    You'll check for leaks cold *and* hot in §6.

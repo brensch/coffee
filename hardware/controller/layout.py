@@ -271,14 +271,21 @@ def build(spec, mains_v):
         # sit on pads and on each other; the assembly drawing and BOM carry them)
         fp.Reference().SetVisible(False)   # connectors carry their wiring labels instead (bottom silkscreen)
         if ref == "J4":
-            # USB-C (HRO TYPE-C-31-M-12). KiCad's and JLC's footprints put the locating posts 0.18 mm apart
-            # relative to the signal pads (HRO's drawing: posts 0.50 mm behind the pad row, which KiCad
-            # follows); JLC places by its own. 0.5 mm posts (HRO drawing) in 1.0 mm holes seat either way and keep 0.2 mm to the pads. The shell
-            # legs get paste (paste-in-hole) so reflow solders them.
+            # USB-C (HRO TYPE-C-31-M-12), to HRO's recommended layout (drawing rev A, 2020-12-08): locating
+            # holes 0.60 mm for the 0.50 mm posts (KiCad's hole positions match the drawing; JLC's EasyEDA
+            # model draws its posts 0.18 mm elsewhere, but the physical part follows HRO), front shell slots
+            # 0.60 x 1.40 mm (KiCad's library has 1.20). The shell legs get paste (paste-in-hole).
+            ypeg = [p.GetPosition().y for p in fp.Pads() if p.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH][0]
             for pad in fp.Pads():
                 if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
-                    pad.SetDrillSize(V(mm(1.0), mm(1.0))); pad.SetSize(V(mm(1.0), mm(1.0)))
+                    pad.SetDrillSize(V(mm(0.6), mm(0.6))); pad.SetSize(V(mm(0.6), mm(0.6)))
                 elif pad.GetNumber() == "S1":
+                    if pad.GetPosition().y > ypeg + mm(2):          # the pair at the board edge
+                        d, sz = pad.GetDrillSize(), pad.GetSize()
+                        if d.x < d.y:
+                            pad.SetDrillSize(V(d.x, mm(1.4))); pad.SetSize(V(sz.x, mm(1.8)))
+                        else:
+                            pad.SetDrillSize(V(mm(1.4), d.y)); pad.SetSize(V(mm(1.8), sz.y))
                     ls = pad.GetLayerSet(); ls.AddLayer(pcbnew.F_Paste); pad.SetLayerSet(ls)
         # footprint silkscreen lines at JLC's 0.153 mm minimum (KiCad's libraries draw 0.12 mm)
         for g in fp.GraphicalItems():

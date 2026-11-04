@@ -16,7 +16,7 @@ calculations: docs/CIRCUIT.md.
 Outputs in build/: KiCad netlist, BOM CSV, parts-120v.json (input to layout.py and jlc.py).
 
 Pinouts: ESP32-C6-MINI-1U (Espressif datasheet / KiCad library, lib/Espressif.pretty),
-ME6211 (SOT-23-5: 1 VIN, 2 GND, 3 EN, 5 VOUT), AO3400A / AO3401A (SOT-23: 1 G, 2 S, 3 D).
+TLV1117LV33 (SOT-223: 1 GND, 2 + tab VOUT, 3 VIN), AO3400A / AO3401A (SOT-23: 1 G, 2 S, 3 D).
 """
 
 import csv
@@ -81,11 +81,13 @@ def conn(n, name, fp):
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
 
-# Microne ME6211C33M5G-N: 500 mA, stable with ceramic caps (the AMS1117 wants tantalum ESR), 6 V max in,
-# SOT-23-5 (8.8 x 7.2 mm SOT-223 courtyard -> 3.3 x 3.6). Peak ESP32-C6 TX ~350 mA.
-LDO = tmpl("ME6211C33M5G-N", "U", "Package_TO_SOT_SMD:SOT-23-5",
-           [(1, "VIN", T.PWRIN), (2, "GND", T.PWRIN), (3, "EN", T.INPUT), (4, "NC", T.NOCONNECT), (5, "VOUT", T.PWROUT)],
-           "LDO 3.3 V 500 mA, ceramic-stable")
+# TI TLV1117LV33DCYR (SBVS160C): 1 A, stable with >= 1 uF ceramic at any ESR, VIN <= 5.5 V (6 V abs),
+# dropout 230 mV typ at 500 mA. SOT-223 because of heat: from 5 V it drops 1.7 V, ~0.17 W at the C6's
+# ~100 mA average with Wi-Fi listening; RthJA 62.9 C/W -> +11 C. (The SOT-23-5 ME6211 it replaces is
+# rated 300 mW, i.e. ~333 C/W -> +57 C: over Tj 125 C at 70 C ambient.)
+LDO = tmpl("TLV1117LV33DCYR", "U", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+           [(1, "GND", T.PWRIN), (2, "VOUT", T.PWROUT), (3, "VIN", T.PWRIN)],
+           "LDO 3.3 V 1 A, ceramic-stable")
 # ESP32-C6-MINI-1U pads (Espressif datasheet / KiCad symbol "ESP32-C6-MINI-1/U"; lib/README.md).
 # 36-53 are GND: the inner row, the 3x3 exposed pad (49, nine sub-pads) and the four corners.
 _c6 = {1: "GND", 2: "GND", 3: "3V3", 4: "NC", 5: "IO2", 6: "IO3", 7: "NC", 8: "EN", 9: "IO4", 10: "IO5", 11: "GND",
@@ -162,12 +164,10 @@ led["K"] += gnd
 d2 = part(SCHOTTKY, "D2", "B5819W", mpn="B5819W SL", notes="USB bench power")
 d2["A"] += vbus
 d2["K"] += v5
-u_ldo = part(LDO, "U5", "ME6211C33M5G-N", mpn="Microne ME6211C33M5G-N", notes="EN tied to VIN")
+u_ldo = part(LDO, "U5", "TLV1117LV33DCYR", mpn="TI TLV1117LV33DCYR", notes="SOT-223 for heat: ~0.17 W average, +11 C")
 u_ldo["VIN"] += v5
-u_ldo["EN"] += v5
 u_ldo["GND"] += gnd
 u_ldo["VOUT"] += v3
-u_ldo["NC"] += NC
 for ref, val, net in (("C6", "22uF 25V X5R", v5), ("C7", "22uF 25V X5R", v3)):
     c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Samsung CL21A226MAQNNNE", notes="Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)")
     c[1, 2] += net, gnd
@@ -211,15 +211,16 @@ for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", No
         d["A"] += out
         d["K"] += v5
 
-# Thermistor: 100k NTC (Semitec 104NT, B 4267) to GND, 8.2k reference to 3V3: 1.52 V at 93 C.
+# Thermistor: Molex 218537-3919 50k NTC ring-tab probe to GND, 4.7k reference to 3V3: ~1.5 V at 93 C
+# (the reference sits near the probe's ~3.9k there, for the most mV per degree).
 # R27 1k between the node and GPIO1: every cable uses the same GH 3-pin plug, and the 5 V lead in J5
 # would otherwise put the supply straight onto the pin's clamp diode (~1 mA through 1k). No current
 # flows in R27 in normal use, so it adds no measurement error.
 ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="NTC probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused")
 j_ntc[1, 2] += ntc, gnd
 j_ntc[3] += NC
-r = part(R, "R15", "8.2k", notes="NTC reference: 3.10 V at 20 C, 1.52 V at 93 C, 0.50 V at 150 C (B 4267)")
+r = part(R, "R15", "4.7k", notes="NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
 c[1, 2] += ntc, gnd
@@ -229,13 +230,15 @@ u_mcu["IO1"] += ntc_adc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND")
+j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="TE M3234-000002-250PG, 250 psi, 5 V, 0.5-4.5 V ratiometric. 1=+5V 2=SIG 3=GND")
 j_p[1, 2, 3] += v5, p_sig, gnd
-r = part(R, "R16", "10k", notes="Divider 2/3")
+# 147 kOhm total: the TE M3200 datasheet asks for a load > 100 kOhm on its voltage output. Gain 100/147:
+# 4.5 V -> 3.06 V. (300k would leave too little charge in the reservoir for the ADC's sampling cap.)
+r = part(R, "R16", "47k", notes="Divider 100/147 (147k load: TE M3200 needs > 100k)")
 r[1, 2] += p_sig, p_adc
-r = part(R, "R17", "20k")
+r = part(R, "R17", "100k")
 r[1, 2] += p_adc, gnd
-c = part(C, "C9", "100nF X7R", notes="ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses")
+c = part(C, "C9", "22nF X7R", notes="ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses")
 c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 

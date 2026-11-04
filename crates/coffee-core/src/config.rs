@@ -119,15 +119,17 @@ impl Default for PidGains {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct NtcConfig {
-    /// Reference (top) resistor, ohms. 8.2k 0.1 % puts ~95 C near mid-scale.
+    /// Reference (top) resistor, ohms. 4.7k 1 %: close to the probe's 3.9k at 93 C, the most mV per degree there.
     pub r_ref_ohm: f32,
     /// Divider supply as seen by the ADC, millivolts.
     pub v_ref_mv: f32,
-    /// Beta model: resistance at 25 C and B constant (the 104NT default 4267 is its B25/85; the two-point calibration absorbs the difference).
+    /// Beta model: resistance at 25 C and B constant. Default: Molex 218537-3919, 50k +-1 %, B25/95 = 4109
+    /// fitted to Molex's R-T table (sales drawing sheet 2): 0 error at 25 and 95 C, +2.0 C at 140 C.
     pub r25_ohm: f32,
     pub beta: f32,
     /// Optional Steinhart-Hart coefficients `[A, B, C]` (1/T = A + B ln R + C ln^3 R,
-    /// T in kelvin). When set they replace the beta model.
+    /// T in kelvin). When set they replace the beta model. Default: fitted to the Molex 218537-3919 table at
+    /// 25, 100 and 140 C, within 0.2 C of it from 25 to 200 C.
     pub steinhart_hart: Option<[f32; 3]>,
     /// Two-point calibration applied after the model: `T = gain * T_model + offset`.
     /// See docs/CALIBRATION.md (room temperature + boiling water).
@@ -136,7 +138,7 @@ pub struct NtcConfig {
     /// Node above this => open thermistor / broken wire (the node is pulled to the 3.3 V rail).
     /// An open probe reads the rail; the ESP32-C6 ADC is only specified to +-40 mV near the top of
     /// its 12 dB range (datasheet Table 5-6), so the threshold sits 100 mV below the rail. That also
-    /// flags a boiler colder than ~6 C (10 C is 3178 mV for a 100k B4267 with 8.2k): a fault, heater
+    /// flags a boiler colder than ~2 C (6 C is 3178 mV for the 50k Molex probe with 4.7k): a fault, heater
     /// off, which is the safe way to be wrong. A machine indoors never starts that cold.
     pub open_mv: f32,
     /// A reading colder than this is treated as a fault too (heater off): a second net under
@@ -154,11 +156,11 @@ pub struct NtcConfig {
 impl Default for NtcConfig {
     fn default() -> Self {
         Self {
-            r_ref_ohm: 8200.0,
+            r_ref_ohm: 4700.0,
             v_ref_mv: 3300.0,
-            r25_ohm: 100_000.0,
-            beta: 4267.0,   // Semitec 104NT-4 glass bead (Trianglelab M4 probe, docs/BUY.md)
-            steinhart_hart: None,
+            r25_ohm: 50_000.0,
+            beta: 4109.0,   // Molex 218537-3919 (docs/BUY.md), B25/95 from its R-T table
+            steinhart_hart: Some([8.965973e-4, 2.145003e-4, 1.078228e-7]),
             cal_gain: 1.0,
             cal_offset_c: 0.0,
             open_mv: 3200.0,
@@ -170,7 +172,7 @@ impl Default for NtcConfig {
     }
 }
 
-/// 0.5-4.5 V ratiometric transducer on 5 V, read through a 10k/20k divider.
+/// 0.5-4.5 V ratiometric transducer on 5 V, read through the 47k/100k divider (147k: the TE M3200 wants > 100k).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PressureSensorConfig {
@@ -201,10 +203,10 @@ pub struct PressureSensorConfig {
 impl Default for PressureSensorConfig {
     fn default() -> Self {
         Self {
-            range_bar: 16.0,
+            range_bar: 17.24, // TE M3234-000002-250PG: 250 psi
             v_zero_mv: 500.0,
             v_full_mv: 4500.0,
-            divider: 2.0 / 3.0,
+            divider: 100.0 / 147.0,
             zero_offset_bar: 0.0,
             span_gain: 1.0,
             auto_zero_s: 0.5,

@@ -36,7 +36,7 @@ THT = ("TestPoint", "MountingHole")   # bare pads/holes: not assembled. Everythi
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "HRO TYPE-C-31-M-12": "TYPE-C-31-M-12",
-    "JST SM03B-GHS-TB": "SM03B-GHS-TB", "Microne ME6211C33M5G-N": "ME6211C33M5G-N",
+    "JST SM03B-GHS-TB": "SM03B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
     "AO3400A": "AO3400A", "AO3401A": "AO3401A", "1N4148W": "1N4148W", "B5819W SL": "B5819W SL",
     "Samsung CL21A226MAQNNNE": "CL21A226MAQNNNE",
 }
@@ -76,7 +76,9 @@ def norm_value(v):
 BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
 # JLC's part models whose zero orientation differs from KiCad's footprint (checked in JLC's preview)
 ROT_FIX = {}   # rotations come from jlc_cpl.py (solved against JLC's footprints)
-FIXED = {"D_SOD-123|B5819W": "C8598"}   # B5819W SL, basic part (its model name carries the "SL" suffix)
+FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name carries the "SL" suffix)
+         "SOT-223-3_TabPin2|TLV1117LV33DCYR": "C15578",   # TI's own part (C48937499 shares the name: 12 V, not TI)
+         "C_0603_1608Metric|22nF X7R": "C21122"}   # Samsung CL10B223KB8NNNC, basic (the matcher picked an extended one)
 
 
 def lookup(row):

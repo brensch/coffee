@@ -117,10 +117,11 @@ mod tests {
     #[test]
     fn ntc_design_points() {
         let c = NtcConfig::default();
-        // 100k at 25 C: node ~3.05 V. ~95 C sits near mid-scale.
-        assert!((ntc_mv_for_c(&c, 25.0) - 3050.0).abs() < 5.0);
-        let mid = ntc_mv_for_c(&c, 95.0);
-        assert!((1450.0..1850.0).contains(&mid), "{mid}");
+        // Molex 218537-3919 (50k) with the 4.7k reference, from Molex's R-T table:
+        // 25 C 50.000k -> 3016 mV, 93 C ~3.9k -> 1496 mV, 140 C 1.029k -> 593 mV.
+        assert!((ntc_mv_for_c(&c, 25.0) - 3016.0).abs() < 5.0);
+        assert!((ntc_mv_for_c(&c, 93.0) - 1496.0).abs() < 8.0);
+        assert!((ntc_mv_for_c(&c, 140.0) - 593.0).abs() < 5.0);
         // Steam (145 C) still well above the short threshold.
         assert!(ntc_mv_for_c(&c, 145.0) > 4.0 * c.short_mv);
         // A cold kitchen (10 C) does not look open...
@@ -197,14 +198,14 @@ mod tests {
     #[test]
     fn pressure_decoding() {
         let c = PressureSensorConfig::default();
-        // 0.5 V -> 0 bar, 4.5 V -> 16 bar, through the x2/3 divider.
-        assert!((pressure_to_mv(&c, 0.0, 0.0) - 333.3).abs() < 0.1);
-        assert!((pressure_to_mv(&c, 16.0, 0.0) - 3000.0).abs() < 0.1);
-        let PressureReading::Bar(b) = pressure(&c, 3000, 0.0) else {
+        // 0.5 V -> 0 bar, 4.5 V -> 17.24 bar (250 psi), through the 100/147 divider.
+        assert!((pressure_to_mv(&c, 0.0, 0.0) - 340.1).abs() < 0.1);
+        assert!((pressure_to_mv(&c, 17.24, 0.0) - 3061.2).abs() < 0.1);
+        let PressureReading::Bar(b) = pressure(&c, 3061, 0.0) else {
             panic!()
         };
-        assert!((b - 16.0).abs() < 0.01);
-        // 1 mV at the pin is 9 mbar.
+        assert!((b - 17.24).abs() < 0.01);
+        // 1 mV at the pin is ~6.3 mbar.
         for bar in [0.0f32, 2.5, 9.0, 12.0] {
             let mv = pressure_to_mv(&c, bar, 0.0).round() as u16;
             let PressureReading::Bar(b) = pressure(&c, mv, 0.0) else {
