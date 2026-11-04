@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-"""coffee controller board v6: schematic as code (SKiDL).
+"""coffee controller board v7 (low voltage only): schematic as code (SKiDL).
 
-The minimum hardware for a Gaggia Classic Pro controller; everything that can live in
-firmware lives there.
-- An ESP32-C6 (external-antenna module) reads the thermistor and the pressure transducer on
-  its own ADC.
-- Three zero-cross opto-triacs fire three triacs (heater, pump, valve) straight from GPIOs.
-- An isolated 5 V module powers it.
-The mains half and the SELV half meet only inside the opto-triacs and the PSU module, across
-a 7 mm copper-free band with milled slots. Notes and calculations: docs/CIRCUIT.md.
+No mains on this board. Certified modules mounted beside it in the machine do the mains work:
+- a 5 V AC-DC module feeds J1;
+- the heater and the pump are switched by zero-cross SSRs, the 3-way valve by a relay module;
+  the board sinks each module's input through a small MOSFET (J2 heater, J3 pump, J8 valve).
+- An ESP32-C6 (external-antenna module) reads the thermistor, the pressure transducer and the
+  front switches on its own ADC and GPIOs.
+Everything is SMD on one side, from JLCPCB's basic library where one exists. Notes and
+calculations: docs/CIRCUIT.md.
 
     python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-    .venv/bin/python controller.py                 # 120 V (the target machine): checks -> build/
-    MAINS_V=230 .venv/bin/python controller.py     # 230 V variant
+    .venv/bin/python controller.py                 # checks -> build/
 
-Outputs in build/: KiCad netlist, BOM CSV, parts-<V>v.json (input to layout.py, audit.py and
-schematic_svg.py).
+Outputs in build/: KiCad netlist, BOM CSV, parts-120v.json (input to layout.py and jlc.py).
 
 Pinouts: ESP32-C6-MINI-1U (Espressif datasheet / KiCad library, lib/Espressif.pretty),
-MOC3083, RECOM RAC03E-K/277, TLV1117LV (AMS1117 pinout), BTA24/BTA08 (TO-220: 1 MT1, 2 MT2, 3 G),
-Z0109 (SOT-223: 1 MT1, 2/tab MT2, 3 G).
+TLV1117LV (AMS1117 pinout), AO3400A / AO3401A (SOT-23: 1 G, 2 S, 3 D).
 """
 
 import csv
@@ -67,33 +64,26 @@ FP_C, FP_C_1206 = "Capacitor_SMD:C_0603_1608Metric", "Capacitor_SMD:C_1206_3216M
 TWO = [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)]
 R = tmpl("R", "R", FP_R, TWO, "Resistor")
 C = tmpl("C", "C", FP_C, TWO, "Capacitor")
-CX2 = tmpl("C_X2", "C", "Coffee:C_2220_Murata_GA355", TWO, "X2 safety capacitor, ceramic, 250 VAC")
 LED = tmpl("LED", "D", "LED_SMD:LED_0603_1608Metric", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "LED")
 SCHOTTKY = tmpl("SS14", "D", "Diode_SMD:D_SMA", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Schottky 1 A 40 V")
-FUSE = tmpl("Fuse_TR5", "F", "Fuse:Fuse_Littelfuse_372_D8.50mm", TWO, "Fuse, TR5 radial")
+SIGDIODE = tmpl("1N4148W", "D", "Diode_SMD:D_SOD-123", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Switching diode 75 V 150 mA")
+NMOS = tmpl("AO3400A", "Q", "Package_TO_SOT_SMD:SOT-23", [(1, "G", T.PASSIVE), (2, "S", T.PASSIVE), (3, "D", T.PASSIVE)], "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate")
+PMOS = tmpl("AO3401A", "Q", "Package_TO_SOT_SMD:SOT-23", [(1, "G", T.PASSIVE), (2, "S", T.PASSIVE), (3, "D", T.PASSIVE)], "P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate")
 TESTPAD = tmpl("TestPad", "TP", "TestPoint:TestPoint_Pad_D1.5mm", [(1, "1", T.PASSIVE)], "Bare test pad")
 HOLE = tmpl("MountingHole", "H", "MountingHole:MountingHole_3.2mm_M3", [], "M3 mounting hole (unplated)")
-HOLE_M25 = tmpl("MountingHole_M2.5", "H", "MountingHole:MountingHole_2.7mm_M2.5", [], "M2.5 mounting hole (unplated), beside the PSU")
 
 
 def conn(n, name, fp):
     return tmpl(name, "J", fp, [(i, str(i), T.PASSIVE) for i in range(1, n + 1)], name)
 
 
-TB2_MAINS = conn(2, "Screw_Terminal_01x02_5.08", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
-TB2_HEATER = conn(2, "Screw_Terminal_01x02_5.08_24A", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal")   # 11.4 A at 60-70 C ambient
-JST2 = conn(2, "JST_PH_2", "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical")
-JST3 = conn(3, "JST_PH_3", "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical")
+# One connector type for every cable (one JLC extended-part fee): JST PH 3-pin, SMD, side entry.
+JST3 = conn(3, "JST_PH_3_SMD", "Connector_JST:JST_PH_S3B-PH-SM4-TB_1x03-1MP_P2.00mm_Horizontal")
 
 # TI TLV1117LV33: stable with ceramic output caps (the AMS1117 wants tantalum ESR and can oscillate on
 # ceramics), 455 mV dropout at 1 A, AMS1117 pinout.
 LDO = tmpl("TLV1117LV33", "U", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
                [(1, "GND", T.PWRIN), (2, "VOUT", T.PWROUT), (3, "VIN", T.PWRIN)], "LDO 3.3 V 1 A, ceramic-stable")
-# RECOM RAC03E-05SK/277 (datasheet REV 3/2023): -40..+85 C (full load to 75 C), 4 kVAC reinforced,
-# EN60335-1 / IEC61558 / UL62368, internal fusible input resistor, EMC class B with no external parts.
-PSU = tmpl("RAC03E-05SK/277", "PS", "Recom:RAC03E-K_277",
-           [(1, "AC_L", T.PWRIN), (2, "AC_N", T.PWRIN), (3, "NC", T.NOCONNECT), (4, "-VO", T.PWROUT), (5, "+VO", T.PWROUT)],
-           "Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)")
 # ESP32-C6-MINI-1U pads (Espressif datasheet / KiCad symbol "ESP32-C6-MINI-1/U"; lib/README.md).
 # 36-53 are GND: the inner row, the 3x3 exposed pad (49, nine sub-pads) and the four corners.
 _c6 = {1: "GND", 2: "GND", 3: "3V3", 4: "NC", 5: "IO2", 6: "IO3", 7: "NC", 8: "EN", 9: "IO4", 10: "IO5", 11: "GND",
@@ -105,15 +95,7 @@ ESP32C6 = tmpl("ESP32-C6-MINI-1U", "U", "Espressif:ESP32-C6-MINI-1U",
                [(n, _uniq(n, nm), T.PWRIN if nm in ("GND", "3V3") else (T.NOCONNECT if nm == "NC" else T.BIDIR))
                 for n, nm in _c6.items()],
                "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated")
-MOC3083 = tmpl("MOC3083", "U", "Package_DIP:DIP-6_W10.16mm",
-               [(1, "A", T.PASSIVE), (2, "K", T.PASSIVE), (3, "NC", T.NOCONNECT),
-                (4, "MT1", T.PASSIVE), (5, "NC2", T.NOCONNECT), (6, "MT2", T.PASSIVE)],
-               "Zero-cross triac driver opto, 800 V, IFT 5 mA max")
-TRIAC_TO220 = tmpl("Triac_TO220", "Q", "Coffee:TO-220-3_Vertical_Drill1.2",
-                   [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)], "Triac, insulated tab")
-TRIAC_SOT223 = tmpl("Triac_SOT223", "Q", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
-                    [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)], "Triac, sensitive gate")
-USBC = tmpl("USB_C_Receptacle_USB2.0", "J", "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+USBC = tmpl("USB_C_Receptacle_USB2.0", "J", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
             [("A1", "GND_A1", T.PASSIVE), ("A4", "VBUS_A4", T.PASSIVE), ("A5", "CC1", T.PASSIVE),
              ("A6", "DP1", T.PASSIVE), ("A7", "DN1", T.PASSIVE), ("A9", "VBUS_A9", T.PASSIVE), ("A12", "GND_A12", T.PASSIVE),
              ("B1", "GND_B1", T.PASSIVE), ("B4", "VBUS_B4", T.PASSIVE), ("B5", "CC2", T.PASSIVE), ("B6", "DP2", T.PASSIVE),
@@ -125,80 +107,22 @@ gnd, v5, v3, vbus = Net("GND"), Net("+5V"), Net("+3V3"), Net("VBUS")
 for n in (gnd, v5, v3):
     n.drive = 100
 
-# ================================================================ MAINS SIDE
-l_in, n_in = Net("AC_L"), Net("AC_N")
-l_in.drive = n_in.drive = 100
-j_ac = part(TB2_MAINS, "J1", "Mains in", mains=True, mpn="Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
-            notes="MAINS. 1=N 2=L (silk-labelled), after the machine's power switch. Feeds pump, valve and PSU (~0.5 A).")
-j_ac[1, 2] += n_in, l_in   # N on pin 1: the live trunk then leaves on the inside and never crosses neutral
-htr_a, htr_b = Net("HTR_A"), Net("HTR_B")
-j_htr = part(TB2_HEATER, "J2", "Heater", mains=True, mpn="Phoenix Contact MKDS 3/2-5.08 (1711725), 24 A IEC / UL 15 A, 4 mm2",
-             notes="MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series.")
-j_htr[1, 2] += htr_a, htr_b
-pump_out, valve_out = Net("PUMP_L"), Net("VALVE_L")
-j_load = part(TB2_MAINS, "J3", "Valve / pump", mains=True, mpn="Phoenix Contact MKDS 1,5/2-5.08 (1715721)", notes="MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump.")
-j_load[1, 2] += valve_out, pump_out
+# ================================================================ POWER IN
+# 5 V from the external AC-DC module. Reverse-polarity protection by a P-MOSFET (drain to the
+# connector, source to the rail, gate to GND): ~0.3 V less drop than a diode, so the transducer
+# keeps its full 5 V. A swapped lead leaves the body diode reverse biased and the gate at 0 V: off.
+v5_in = Net("+5V_IN")
+j_pwr = part(JST3, "J1", "5V in", mpn="JST S3B-PH-SM4-TB", notes="1=+5V 2=GND 3=GND, from the 5 V AC-DC module")
+j_pwr[1, 2, 3] += v5_in, gnd, gnd
+q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
+q_rp["D"] += v5_in
+q_rp["S"] += v5
+rg = Net("RP_GATE")
+q_rp["G"] += rg
+r = part(R, "R26", "10k", notes="P-FET gate to GND")
+r[1, 2] += rg, gnd
 
-l_f = Net("AC_L_FUSED")
-l_f.drive = 100
-f1 = part(FUSE, "F1", "T500mA", mpn="Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)", mains=True,
-          notes="MAINS. Protects the PSU branch")
-f1[1, 2] += l_in, l_f
-# No MOV: behind a T500mA fuse a failing MOV can burn at 60-110 W before the fuse opens, a real surge
-# blows the fuse anyway, and the RECOM passes its 1 kV surge test unaided (EN 61000-4-5). The triacs
-# and opto-triacs are 800 V parts.
-ps1 = part(PSU, "PS1", "RAC03E-05SK/277", mpn="RECOM RAC03E-05SK/277", mains=["1", "2"],
-           notes="Isolated supply; straddles the slot. Rated to 85 C: the machine's case runs at 60-70 C")
-ps1["NC"] += NC
-ps1["AC_L"] += l_f
-ps1["AC_N"] += n_in
-ps1["+VO"] += v5
-ps1["-VO"] += gnd
-
-
-def triac_channel(name, n, mt2_net, mt1_net, triac_tpl, triac_val, triac_mpn, rs_ref, snub=None, rgk_ref=None):
-    """MOC3083 zero-cross opto-triac firing a triac (onsemi AN-3004). Gate-MT1 resistor only for a
-    sensitive-gate triac; RC snubber only for an inductive load (sim/REPORT.md)."""
-    u = part(MOC3083, f"U{n}", "MOC3083", mpn="onsemi MOC3083TVM (0.4\" leads)", mains=["4", "5", "6"],
-             notes=f"{name}: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing")
-    q = part(triac_tpl, f"Q{n}", triac_val, mpn=triac_mpn, mains=True, notes=f"MAINS: {name}")
-    gate, opto_mt2 = Net(f"{name}_GATE"), Net(f"{name}_OPTO")
-    q["MT2"] += mt2_net
-    q["MT1"] += mt1_net
-    q["G"] += gate
-    r_s = part(R, rs_ref, "360", footprint=FP_R_1206, mains=True, notes="MAINS: limits opto surge current (1 A peak)")
-    r_s[1, 2] += mt2_net, opto_mt2
-    u["MT2"] += opto_mt2
-    u["MT1"] += gate
-    u["NC"] += NC
-    u["NC2"] += NC
-    if rgk_ref:
-        r_g = part(R, rgk_ref, "330", footprint=FP_R_1206, mains=True, notes="MAINS: gate-MT1 for a sensitive-gate triac")
-        r_g[1, 2] += gate, mt1_net
-    if snub:
-        r_ref, c_ref, c_val = snub
-        s_mid = Net(f"{name}_SNUB")
-        r_n = part(R, r_ref, "100 1W", footprint=FP_R_2512, mains=True, notes="MAINS: snubber (inductive load)")
-        c_n = part(CX2, c_ref, f"{c_val} X2", mpn="Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)", mains=True, notes="MAINS: snubber")
-        r_n[1, 2] += mt2_net, s_mid
-        c_n[1, 2] += s_mid, mt1_net
-    return u
-
-
-# Heater (resistive): BTA24, 25 A, Rth(j-c) 1.7 C/W; ~11 W at 11.4 A -> ~24 C over the chassis it is bolted to.
-u_h = triac_channel("HEATER", 1, htr_b, htr_a, TRIAC_TO220, "BTA24-800BW", "ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)", "R1")
-# All three channels use 800 V parts: line surges reach them unclamped (no MOV), and an inductive load
-# turned off near the line peak rings to ~2x that peak (sim/REPORT.md).
-# Pump (Ulka, diode inside: inductive). Without a snubber the triac sees ~574 V at turn-off.
-u_p = triac_channel("PUMP", 2, l_in, pump_out, TRIAC_TO220, "BTA08-800BW", "ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)", "R2",
-                    snub=("R3", "C1", "10nF"))
-# Valve (AC solenoid). The triac drops out at its holding current with the coil still carrying it:
-# ~2 kV without a snubber, <= 477 V with 100 R + 10 nF (8 nF after ceramic derating). Z0109 is
-# sensitive-gate: keeps its gate resistor. Both snubbers use the same SMD X2 part.
-u_v = triac_channel("VALVE", 3, l_in, valve_out, TRIAC_SOT223, "Z0109NN", "ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)", "R4",
-                    snub=("R6", "C2", "10nF"), rgk_ref="R5")
-
-# ================================================================ SELV SIDE
+# ================================================================ CONTROLLER
 u_mcu = part(ESP32C6, "U4", "ESP32-C6-MINI-1U-H4", mpn="ESP32-C6-MINI-1U-H4",
              notes="W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case")
 for pin in u_mcu.pins:
@@ -207,14 +131,14 @@ for pin in u_mcu.pins:
     elif pin.name.startswith("NC"):
         pin += NC
 u_mcu["3V3"] += v3
-for ref, val, fp in (("C3", "10uF 10V X7R", "Capacitor_SMD:C_0805_2012Metric"), ("C4", "100nF X7R", FP_C)):
+for ref, val, fp in (("C3", "10uF 25V X5R", "Capacitor_SMD:C_0805_2012Metric"), ("C4", "100nF X7R", FP_C)):
     c = part(C, ref, val, footprint=fp, notes="Module decoupling at the 3V3 pin")
     c[1, 2] += v3, gnd
 en = Net("EN")
 u_mcu["EN"] += en
 r = part(R, "R10", "10k", notes="EN pull-up (Espressif RC delay)")
 r[1, 2] += v3, en
-c = part(C, "C5", "1uF X7R", notes="EN delay")
+c = part(C, "C5", "1uF X5R", notes="EN delay")
 c[1, 2] += en, gnd
 strap8 = Net("IO8_STRAP")
 u_mcu["IO8"] += strap8
@@ -228,13 +152,13 @@ tp = part(TESTPAD, "TP2", "GND")
 tp[1] += gnd
 st, st_a = Net("STATUS"), Net("STATUS_A")
 u_mcu["IO23"] += st
-r = part(R, "R12", "100", notes="green LED Vf ~2.9-3.1 V: ~2-4 mA from 3.3 V")
+r = part(R, "R12", "1k", notes="red LED Vf ~2.0 V: ~1.3 mA from 3.3 V")
 r[1, 2] += st, st_a
-led = part(LED, "D1", "green", notes="Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)")
+led = part(LED, "D1", "red", notes="Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)")
 led["A"] += st_a
 led["K"] += gnd
 
-# Power: PSU -> +5V; USB VBUS joins through D2 (bench power without mains, no back-feed into the PC).
+# Power: J1 -> Q4 -> +5V; USB VBUS joins through D2 (bench power, no back-feed into the PC).
 d2 = part(SCHOTTKY, "D2", "SS14", mpn="SS14", notes="USB bench power")
 d2["A"] += vbus
 d2["K"] += v5
@@ -242,11 +166,11 @@ u_ldo = part(LDO, "U5", "TLV1117LV33", mpn="TI TLV1117LV33DCYR", notes="Tab pour
 u_ldo["VIN"] += v5
 u_ldo["GND"] += gnd
 u_ldo["VOUT"] += v3
-for ref, val, net in (("C6", "22uF 10V X7R", v5), ("C7", "22uF 10V X7R", v3)):
-    c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Murata GRM21BZ71A226ME15L", notes="Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C")
+for ref, val, net in (("C6", "22uF 25V X5R", v5), ("C7", "22uF 25V X5R", v3)):
+    c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Samsung CL21A226MAQNNNE", notes="Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)")
     c[1, 2] += net, gnd
 
-j_usb = part(USBC, "J4", "USB-C", mpn="GCT USB4105-GF-A", notes="Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power")
+j_usb = part(USBC, "J4", "USB-C", mpn="HRO TYPE-C-31-M-12", notes="Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power")
 for p in ("VBUS_A4", "VBUS_A9", "VBUS_B4", "VBUS_B9"):
     j_usb[p] += vbus
 for p in ("GND_A1", "GND_A12", "GND_B1", "GND_B12", "SHIELD"):
@@ -262,22 +186,42 @@ for ref, cc in (("R13", "CC1"), ("R14", "CC2")):
 u_mcu["IO12"] += dn
 u_mcu["IO13"] += dp
 
-# Triac drive: GPIO -> 150 R -> opto LED -> GND. 8-12 mA at every corner (sim/REPORT.md).
-# Loads are off at boot by physics: a floating or weakly-pulled pin can't push the 5 mA the opto needs.
-# GPIO order on the module edge (IO18, IO19, IO20 top to bottom) matches the opto order (valve, pump, heater).
-for name, gpio, u, ref in (("HEATER", "IO20", u_h, "R7"), ("PUMP", "IO19", u_p, "R8"), ("VALVE", "IO18", u_v, "R9")):
-    cmd, anode = Net(f"{name}_CMD"), Net(f"{name}_OPTO_A")
-    r = part(R, ref, "150", notes="Opto LED current from the GPIO")
-    r[1, 2] += cmd, anode
-    u["A"] += anode
-    u["K"] += gnd
+# Outputs: GPIO -> 100 R -> AO3400A gate, 100k gate pull-down. The FET sinks the module's input:
+# connector 1 = +5V, 2 = switched low (OUT), 3 = GND. Off by hardware during reset, boot and flashing
+# (the pull-down holds the gate at 0 V while the pin floats). 1N4148W flyback across the load for a
+# relay coil; red LED + 1k from +5V to OUT lights when the output is on (visible with nothing plugged in).
+# GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
+for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
+        ("HEATER", "IO20", "J2", "Q1", "R1", "R4", "R7", "D3", "D6"),
+        ("PUMP", "IO19", "J3", "Q2", "R2", "R5", "R8", "D4", "D7"),
+        ("VALVE", "IO18", "J8", "Q3", "R3", "R6", "R9", "D5", "D8")):
+    cmd, gate, out, led_k = Net(f"{name}_CMD"), Net(f"{name}_GATE"), Net(f"{name}_OUT"), Net(f"{name}_LED")
     u_mcu[gpio] += cmd
+    r = part(R, rg_, "100", notes="Gate series resistor")
+    r[1, 2] += cmd, gate
+    r = part(R, rpd, "100k", notes="Gate pull-down: output off while the GPIO floats")
+    r[1, 2] += gate, gnd
+    q = part(NMOS, qref, "AO3400A", mpn="AO3400A", notes=f"{name} output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)")
+    q["G"] += gate
+    q["S"] += gnd
+    q["D"] += out
+    j = part(JST3, jref, name.capitalize(), mpn="JST S3B-PH-SM4-TB", notes=f"{name}: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -")
+    j[1, 2, 3] += v5, out, gnd
+    d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for a relay coil")
+    d["A"] += out
+    d["K"] += v5
+    r = part(R, rled, "1k", notes="Output indicator LED current (~3 mA)")
+    r[1, 2] += v5, led_k
+    led = part(LED, dled, "red", notes=f"{name} on")
+    led["A"] += led_k
+    led["K"] += out
 
 # Thermistor: 100k B3950 NTC (probe) to GND, 8.2k reference to 3V3: ~95 C sits near mid-scale.
 ntc = Net("NTC")
-j_ntc = part(JST2, "J5", "Thermistor", notes="100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity)")
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST S3B-PH-SM4-TB", notes="100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
 j_ntc[1, 2] += ntc, gnd
-r = part(R, "R15", "8.2k 0.1%", notes="NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C")
+j_ntc[3] += NC
+r = part(R, "R15", "8.2k", notes="NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
 c[1, 2] += ntc, gnd
@@ -285,18 +229,18 @@ u_mcu["IO1"] += ntc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", notes="0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND")
+j_p = part(JST3, "J6", "Pressure", mpn="JST S3B-PH-SM4-TB", notes="0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND")
 j_p[1, 2, 3] += v5, p_sig, gnd
-r = part(R, "R16", "10k 0.1%", notes="Divider 2/3")
+r = part(R, "R16", "10k", notes="Divider 2/3")
 r[1, 2] += p_sig, p_adc
-r = part(R, "R17", "20k 0.1%")
+r = part(R, "R17", "20k")
 r[1, 2] += p_adc, gnd
 c = part(C, "C9", "100nF X7R", notes="ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses")
 c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 
 # Front-panel switches: dry contacts to GND; internal pull-ups, debounced in firmware.
-j_sw = part(JST3, "J7", "Switches", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
+j_sw = part(JST3, "J7", "Switches", mpn="JST S3B-PH-SM4-TB", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
 # GPIO6/7: plain GPIOs on the module edge beside the analog pins, so all three sensor/switch
 # connectors sit together on the right edge (GPIO21/22 face the optos and are boxed in).
 # 4.7k pull-up at the connector: ~0.7 mA wetting current keeps old switch contacts clean. 1k series
@@ -314,11 +258,11 @@ j_sw[3] += gnd
 # Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
 # measures absolute volts. Measuring both rails lets the firmware divide them out, so an open
 # thermistor reads exactly full scale (3300 mV) whatever the rail, and 0 C stays well clear of it.
-for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", "10k 0.1%", "C10"), ("V5_SNS", v5, "IO3", "R24", "R25", "20k 0.1%", "C11")):
+for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", "10k", "C10"), ("V5_SNS", v5, "IO3", "R24", "R25", "20k", "C11")):
     sns = Net(net)
     r = part(R, rt_, vt, notes=f"{net} divider top")
     r[1, 2] += rail, sns
-    r = part(R, rb_, "10k 0.1%", notes=f"{net} divider bottom")
+    r = part(R, rb_, "10k", notes=f"{net} divider bottom")
     r[1, 2] += sns, gnd
     c = part(C, cref, "100nF X7R", notes="ADC reservoir")
     c[1, 2] += sns, gnd
@@ -326,8 +270,9 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
 
 for p in ("IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
-# No mounting holes: the enclosure holds the board by its edges (and the heater triac's tab is bolted
-# to the chassis), so no copper is given up to screws.
+# Two M3 holes (diagonal corners) onto heat-set inserts in the printed holder.
+for ref in ("H1", "H2"):
+    part(HOLE, ref, "M3")
 
 
 # ================================================================ checks + outputs
@@ -348,13 +293,12 @@ def netname(pin):
 
 def design_checks():
     errors = []
-    # 1. Isolation: every net is entirely mains or entirely SELV.
-    for net in nets():
-        if not net.pins or net is NC:
-            continue
-        sides = {(p.part.ref, p.num) in MAINS_PINS for p in net.pins}
-        if len(sides) > 1:
-            errors.append(f"ISOLATION: net {net.name} crosses the barrier ({', '.join(f'{p.part.ref}.{p.num}' for p in net.pins)})")
+    # 1. Low voltage only, single-sided SMD assembly: no mains parts, no through-hole parts.
+    if MAINS_PINS:
+        errors.append(f"MAINS: {sorted(MAINS_PINS)} on a low-voltage board")
+    for p in builtins.default_circuit.parts:
+        if any(k in p.footprint for k in ("TO-220", "DIP", "THT", "TerminalBlock", "Vertical")):
+            errors.append(f"SMD: {p.ref} ({p.footprint}) is through-hole")
     # 2. Firmware pin map (firmware/esp32/src/main.rs).
     for pin, want in FIRMWARE_PINS.items():
         if netname(pin) != want:
@@ -376,7 +320,7 @@ def design_checks():
     if errors:
         print("\n".join(errors))
         sys.exit(1)
-    print("design checks: isolation OK, firmware pin map OK, analog on ADC1, straps OK")
+    print("design checks: no mains, all SMD, firmware pin map OK, analog on ADC1, straps OK")
 
 
 def write_outputs():
@@ -394,7 +338,7 @@ def write_outputs():
             desc=p.description, mpn=BOM_EXTRA.get(p.ref, {}).get("mpn", ""), notes=BOM_EXTRA.get(p.ref, {}).get("notes", ""),
         )
     mains_nets = sorted({n.name for n in nets() if n.pins and n is not NC and all((p.part.ref, p.num) in MAINS_PINS for p in n.pins)})
-    json.dump(dict(mains_v=MAINS_V, parts=parts, mains_nets=mains_nets, heater_nets=["HTR_A", "HTR_B"]),
+    json.dump(dict(mains_v=MAINS_V, parts=parts, mains_nets=mains_nets, heater_nets=[]),
               open(os.path.join(OUT, f"parts-{MAINS_V}v.json"), "w"), indent=1)
     refkey = lambda r_: (re.match(r"([A-Z]+)", r_).group(1), int(re.sub(r"\D", "", r_) or 0))
     rows = {}
