@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560" font-family="sans-serif">
+<rect width="1600" height="560" fill="#1d5c3a"/>
+<defs>
+  <!-- chubby bean body: a soft egg, slightly tilted -->
+  <path id="bean" d="M0,-112 C62,-112 96,-58 96,6 C96,72 54,112 0,112 C-54,112 -96,72 -96,6 C-96,-58 -62,-112 0,-112 Z"/>
+  <!-- the crease: a gentle S, stopping short of the ends -->
+  <!-- the crease: short curved strokes at the top and bottom, leaving the face clear -->
+  <path id="crease" d="M8,-104 C-6,-88 -6,-72 4,-60 M-4,62 C8,74 8,90 -2,104"/>
+</defs>
+<g fill="none" stroke="#f4f1e8" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+
+<!-- 1: stylised bean, bowler hat, happy closed eyes, smile (no limbs) -->
+<g transform="translate(200,290) rotate(-12)">
+  <use href="#bean"/><use href="#crease" stroke-width="8"/>
+  <path d="M-46,-22 Q-34,-36 -22,-22 M22,-26 Q34,-40 46,-26"/>
+  <path d="M-34,10 Q0,40 34,8"/>
+  <path d="M-70,-108 Q0,-130 70,-108"/>
+  <path d="M-42,-114 C-42,-176 42,-176 42,-114"/>
+  <path d="M-41,-132 Q0,-142 41,-132" stroke-width="7"/>
+</g>
+
+<!-- 2: same bean, top hat tilted jauntily, dot eyes + blush, little wave -->
+<g transform="translate(600,300) rotate(8)">
+  <use href="#bean"/><use href="#crease" stroke-width="8"/>
+  <circle cx="-28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/><circle cx="28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/>
+  <path d="M-22,8 Q0,28 22,8"/>
+  <ellipse cx="-50" cy="4" rx="12" ry="7" stroke-width="5"/><ellipse cx="50" cy="4" rx="12" ry="7" stroke-width="5"/>
+  <g transform="rotate(-14 0 -112)">
+    <path d="M-60,-114 Q0,-122 60,-114"/>
+    <path d="M-36,-117 L-34,-188 Q0,-196 34,-188 L36,-117"/>
+    <path d="M-35,-136 L35,-136" stroke-width="7"/>
+  </g>
+</g>
+
+<!-- 3: bean buddy with soft rounded arms and stubby legs, beanie with a pompom -->
+<g transform="translate(1000,280)">
+  <use href="#bean"/><use href="#crease" stroke-width="8"/>
+  <circle cx="-28" cy="-20" r="9" fill="#f4f1e8" stroke="none"/><circle cx="28" cy="-20" r="9" fill="#f4f1e8" stroke="none"/>
+  <path d="M-26,12 Q0,36 26,12"/>
+  <path d="M-94,10 C-120,20 -128,48 -112,64"/>
+  <path d="M94,4 C122,-6 134,-34 124,-56"/>
+  <path d="M-34,110 C-36,130 -38,142 -36,150"/><ellipse cx="-46" cy="156" rx="20" ry="10"/>
+  <path d="M34,110 C36,130 38,142 36,150"/><ellipse cx="46" cy="156" rx="20" ry="10"/>
+  <path d="M-74,-84 C-66,-150 66,-150 74,-84"/>
+  <path d="M-76,-84 Q0,-104 76,-84" stroke-width="9"/>
+  <circle cx="0" cy="-156" r="14"/>
+</g>
+
+<!-- 4: minimal badge: bean in a circle, chef hat, big grin -->
+<g transform="translate(1400,290)">
+  <circle cx="0" cy="0" r="150" stroke-width="8"/>
+  <g transform="scale(0.78) rotate(-10)">
+    <use href="#bean"/><use href="#crease" stroke-width="9"/>
+    <path d="M-44,-20 Q-32,-34 -20,-20 M20,-24 Q32,-38 44,-24"/>
+    <path d="M-38,4 Q0,46 38,2 Q0,22 -38,4 Z"/>
+  </g>
+  <g transform="translate(0,-94) scale(0.72)">
+    <path d="M-44,0 L44,0 L40,-34 C70,-40 70,-88 38,-86 C34,-118 -34,-118 -38,-86 C-70,-88 -70,-40 -40,-34 Z"/>
+    <path d="M-42,-18 L42,-18" stroke-width="7"/>
+  </g>
+</g>
+</g>
+<g fill="#f4f1e8" font-size="32" text-anchor="middle">
+<text x="200" y="535">1  bowler</text><text x="600" y="535">2  top hat + blush</text>
+<text x="1000" y="535">3  beanie buddy</text><text x="1400" y="535">4  chef badge</text></g>
+</svg>

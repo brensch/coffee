@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" font-family="sans-serif">
+<rect width="1600" height="520" fill="#1d5c3a"/>
+<g fill="none" stroke="#f4f1e8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+<!-- A: classic bean, crease, dot eyes, stick limbs, waving -->
+<g transform="translate(200,250)">
+  <ellipse cx="0" cy="0" rx="70" ry="100" transform="rotate(-18)"/>
+  <path d="M-8,-92 C30,-40 -30,30 10,96" transform="rotate(-18)"/>
+  <circle cx="-30" cy="-30" r="7" fill="#f4f1e8"/><circle cx="18" cy="-42" r="7" fill="#f4f1e8"/>
+  <path d="M-34,8 Q-14,24 6,6"/>
+  <path d="M-62,10 L-110,-40 M60,-10 L110,-70 L130,-55"/>
+  <path d="M-30,92 L-50,160 L-75,160 M25,90 L40,160 L65,160"/>
+</g>
+<!-- B: grumpy bean with monobrow, holding a tiny cup -->
+<g transform="translate(600,250)">
+  <path d="M0,-110 C80,-110 95,-10 70,60 C50,115 -50,120 -70,60 C-95,-10 -80,-110 0,-110 Z"/>
+  <path d="M5,-105 C-25,-40 30,30 0,112"/>
+  <path d="M-45,-45 L-5,-35 L35,-48"/>
+  <circle cx="-25" cy="-20" r="6" fill="#f4f1e8"/><circle cx="25" cy="-24" r="6" fill="#f4f1e8"/>
+  <path d="M-25,25 L20,22"/>
+  <path d="M68,10 L120,30"/>
+  <path d="M112,18 L150,18 L144,58 L118,58 Z"/><path d="M150,28 Q168,34 148,46"/>
+  <path d="M125,8 Q120,-6 128,-16 M138,8 Q133,-6 141,-16"/>
+  <path d="M-30,112 L-35,165 M30,110 L38,165"/>
+</g>
+<!-- C: running bean, motion lines, big grin -->
+<g transform="translate(1000,250)">
+  <ellipse cx="0" cy="0" rx="75" ry="95" transform="rotate(25)"/>
+  <path d="M-25,-85 C20,-30 -20,30 25,88" transform="rotate(25)"/>
+  <circle cx="-5" cy="-35" r="9"/><circle cx="35" cy="-20" r="9"/>
+  <circle cx="-3" cy="-33" r="3" fill="#f4f1e8"/><circle cx="37" cy="-18" r="3" fill="#f4f1e8"/>
+  <path d="M-15,5 Q15,40 50,15"/>
+  <path d="M-60,-10 L-110,20 M70,-30 L120,-70"/>
+  <path d="M-20,90 L-70,140 L-95,128 M30,85 L70,150 L95,150"/>
+  <path d="M-160,-40 L-120,-40 M-170,0 L-125,0 M-160,40 L-125,40"/>
+</g>
+<!-- D: tall bean with crazy eyes and a tiny hat, arms up -->
+<g transform="translate(1400,260)">
+  <path d="M0,-100 C65,-100 70,20 50,80 C35,120 -35,120 -50,80 C-70,20 -65,-100 0,-100 Z"/>
+  <path d="M-4,-96 C25,-40 -25,40 5,112"/>
+  <circle cx="-22" cy="-35" r="16"/><circle cx="24" cy="-38" r="11"/>
+  <circle cx="-16" cy="-30" r="5" fill="#f4f1e8"/><circle cx="20" cy="-42" r="4" fill="#f4f1e8"/>
+  <path d="M-20,15 Q-5,5 10,15 Q22,25 30,12"/>
+  <path d="M-30,-102 L30,-102 M-18,-102 L-14,-135 L18,-135 L20,-102"/>
+  <path d="M-55,-10 L-95,-80 M55,-15 L95,-85"/>
+  <path d="M-25,112 L-28,160 M25,112 L28,160"/>
+</g>
+</g>
+<g fill="#f4f1e8" font-size="34" text-anchor="middle">
+<text x="200" y="490">A  waver</text><text x="600" y="490">B  grumpy w/ cup</text>
+<text x="1000" y="490">C  sprinter</text><text x="1400" y="490">D  hat guy</text></g>
+</svg>

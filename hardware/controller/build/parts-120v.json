@@ -5,8 +5,8 @@
    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
    "value": "Mains in",
    "pins": {
-    "1": "AC_L",
-    "2": "AC_N"
+    "1": "AC_N",
+    "2": "AC_L"
    },
    "pin_names": {
     "1": "1",
@@ -19,7 +19,7 @@
    "populate": "Y",
    "desc": "Screw_Terminal_01x02_5.08",
    "mpn": "Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
-   "notes": "MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
+   "notes": "MAINS. 1=N 2=L (silk-labelled), after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
   },
   "J2": {
    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal",
@@ -137,7 +137,7 @@
    "notes": "HEATER: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within \u00b120 V of a zero crossing"
   },
   "Q1": {
-   "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "footprint": "Coffee:TO-220-3_Vertical_Drill1.2",
    "value": "BTA24-800BW",
    "pins": {
     "1": "HTR_A",
@@ -209,7 +209,7 @@
    "notes": "PUMP: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within \u00b120 V of a zero crossing"
   },
   "Q2": {
-   "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+   "footprint": "Coffee:TO-220-3_Vertical_Drill1.2",
    "value": "BTA08-800BW",
    "pins": {
     "1": "PUMP_L",
@@ -272,7 +272,7 @@
    "notes": "MAINS: snubber (inductive load)"
   },
   "C1": {
-   "footprint": "Capacitor_SMD:C_2220_5750Metric",
+   "footprint": "Coffee:C_2220_Murata_GA355",
    "value": "10nF X2",
    "pins": {
     "1": "PUMP_SNUB",
@@ -404,7 +404,7 @@
    "notes": "MAINS: snubber (inductive load)"
   },
   "C2": {
-   "footprint": "Capacitor_SMD:C_2220_5750Metric",
+   "footprint": "Coffee:C_2220_Murata_GA355",
    "value": "10nF X2",
    "pins": {
     "1": "VALVE_SNUB",

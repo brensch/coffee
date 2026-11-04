@@ -91,7 +91,7 @@ Power over USB-C. D2 feeds the board from VBUS, and nothing on the mains side is
 | Board | Goes to | Notes |
 |---|---|---|
 | **J2 Heater** (1, 2) | the two wires that went to the **brew thermostat** | The triac replaces the thermostat. The steam thermostat and thermal fuse stay in series, untouched |
-| **J1 Mains in** (1 = L, 2 = N) | L and N after the machine's power switch | Supplies the board, pump and valve only (~0.5 A) |
+| **J1 Mains in** (1 = N, 2 = L; printed N and L beside the terminal) | N and L after the machine's power switch | Supplies the board, pump and valve only (~0.5 A) |
 | **J3.1 Valve** | the 3-way valve's live wire, previously fed from the brew switch | Pump and valve neutrals stay where they are |
 | **J3.2 Pump** | the pump's live wire, previously fed from the brew switch | |
 | **J7 Switches** (1 brew, 2 steam, 3 GND) | the brew and steam switches, **disconnected from mains** and rewired as dry contacts | The switch lamps go dark. The steam switch must no longer bypass anything: the board owns the heater |

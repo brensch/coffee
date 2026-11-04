@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 07:05 PM")
+    (date "11/03/2026 11:11 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -46,12 +46,12 @@
       (ref "C1")
       (value "10nF X2")
       (description "X2 safety capacitor, ceramic, 250 VAC")
-      (footprint "Capacitor_SMD:C_2220_5750Metric")
+      (footprint "Coffee:C_2220_Murata_GA355")
       (fields
         (field
           (name "Description") "X2 safety capacitor, ceramic, 250 VAC")
         (field
-          (name "Footprint") "Capacitor_SMD:C_2220_5750Metric")
+          (name "Footprint") "Coffee:C_2220_Murata_GA355")
         (field
           (name "Datasheet"))
         (field
@@ -115,12 +115,12 @@
       (ref "C2")
       (value "10nF X2")
       (description "X2 safety capacitor, ceramic, 250 VAC")
-      (footprint "Capacitor_SMD:C_2220_5750Metric")
+      (footprint "Coffee:C_2220_Murata_GA355")
       (fields
         (field
           (name "Description") "X2 safety capacitor, ceramic, 250 VAC")
         (field
-          (name "Footprint") "Capacitor_SMD:C_2220_5750Metric")
+          (name "Footprint") "Coffee:C_2220_Murata_GA355")
         (field
           (name "Datasheet"))
         (field
@@ -552,12 +552,12 @@
       (ref "Q1")
       (value "BTA24-800BW")
       (description "Triac, insulated tab")
-      (footprint "Package_TO_SOT_THT:TO-220-3_Vertical")
+      (footprint "Coffee:TO-220-3_Vertical_Drill1.2")
       (fields
         (field
           (name "Description") "Triac, insulated tab")
         (field
-          (name "Footprint") "Package_TO_SOT_THT:TO-220-3_Vertical")
+          (name "Footprint") "Coffee:TO-220-3_Vertical_Drill1.2")
         (field
           (name "Datasheet"))
         (field
@@ -575,12 +575,12 @@
       (ref "Q2")
       (value "BTA08-800BW")
       (description "Triac, insulated tab")
-      (footprint "Package_TO_SOT_THT:TO-220-3_Vertical")
+      (footprint "Coffee:TO-220-3_Vertical_Drill1.2")
       (fields
         (field
           (name "Description") "Triac, insulated tab")
         (field
-          (name "Footprint") "Package_TO_SOT_THT:TO-220-3_Vertical")
+          (name "Footprint") "Coffee:TO-220-3_Vertical_Drill1.2")
         (field
           (name "Datasheet"))
         (field
@@ -1440,7 +1440,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J1")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "Q2")
@@ -1484,7 +1484,7 @@
       (class "Default")
       (node
         (ref "J1")
-        (pin "2")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "PS1")

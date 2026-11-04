@@ -205,8 +205,8 @@ def build(spec, mains_v):
         fp.SetOrientationDegrees(rot)
         # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
         # sit on pads and on each other; the assembly drawing and BOM carry them)
-        if not ref.startswith(("J", "Q", "U1", "U2", "U3", "F", "PS", "TP")):
-            fp.Reference().SetVisible(False)
+        if not ref.startswith(("Q", "U1", "U2", "U3", "F", "PS", "TP")):
+            fp.Reference().SetVisible(False)      # connectors carry their wiring labels instead
         for pad in fp.Pads():
             num = pad.GetNumber()
             if ref in SWAP and num in ("1", "2"):
@@ -243,8 +243,51 @@ def build(spec, mains_v):
             v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(nets["GND"]); v.SetLocked(True)
             board.Add(v)
 
+    # silkscreen: what plugs in where. Labels sit just outside each connector's body on the inward
+    # side (anything under a screw terminal is hidden once it's fitted), one per pad, then the title.
+    LABELS = {"J1": ("MAINS IN", {"1": "N", "2": "L"}), "J2": ("HEATER", {}), "J3": ("", {"1": "VALVE", "2": "PUMP"}),
+              "J5": ("NTC", {}), "J6": ("PRESSURE", {"1": "+5V", "2": "SIG", "3": "GND"}),
+              "J7": ("SWITCHES", {"1": "BREW", "2": "STEAM", "3": "GND"})}
+    def silk(txt, x, y, size=1.0, angle=0, just=0):
+        t = pcbnew.PCB_TEXT(board)
+        t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
+        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(max(0.15, size * 0.15)))
+        t.SetTextAngleDegrees(angle)
+        t.SetHorizJustify({-1: pcbnew.GR_TEXT_H_ALIGN_LEFT, 0: pcbnew.GR_TEXT_H_ALIGN_CENTER, 1: pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
+        board.Add(t)
+    for ref, (title, pads) in LABELS.items():
+        fp = board.FindFootprintByReference(ref)
+        if fp is None:
+            continue
+        cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
+        x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        # inward = away from the nearest board edge
+        d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
+        edge = min(d, key=d.get)
+        pp = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads()}
+        size = 1.0
+        for num, txt in pads.items():
+            px, py = pp[num]
+            if edge == "L":
+                silk(txt, x1 + 0.6, py, size, 0, -1)
+            elif edge == "R":
+                silk(txt, x0 - 0.6, py, size, 0, 1)
+            elif edge == "B":
+                silk(txt, px, y0 - 0.9, size, 0, 0)
+            else:
+                silk(txt, px, y1 + 0.9, size, 0, 0)
+        if title:
+            if edge in ("L", "R"):
+                w = max([len(t) for t in pads.values()] or [0]) * size * 0.9
+                tx = (x1 + 1.2 + w + 0.8) if edge == "L" else (x0 - 1.2 - w - 0.8)
+                silk(title, tx, cy, size, 90 if edge == "L" else 270, 0)
+            else:
+                silk(title, cx, (y0 - 2.4) if edge == "B" else (y1 + 2.4), size, 0, 0)
+
     # silkscreen: mark the barrier and the mains side
-    for txt, x, y, size in (("MAINS", BAND[0] - 3.5, H - 1.6, 1.0), ("SELV", BAND[1] + 3.0, H / 2, 1.0),
+    # free strips: between the fuse and the PSU (mains), and the open top-side area right of the optos (SELV)
+    for txt, x, y, size in ((f"{mains_v}V MAINS", 13.0, 17.0, 1.0), ("SELV", BAND[1] + 6.0, 26.5, 1.0),
                             (f"coffee {mains_v} V", SLOT_X, H - 1.0, 0.6)):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt)
@@ -252,6 +295,8 @@ def build(spec, mains_v):
         t.SetLayer(pcbnew.F_SilkS)
         t.SetTextSize(V(mm(size), mm(size)))
         t.SetTextThickness(mm(size * 0.15))
+        if txt.endswith("MAINS"):
+            t.SetTextAngleDegrees(90)
         board.Add(t)
     seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
     seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
@@ -269,6 +314,8 @@ def build(spec, mains_v):
             dx, dy = b_[0] - a_[0], b_[1] - a_[1]
             assert abs(dx) < 1e-6 or abs(dy) < 1e-6 or abs(abs(dx) - abs(dy)) < 0.02, f"preroute {r['net']}: {a_}->{b_} not 0/45/90"
             track(board, nets[r["net"]], L, a_, b_, r["w"])
+    if os.environ.get("MAINS_ROUTER") == "none":    # an external router does everything after the hand routes
+        return board
     rt = mainsroute.Router(board, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS)
     for r in pre:
         L = pcbnew.F_Cu if r["layer"] == "F" else pcbnew.B_Cu
@@ -332,6 +379,7 @@ def build(spec, mains_v):
             print(f"  GND tree for {len(extra)} pads: {ft} unrouted", flush=True)
             rt.base_obs = list(rt.obs)
         sbest, sfail = None, None
+        since_best = 0
         smark = len(rt.added)
         for srnd in range(int(os.environ.get("SELV_ROUNDS", "10"))):
             rt.failed = set()
@@ -340,8 +388,11 @@ def build(spec, mains_v):
                 f += rt.route_net(n, power.get(n, fine.get(n, 0.25)))
             print(f"  selv round {srnd}: {f} pads unrouted, {rt.vias()} vias total; failed {sorted(rt.failed)}", flush=True)
             if sbest is None or f < sbest[0]:
-                sbest = (f, list(sorder))
-            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "10")) - 1:
+                sbest = (f, list(sorder)); since_best = 0
+            else:
+                since_best += 1
+            # fail fast: stop when PATIENCE rounds in a row haven't beaten the best
+            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "10")) - 1 or since_best >= int(os.environ.get("SELV_PATIENCE", "3")):
                 break
             # rip up only the SELV copper and retry with the failures first
             for it in rt.added[smark:]:

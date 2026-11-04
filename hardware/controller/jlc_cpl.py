@@ -24,6 +24,11 @@ B = os.path.join(HERE, "build")
 CACHE = os.path.join(B, "easyeda-cache")
 
 
+# Parts whose land we changed on purpose (manufacturer's recommended pads differ from JLC's generic
+# footprint): the centre and angle are still solved exactly; only the pad-size tolerance is wider.
+TOLERANCE = {"C1": 0.45, "C2": 0.45}   # Murata GA355 land: pads 0.35 mm further out than JLC's C2220
+
+
 def easyeda_pads(lcsc):
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, lcsc + ".json")
@@ -102,8 +107,9 @@ def main():
                     bp.setdefault(p.GetNumber(), []).append((pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)))
             err, a, P, second = solve(bp, ee, bottom)
             polar = second > 0.25          # only one angle fits: orientation is determined by the pads
-            flag = "" if err < 0.25 else "   <-- DOES NOT FIT"
-            if err >= 0.25:
+            tol = TOLERANCE.get(ref, 0.25)
+            flag = "" if err < tol else "   <-- DOES NOT FIT"
+            if err >= tol:
                 bad.append(ref)
             print(f"{ref:5} {'bottom' if bottom else 'top':6} {code:9} {a:5d}  {err:7.3f} mm  {'unique' if polar else 'symmetric':9} {pkg}{flag}")
             rows.append([ref, f"{P[0]:.3f}mm", f"{-P[1]:.3f}mm", "Bottom" if bottom else "Top", f"{a}"])

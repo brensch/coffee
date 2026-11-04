@@ -67,7 +67,7 @@ FP_C, FP_C_1206 = "Capacitor_SMD:C_0603_1608Metric", "Capacitor_SMD:C_1206_3216M
 TWO = [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)]
 R = tmpl("R", "R", FP_R, TWO, "Resistor")
 C = tmpl("C", "C", FP_C, TWO, "Capacitor")
-CX2 = tmpl("C_X2", "C", "Capacitor_SMD:C_2220_5750Metric", TWO, "X2 safety capacitor, ceramic, 250 VAC")
+CX2 = tmpl("C_X2", "C", "Coffee:C_2220_Murata_GA355", TWO, "X2 safety capacitor, ceramic, 250 VAC")
 LED = tmpl("LED", "D", "LED_SMD:LED_0603_1608Metric", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "LED")
 SCHOTTKY = tmpl("SS14", "D", "Diode_SMD:D_SMA", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Schottky 1 A 40 V")
 FUSE = tmpl("Fuse_TR5", "F", "Fuse:Fuse_Littelfuse_372_D8.50mm", TWO, "Fuse, TR5 radial")
@@ -109,7 +109,7 @@ MOC3083 = tmpl("MOC3083", "U", "Package_DIP:DIP-6_W10.16mm",
                [(1, "A", T.PASSIVE), (2, "K", T.PASSIVE), (3, "NC", T.NOCONNECT),
                 (4, "MT1", T.PASSIVE), (5, "NC2", T.NOCONNECT), (6, "MT2", T.PASSIVE)],
                "Zero-cross triac driver opto, 800 V, IFT 5 mA max")
-TRIAC_TO220 = tmpl("Triac_TO220", "Q", "Package_TO_SOT_THT:TO-220-3_Vertical",
+TRIAC_TO220 = tmpl("Triac_TO220", "Q", "Coffee:TO-220-3_Vertical_Drill1.2",
                    [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)], "Triac, insulated tab")
 TRIAC_SOT223 = tmpl("Triac_SOT223", "Q", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
                     [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)], "Triac, sensitive gate")
@@ -129,8 +129,8 @@ for n in (gnd, v5, v3):
 l_in, n_in = Net("AC_L"), Net("AC_N")
 l_in.drive = n_in.drive = 100
 j_ac = part(TB2_MAINS, "J1", "Mains in", mains=True, mpn="Phoenix Contact MKDS 1,5/2-5.08 (1715721)",
-            notes="MAINS. 1=L 2=N, after the machine's power switch. Feeds pump, valve and PSU (~0.5 A).")
-j_ac[1, 2] += l_in, n_in
+            notes="MAINS. 1=N 2=L (silk-labelled), after the machine's power switch. Feeds pump, valve and PSU (~0.5 A).")
+j_ac[1, 2] += n_in, l_in   # N on pin 1: the live trunk then leaves on the inside and never crosses neutral
 htr_a, htr_b = Net("HTR_A"), Net("HTR_B")
 j_htr = part(TB2_HEATER, "J2", "Heater", mains=True, mpn="Phoenix Contact MKDS 3/2-5.08 (1711725), 24 A IEC / UL 15 A, 4 mm2",
              notes="MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series.")
