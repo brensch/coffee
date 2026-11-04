@@ -32,18 +32,13 @@ PKG = {  # KiCad footprint fragment -> JLC package string fragment
     "SOT-23-6": "SOT-23-6", "SOT-23": "SOT-23", "SOT-223": "SOT-223",
     "SOIC-8": "SOIC-8", "MSOP-10": "MSOP-10", "TL3342": "SMD",
 }
-THT = ("TO-220", "DIP-6", "TestPoint", "Recom:", "Fuse_Littelfuse", "RV_Disc", "C_Rect", "TerminalBlock", "Converter_ACDC", "JST_PH", "MountingHole")
+THT = ("TestPoint", "MountingHole")   # bare pads/holes: not assembled. Everything else is SMD, placed by JLC.
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
-    "SS14": "SS14", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR", "Murata GRM21BZ71A226ME15L": "GRM21BZ71A226ME15L",
-    "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "GCT USB4105-GF-A": "USB4105-GF-A",
-    "Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)": "GA355QR7GB103",
-    "ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)": "Z0109NN",
-    "ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)": "BTA24-800BW",
-    "ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)": "BTA08-800BWRG",
-    "onsemi MOC3083TVM (0.4\" leads)": "MOC3083TVM", "Hi-Link HLK-PM05": "HLK-PM05",
-    "Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)": "37205000411",
-    "Bourns MOV-10D271K (120 V) / 10D561K (230 V)": "10D271K",
+    "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "HRO TYPE-C-31-M-12": "TYPE-C-31-M-12",
+    "JST SM03B-GHS-TB": "SM03B-GHS-TB", "Microne ME6211C33M5G-N": "ME6211C33M5G-N",
+    "AO3400A": "AO3400A", "AO3401A": "AO3401A", "1N4148W": "1N4148W", "B5819W SL": "B5819W SL",
+    "Samsung CL21A226MAQNNNE": "CL21A226MAQNNNE",
 }
 
 
@@ -81,7 +76,7 @@ def norm_value(v):
 BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
 # JLC's part models whose zero orientation differs from KiCad's footprint (checked in JLC's preview)
 ROT_FIX = {"J4": 180}   # USB4105: JLC's model faces the other way
-FIXED = {"LED_0603|green": "C12624", "SOT-223|TLV1117LV33": "C15578"}   # genuine TI part (another listing claims 12 V / 1.2 V dropout: a clone)   # KT-0603G green 0603 LED (my remembered C72043 is out of stock)
+FIXED = {"D_SOD-123|B5819W": "C8598"}   # B5819W SL, basic part (its model name carries the "SL" suffix)
 
 
 def lookup(row):

@@ -287,5 +287,30 @@
  },
  "route": {
   "ROUTER": "fastroute 0.1.14 end to end"
- }
+ },
+ "logo": [
+  20.0,
+  6.3,
+  7.0
+ ],
+ "bottom_text": [
+  [
+   "coffee v7",
+   20.0,
+   15.2,
+   1.0
+  ],
+  [
+   "low voltage only",
+   20.0,
+   16.7,
+   0.8
+  ],
+  [
+   "BOOT",
+   25.5,
+   12.6,
+   0.8
+  ]
+ ]
 }

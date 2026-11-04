@@ -154,44 +154,56 @@ def bean_logo(board, cx, cy, height=11.0, layer=pcbnew.F_SilkS):
 
 
 def silkscreen(board, mains_v, footprints=None):
-    """A short label beside every connector (what plugs in) and the logo where the plan puts it.
-    The GH connectors' 1.25 mm pitch is too fine for per-pin words: the pinout is in docs/WIRING.md
-    and every connector has the same order (pin 1 = +5 V or the signal)."""
-    LABELS = _plan.get("labels", {"J1": "5V IN", "J2": "HEATER", "J3": "PUMP", "J8": "VALVE", "J5": "NTC", "J6": "PRESS", "J7": "SWITCH", "J4": "USB"})
-    def silk(txt, x, y, size=0.9, angle=0, just=0):
+    """Labels on the bottom silkscreen (the bottom carries no parts): under every connector its name
+    and pin order, plus the board name and the logo where the plan puts them. The top is too dense
+    for text; it keeps only the connectors' own pin-1 marks. Optional top labels: plan "label_pos"."""
+    LABELS = _plan.get("labels", {
+        "J1": ("5V IN", ["+5V", "GND", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
+        "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["NTC", "GND", ""]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
+        "J7": ("SWITCH", ["BREW", "STEAM", "GND"]), "J4": ("USB", [])})
+    def silk(txt, x, y, size=0.8, angle=0, layer=pcbnew.B_SilkS):
         t = pcbnew.PCB_TEXT(board)
-        t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
-        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(max(0.15, size * 0.15)))
+        t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(layer)
+        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(0.15))
         t.SetTextAngleDegrees(angle)
-        t.SetHorizJustify({-1: pcbnew.GR_TEXT_H_ALIGN_LEFT, 0: pcbnew.GR_TEXT_H_ALIGN_CENTER, 1: pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
+        if layer == pcbnew.B_SilkS:
+            t.SetMirrored(True)
         board.Add(t)
+    tlen = lambda txt, size: 0.85 * size * len(txt)      # KiCad stroke font advance (measured on the render)
     fps = {f.GetReference(): f for f in (footprints or board.GetFootprints())}
-    pos = _plan.get("label_pos", {})
-    for ref, txt in LABELS.items():
+    for ref, (name, words) in LABELS.items():
         fp = fps.get(ref)
         if fp is None:
             continue
-        if ref in pos:                       # placed by hand in the plan: [x, y, angle]
-            x, y, ang = pos[ref]
-            silk(txt, x, y, 0.9, ang, 0)
-            continue
+        fp.BuildCourtyardCaches()
         cb = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
         x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
         d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
-        edge = min(d, key=d.get)             # the label goes on the inward side
-        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        if edge == "T":
-            silk(txt, cx, y1 + 0.7, 0.9)
-        elif edge == "B":
-            silk(txt, cx, y0 - 0.7, 0.9)
-        elif edge == "L":
-            silk(txt, x1 + 0.7, cy, 0.9, 90)
-        else:
-            silk(txt, x0 - 0.7, cy, 0.9, 90)
+        edge = min(d, key=d.get)
+        inward = {"L": (1, 0), "R": (-1, 0), "T": (0, 1), "B": (0, -1)}[edge]
+        pads = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads() if p.GetNumber() in ("1", "2", "3")}
+        if not words:                      # USB: just the name, centred on the part
+            silk(name, (x0 + x1) / 2, (y0 + y1) / 2, 0.8)
+            continue
+        ang = 0 if edge in ("L", "R") else 90          # one word per pin, stacked at the 1.25 mm pitch
+        reach = 0.0
+        for num, word in zip(("1", "2", "3"), words):
+            if not word:
+                continue
+            px, py = pads[num]
+            off = 0.9 + tlen(word, 0.8) / 2
+            silk(word, px + inward[0] * off, py + inward[1] * off, 0.8, ang)
+            reach = max(reach, 0.9 + tlen(word, 0.8))
+        # the name on the outer side of the pins, under the connector's own body (free on the bottom)
+        cx = sum(p[0] for p in pads.values()) / 3; cy = sum(p[1] for p in pads.values()) / 3
+        silk(name, cx - inward[0] * 2.1, cy - inward[1] * 2.1, 0.8, 90 if edge in ("L", "R") else 0)
+    for txt, x, y, size in _plan.get("bottom_text", []):
+        silk(txt, x, y, size)
+    for ref, (x, y, ang, txt) in _plan.get("label_pos", {}).items():
+        silk(txt, x, y, 0.8, ang, pcbnew.F_SilkS)
     if "logo" in _plan:
         lx, ly, lh = _plan["logo"]
-        bean_logo(board, lx, ly, lh)
-
+        bean_logo(board, lx, ly, lh, layer=pcbnew.B_SilkS)
 
 def build(spec, mains_v):
     board = pcbnew.BOARD()
@@ -255,7 +267,13 @@ def build(spec, mains_v):
         fp.SetOrientationDegrees(rot)
         # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
         # sit on pads and on each other; the assembly drawing and BOM carry them)
-        fp.Reference().SetVisible(ref.startswith("TP"))   # connectors carry their wiring labels instead
+        fp.Reference().SetVisible(False)   # connectors carry their wiring labels instead (bottom silkscreen)
+        # footprint silkscreen that reaches the board edge (the USB-C's outline marks the edge): drop it
+        for g in list(fp.GraphicalItems()):
+            if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and hasattr(g, "GetShape"):
+                bb = g.GetBoundingBox()
+                if pcbnew.ToMM(bb.GetBottom()) > H - 0.4 or pcbnew.ToMM(bb.GetTop()) < 0.4 or pcbnew.ToMM(bb.GetLeft()) < 0.4 or pcbnew.ToMM(bb.GetRight()) > W - 0.4:
+                    fp.Remove(g)
         for pad in fp.Pads():
             num = pad.GetNumber()
             if ref in SWAP and num in ("1", "2"):

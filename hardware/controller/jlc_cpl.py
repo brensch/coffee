@@ -26,16 +26,24 @@ CACHE = os.path.join(B, "easyeda-cache")
 
 # Parts whose land we changed on purpose (manufacturer's recommended pads differ from JLC's generic
 # footprint): the centre and angle are still solved exactly; only the pad-size tolerance is wider.
-TOLERANCE = {"C1": 0.45, "C2": 0.45}   # Murata GA355 land: pads 0.35 mm further out than JLC's C2220
+TOLERANCE = {"Q4": 0.35}   # AO3401A C15127: JLC's SOT-23 land has its pads at +-1.15 mm vs KiCad's +-0.94 (same part, longer land); the angle fit is unique
+
+
+# EasyEDA's API refused this machine (CloudFront 403) when C8598 was added: its rotation is solved from
+# the cached record of the same-package diode (SOD-123, pin 1 = cathode). Check D2 in JLC's preview.
+PROXY = {"C8598": "C81598"}
 
 
 def easyeda_pads(lcsc):
+    lcsc = PROXY.get(lcsc, lcsc) if not os.path.exists(os.path.join(CACHE, lcsc + ".json")) else lcsc
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, lcsc + ".json")
     if not os.path.exists(path):
         url = f"https://easyeda.com/api/products/{lcsc}/components?version=6.4.19.5"
         req = urllib.request.Request(url, headers={"User-Agent": "coffee-jlc-cpl"})
-        open(path, "wb").write(urllib.request.urlopen(req, timeout=30).read())
+        data = urllib.request.urlopen(req, timeout=30).read()
+        json.loads(data)                      # never cache an error page
+        open(path, "wb").write(data)
     d = json.load(open(path))["result"]["packageDetail"]["dataStr"]
     ox, oy = float(d["head"]["x"]), float(d["head"]["y"])
     pads = []
