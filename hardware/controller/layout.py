@@ -268,6 +268,16 @@ def build(spec, mains_v):
         # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
         # sit on pads and on each other; the assembly drawing and BOM carry them)
         fp.Reference().SetVisible(False)   # connectors carry their wiring labels instead (bottom silkscreen)
+        if ref == "J4":
+            # USB-C (HRO TYPE-C-31-M-12). KiCad's and JLC's footprints put the locating posts 0.18 mm apart
+            # relative to the signal pads (HRO's drawing: posts 0.50 mm behind the pad row, which KiCad
+            # follows); JLC places by its own. 0.5 mm posts in 0.95 mm holes seat either way. The shell
+            # legs get paste (paste-in-hole) so reflow solders them.
+            for pad in fp.Pads():
+                if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
+                    pad.SetDrillSize(V(mm(0.95), mm(0.95))); pad.SetSize(V(mm(0.95), mm(0.95)))
+                elif pad.GetNumber() == "S1":
+                    ls = pad.GetLayerSet(); ls.AddLayer(pcbnew.F_Paste); pad.SetLayerSet(ls)
         # footprint silkscreen that reaches the board edge (the USB-C's outline marks the edge): drop it
         for g in list(fp.GraphicalItems()):
             if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and hasattr(g, "GetShape"):
@@ -442,7 +452,7 @@ def fab_outputs(pcb, stem):
     run = lambda *a: subprocess.run([cli, "pcb", "export", *a], capture_output=True, text=True)
     run("gerbers", pcb, "-o", fab + "/", "-l",
         "F.Cu,B.Cu,F.Paste,B.Paste,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts")
-    run("drill", pcb, "-o", fab + "/")
+    run("drill", pcb, "-o", fab + "/", "--excellon-separate-th")   # separate PTH and NPTH files (no plating ambiguity)
     run("pos", pcb, "-o", fab + "/positions.csv", "--format", "csv", "--units", "mm", "--side", "both")
     for name, layers, mirror in (("top", "F.Cu,F.SilkS,F.Mask,Edge.Cuts", False),
                                  ("bottom", "B.Cu,B.SilkS,Edge.Cuts", True),

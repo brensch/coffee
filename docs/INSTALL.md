@@ -32,9 +32,9 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v15-gerbers.zip`;
-   - `coffee-v15-bom.csv`;
-   - `coffee-v15-cpl.csv`.
+   - `coffee-v16-gerbers.zip`;
+   - `coffee-v16-bom.csv`;
+   - `coffee-v16-cpl.csv`.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
@@ -95,18 +95,27 @@ supply, the heater SSR (in place of the brew thermostat), the pump SSR, the valv
 board's JST GH leads, plus the multimeter checks to do before mains.
 
 ## 6. First power-on
-1. Unplug the heater SSR's lead from J2. Plug the machine into the power meter and power on.
-2. Open the UI over Wi-Fi at `http://coffee.local/` (or the IP from `coffee status --host …`);
-   no USB from now on. Check that temperature is plausible and pressure reads about 0 bar.
+Leave every lead plugged in, the heater SSR's included. The steam thermostat and thermal fuse are
+still in series with the heater. Don't unplug J2 to "test the pump first": the firmware sees full
+heat with no temperature rise and, after 60 s, latches a `HEATER_INEFFECTIVE` fault that blocks
+everything until reboot.
+1. Plug the machine into the power meter, hand on the plug, and power on.
+   - The board boots from the 5 V module.
+   - The heater SSR's LED comes on and the meter reads ~1.37 kW while it heats.
+   - If anything smells, smokes or reads wrong, switch off at the wall.
+2. Open the UI at `http://coffee.local/` (or the IP from `coffee status --host …`); no USB from now on.
+   - Temperature rises steadily from room temperature.
+   - Pressure reads about 0 bar.
+   - Unplug the probe for a moment: the UI must show a thermistor fault and the heater must go off.
 3. **Pump and valve:** run a flush with no portafilter, and check:
    - water flows;
    - pressure rises with the blind basket;
    - no leaks at the T.
-4. **Heater:** power off and plug the heater SSR's lead back into J2. Power on and watch the first
-   heat-up live in the UI, hand on the plug.
-   - Expect ~1.37 kW on the meter until near the setpoint, then pulsing.
-   - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
+   - Listen while the pump is off: no hum (the pump SSR leaks only 0.1 mA).
+4. **Heater:** watch the first heat-up to setpoint in the UI.
+   - Expect ~1.37 kW until near the setpoint, then pulsing.
    - With the heater commanded off, the meter should drop to a few watts.
+   - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
 5. Pull a shot.
 
 ## 7. Calibrate

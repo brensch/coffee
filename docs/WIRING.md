@@ -44,13 +44,14 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
    - Unplug the **grey PMP.B** wire from the pump: the one that does *not* go to the pump's thermal fuse.
    - A new wire from the pump SSR goes onto that pump tab.
    - The pump's white wire stays where it is.
-6. **Valve**
-   - The free end of the grey PMP.B wire now feeds the 3-way valve's live (as in GaggiMate, where this wire goes to its "V" output).
-   - It goes to the relay's NO contact.
+6. **Valve: identify its live wire before you park anything (step 7).**
+   - Machine unplugged. With the meter on Ω, find the wire that reads through the valve coil to the valve's neutral: a few hundred Ω to a few kΩ.
+   - In GaggiMate's build that is the free end of the grey **PMP.B** wire (it goes to their "V" output). On some machines the valve feed instead comes off a **brew-switch terminal**. If so, that switch wire is the valve live: **don't park it in step 7.**
+   - Label it now. It goes to the relay's **NO (14)** contact, through an insulated 6.3 mm male tab if it ends in a receptacle.
    - The valve neutral stays where it is.
-   - **UNSURE:** with the machine unplugged, check that the grey wire's free end has continuity through the valve coil to neutral, a few hundred Ω to a few kΩ. If it doesn't, find the valve's own live wire and use that.
-7. **Brew and steam switches**
-   - Remove **every** mains wire from both switches.
+   - If no wire shows the coil's resistance, stop: don't guess. Photograph the harness and trace the valve's two wires back from the valve body.
+7. **Brew and steam switches** (after step 6)
+   - Remove every mains wire from both switches, **except** that you already took the valve live labelled in step 6 to the relay.
    - Insulate each freed end (they already have insulated receptacles; add heat-shrink over any that don't) and tie them back.
    - The switches then carry only the 5 V J7 signals, and the switch lamps go dark.
    - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
@@ -102,12 +103,16 @@ Every board connector is a JST **GH** 1.25 mm 3-pin side-entry header (SM03B-GHS
 
 #### Joining the GH leads
 
-GH leads are thin: **26–28 AWG** (the ones in BUY.md are 28 AWG). The module terminals are made for heavier wire, so:
-- **Heater SSR input (screw clamp, rated 24–12 AWG):** strip ~12 mm and fold the strands back on themselves two or three times so the clamp bites a 22-ish AWG bundle. Or crimp a 0.25 mm² (24 AWG) ferrule over the folded end. Tug-test it.
-- **Pump SSR input (6.3 mm Faston tabs):** an insulated **22-18 female receptacle** (red). Strip ~6 mm, fold the strands to double or triple thickness so they fill the barrel, then crimp. Tug-test it.
-- **Relay coil A1/A2 (screw clamp):** a 0.25 mm² ferrule, or folded strands as for the heater SSR.
-- **Brew/steam switch tabs:** insulated 22-18 female receptacles, folded strands as for the pump SSR.
-- **RECOM output, thermistor, transducer:** solder + heat-shrink, then sleeve the joint.
+GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and screw clamps on wire that thin come loose on a machine the pump shakes. So:
+1. **Splice every GH lead to a short pigtail** of the 18 AWG silicone wire already on the list (about 80 mm). Twist the wires together, solder the joint, and cover it with heat-shrink.
+2. **Strain-relieve the joint** with a cable tie to the holder.
+3. **The 18 AWG pigtail goes to the module:**
+   - **Heater SSR input (screw clamp, 24–12 AWG):** strip 8 mm and clamp the pigtail. A ferrule is better.
+   - **Pump SSR input (6.3 mm Faston tabs):** insulated **22-18 female** receptacle (red) crimped on the pigtail.
+   - **Relay coil A1/A2 (screw clamp):** the pigtail, with a ferrule if you have one.
+   - **Brew/steam switch tabs:** insulated 22-18 female receptacles on pigtails.
+   - **RECOM output, thermistor, transducer:** solder + heat-shrink directly; no pigtail needed. Sleeve the joint.
+4. Tug-test every joint.
 
 | Board pin | Signal | Goes to | Notes |
 |---|---|---|---|
@@ -126,7 +131,7 @@ GH leads are thin: **26–28 AWG** (the ones in BUY.md are 28 AWG). The module t
 | J7.1 | BREW | brew switch, terminal **C.1** | Insulated 22-18 female receptacle |
 | J7.2 | STEAM | steam switch, terminal **S.4** | |
 | J7.3 | GND | brew switch **C.2** *and* steam switch **S.5** | Splice the one GND lead into two short tails (solder + heat-shrink). C.1/C.2 and S.4/S.5 are the pole positions GaggiMate uses for its LV button wires; **UNSURE** for your switch: check with a meter that each pair closes when its switch is pressed |
-| J5.1 | NTC | thermistor lead | No polarity. Solder + heat-shrink, with the joint well away from the boiler. Firmware: R25 = 100 kΩ, **B = 4267 K** for the Trianglelab/Semitec 104NT-4 (BUY.md §10a) |
+| J5.1 | NTC | thermistor lead | No polarity. Solder + heat-shrink, with the joint well away from the boiler. Firmware: resistance at 25 °C = 100 kΩ, **B = 4267 K** (the default) for the Trianglelab/Semitec 104NT-4 (BUY.md §10a) |
 | J5.2 | GND | thermistor lead | |
 | J5.3 | — | — | Unused |
 | J6.1 | +5 V | transducer supply (often red) | **Check the transducer's colours with a meter**: the listing gives no pinout |

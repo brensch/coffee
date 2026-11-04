@@ -25,7 +25,7 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled, all SMD on one side. The files are `build/coffee-v15-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled, all SMD on one side. The files are `build/coffee-v16-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md):
   - modules, heatsink and fuse;
   - wire and crimps;

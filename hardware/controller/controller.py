@@ -211,16 +211,21 @@ for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", No
         d["A"] += out
         d["K"] += v5
 
-# Thermistor: 100k B3950 NTC (probe) to GND, 8.2k reference to 3V3: ~95 C sits near mid-scale.
-ntc = Net("NTC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
+# Thermistor: 100k NTC (Semitec 104NT, B 4267) to GND, 8.2k reference to 3V3: 1.52 V at 93 C.
+# R27 1k between the node and GPIO1: every cable uses the same GH 3-pin plug, and the 5 V lead in J5
+# would otherwise put the supply straight onto the pin's clamp diode (~1 mA through 1k). No current
+# flows in R27 in normal use, so it adds no measurement error.
+ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="NTC probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
 j_ntc[1, 2] += ntc, gnd
 j_ntc[3] += NC
-r = part(R, "R15", "8.2k", notes="NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C")
+r = part(R, "R15", "8.2k", notes="NTC reference: 3.10 V at 20 C, 1.52 V at 93 C, 0.50 V at 150 C (B 4267)")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
 c[1, 2] += ntc, gnd
-u_mcu["IO1"] += ntc   # ADC1_CH1
+r = part(R, "R27", "1k", notes="GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode")
+r[1, 2] += ntc, ntc_adc
+u_mcu["IO1"] += ntc_adc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
@@ -273,7 +278,7 @@ def nets():
     return builtins.default_circuit.nets
 
 
-FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
+FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC_ADC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
                  "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+"}
 STRAPS = ("IO4", "IO5", "IO8", "IO9", "IO15")   # ESP32-C6 strapping pins
 ADC1 = ("IO0", "IO1", "IO2", "IO3", "IO4", "IO5", "IO6")
@@ -297,7 +302,7 @@ def design_checks():
         if netname(pin) != want:
             errors.append(f"PINMAP: {pin} is on {netname(pin)}, firmware expects {want}")
     # 3. Analog inputs on ADC1 (ADC2 doesn't exist on the C6; ADC1 works alongside Wi-Fi).
-    for net in ("NTC", "P_ADC"):
+    for net in ("NTC_ADC", "P_ADC"):
         pin = next((p for p in FIRMWARE_PINS if FIRMWARE_PINS[p] == net), None)
         if pin not in ADC1:
             errors.append(f"ADC: {net} must be on an ADC1 pin")

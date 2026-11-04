@@ -12,7 +12,7 @@
 //! - **Control** (`control.rs`, interrupt executor, high priority): crystal tick
 //!   once per nominal mains cycle, ADC oversampling, switch debounce, engine tick,
 //!   outputs, status LED, the 250 ms RTC watchdog. There is no zero-cross
-//!   detector: the MOC3083 opto-triacs only ever fire at a zero crossing.
+//!   detector: the heater and pump SSRs are zero-cross and only ever switch at a crossing.
 //! - **Everything else** (thread executor, preempted by control): Wi-Fi station
 //!   with DHCP and reconnect (`net.rs`), the HTTP server (embedded UI, `/api/*`,
 //!   `/api/ws` telemetry, `/api/ota`), the `coffee.local` mDNS responder, the USB
@@ -31,17 +31,17 @@
 //! (lockstep wire protocol) and actuator frames go back; the machine pins stay
 //! off and there is no Wi-Fi (`bridge.rs`).
 //!
-//! # Pin map (controller v12)
+//! # Pin map (controller v15, low voltage only)
 //!
 //! | Signal          | GPIO  | Notes                                                 |
 //! |-----------------|-------|-------------------------------------------------------|
 //! | Pressure        | 0     | ADC1_CH0, transducer through 10k/20k (x2/3)           |
-//! | Boiler NTC      | 1     | ADC1_CH1, 100k B4267 to GND, 8.2k 1 % to 3.3 V         |
+//! | Boiler NTC      | 1     | ADC1_CH1 via 1k, 100k B4267 to GND, 8.2k 1 % to 3.3 V   |
 //! | 3.3 V sense     | 2     | ADC1_CH2, 10k/10k (x1/2): NTC reading made ratiometric |
 //! | 5 V sense       | 3     | ADC1_CH3, 20k/10k (x1/3): pressure made ratiometric    |
-//! | Valve           | 18    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
-//! | Pump            | 19    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
-//! | Heater          | 20    | push-pull, HIGH = on, MOC3083 LED via 150 R           |
+//! | Valve           | 18    | push-pull, HIGH = on: AO3400A sinks the relay module (J8) |
+//! | Pump            | 19    | push-pull, HIGH = on: AO3400A sinks the zero-cross SSR (J3) |
+//! | Heater          | 20    | push-pull, HIGH = on: AO3400A sinks the zero-cross SSR (J2) |
 //! | Brew switch     | 6     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
 //! | Steam switch    | 7     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
 //! | Status LED      | 23    | heartbeat heating, solid ready, fast blink fault      |

@@ -10,7 +10,7 @@ J1,1,5V in,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_H
 J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
-J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
+J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"NTC probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
 J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND"
 J7,1,Switches,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
 J8,1,Valve,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
@@ -18,9 +18,9 @@ Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 
 Q4,1,AO3401A,AO3401A,Package_TO_SOT_SMD:SOT-23,Y,"P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",Reverse-polarity protection
 R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
 R10 R11 R16 R22 R23 R25 R26,7,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3 | EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | P-FET gate to GND | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom
-R12 R18 R19,3,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R12 R18 R19 R27,4,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
 R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
-R15,1,8.2k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
+R15,1,8.2k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.10 V at 20 C, 1.52 V at 93 C, 0.50 V at 150 C (B 4267)"
 R17 R24,2,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
 R20 R21,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,switch pull-up / wetting current
 TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (USB shell) while plugging USB in

@@ -12,7 +12,7 @@
 //! gain error and makes an open thermistor read exactly full scale. At the tick
 //! that ends cycle `k` the averages and the debounced switches form a
 //! `SensorFrame`, the node is ticked, and its `ActuatorFrame` is applied at once,
-//! for cycle `k + 1`: each opto-triac fires at its next zero crossing.
+//! for cycle `k + 1`: each zero-cross SSR switches at its next zero crossing.
 //!
 //! Safety:
 //! - outputs are driven low at start;
@@ -155,7 +155,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
         };
 
         let a = node.tick(&s);
-        // Applied now, for cycle k+1: each opto-triac fires at its next zero
+        // Applied now, for cycle k+1: each zero-cross SSR switches at its next zero
         // crossing, so a load raised here conducts for one whole cycle.
         heater.set_level(a.heater.into());
         pump.set_level(a.pump.into());

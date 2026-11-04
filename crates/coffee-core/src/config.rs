@@ -133,10 +133,11 @@ pub struct NtcConfig {
     /// See docs/CALIBRATION.md (room temperature + boiling water).
     pub cal_gain: f32,
     pub cal_offset_c: f32,
-    /// Node above this => open thermistor / broken wire (pulled to 3.3 V).
-    /// The firmware rescales the node to the measured 3.3 V rail, so an open
-    /// thermistor reads 3300 mV within the ADC's ratio error (~±15 mV); 0 C is
-    /// 3221 mV and -5 C ~3246 mV for a 100k B4267 (~3240 for B3950), so 3270 mV separates them.
+    /// Node above this => open thermistor / broken wire (the node is pulled to the 3.3 V rail).
+    /// An open probe reads the rail; the ESP32-C6 ADC is only specified to +-40 mV near the top of
+    /// its 12 dB range (datasheet Table 5-6), so the threshold sits 100 mV below the rail. That also
+    /// flags a boiler colder than ~6 C (10 C is 3178 mV for a 100k B4267 with 8.2k): a fault, heater
+    /// off, which is the safe way to be wrong. A machine indoors never starts that cold.
     pub open_mv: f32,
     /// Node below this => shorted thermistor / wire to GND. 100 mV is ~230 C,
     /// far above anything the boiler can reach.
@@ -157,7 +158,7 @@ impl Default for NtcConfig {
             steinhart_hart: None,
             cal_gain: 1.0,
             cal_offset_c: 0.0,
-            open_mv: 3270.0,
+            open_mv: 3200.0,
             short_mv: 100.0,
             filter_tau_s: 0.3,
             fault_debounce_s: 0.5,

@@ -200,6 +200,9 @@ def main():
     check("Reverse-polarity P-FET", "J1 at +5.0 V, 250 mA load", v5, ">= 4.95 V (drop < 50 mV)", v5 >= 4.95, "V")
     v5, i = revpol(-5.0)
     check("Reverse-polarity P-FET", "J1 wired backwards (-5 V)", abs(i) * 1e3, "< 0.01 mA into the board", abs(i) * 1e3 < 0.01, "mA")
+    # mis-plug: the 5 V lead (every cable is the same GH 3-pin) in the thermistor socket J5
+    i_clamp = (5.0 - 3.3 - 0.5) / 1000 * 1e3
+    check("J5 mis-plug (5 V lead in the thermistor socket)", "1k R27 into GPIO1's clamp diode", i_clamp, "< 2 mA (no damage; was unlimited without R27)", i_clamp < 2, "mA")
     # status LED
     i_led = (3.3 - 2.0) / 1000 * 1e3
     check("Status LED (red, 1k from GPIO23)", "3.3 V", i_led, "1-3 mA (visible, well within GPIO drive)", 1 <= i_led <= 3, "mA")

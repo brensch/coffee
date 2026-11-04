@@ -41,6 +41,7 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Output during reset, 100k pull-down (rejected value) | internal pull-up 45k | 2.28 V | reference only: why the pull-down is 3.3k | ✅ |
 | Reverse-polarity P-FET | J1 at +5.0 V, 250 mA load | 4.99 V | >= 4.95 V (drop < 50 mV) | ✅ |
 | Reverse-polarity P-FET | J1 wired backwards (-5 V) | 5.01e-09 mA | < 0.01 mA into the board | ✅ |
+| J5 mis-plug (5 V lead in the thermistor socket) | 1k R27 into GPIO1's clamp diode | 1.2 mA | < 2 mA (no damage; was unlimited without R27) | ✅ |
 | Status LED (red, 1k from GPIO23) | 3.3 V | 1.3 mA | 1-3 mA (visible, well within GPIO drive) | ✅ |
 | Pressure input | 4.5 V full scale -> GPIO0 | 2.97 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
 | Pressure input | 0.5 V (0 bar) -> GPIO0 | 0.333 V | >= 0.1 V (clear of the ADC's non-linear bottom) | ✅ |
@@ -64,4 +65,4 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.52 V | >= 4.2 V (pressure transducer) | ✅ |
 
-**59 / 59 checks pass.**
+**60 / 60 checks pass.**

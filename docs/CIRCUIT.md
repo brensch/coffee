@@ -49,7 +49,7 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 | R11 | 10k | GPIO8 high (needed for download mode from the BOOT pad) |
 | TP1 | bare pad on the **underside** | BOOT (GPIO9), recovery only: the C6 resets itself into download mode over USB |
 | D1, R12 | red LED, 1k on GPIO23 | status, ~1.3 mA |
-| J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13 |
+| J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13. Locating-post holes 0.95 mm (KiCad's and JLC's footprints put the posts 0.18 mm apart; 0.5 mm posts seat either way); shell legs get paste so reflow solders them |
 
 ### Outputs (J2 heater, J3 pump, J8 valve)
 GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. The MOSFET sinks the module's input, and every connector uses the same pinout:
@@ -70,7 +70,7 @@ Notes per part:
 ### Sensors
 | Input | Parts | Notes |
 |---|---|---|
-| Thermistor, J5 → GPIO1 (ADC1) | R15 8.2k to 3V3, C8 100 nF | 100 kΩ probe (Semitec 104NT glass bead, B 4267; firmware default) in the brew-thermostat hole. 1.52 V at 93 °C, 26 mV/°C there |
+| Thermistor, J5 → R27 1k → GPIO1 (ADC1) | R15 8.2k to 3V3, C8 100 nF, R27 1k series | 100 kΩ probe (Semitec 104NT glass bead, B 4267; firmware default) in the brew-thermostat hole. 1.52 V at 93 °C, 26 mV/°C there. R27 carries no current in use (no error) and limits a 5 V plug pushed into J5 by mistake to ~1.2 mA into the pin. **Open probe:** the node reads the 3.3 V rail; the firmware calls ≥ 3200 mV a fault (heater off), 100 mV under the rail because the ADC is only specified to ±40 mV there. That also faults a boiler colder than ~6 °C, the safe way to be wrong |
 | Pressure, J6 → GPIO0 (ADC1) | R16 10k / R17 20k divider, C9 100 nF | 0.5–4.5 V ratiometric transducer on +5 V. 4.5 V → 2.97 V; −3 dB at 233 Hz keeps the pump's 60 Hz pulses |
 | Switches, J7 → GPIO6/7 | R20/R21 4.7k pull-ups, R18/R19 1k series | the stock brew/steam switches as dry contacts. 0.7 mA wetting current; a 5 V plug in the wrong socket pushes ~1.7 mA into a clamp diode |
 | Rail sense → GPIO2/3 | R22/R23 (3V3/2), R24/R25 (5V/3), C10, C11 | the ADC measures absolute volts; measuring both rails lets the firmware divide them out (ratiometric) |
@@ -124,7 +124,7 @@ The top is too dense for text and keeps only the parts' own outlines and pin-1 m
 **JLC:** 21 BOM lines; 4 extended part types (GH connector, USB-C, ESP32-C6 module, LDO), the rest basic. `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 46 parts land on their pads.
 
 ## Simulation (ngspice, `sim/run.py`)
-59 checks, all passing:
+60 checks, all passing:
 - each output at its worst corners with each module type;
 - outputs off during reset against a weak internal pull-up;
 - relay flyback and SSR turn-off spikes;
@@ -132,7 +132,8 @@ The top is too dense for text and keeps only the parts' own outlines and pin-1 m
 - the 3.3 V rail under 500 mA Wi-Fi bursts from 4.65–5.0 V (≥ 3.29 V);
 - the pressure filter and ADC kick-back;
 - thermistor range, sensitivity and self-heating;
-- the 1 % resistor error budget.
+- the 1 % resistor error budget;
+- a 5 V plug in the thermistor socket (1.2 mA into GPIO1 through R27).
 
 The models are behavioural and fitted to datasheet values, so the point is the margins at the corners.
 

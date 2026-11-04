@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/04/2026 03:03 AM")
+    (date "11/04/2026 01:10 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -986,6 +986,29 @@
         (tstamps "/"))
       (tstamps "35cd32e0-2eec-5ec5-b4e8-e5bbdbdb9060"))
     (comp
+      (ref "R27")
+      (value "1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R27")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "7b63e68b-3b47-5fd3-988e-1f6c73de73f1"))
+    (comp
       (ref "R4")
       (value "3.3k")
       (description "Resistor")
@@ -1577,11 +1600,23 @@
         (pin "2")
         (pintype "PASSIVE"))
       (node
+        (ref "R27")
+        (pin "1")
+        (pintype "PASSIVE")))
+    (net
+      (code 13)
+      (name "NTC_ADC")
+      (class "Default")
+      (node
+        (ref "R27")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
         (ref "U4")
         (pin "13")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 13)
+      (code 14)
       (name "PUMP_CMD")
       (class "Default")
       (node
@@ -1597,7 +1632,7 @@
         (pin "25")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 14)
+      (code 15)
       (name "PUMP_OUT")
       (class "Default")
       (node
@@ -1609,7 +1644,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 15)
+      (code 16)
       (name "P_ADC")
       (class "Default")
       (node
@@ -1629,7 +1664,7 @@
         (pin "12")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 16)
+      (code 17)
       (name "P_SIG")
       (class "Default")
       (node
@@ -1641,7 +1676,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 17)
+      (code 18)
       (name "RP_GATE")
       (class "Default")
       (node
@@ -1653,7 +1688,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 18)
+      (code 19)
       (name "STATUS")
       (class "Default")
       (node
@@ -1665,7 +1700,7 @@
         (pin "29")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 19)
+      (code 20)
       (name "STATUS_A")
       (class "Default")
       (node
@@ -1677,7 +1712,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 20)
+      (code 21)
       (name "SW_BREW")
       (class "Default")
       (node
@@ -1689,7 +1724,7 @@
         (pin "15")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 21)
+      (code 22)
       (name "SW_BREW_IN")
       (class "Default")
       (node
@@ -1705,7 +1740,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 22)
+      (code 23)
       (name "SW_STEAM")
       (class "Default")
       (node
@@ -1717,7 +1752,7 @@
         (pin "16")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 23)
+      (code 24)
       (name "SW_STEAM_IN")
       (class "Default")
       (node
@@ -1733,7 +1768,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 24)
+      (code 25)
       (name "USB_D+")
       (class "Default")
       (node
@@ -1749,7 +1784,7 @@
         (pin "18")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 25)
+      (code 26)
       (name "USB_D-")
       (class "Default")
       (node
@@ -1765,7 +1800,7 @@
         (pin "17")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 26)
+      (code 27)
       (name "V3_SNS")
       (class "Default")
       (node
@@ -1785,7 +1820,7 @@
         (pin "5")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 27)
+      (code 28)
       (name "V5_SNS")
       (class "Default")
       (node
@@ -1805,7 +1840,7 @@
         (pin "6")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 28)
+      (code 29)
       (name "VALVE_CMD")
       (class "Default")
       (node
@@ -1821,7 +1856,7 @@
         (pin "24")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 29)
+      (code 30)
       (name "VALVE_OUT")
       (class "Default")
       (node
@@ -1837,7 +1872,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 30)
+      (code 31)
       (name "VBUS")
       (class "Default")
       (node

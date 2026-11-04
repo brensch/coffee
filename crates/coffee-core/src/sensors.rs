@@ -120,8 +120,11 @@ mod tests {
         assert!((1450.0..1850.0).contains(&mid), "{mid}");
         // Steam (145 C) still well above the short threshold.
         assert!(ntc_mv_for_c(&c, 145.0) > 4.0 * c.short_mv);
-        // A cold kitchen does not look open.
-        assert!(ntc_mv_for_c(&c, 5.0) < c.open_mv);
+        // A cold kitchen (10 C) does not look open...
+        assert!(ntc_mv_for_c(&c, 10.0) < c.open_mv);
+        // ...but an open probe does even if the ADC reads 40 mV low at the top of its range
+        // (ESP32-C6 datasheet: +-40 mV at 12 dB attenuation).
+        assert!(3300.0 - 40.0 >= c.open_mv + 50.0);
     }
 
     #[test]

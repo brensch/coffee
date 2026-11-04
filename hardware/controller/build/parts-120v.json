@@ -72,7 +72,7 @@
     "10": null,
     "11": "GND",
     "12": "P_ADC",
-    "13": "NTC",
+    "13": "NTC_ADC",
     "14": "GND",
     "15": "SW_BREW",
     "16": "SW_STEAM",
@@ -659,7 +659,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
+   "notes": "NTC probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
   },
   "R15": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -676,7 +676,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
+   "notes": "NTC reference: 3.10 V at 20 C, 1.52 V at 93 C, 0.50 V at 150 C (B 4267)"
   },
   "C8": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -694,6 +694,23 @@
    "desc": "Capacitor",
    "mpn": "",
    "notes": "ADC sampling reservoir / noise filter"
+  },
+  "R27": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "NTC",
+    "2": "NTC_ADC"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode"
   },
   "J6": {
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
