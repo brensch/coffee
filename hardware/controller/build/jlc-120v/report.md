@@ -4,29 +4,29 @@ Looked up live in JLCPCB's library. 'base' = basic part (no setup fee), 'expand'
 
 | Refs | Value | JLC part | LCSC | library | stock | who |
 |---|---|---|---|---|---|---|
-| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7645140 | JLC |
-| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37633469 | JLC |
-| C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12118706 | JLC |
-| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3589841 | JLC |
-| D1 | red | KT-0603R | C2286 | base | 6742764 | JLC |
-| D2 | B5819W | B5819W SL | C8598 | base | 814284 | JLC |
-| D5 | 1N4148W | 1N4148W | C81598 | base | 3697763 | JLC |
-| J1 | 5V in | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J2 | Heater | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J3 | Pump | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 160176 | JLC |
-| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J7 | Switches | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| J8 | Valve | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | JLC |
-| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 945540 | JLC |
-| Q4 | AO3401A | AO3401A | C15127 | base | 1639709 | JLC |
-| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4912144 | JLC |
-| R10 R11 R16 R22 R23 R25 R26 | 10k | 0603WAF1002T5E | C25804 | base | 44446972 | JLC |
-| R12 R18 R19 | 1k | 0603WAF1001T5E | C21190 | base | 28492729 | JLC |
-| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20635164 | JLC |
-| R15 | 8.2k | 0603WAF8201T5E | C25981 | base | 730112 | JLC |
-| R17 R24 | 20k | 0603WAF2002T5E | C4184 | base | 5917071 | JLC |
-| R20 R21 | 4.7k | 0603WAF4701T5E | C23162 | base | 13940042 | JLC |
-| U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3863 | JLC |
-| U5 | ME6211C33M5G-N | ME6211C33M5G-N | C82942 | expand | 367387 | JLC |
+| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7651914 | JLC |
+| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37547677 | JLC |
+| C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12146360 | JLC |
+| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3580756 | JLC |
+| D1 | red | KT-0603R | C2286 | base | 6730230 | JLC |
+| D2 | B5819W | B5819W SL | C8598 | base | 812226 | JLC |
+| D5 | 1N4148W | 1N4148W | C81598 | base | 3686784 | JLC |
+| J1 | 5V in | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J2 | Heater | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J3 | Pump | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 158976 | JLC |
+| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J7 | Switches | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| J8 | Valve | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33339 | JLC |
+| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 941529 | JLC |
+| Q4 | AO3401A | AO3401A | C15127 | base | 1637631 | JLC |
+| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4908393 | JLC |
+| R10 R11 R16 R22 R23 R25 R26 | 10k | 0603WAF1002T5E | C25804 | base | 44432836 | JLC |
+| R12 R18 R19 | 1k | 0603WAF1001T5E | C21190 | base | 28494759 | JLC |
+| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20630843 | JLC |
+| R15 | 8.2k | 0603WAF8201T5E | C25981 | base | 729662 | JLC |
+| R17 R24 | 20k | 0603WAF2002T5E | C4184 | base | 5916723 | JLC |
+| R20 R21 | 4.7k | 0603WAF4701T5E | C23162 | base | 13900086 | JLC |
+| U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3855 | JLC |
+| U5 | ME6211C33M5G-N | ME6211C33M5G-N | C82942 | expand | 366925 | JLC |

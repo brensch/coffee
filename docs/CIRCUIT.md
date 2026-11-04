@@ -36,7 +36,7 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 |---|---|---|
 | J1 | JST GH 3-pin (1 +5 V, 2–3 GND) | from the 5 V AC-DC module |
 | Q4 + R26 | AO3401A P-MOSFET, 10k gate to GND | reverse-polarity protection: a swapped lead leaves it off (5 nA into the board). Drop ~10 mV vs ~0.35 V for a diode, so the transducer keeps a full 5 V |
-| D2 | B5819W Schottky | USB VBUS → +5 V for bench power; stops USB and the module back-feeding each other |
+| D2 | B5819W Schottky | USB VBUS → +5 V for bench power. With both connected, the module (5.0 V) powers the board and D2 keeps it out of the PC. With USB alone, Q4 conducts backwards and ~4.6 V sits on J1 / the module's output: harmless (it only charges the unpowered module's output capacitor) |
 | C6, C7 | 22 µF X5R 0805 | +5 V and +3.3 V bulk, ceramic (nothing to dry out at 60–70 °C) |
 | U5 | ME6211C33 (SOT-23-5), EN tied to VIN | 3.3 V, 500 mA, stable with ceramic caps (the AMS1117 needs tantalum ESR) |
 | C3, C4 | 10 µF + 100 nF at the module's 3V3 pin | decoupling |
@@ -137,7 +137,7 @@ The top is too dense for text and keeps only the parts' own outlines and pin-1 m
 The models are behavioural and fitted to datasheet values, so the point is the margins at the corners.
 
 ## Status and what needs a human
-- **D2 orientation:** check it in JLC's placement preview. EasyEDA's API refused this machine when D2 was added, so its rotation came from the same-package 1N4148W record.
+- **D2 orientation (verified):** its rotation came from the same-package 1N4148W record while EasyEDA's API refused this machine; JLC's own footprint and symbol drawings confirm pad 1 on the same side and pin 1 = cathode for both.
 - **Pump SSR on the real pump:** on the first install, count strokes and listen for hum while it's off. This is the one module behaviour not verified against the Ulka's half-wave diode load.
 - **Valve coil:** read its label to confirm the current (expected 80–150 mA; the relay's contacts have huge margin).
 - **Thermistor:** the firmware default B is 4267 (the Semitec 104NT probe in BUY.md); a different probe needs its B set. The two-point calibration removes the rest.

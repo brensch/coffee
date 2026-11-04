@@ -75,7 +75,7 @@ def norm_value(v):
 
 BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
 # JLC's part models whose zero orientation differs from KiCad's footprint (checked in JLC's preview)
-ROT_FIX = {"J4": 180}   # USB4105: JLC's model faces the other way
+ROT_FIX = {}   # rotations come from jlc_cpl.py (solved against JLC's footprints)
 FIXED = {"D_SOD-123|B5819W": "C8598"}   # B5819W SL, basic part (its model name carries the "SL" suffix)
 
 

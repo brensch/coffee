@@ -30,8 +30,15 @@ TOLERANCE = {"Q4": 0.35}   # AO3401A C15127: JLC's SOT-23 land has its pads at +
 
 
 # EasyEDA's API refused this machine (CloudFront 403) when C8598 was added: its rotation is solved from
-# the cached record of the same-package diode (SOD-123, pin 1 = cathode). Check D2 in JLC's preview.
+# the cached record of the same-package diode C81598. Verified 2026-11-04 from JLC's own footprint and
+# symbol drawings (easyeda /svgs via jlcpcb.com): both put pad 1 on the same side, and pin 1 is the
+# cathode in both (C8598 '-', C81598 'K').
 PROXY = {"C8598": "C81598"}
+
+
+# Parts whose JLC pin numbers differ from the board footprint's: JLC pad -> board pad. Checked against
+# JLC's own symbol: KT-0603R (C2286) numbers 1 = anode, 2 = cathode; KiCad's LED_0603 has 1 = cathode.
+PAD_MAP = {"C2286": {"1": "2", "2": "1"}}
 
 
 def easyeda_pads(lcsc):
@@ -105,6 +112,8 @@ def main():
         if not code:
             continue
         ee, pkg = easyeda_pads(code)
+        if code in PAD_MAP:
+            ee = [(PAD_MAP[code].get(n, n), x, y) for n, x, y in ee]
         for ref in line["Designator"].split(","):
             fp = board.FindFootprintByReference(ref)
             bottom = fp.IsFlipped()

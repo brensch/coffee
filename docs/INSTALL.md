@@ -41,7 +41,7 @@ Gaggia Classic Pro.
    - 37.3 × 27 mm, no slots, no castellations.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
    - Everything is SMD, so there's nothing to hand-solder.
-   - In JLC's placement preview, check the orientation of **D2** (its rotation came from a same-package stand-in while EasyEDA's API was refusing requests), the seven GH connectors, the USB-C and the module.
+   - In JLC's placement preview, glance over the seven GH connectors, the USB-C, the module and the diodes (all rotations were solved against JLC's footprints; D2's from a same-package record, cross-checked against JLC's drawings).
    - JLC lists 4 extended parts (GH connector, USB-C, ESP32-C6 module, LDO); everything else is basic.
 5. No conformal coating needed: there's no mains on the board.
 
@@ -60,7 +60,7 @@ embeds `ui/dist`). The details are in [`firmware/esp32/README.md`](../firmware/e
 On WSL, attach the board's USB with `usbipd` to get `/dev/ttyACM0`.
 
 ## 3. Bench bring-up: USB only, no mains
-Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both be connected; D2 stops either feeding back into the other.
+Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both be connected: the module then powers the board and D2 keeps it out of the PC. (With USB alone, ~4.6 V also appears on J1; harmless.)
 1. **Rails:** 3.3 V on C7. The board enumerates as an ESP32-C6 USB Serial/JTAG device.
 2. **Flash and join Wi-Fi:**
    - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`.
