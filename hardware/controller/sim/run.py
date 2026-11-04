@@ -45,14 +45,14 @@ def check(block, case, value, limit, ok, unit=""):
 # AO3400A (datasheet): Vth 0.65 / 1.05 / 1.45 V min/typ/max, 48 mOhm at Vgs 2.5 V (typ). Level-1 fit.
 NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): Rds(2.5 V) = 1/(KP (2.5 - VTO))
 def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
-    """GPIO (25 ohm) -> 100 R -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
+    """GPIO (25 ohm) -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
     load: 'ssr_ez' (Crydom EZ240D5: 4-15 V, ~15 mA regulated), 'ssr_sch' (Schneider SSP1A125BDT: 3-32 V, ~10 mA),
-          'relay' (5 V coil 70 ohm, 72 mA, 50 mH), each with the 1N4148W flyback and the 1k + red LED indicator."""
+          'relay' (5 V coil 70 ohm, 72 mA, 50 mH, with the 1N4148W flyback on J8). SSR loads have a 1 uH cable."""
     vto, kp = NMOS[fet]
     loads = {
-        "ssr_ez": "Bssr v5 out I = min(0.015, max(0, (v(v5)-v(out)-1.2)/150))",
-        "ssr_sch": "Bssr v5 out I = min(0.010, max(0, (v(v5)-v(out)-1.2)/150))",
-        "relay": "Rcoil v5 mid 70\nLcoil mid out 50m",
+        "ssr_ez": "Lcab v5 m 1u\nBssr m out I = min(0.015, max(0, (v(m)-v(out)-1.2)/150))",
+        "ssr_sch": "Lcab v5 m 1u\nBssr m out I = min(0.010, max(0, (v(m)-v(out)-1.2)/150))",
+        "relay": "Rcoil v5 mid 70\nLcoil mid out 50m\nDfb out v5 D4148",
     }
     drive = f"Vg g 0 PULSE(0 {vgpio} 1m 1u 1u 8m 20m)\nRgpio g pin 25" if rpu is None else f"Rpu v33 pin {rpu}\nVv33 v33 0 3.3"
     net = f"""* output stage
@@ -61,13 +61,12 @@ def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
 .model DRED D(IS=1e-19 N=1.8 RS=8)
 V5 v5 0 DC {v5}
 {drive}
-Rgs pin gate 100
+Rgs pin gate 0.01
 Rpd gate 0 {rpd}
 M1 out gate 0 0 N3400 L=1u W=1u
-{loads[load]}
-Dfb out v5 D4148
-Rled v5 lk 1k
-Dled lk out DRED
+Cout out 0 120p
+Vimeas v5 v5m 0
+{loads[load].replace("v5 ", "v5m ", 1)}
 .tran 2u {tstop} 0 2u
 .control
 run
@@ -77,6 +76,7 @@ meas tran vin_on FIND vin AT=8.5m
 meas tran vds_on FIND v(out) AT=8.5m
 meas tran vdrain_pk MAX v(out) from=9m to=20m
 meas tran vin_off FIND vin AT=19m
+meas tran iin_off FIND i(Vimeas) AT=19m
 meas tran vgate_rst AVG v(gate) from=0.1m to=20m
 .endc
 .end
@@ -186,13 +186,13 @@ def main():
                     r = output(vg, fet, v5, load)
                     check("Output on: voltage across the module input", f"{lab}, GPIO {vg} V, {fet}, +5V {v5} V", r["vin_on"], f">= {vmin} V", r["vin_on"] >= vmin, "V")
         r = output(3.0, "vth_max", 5.0, load)
-        check("Output off: voltage left across the module", lab, r["vin_off"], "< 1.0 V (SSR/relay must-release)", abs(r["vin_off"]) < 1.0, "V")
-        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating, 1N4148W flyback)", r["vdrain_pk"] < 20, "V")
+        check("Output off: current left through the module input", lab, abs(r["iin_off"]) * 1e3, "< 0.1 mA (SSR/relay must-release ~1 mA)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
+        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; flyback diode on the relay output only)", r["vdrain_pk"] < 20, "V")
     # boot/reset: GPIO high-Z with a weak internal pull-up fighting the 4.7k pull-down
     for rpu in ("45k", "20k"):
         r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpu=rpu)
         check("Output during reset (GPIO high-Z)", f"internal pull-up {rpu} vs 3.3k pull-down", r["vgate_rst"], "< 0.6 V (AO3400A Vth min 0.65 V): load stays off", r["vgate_rst"] < 0.6, "V")
-        check("Output during reset: load voltage", f"internal pull-up {rpu}", r["vin_off"], "< 1.0 V (off)", abs(r["vin_off"]) < 1.0, "V")
+        check("Output during reset: module input current", f"internal pull-up {rpu}", abs(r["iin_off"]) * 1e3, "< 0.1 mA (off)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
     r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpd="100k", rpu="45k")
     check("Output during reset, 100k pull-down (rejected value)", "internal pull-up 45k", r["vgate_rst"], "reference only: why the pull-down is 3.3k", True, "V")
     # 2. reverse polarity

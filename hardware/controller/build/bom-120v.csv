@@ -3,9 +3,9 @@ C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,Module decouplin
 C4 C8 C9 C10 C11,5,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir | ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses | ADC sampling reservoir / noise filter | Module decoupling at the 3V3 pin
 C5,1,1uF X5R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
 C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
-D1 D6 D7 D8,4,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,HEATER on | Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional) | PUMP on | VALVE on
+D1,1,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)
 D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
-D3 D4 D5,3,1N4148W,1N4148W,Diode_SMD:D_SOD-123,Y,Switching diode 75 V 150 mA,Flyback for a relay coil
+D5,1,1N4148W,1N4148W,Diode_SMD:D_SOD-123,Y,Switching diode 75 V 150 mA,Flyback for the relay coil
 J1,1,5V in,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"1=+5V 2=GND 3=GND, from the 5 V AC-DC module"
 J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
@@ -16,10 +16,9 @@ J7,1,Switches,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25m
 J8,1,Valve,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate","HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
 Q4,1,AO3401A,AO3401A,Package_TO_SOT_SMD:SOT-23,Y,"P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",Reverse-polarity protection
-R1 R2 R3,3,100,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate series resistor
 R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
-R7 R8 R9 R12 R18 R19,6,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | Output indicator LED current (~3 mA) | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
 R10 R11 R16 R22 R23 R25 R26,7,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3 | EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | P-FET gate to GND | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom
+R12 R18 R19,3,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
 R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
 R15,1,8.2k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
 R17 R24,2,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top

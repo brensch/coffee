@@ -188,35 +188,28 @@ for ref, cc in (("R13", "CC1"), ("R14", "CC2")):
 u_mcu["IO12"] += dn
 u_mcu["IO13"] += dp
 
-# Outputs: GPIO -> 100 R -> AO3400A gate, 3.3k gate pull-down. The FET sinks the module's input:
+# Outputs: GPIO -> AO3400A gate directly, 3.3k gate pull-down. The FET sinks the module's input:
 # connector 1 = +5V, 2 = switched low (OUT), 3 = GND. Off by hardware during reset, boot and flashing
-# (3.3k pull-down: under 0.5 V at the gate even against a 20k internal pull-up). 1N4148W flyback across the load for a
-# relay coil; red LED + 1k from +5V to OUT lights when the output is on (visible with nothing plugged in).
+# (3.3k pull-down: under 0.5 V at the gate even against a 20k internal pull-up; sim/REPORT.md).
+# Every module has its own input LED, so the board has none per output. J8 (valve) drives a relay
+# coil and gets the 1N4148W flyback; the SSR inputs (J2, J3) aren't inductive.
 # GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
-for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
-        ("HEATER", "IO20", "J2", "Q1", "R1", "R4", "R7", "D3", "D6"),
-        ("PUMP", "IO19", "J3", "Q2", "R2", "R5", "R8", "D4", "D7"),
-        ("VALVE", "IO18", "J8", "Q3", "R3", "R6", "R9", "D5", "D8")):
-    cmd, gate, out, led_k = Net(f"{name}_CMD"), Net(f"{name}_GATE"), Net(f"{name}_OUT"), Net(f"{name}_LED")
+for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", None), ("PUMP", "IO19", "J3", "Q2", "R5", None),
+                                         ("VALVE", "IO18", "J8", "Q3", "R6", "D5")):
+    cmd, out = Net(f"{name}_CMD"), Net(f"{name}_OUT")
     u_mcu[gpio] += cmd
-    r = part(R, rg_, "100", notes="Gate series resistor")
-    r[1, 2] += cmd, gate
     r = part(R, rpd, "3.3k", notes="Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)")
-    r[1, 2] += gate, gnd
+    r[1, 2] += cmd, gnd
     q = part(NMOS, qref, "AO3400A", mpn="AO3400A", notes=f"{name} output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)")
-    q["G"] += gate
+    q["G"] += cmd
     q["S"] += gnd
     q["D"] += out
     j = part(JST3, jref, name.capitalize(), mpn="JST SM03B-GHS-TB", notes=f"{name}: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -")
     j[1, 2, 3] += v5, out, gnd
-    d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for a relay coil")
-    d["A"] += out
-    d["K"] += v5
-    r = part(R, rled, "1k", notes="Output indicator LED current (~3 mA)")
-    r[1, 2] += v5, led_k
-    led = part(LED, dled, "red", notes=f"{name} on")
-    led["A"] += led_k
-    led["K"] += out
+    if dfb:
+        d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for the relay coil")
+        d["A"] += out
+        d["K"] += v5
 
 # Thermistor: 100k B3950 NTC (probe) to GND, 8.2k reference to 3V3: ~95 C sits near mid-scale.
 ntc = Net("NTC")
