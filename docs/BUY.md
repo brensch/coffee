@@ -1,4 +1,4 @@
-# Buy list: off-board parts for the v7 (low-voltage) controller
+# Buy list: off-board parts for the low-voltage controller (board v17)
 
 US Gaggia Classic Pro, 120 V / 60 Hz. Everything here sits off the PCB. Wiring is in
 [WIRING.md](WIRING.md).
@@ -143,9 +143,10 @@ The datasheet I opened has no current-vs-ambient derating curve, so that wasn't 
 | Item | Part | Qty | Buy (opened 2026-11-04) | Price / stock | Spec source |
 |---|---|---|---|---|---|
 | Fuse holder, panel-mount 5×20, pre-wired | MECCANIXITY panel-mount screw-cap 5×20 holder (2-pack), ASIN B0FL26HFMG | 1 pack | <https://www.amazon.com/dp/B0FL26HFMG> | **$6.69**, "Only 5 left in stock" | Listing: "10/15A AC 125/250V", pre-soldered wires, copper nuts. **No UL/CSA marking claimed; no datasheet.** Boot the rear terminals with heat-shrink |
-| Fuse, 1 A time-delay 5×20 mm, 250 V | Eaton Bussmann **GDC-1A**, 5-pack, ASIN B000HOQVES | 1 pack | <https://www.amazon.com/dp/B000HOQVES> | **$21.32**, "Only 4 left in stock", ships from Amazon, sold by Crimp Supply Inc | **Datasheet** (Eaton GDC series, "Effective March 2026", Farnell copy <https://www.farnell.com/datasheets/4810334.pdf>): 5 mm × 20 mm time-delay glass tube, low breaking capacity; **GDC-1A: 1.0 A, 250 V, 35 A breaking capacity** |
+| Fuse, 1 A time-delay 5×20 mm, 250 V, **ceramic, 1500 A breaking** | Eaton Bussmann **S505-1-R** | 1 (buy 2: a spare) | <https://www.digikey.com/en/products/result?keywords=S505-1-R> | **$4.38** each (Digi-Key search result, "FUSE CERAMIC 1A 250VAC 5X20MM", opened 2026-11-04) | Distributor listings: ceramic tube, time-delay, **1.5 kA at 250 V AC**, UL/CSA. A glass fuse (GDC, 35 A breaking) is too weak for a mains branch: a dead short can draw far more than 35 A and arc across a glass fuse. Datasheet not opened (Eaton/Mouser blocked the browser) |
 
-- **Cheaper:** the same fuse sold singly, "Bussmann GDC-1A (1 EACH)", <https://www.amazon.com/dp/B00FV21ZI8>, **$8.39**, In Stock, free delivery Nov 10 (sold by Crimp Supply Inc). Buy that if you don't want spares.
+- **Not the GDC-1A** listed here before: it is glass, with only 35 A breaking capacity (Eaton datasheet).
+- **Listed holder (better than the Amazon one, check by hand):** Littelfuse **01500520Z** in-line 5×20 holder (150520 series), described by Littelfuse as UL Recognized, 20 A, 600 V. Littelfuse's and Digi-Key's pages blocked the browser, so stock and price are unverified.
 - **Rejected:** Littelfuse 0218001.MXP is $8.08 + $7.99 delivery but comes as 25; BOJACK and Delon packs aren't major brands.
 - Inline holders on Amazon were all automotive (32 V) or unrated, so they were rejected.
 
@@ -259,7 +260,7 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 | 3 | Crydom EZ240D5 (Enrgtech, £23.05 ≈ $30, FX unverified) | ~$30.00 |
 | 4 | Phoenix 1119897, **1 unit** (eBay, saleaxis) | $33.07 |
 | 5 | RECOM RAC05-05SK/277/W | $13.85 |
-| 6 | Fuse holder 2-pack + Bussmann GDC-1A 5-pack | $6.69 + $21.32 |
+| 6 | Fuse holder 2-pack + Bussmann S505-1-R ceramic fuse | $6.69 + $4.38 |
 | 7 | DIN rail DN-R35S-150-4 | $8.00 |
 | 8 | Wire 16 + 18 AWG | $9.98 + $13.98 |
 | 8 | Nilight 400-pc nylon spade kit | $19.77 |
@@ -268,7 +269,7 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 | 10a | Trianglelab 104NT-4 M4 thermistor (regular price) | $6.66 |
 | 10b | 1.6 MPa transducer | $24.34 |
 | 11 | MHF3→RP-SMA 15 cm pigtail + Bingfu 2 dBi antenna 2-pack | $3.32 + $8.89 |
-| | **Total** | **≈ $277.63** |
+| | **Total** | **≈ $260.69** |
 
 **Shipping seen on the pages, not in the total:**
 - eBay relay $3.99;
@@ -276,10 +277,9 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 - Amazon: free over $35 for items shipped by Amazon.
 - Enrgtech's UK shipping wasn't recorded.
 
-With those it comes to about **$290** plus Enrgtech shipping, tax and tariffs.
+With those it comes to about **$273**, plus Digi-Key shipping, plus Enrgtech shipping, tax and tariffs.
 
 **Ways to cut it further:**
-- single GDC-1A instead of the 5-pack: −$12.93;
 - Nilight 160-pc kit instead of the 400-pc kit: −$8.08 (contents not itemised);
 - thermistor at the $1.09 first-piece promo: −$5.57;
 - EZ240D5 from RS/Allied at $15.70 (check by hand): about −$14.
@@ -290,7 +290,7 @@ With those it comes to about **$290** plus Enrgtech shipping, tax and tariffs.
 2. **Antenna (11):** the generic MHF3 plug's fit on the W.FL receptacle (test-fit), and the Bingfu 2 dBi gain (listing only, no datasheet). The Pulse W3921T0150 and Adafruit 5444 + 944 are still out of stock or unlisted.
 3. **Phoenix PLC-RSC-5DC/21:** datasheet not opened (phoenixcontact.com blocked). Reinforced isolation, 38 mA coil and 4 kV winding/contact are from the RSP listing and search-result excerpts of Phoenix's page. The eBay seller isn't an authorised distributor: check the label on arrival.
 4. **EZ240D5 US single-unit source:** RS/Allied at $15.70 was seen via Findchips only (check by hand). The opened source is UK-based Enrgtech, with a £→$ conversion I didn't verify.
-5. **Fuse holder:** no UL/CSA marking claimed. (The GDC-1A fuse rating is now datasheet-verified.)
+5. **Fuse holder:** the Amazon holder claims no UL/CSA marking; the Littelfuse 01500520Z alternative is UL Recognized per Littelfuse, but its page was not opened. **S505-1-R:** rating from distributor listings; Eaton datasheet not opened.
 6. **Silicone wire:** 600 V / 200 °C from the listing text only, no UL style number. Fibreglass sleeve temperature rating not stated.
 7. **JST GH leads:** clone housings, not genuine JST. Check the latch fit in SM03B-GHS-TB before wiring. Genuine JST parts (AGHGH28K305 + GHR-03V-S) are on Digi-Key only (check by hand).
 8. **Spade kit:** the 6.3 mm tab width isn't printed in the Nilight listing text. Check one on an SSR tab first.

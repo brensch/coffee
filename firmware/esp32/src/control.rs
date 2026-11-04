@@ -105,21 +105,24 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut steam = Debounce::new(DEBOUNCE_CYCLES);
     let (mut ntc_acc, mut p_acc) = (Oversample::default(), Oversample::default());
     let (mut v3_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
-    let (mut ntc_mv, mut pressure_mv) = (0u16, 0u16);
+    // Last raw (uncorrected) readings: the fallback when a cycle has no samples, so the rail
+    // correction is applied once per reading and never compounds.
+    let (mut ntc_raw, mut p_raw) = (0u16, 0u16);
     let (mut v3_mv, mut v5_mv) = (0u16, 0u16);
     let mut k: u32 = 0;
     // Cycles in a row with no thermistor sample (ADC read errors): past STALE_CYCLES the reading is
     // reported open, so a stuck ADC can't freeze the temperature near setpoint.
     const STALE_CYCLES: u32 = 30;
-    let mut ntc_stale: u32 = 0;
+    let (mut ntc_stale, mut p_stale): (u32, u32) = (0, 0);
 
     loop {
         // ---- one mains cycle of sampling: [tick k, tick k+1) ----
-        let mut ntc_fresh = false;
+        let (mut ntc_fresh, mut p_fresh) = (false, false);
         for i in 0..SAMPLES {
             until(clock.sample_us(k, i, SAMPLES)).await;
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_pressure)) {
                 p_acc.push(mv);
+                p_fresh = true;
             }
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_ntc)) {
                 ntc_acc.push(mv);
@@ -144,15 +147,23 @@ pub async fn run(p: Pins, mut node: NodeT) {
         v5_mv = v5_acc.take(v5_mv);
         // Open probe: judged on the raw reading as well as the rail-corrected one, so a rail sense
         // that reads high can't scale an open probe (node at the rail) down below the threshold.
-        let ntc_raw = ntc_acc.take(ntc_mv);
+        ntc_raw = ntc_acc.take(ntc_raw);
+        p_raw = p_acc.take(p_raw);
         ntc_stale = if ntc_fresh { 0 } else { ntc_stale.saturating_add(1) };
+        p_stale = if p_fresh { 0 } else { p_stale.saturating_add(1) };
         let open_mv = node.engine.cfg.ntc.open_mv as u16;
-        ntc_mv = if ntc_raw >= open_mv || ntc_stale > STALE_CYCLES {
+        // The 3.3 V rail is an LDO (+-2 %): a sense reading more than 5 % off means the sense
+        // path is broken, and the thermistor can't be trusted either way, so report it open
+        // (fault, heater off) instead of using an uncorrected value.
+        let v3_ok = (3135..=3465).contains(&(v3_mv as u32 * 2));
+        let ntc_mv = if ntc_raw >= open_mv || ntc_stale > STALE_CYCLES || !v3_ok {
             3300
         } else {
             ratiometric(ntc_raw, v3_mv, 2, 3300)
         };
-        pressure_mv = ratiometric(p_acc.take(pressure_mv), v5_mv, 3, 5000);
+        // Pressure: no samples for STALE_CYCLES reads as 0 V, the transducer-disconnected fault.
+        // (+5 V is 4.4-5.25 V between USB and the module, so its sense keeps ratiometric's 15 %.)
+        let pressure_mv = if p_stale > STALE_CYCLES { 0 } else { ratiometric(p_raw, v5_mv, 3, 5000) };
         let mut inputs = 0u8;
         if brew.update(brew_sw.is_low()) {
             inputs |= input::BREW;

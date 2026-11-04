@@ -577,11 +577,16 @@ impl Engine {
                 self.set_fault(fault::OVER_TEMP, true);
             }
 
-            // Heater ineffective: commanding lots of heat, no temperature rise.
-            // Disabled while water is flowing (cold water legitimately absorbs it).
+            // Heater ineffective: commanding lots of heat, no temperature rise. This is also
+            // what catches a probe that reads wrong (open but under the open threshold, backed
+            // out of its hole, or stuck): the PID drives full heat and the reading doesn't move.
+            // Disabled while water is flowing (cold water legitimately absorbs it). In steam mode
+            // only well below setpoint: steaming holds the boiler flat at full power, and the
+            // steam thermostat bounds that mode anyway.
             let sp = self.setpoint();
+            let near_ok = self.state != EngineState::Steam || temp < sp - 5.0;
             let heating_hard = self.heater_duty_avg.get() > sc.heater_ineffective_duty
-                && temp < sp - 5.0
+                && near_ok
                 && self.flow_est < 0.3;
             if heating_hard {
                 let (t0, temp0) = *self.heater_window.get_or_insert((now, temp));

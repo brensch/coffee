@@ -4,16 +4,16 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 
 | Block | Case | Result | Requirement | |
 |---|---|---|---|---|
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output off: current left through the module input | pump SSR (Crydom EZ240D5, must-operate 4.0 V) | 0 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, must-operate 4.0 V) | 3.88 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output off: current left through the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 0 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
+| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 3.88 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
@@ -24,16 +24,16 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output off: current left through the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 0 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
 | Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 5.07 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.5 V | ✅ |
-| Output on: voltage across the module input | valve relay coil (5 V, 72 mA; 70 % must-operate), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.5 V | ✅ |
-| Output off: current left through the module input | valve relay coil (5 V, 72 mA; 70 % must-operate) | 9.45e-06 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | valve relay coil (5 V, 72 mA; 70 % must-operate) | 5.83 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.0 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.0 V, vth_typ, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.0 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.0 V, vth_max, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
+| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
+| Output off: current left through the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V) | 4.71e-08 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
+| Output turn-off spike at the drain | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V) | 5.78 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 45k vs 3.3k pull-down | 0.225 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
 | Output during reset: module input current | internal pull-up 45k | 3.81e-09 mA | < 0.1 mA (off) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 20k vs 3.3k pull-down | 0.467 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |

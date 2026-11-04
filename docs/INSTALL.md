@@ -38,7 +38,8 @@ Gaggia Classic Pro.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 37.3 × 27 mm, no slots, no castellations;
+   - 37.3 × 27 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **left and right short edges only**, and add the remark "J4 USB-C overhangs the bottom long edge by 0.46 mm; no rail or V-cut on the bottom edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
    - Everything is SMD, so there's nothing to hand-solder.
@@ -72,7 +73,8 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe;
    - pressure reads about 0 bar;
-   - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3.
+   - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3;
+   - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
 4. **Outputs:** put a load across pin 1 and pin 2 of J2, J3 and J8: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output's pin 2 floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 1 to pin 2:
    - ~5 V when the UI turns that load on (the MOSFET pulls pin 2 to GND);
    - ~0 V when off, and while the board resets or flashes: the gate pull-downs hold every output off;
@@ -98,26 +100,34 @@ board's JST GH leads, plus the multimeter checks to do before mains.
 ## 6. First power-on
 Leave every lead plugged in, the heater SSR's included. The steam thermostat and thermal fuse are
 still in series with the heater. Don't unplug J2 to "test the pump first": the firmware sees full
-heat with no temperature rise and, after 60 s, latches a `HEATER_INEFFECTIVE` fault that blocks
+heat with no temperature rise and, after 30 s, latches a `HEATER_INEFFECTIVE` fault that blocks
 everything until reboot.
-1. Plug the machine into the power meter, hand on the plug, and power on.
+
+The firmware heats from the moment it boots, and §4 drained the boiler and opened the plumbing.
+So **fill the tank before you switch on, and prime straight away**: the first minute is a cold
+prime and leak check.
+1. Fill the water tank. No portafilter, a jug under the group.
+2. Plug the machine into the power meter, hand on the plug, and power on. **Straight away, switch
+   the brew switch on** (the firmware starts a brew on it even while heating) and leave it on until
+   water comes out of the group steadily, then switch it off:
+   - the pump runs and the relay LED is on;
+   - no leaks at the T: look now, while it's still cold. If it leaks, switch off at the wall.
+3. Then let it heat.
    - The board boots from the 5 V module.
    - The heater SSR's LED comes on and the meter reads ~1.37 kW while it heats.
    - If anything smells, smokes or reads wrong, switch off at the wall.
-2. Open the UI at `http://coffee.local/` (or the IP from `coffee status --host …`); no USB from now on.
-   - Temperature rises steadily from room temperature.
-   - Pressure reads about 0 bar.
-   - Unplug the probe for a moment: the UI must show a thermistor fault and the heater must go off.
-3. **Pump and valve:** run a flush with no portafilter, and check:
-   - water flows;
-   - pressure rises with the blind basket;
-   - no leaks at the T.
+4. In the UI (`http://coffee.local/`, or the IP from `coffee status --host …`; no USB from now on):
+   - temperature rises steadily from room temperature;
+   - pressure reads about 0 bar.
+5. **Pump and valve:** with the blind basket, run a flush and check:
+   - pressure rises;
+   - no leaks at the T, now hot.
    - Listen while the pump is off: no hum (the pump SSR leaks only 0.1 mA).
-4. **Heater:** watch the first heat-up to setpoint in the UI.
+6. **Heater:** watch the first heat-up to setpoint in the UI.
    - Expect ~1.37 kW until near the setpoint, then pulsing.
    - With the heater commanded off, the meter should drop to a few watts.
    - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
-5. Pull a shot.
+7. Pull a shot.
 
 ## 7. Calibrate
 1. **Thermistor, two points.** Read the probe at room temperature against a thermometer. Then

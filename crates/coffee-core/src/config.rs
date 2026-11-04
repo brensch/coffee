@@ -123,7 +123,7 @@ pub struct NtcConfig {
     pub r_ref_ohm: f32,
     /// Divider supply as seen by the ADC, millivolts.
     pub v_ref_mv: f32,
-    /// Beta model: resistance at 25 C and B constant (B25/50).
+    /// Beta model: resistance at 25 C and B constant (the 104NT default 4267 is its B25/85; the two-point calibration absorbs the difference).
     pub r25_ohm: f32,
     pub beta: f32,
     /// Optional Steinhart-Hart coefficients `[A, B, C]` (1/T = A + B ln R + C ln^3 R,
@@ -280,9 +280,9 @@ impl Default for SafetyConfig {
             over_pressure_s: 0.3,
             max_temp_step_c: 12.0,
             max_rejected_s: 1.5,
-            heater_ineffective_s: 60.0,
+            heater_ineffective_s: 30.0,
             heater_ineffective_duty: 0.8,
-            heater_ineffective_rise_c: 2.0,
+            heater_ineffective_rise_c: 10.0,  // >= 80 % of 1370 W for 30 s heats the boiler ~36 C
             runaway_margin_c: 15.0,
             no_water_s: 6.0,
             no_water_bar: 0.15,
@@ -358,36 +358,87 @@ impl EngineConfig {
         fn r(v: f32, lo: f32, hi: f32) -> bool {
             v.is_finite() && v >= lo && v <= hi
         }
+        fn gains(g: &PidGains) -> bool {
+            [g.kp, g.ki, g.kd, g.d_tau_s, g.i_max].iter().all(|v| r(*v, 0.0, 1e4)) && g.i_zone >= 0.0 // i_zone may be f32::MAX (always on)
+        }
         let s = &self.safety;
         let n = &self.ntc;
         let t = &self.temp_pid;
-        let checks: [(bool, &'static str); 22] = [
+        let p = &self.pressure_sensor;
+        // A Steinhart-Hart model replaces the beta model: it must agree with it (the probe's own
+        // r25/beta, which are range-checked) within 5 C over the working range.
+        let sh_ok = match n.steinhart_hart {
+            None => true,
+            Some(k) => {
+                let beta = NtcConfig { steinhart_hart: None, ..n.clone() };
+                k.iter().all(|v| v.is_finite())
+                    && [25.0f32, 93.0, 140.0].iter().all(|&c| {
+                        let ohms = crate::sensors::ntc_ohms(&beta, crate::sensors::ntc_mv_for_c(&beta, c));
+                        r(crate::sensors::ntc_model_c(n, ohms) - crate::sensors::ntc_model_c(&beta, ohms), -5.0, 5.0)
+                    })
+            }
+        };
+        let checks: &[(bool, &'static str)] = &[
             (self.mains_hz == 50.0 || self.mains_hz == 60.0, "mains_hz must be 50 or 60"),
             (r(self.brew_temp_c, 60.0, 105.0), "brew_temp_c out of 60..105"),
-            (r(self.steam_temp_c, 100.0, 150.0), "steam_temp_c out of 100..150"),
+            // the stock steam thermostat opens at about 145 C: a higher setpoint is never reached
+            (r(self.steam_temp_c, 100.0, 142.0), "steam_temp_c out of 100..142"),
             (r(self.hot_water_temp_c, 60.0, 110.0), "hot_water_temp_c out of 60..110"),
             (r(self.warmup_boost_c, 0.0, 15.0), "warmup_boost_c out of 0..15"),
-            (r(self.max_boost_c, 0.0, 15.0), "max_boost_c out of 0..15"),
-            (r(s.max_temp_c, 100.0, 160.0), "safety.max_temp_c out of 100..160"),
+            (r(self.max_boost_c, 0.0, 20.0), "max_boost_c out of 0..20"),
+            // above the steam thermostat (~145 C), below the thermal fuse (184 C)
+            (r(s.max_temp_c, 100.0, 175.0), "safety.max_temp_c out of 100..175"),
             (r(s.max_pressure_bar, 1.0, 15.0), "safety.max_pressure_bar out of 1..15"),
             (r(s.over_pressure_s, 0.0, 5.0), "safety.over_pressure_s out of 0..5"),
             (r(s.heater_ineffective_s, 10.0, 120.0), "safety.heater_ineffective_s out of 10..120"),
             (r(s.heater_ineffective_duty, 0.3, 1.0), "safety.heater_ineffective_duty out of 0.3..1"),
-            (r(s.heater_ineffective_rise_c, 0.2, 10.0), "safety.heater_ineffective_rise_c out of 0.2..10"),
+            (r(s.heater_ineffective_rise_c, 0.2, 30.0), "safety.heater_ineffective_rise_c out of 0.2..30"),
             (r(s.runaway_margin_c, 1.0, 20.0), "safety.runaway_margin_c out of 1..20"),
             (r(s.max_temp_step_c, 0.5, 30.0) && r(s.max_rejected_s, 0.1, 10.0), "safety glitch filter out of range"),
             (r(s.max_brew_s, 5.0, 300.0), "safety.max_brew_s out of 5..300"),
+            (r(s.no_water_s, 1.0, 30.0) && r(s.no_water_bar, 0.0, 2.0), "safety no-water check out of range"),
             (r(n.open_mv, 3000.0, 3250.0) && r(n.short_mv, 20.0, 300.0), "ntc fault thresholds out of range"),
             (r(n.min_c, -5.0, 15.0), "ntc.min_c out of -5..15"),
+            (r(n.fault_debounce_s, 0.05, 2.0), "ntc.fault_debounce_s out of 0.05..2"),
+            (r(n.filter_tau_s, 0.0, 3.0), "ntc.filter_tau_s out of 0..3"),
             (r(n.cal_gain, 0.8, 1.2) && r(n.cal_offset_c, -15.0, 15.0), "ntc calibration out of range"),
             (r(n.beta, 3000.0, 5000.0) && r(n.r25_ohm, 10e3, 1e6), "ntc model out of range"),
+            (sh_ok, "ntc.steinhart_hart disagrees with the beta model by > 5 C"),
             (r(n.r_ref_ohm, 1e3, 1e5) && r(n.v_ref_mv, 3000.0, 3600.0), "ntc divider out of range"),
             (r(t.out_min, 0.0, 1.0) && r(t.out_max, 0.0, 1.0) && t.out_min <= t.out_max, "temp_pid output limits out of 0..1"),
+            (gains(t) && gains(&self.pressure_pid), "pid gains must be finite, 0..1e4"),
+            (r(p.range_bar, 5.0, 30.0) && r(p.v_zero_mv, 300.0, 700.0) && r(p.v_full_mv, 4000.0, 5000.0), "pressure_sensor range out of limits"),
+            (r(p.divider, 0.5, 0.8) && r(p.span_gain, 0.8, 1.2) && r(p.zero_offset_bar, -1.0, 1.0), "pressure_sensor calibration out of limits"),
+            (r(p.fault_low_mv, 50.0, 450.0) && r(p.filter_tau_s, 0.0, 0.5), "pressure_sensor fault/filter out of limits"),
+            (r(p.auto_zero_s, 0.0, 10.0) && r(p.auto_zero_band_bar, 0.0, 1.0) && r(p.auto_zero_max_temp_c, 20.0, 60.0), "pressure_sensor auto-zero out of limits"),
             (r(self.heater_power_w, 100.0, 3000.0), "heater_power_w out of 100..3000"),
         ];
         match checks.iter().find(|(ok, _)| !ok) {
             Some((_, why)) => Err(why),
             None => Ok(()),
         }
+    }
+}
+
+#[cfg(test)]
+mod check_tests {
+    use super::*;
+
+    #[test]
+    fn default_config_passes_check() {
+        EngineConfig::default().check().unwrap();
+    }
+
+    #[test]
+    fn check_rejects_unsafe_fields() {
+        let mut c = EngineConfig::default();
+        c.ntc.fault_debounce_s = 1e6;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.ntc.steinhart_hart = Some([1e-3, 2e-4, 1e-7]); // a curve far off the probe's
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.temp_pid.kp = f32::NAN;
+        assert!(c.check().is_err());
     }
 }

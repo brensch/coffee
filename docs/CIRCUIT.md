@@ -59,13 +59,13 @@ GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. The MOSFET sinks the module's
 
 Notes per part:
 - **3.3 kΩ pull-down:** holds the gate under 0.47 V even against a 20 kΩ internal pull-up while the pin floats during reset, boot or flashing. A 100 kΩ pull-down would let a 45 kΩ pull-up switch the heater on at boot (2.3 V on the gate, simulated).
-- **J8 (valve):** drives a relay coil, so it has a 1N4148W flyback diode (turn-off spike 5.8 V; 17.8 kV simulated without it).
+- **J8 (valve):** drives a relay module, so it has a 1N4148W flyback diode. The simulated turn-off spike is 5.8 V. The Phoenix module also has its own suppression diode; the board's diode covers a bare relay or coil plugged in instead.
 - **J2 and J3:** the SSR inputs aren't inductive, so they need no diode (3.9–5.1 V spike with 1 µH of cable).
 - **No LED per output:** every module shows its input on its own LED.
 - **Margins, worst case** (GPIO at 3.0 V, AO3400A at its maximum threshold, +5 V at 4.6 V from USB):
-  - the pump SSR sees 4.6 V, over its 4.0 V turn-on;
+  - the pump SSR sees 4.6 V, over its 3.0 V turn-on;
   - the heater SSR sees 4.6 V, over 3.0 V;
-  - the relay coil sees 4.6 V, over 3.5 V.
+  - the relay module sees 4.6 V, over the 4.2 V bottom of its input range. This is the tightest margin. On USB alone, a weak port (4.75 V, minus 0.35–0.45 V across D2) can leave it just under 4.2 V. In the machine, the 5 V module gives it 5.0 V.
 
 ### Sensors
 | Input | Parts | Notes |
@@ -135,6 +135,7 @@ The top is too dense for text and keeps only the parts' own outlines and pin-1 m
 - the pressure filter and ADC kick-back;
 - thermistor range, sensitivity and self-heating;
 - the 1 % resistor error budget;
+- note: the module loads are behavioural (an SSR input as a current limit, the relay module as 131 Ω + 50 mH), so the on-state checks confirm the MOSFET's drop and the +5 V corner rather than model the modules' internals;
 - a 5 V plug in the thermistor socket (1.2 mA into GPIO1 through R27).
 
 The models are behavioural and fitted to datasheet values, so the point is the margins at the corners.

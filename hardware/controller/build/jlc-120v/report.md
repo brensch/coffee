@@ -4,29 +4,29 @@ Looked up live in JLCPCB's library. 'base' = basic part (no setup fee), 'expand'
 
 | Refs | Value | JLC part | LCSC | library | stock | who |
 |---|---|---|---|---|---|---|
-| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7651341 | JLC |
-| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37543676 | JLC |
-| C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12145113 | JLC |
-| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3580447 | JLC |
-| D1 | red | KT-0603R | C2286 | base | 6729719 | JLC |
+| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7651149 | JLC |
+| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37541982 | JLC |
+| C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12144837 | JLC |
+| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3580428 | JLC |
+| D1 | red | KT-0603R | C2286 | base | 6729634 | JLC |
 | D2 | B5819W | B5819W SL | C8598 | base | 812178 | JLC |
-| D5 | 1N4148W | 1N4148W | C81598 | base | 3686784 | JLC |
-| J1 | 5V in | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J2 | Heater | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J3 | Pump | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 158938 | JLC |
-| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J7 | Switches | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| J8 | Valve | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33237 | JLC |
-| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 940795 | JLC |
-| Q4 | AO3401A | AO3401A | C15127 | base | 1637195 | JLC |
-| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4908131 | JLC |
-| R10 R11 R16 R22 R23 R25 R26 | 10k | 0603WAF1002T5E | C25804 | base | 44431295 | JLC |
-| R12 R18 R19 R27 | 1k | 0603WAF1001T5E | C21190 | base | 28493740 | JLC |
-| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20630054 | JLC |
+| D5 | 1N4148W | 1N4148W | C81598 | base | 3686673 | JLC |
+| J1 | 5V in | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J2 | Heater | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J3 | Pump | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 158666 | JLC |
+| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J7 | Switches | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| J8 | Valve | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33218 | JLC |
+| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 940777 | JLC |
+| Q4 | AO3401A | AO3401A | C15127 | base | 1637152 | JLC |
+| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4907881 | JLC |
+| R10 R11 R16 R22 R23 R25 R26 | 10k | 0603WAF1002T5E | C25804 | base | 44428553 | JLC |
+| R12 R18 R19 R27 | 1k | 0603WAF1001T5E | C21190 | base | 28493593 | JLC |
+| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20629894 | JLC |
 | R15 | 8.2k | 0603WAF8201T5E | C25981 | base | 729662 | JLC |
 | R17 R24 | 20k | 0603WAF2002T5E | C4184 | base | 5916329 | JLC |
-| R20 R21 | 4.7k | 0603WAF4701T5E | C23162 | base | 13899371 | JLC |
+| R20 R21 | 4.7k | 0603WAF4701T5E | C23162 | base | 13897726 | JLC |
 | U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3855 | JLC |
-| U5 | ME6211C33M5G-N | ME6211C33M5G-N | C82942 | expand | 366908 | JLC |
+| U5 | ME6211C33M5G-N | ME6211C33M5G-N | C82942 | expand | 366901 | JLC |

@@ -1,8 +1,8 @@
-# Wiring: v7 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
+# Wiring: v17 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
-This replaces INSTALL.md §5 for the v7 board. The v7 board carries no mains: certified modules
+This replaces INSTALL.md §5 for the v17 board. The board carries no mains: certified modules
 switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply.
 
@@ -74,7 +74,7 @@ All mains crimps are fully insulated nylon (from the Nilight kit in BUY.md §8: 
 | M7 | pump SSR load tab 2 | 18 AWG | pump live tab (where grey PMP.B was) | insulated female 22-18 / insulated female 22-18 | |
 | M8 | WAGO L, port 4 | 18 AWG | relay **11 (COM)** | bare / bare stranded or ferrule in screw clamp | |
 | M9 | relay **14 (NO)** | 16 AWG (fits the 16-14 male tab) | grey PMP.B free end (female receptacle) | bare/ferrule / insulated **male** tab | Valve live. Leave **12 (NC)** empty |
-| M10 | brew-thermostat wire 1 (white, female) | 16 AWG | heater SSR **1/L1** | insulated **male** tab / insulated **#8 fork** | Replaces the thermostat |
+| M10 | brew-thermostat wire 1 (white, female) | 16 AWG | heater SSR **1/L1** | insulated **male** tab / insulated **#8 fork** | Replaces the thermostat. **Joint off the boiler:** see the note below |
 | M11 | brew-thermostat wire 2 (black, female) | 16 AWG | heater SSR **2/T1** | insulated **male** tab / insulated **#8 fork** | |
 | — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | — | unchanged | — | Don't touch |
 | — | WAGO L port 5, WAGO N ports 3–5 | — | spare | — | Levers closed, nothing inserted |
@@ -91,6 +91,11 @@ Mechanical:
   - Clip the relay onto the 150 mm DIN rail, and screw the rail to the side panel away from the boiler.
   - Fix the RECOM module next to it with a cable tie or a printed clip. The wired version has no mounting flange.
 - **Mains wires:** sleeve them in fibreglass wherever they pass within ~50 mm of the boiler.
+- **M10/M11 joints:** the nylon tabs are rated about 105 °C, and the boiler runs at 93–145 °C. With the thermostat removed, the two stock receptacles are free:
+  - pull them at least 50 mm away from the boiler, as far as their wires reach, and tie the joint to the frame there;
+  - slide fibreglass sleeve over each joint.
+
+  If the stock wires are too short for that, don't leave a nylon joint on the boiler. Run the new 16 AWG silicone all the way and use bare (uninsulated) tabs under fibreglass sleeve.
 
 **Crimp count** (all from the one Nilight kit, BUY.md §8):
 - 22-18 female, red: **9** (M6 ×1, M7 ×2, J3 ×2, J7 ×4);
@@ -151,13 +156,13 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
    - the RECOM red/black leads;
    - the switch dry contacts.
    No continuity from any mains wire to the chassis.
-6. **Earth:** chassis to the plug's earth pin < 0.5 Ω.
+6. **Earth:** chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's heatsink** to the plug's earth pin < 0.5 Ω. That bond runs through its mounting screws: scrape paint under them if it reads high.
 7. **Switches:** J7.1–J7.3 closes when brew is pressed; J7.2–J7.3 closes when steam is pressed.
 8. **Thermistor:** before fitting it, ~100 kΩ between its two leads at room temperature (25 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
 
 ## First power-on
 
 Follow INSTALL.md §6:
-1. The SSR LEDs should be off at power-on. The board should boot from the RECOM output (≈ 5.0 V at J1).
-2. Then command the heater, pump and valve one at a time, briefly, and watch each SSR/relay LED.
+1. The board boots from the RECOM output (≈ 5.0 V at J1). The heater SSR's LED comes on within a second: the firmware heats from boot.
+2. A flush (UI or `coffee flush`) runs the pump and opens the valve together: both the pump SSR and the relay LED light. There is no heater-only or pump-only command.
 3. Listen for pump hum while the pump is "off". The EZ240D5's 0.1 mA leakage should give none. If the pump hums, something is bypassing the SSR.

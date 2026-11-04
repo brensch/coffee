@@ -47,12 +47,12 @@ NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): R
 def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
     """GPIO (25 ohm) -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
     load: 'ssr_ez' (Crydom EZ240D5: 4-15 V, ~15 mA regulated), 'ssr_sch' (Schneider SSP1A125BDT: 3-32 V, ~10 mA),
-          'relay' (5 V coil 70 ohm, 72 mA, 50 mH, with the 1N4148W flyback on J8). SSR loads have a 1 uH cable."""
+          'relay' (Phoenix PLC-RSC-5DC/21 input: 38 mA at 5 V = 131 ohm, coil inductance taken as 50 mH; plus the board's 1N4148W flyback on J8). SSR loads have a 1 uH cable."""
     vto, kp = NMOS[fet]
     loads = {
         "ssr_ez": "Lcab v5 m 1u\nBssr m out I = min(0.015, max(0, (v(m)-v(out)-1.2)/150))",
         "ssr_sch": "Lcab v5 m 1u\nBssr m out I = min(0.010, max(0, (v(m)-v(out)-1.2)/150))",
-        "relay": "Rcoil v5 mid 70\nLcoil mid out 50m\nDfb out v5 D4148",
+        "relay": "Rcoil v5 mid 131\nLcoil mid out 50m\nDfb out v5 D4148",
     }
     drive = f"Vg g 0 PULSE(0 {vgpio} 1m 1u 1u 8m 20m)\nRgpio g pin 25" if rpu is None else f"Rpu v33 pin {rpu}\nVv33 v33 0 3.3"
     net = f"""* output stage
@@ -137,7 +137,7 @@ def rails(vpsu, label):
 Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.21             ; PSU + wiring (0.15) + AO3401A (0.06) in series
 C1 v5 0 22u
-* other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 72 + 3 LEDs 9 mA
+* other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 38 + 3 LEDs 9 mA
 Rl5 v5 0 41
 * LDO: tracks 3.3 V unless dropout bites
 Bldo v33r 0 V = min(3.3, v(v5) - (0.03 + 1.05*i(Vsense)))   ; ME6211C33: 120 mV at 100 mA, ~0.55 V at 500 mA (datasheet curve)
@@ -178,8 +178,8 @@ def ntc_from_v(v, rref=8.2e3, vref=3.3, r25=100e3, beta=4267.0):
 
 def main():
     # 1. outputs: on-state at the corners, with each module type
-    for load, vmin, lab in (("ssr_ez", 4.0, "pump SSR (Crydom EZ240D5, must-operate 4.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
-                            ("relay", 3.5, "valve relay coil (5 V, 72 mA; 70 % must-operate)")):
+    for load, vmin, lab in (("ssr_ez", 3.0, "pump SSR (Crydom EZ240D5, min turn-on 3.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
+                            ("relay", 4.2, "valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V)")):
         for vg in (3.0, 3.3):
             for fet in ("vth_typ", "vth_max"):
                 for v5 in (4.6, 5.0):

@@ -217,7 +217,7 @@ def build(spec, mains_v):
     ds.m_ViasMinSize = mm(0.6)        # JLC standard via: 0.3 mm drill, 0.6 mm pad
     ds.m_MinThroughDrill = mm(0.3)
     ds.m_CopperEdgeClearance = mm(0.3)
-    ds.m_HoleClearance = mm(0.15)
+    ds.m_HoleClearance = mm(0.2)      # JLC: hole to copper >= 0.2 mm (the USB-C peg holes are the tight spot)
 
     # nets
     nets = {}
@@ -273,11 +273,11 @@ def build(spec, mains_v):
         if ref == "J4":
             # USB-C (HRO TYPE-C-31-M-12). KiCad's and JLC's footprints put the locating posts 0.18 mm apart
             # relative to the signal pads (HRO's drawing: posts 0.50 mm behind the pad row, which KiCad
-            # follows); JLC places by its own. 0.5 mm posts (HRO drawing) in 1.1 mm holes seat either way. The shell
+            # follows); JLC places by its own. 0.5 mm posts (HRO drawing) in 1.0 mm holes seat either way and keep 0.2 mm to the pads. The shell
             # legs get paste (paste-in-hole) so reflow solders them.
             for pad in fp.Pads():
                 if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
-                    pad.SetDrillSize(V(mm(1.1), mm(1.1))); pad.SetSize(V(mm(1.1), mm(1.1)))
+                    pad.SetDrillSize(V(mm(1.0), mm(1.0))); pad.SetSize(V(mm(1.0), mm(1.0)))
                 elif pad.GetNumber() == "S1":
                     ls = pad.GetLayerSet(); ls.AddLayer(pcbnew.F_Paste); pad.SetLayerSet(ls)
         # footprint silkscreen lines at JLC's 0.153 mm minimum (KiCad's libraries draw 0.12 mm)

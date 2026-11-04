@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1180" viewBox="0 0 1500 1180" font-family="Helvetica, Arial, sans-serif" font-size="13">
-  <title>Coffee controller v7 wiring (US Gaggia Classic Pro, 120 V)</title>
+  <title>Coffee controller v17 wiring (US Gaggia Classic Pro, 120 V)</title>
   <defs>
     <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2.5" fill="#222"/></marker>
   </defs>
@@ -27,7 +27,7 @@
 
   <rect x="0" y="0" width="1500" height="1180" fill="#fbfbf8"/>
 
-  <text x="30" y="34" class="t" font-size="20" font-weight="bold">Coffee controller v7: off-board wiring, US Gaggia Classic Pro (120 V / 60 Hz)</text>
+  <text x="30" y="34" class="t" font-size="20" font-weight="bold">Coffee controller v17: off-board wiring, US Gaggia Classic Pro (120 V / 60 Hz)</text>
   <text x="30" y="56" class="s">Board is low-voltage only. Certified modules switch mains. Thick solid lines = MAINS (brown = live, blue = neutral, red = heater current). Thin dashed green = 5 V low-voltage cables (JST GH 3-pin). Dotted grey = existing machine wiring, left alone.</text>
 
   <!-- ===================== MACHINE SIDE ===================== -->
@@ -53,7 +53,7 @@
   <rect x="40" y="400" width="270" height="70" class="mach"/>
   <text x="50" y="419" class="t">Heater circuit, UNTOUCHED, in series:</text>
   <text x="50" y="436" class="s">thermal fuse 184 °C, steam thermostat 145 °C,</text>
-  <text x="50" y="451" class="s">heater elements (~1425 W). Their wiring stays</text>
+  <text x="50" y="451" class="s">heater elements (~1370 W). Their wiring stays</text>
   <text x="50" y="465" class="s">exactly as it is.</text>
 
   <rect x="40" y="505" width="270" height="70" class="mach"/>
@@ -139,7 +139,7 @@
 
   <!-- ===================== BOARD ===================== -->
   <rect x="1050" y="90" width="300" height="940" class="brd"/>
-  <text x="1064" y="118" class="h">Controller board v7</text>
+  <text x="1064" y="118" class="h">Controller board v17</text>
   <text x="1064" y="136" class="s">low voltage only, in its printed enclosure</text>
   <text x="1064" y="152" class="s">J4 USB-C: flashing / bench power</text>
 
