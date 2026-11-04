@@ -925,7 +925,7 @@
   },
   "C8": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF",
+   "value": "100nF X7R",
    "pins": {
     "1": "NTC",
     "2": "GND"
@@ -995,7 +995,7 @@
   },
   "C9": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF",
+   "value": "100nF X7R",
    "pins": {
     "1": "P_ADC",
     "2": "GND"
@@ -1133,7 +1133,7 @@
   },
   "C10": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF",
+   "value": "100nF X7R",
    "pins": {
     "1": "V3_SNS",
     "2": "GND"
@@ -1184,7 +1184,7 @@
   },
   "C11": {
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
-   "value": "100nF",
+   "value": "100nF X7R",
    "pins": {
     "1": "V5_SNS",
     "2": "GND"

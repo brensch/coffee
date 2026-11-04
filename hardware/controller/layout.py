@@ -42,6 +42,8 @@ SLOT_X = (BAND[0] + BAND[1]) / 2                 # milled isolation slot through
 SLOT_W = 2.0
 SLOTS = [(2.0, H / 2 - 0.75), (H / 2 + 0.75, H - 2.0)]   # a web of board in the middle for stiffness
 PLACE = {r: tuple(v) for r, v in _plan["place"].items()}
+for _k, _v in _plan.get("route", {}).items():      # routing settings that reproduce this plan's board
+    os.environ.setdefault(_k, str(_v))
 SWAP = set(_plan.get("swap", []))   # two-pin terminals whose pins are interchangeable (heater, valve/pump): swap 1<->2
 
 
@@ -326,7 +328,7 @@ def build(spec, mains_v):
         extra = [p for p in os.environ.get("GND_TREE", "").split(",") if p]
         if extra:
             anchors = [p for p in os.environ.get("GND_ANCHORS", "J5.2,J6.3,J7.3").split(",") if p]
-            ft = rt.route_net("GND", 0.3, only=set(extra + anchors))
+            ft = rt.route_net("GND", float(os.environ.get("GND_TREE_W", "0.25")), only=set(extra + anchors))
             print(f"  GND tree for {len(extra)} pads: {ft} unrouted", flush=True)
             rt.base_obs = list(rt.obs)
         sbest, sfail = None, None

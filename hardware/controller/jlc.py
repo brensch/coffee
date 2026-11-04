@@ -77,6 +77,7 @@ def norm_value(v):
     return v0, tol
 
 
+BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
 FIXED = {"LED_0603|green": "C12624", "SOT-223|TLV1117LV33": "C15578"}   # genuine TI part (another listing claims 12 V / 1.2 V dropout: a clone)   # KT-0603G green 0603 LED (my remembered C72043 is out of stock)
 
 
@@ -142,6 +143,15 @@ def main():
         (hand if is_tht else smd).append(line)
         flag = "" if code else "  **NO MATCH: pick by hand**"
         report.append(f"| {' '.join(refs)} | {row['Value']} | {model} | {code} | {lib} | {stock} | {'hand' if is_tht else 'JLC'} |{flag}")
+    # one line per LCSC part: JLC rejects two BOM lines that map to the same part
+    merged = {}
+    for line in smd:
+        k = line["LCSC Part #"] or line["Designator"]
+        if k in merged:
+            merged[k]["Designator"] += "," + line["Designator"]
+        else:
+            merged[k] = dict(line)
+    smd = list(merged.values())
     fields = ["Comment", "Designator", "Footprint", "LCSC Part #"]
     for name, data in (("bom.csv", smd), ("hand.csv", hand)):
         with open(os.path.join(out, name), "w", newline="") as f:
@@ -152,10 +162,24 @@ def main():
     with open(os.path.join(out, "cpl.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
+        # JLC centres its part model on the given point; footprints whose origin isn't the body centre
+        # (the ESP32 module: 2.05 mm off) get their courtyard centre, measured on the real board.
+        centre = {}
+        try:
+            import pcbnew
+            brd = pcbnew.LoadBoard(os.path.join(b, f"coffee-controller-{a.mains}v.kicad_pcb"))
+            for ref in BODY_CENTRE:
+                fp = brd.FindFootprintByReference(ref)
+                if fp:
+                    c = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox().GetCenter()
+                    centre[ref] = (pcbnew.ToMM(c.x), -pcbnew.ToMM(c.y))     # positions.csv is y-up
+        except ImportError:
+            print("pcbnew not available: U4 keeps its footprint origin (2 mm off its body centre)")
         for ref in sorted(placed):
             p = pos.get(ref)
             if p:
-                w.writerow([ref, f"{float(p['PosX']):.3f}mm", f"{float(p['PosY']):.3f}mm",
+                x, y = centre.get(ref, (float(p['PosX']), float(p['PosY'])))
+                w.writerow([ref, f"{x:.3f}mm", f"{y:.3f}mm",
                             "Top" if p["Side"].lower().startswith("top") else "Bottom", f"{float(p['Rot']):.0f}"])
     with open(os.path.join(out, "report.md"), "w") as f:
         f.write(f"# JLCPCB parts, {a.mains} V board\n\n"

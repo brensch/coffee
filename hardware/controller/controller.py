@@ -279,7 +279,7 @@ j_ntc = part(JST2, "J5", "Thermistor", notes="100k B3950 M4 probe in the brew-th
 j_ntc[1, 2] += ntc, gnd
 r = part(R, "R15", "8.2k 0.1%", notes="NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C")
 r[1, 2] += v3, ntc
-c = part(C, "C8", "100nF", notes="ADC sampling reservoir / noise filter")
+c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
 c[1, 2] += ntc, gnd
 u_mcu["IO1"] += ntc   # ADC1_CH1
 
@@ -291,7 +291,7 @@ r = part(R, "R16", "10k 0.1%", notes="Divider 2/3")
 r[1, 2] += p_sig, p_adc
 r = part(R, "R17", "20k 0.1%")
 r[1, 2] += p_adc, gnd
-c = part(C, "C9", "100nF", notes="ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses")
+c = part(C, "C9", "100nF X7R", notes="ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses")
 c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 
@@ -320,7 +320,7 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
     r[1, 2] += rail, sns
     r = part(R, rb_, "10k 0.1%", notes=f"{net} divider bottom")
     r[1, 2] += sns, gnd
-    c = part(C, cref, "100nF", notes="ADC reservoir")
+    c = part(C, cref, "100nF X7R", notes="ADC reservoir")
     c[1, 2] += sns, gnd
     u_mcu[gpio] += sns
 

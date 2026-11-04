@@ -202,7 +202,8 @@ def main():
             cur = place[ref]
             FIXED[ref] = fixed_edges(ref)
             b, pads = G[ref]
-            wrong_side = plan.get("lv_side") and not any(q["mains"] for q in sb.P[ref]["pads"]) and cur[3] != plan["lv_side"]
+            wrong_side = (plan.get("lv_side") and not any(q["mains"] for q in sb.P[ref]["pads"]) and cur[3] != plan["lv_side"]) \
+                or (plan.get("smd_side") and cur[3] != plan["smd_side"])
             best = (cost(ref, pads, cur[3]) if legal(ref, cur, b, pads) and not wrong_side else math.inf, cur)
 
             def scan(xs, ys, sides, rr):
@@ -222,6 +223,8 @@ def main():
             sides = ["F", "B"]
             if plan.get("lv_side") and not any(q["mains"] for q in sb.P[ref]["pads"]):
                 sides = [plan["lv_side"]]
+            if plan.get("smd_side"):
+                sides = [plan["smd_side"]]
             scan(n(0, W, STEP), n(0, H, STEP), sides, rots[ref])
             bx, by, br, bs = best[1]
             scan(n(bx - 1, bx + 1, FINE), n(by - 1, by + 1, FINE), [bs], [br])

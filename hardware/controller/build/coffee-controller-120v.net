@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/03/2026 03:33 AM")
+    (date "11/03/2026 07:05 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -67,7 +67,7 @@
       (tstamps "b514d237-c153-5f6d-afe2-53badf97a864"))
     (comp
       (ref "C10")
-      (value "100nF")
+      (value "100nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
@@ -90,7 +90,7 @@
       (tstamps "9ac3af44-dacb-5cab-9570-74696fc5614f"))
     (comp
       (ref "C11")
-      (value "100nF")
+      (value "100nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
@@ -251,7 +251,7 @@
       (tstamps "16338a68-8eed-55bf-a491-963475c6f7f3"))
     (comp
       (ref "C8")
-      (value "100nF")
+      (value "100nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
@@ -274,7 +274,7 @@
       (tstamps "5745235a-c3ad-560a-9498-c294be8e78c3"))
     (comp
       (ref "C9")
-      (value "100nF")
+      (value "100nF X7R")
       (description "Capacitor")
       (footprint "Capacitor_SMD:C_0603_1608Metric")
       (fields
