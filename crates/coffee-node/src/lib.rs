@@ -171,6 +171,7 @@ impl<S: Storage> Node<S> {
         let cfg = storage
             .load(KEY_CONFIG)
             .and_then(|b| serde_json::from_slice::<EngineConfig>(&b).ok())
+            .filter(|c| c.check().is_ok())        // out-of-range stored config: defaults
             .unwrap_or_default();
         let active = storage
             .load(KEY_ACTIVE)

@@ -1,4 +1,4 @@
-# Controller board v15: low voltage only
+# Controller board v17: low voltage only
 
 A 37.3 × 27 mm two-layer board with every part on the top side, assembled by JLCPCB. It carries
 **no mains**:
@@ -12,7 +12,7 @@ A 37.3 × 27 mm two-layer board with every part on the top side, assembled by JL
 Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md).
 
 Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations:
-`hardware/controller/sim/run.py` → [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 59/59 pass.
+`hardware/controller/sim/run.py` → [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 60/60 pass.
 
 ## Why the mains came off the board
 
@@ -39,7 +39,7 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 | D2 | B5819W Schottky | USB VBUS → +5 V for bench power. With both connected, the module (5.0 V) powers the board and D2 keeps it out of the PC. With USB alone, Q4 conducts backwards and ~4.6 V sits on J1 / the module's output: harmless (it only charges the unpowered module's output capacitor) |
 | C6, C7 | 22 µF X5R 0805 | +5 V and +3.3 V bulk, ceramic (nothing to dry out at 60–70 °C) |
 | U5 | ME6211C33 (SOT-23-5), EN tied to VIN | 3.3 V, 500 mA, stable with ceramic caps (the AMS1117 needs tantalum ESR) |
-| C3, C4 | 10 µF + 100 nF at the module's 3V3 pin | decoupling |
+| C3, C4 | 10 µF + 100 nF beside the module's 3V3 pin | decoupling: C4's pads sit level with the module's 3V3 and GND pins, C3 just below |
 
 ### Controller
 | Part | Value | Why |
@@ -49,7 +49,7 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 | R11 | 10k | GPIO8 high (needed for download mode from the BOOT pad) |
 | TP1 | bare pad on the **underside** | BOOT (GPIO9), recovery only: the C6 resets itself into download mode over USB |
 | D1, R12 | red LED, 1k on GPIO23 | status, ~1.3 mA |
-| J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13. Locating-post holes 0.95 mm (KiCad's and JLC's footprints put the posts 0.18 mm apart; 0.5 mm posts seat either way); shell legs get paste so reflow solders them |
+| J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13. Locating-post holes 1.1 mm (KiCad's and JLC's footprints put the posts 0.18 mm apart; the 0.5 mm posts seat either way). The shell legs get paste so reflow solders them. The shell overhangs the bottom edge by 0.46 mm, per the datasheet's PCB-edge line |
 
 ### Outputs (J2 heater, J3 pump, J8 valve)
 GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. The MOSFET sinks the module's input, and every connector uses the same pinout:
@@ -105,7 +105,7 @@ All seven are JST GH (1.25 mm, positive latch, which suits a machine shaken by a
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 
-**Routing:** end to end by **fastroute 0.1.14**, with ground pours and stitching added afterwards by KiCad. The current board has 0 unconnected and roughly 55–65 vias.
+**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias on a 1.2 mm grid wherever both layers are free. The current board has 0 unconnected, 49 routed vias and about 150 stitching vias. Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
 
 **Rules:** JLCPCB standard capabilities only, the cheapest tier:
 - 0.2 mm tracks and gaps (0.15 mm DRC minimum; JLC's is 0.127 mm);
@@ -121,7 +121,9 @@ All seven are JST GH (1.25 mm, positive latch, which suits a machine shaken by a
 
 The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
 
-**JLC:** 21 BOM lines; 4 extended part types (GH connector, USB-C, ESP32-C6 module, LDO), the rest basic. `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 46 parts land on their pads.
+**JLC:** 20 BOM lines; 4 extended part types (GH connector, USB-C, ESP32-C6 module, LDO), the rest basic. Two gates check the files:
+- `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 47 placed parts land on their pads.
+- `jlc_pins.py` then compares JLC's pin names with the schematic's for every polarised part: 94 pin functions, 0 mismatches. This gate exists because the v15 position file had the status LED reversed.
 
 ## Simulation (ngspice, `sim/run.py`)
 60 checks, all passing:

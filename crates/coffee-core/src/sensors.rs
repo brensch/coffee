@@ -44,8 +44,11 @@ pub fn ntc(cfg: &NtcConfig, mv: u16) -> NtcReading {
     if mv <= cfg.short_mv {
         return NtcReading::Short;
     }
-    let t = ntc_model_c(cfg, ntc_ohms(cfg, mv));
-    NtcReading::Celsius(cfg.cal_gain * t + cfg.cal_offset_c)
+    let t = cfg.cal_gain * ntc_model_c(cfg, ntc_ohms(cfg, mv)) + cfg.cal_offset_c;
+    if t < cfg.min_c {
+        return NtcReading::Open;   // colder than a boiler can be: an open probe read low
+    }
+    NtcReading::Celsius(t)
 }
 
 /// Inverse of [`ntc`] for a calibrated temperature (tests, tooling). Inverts the

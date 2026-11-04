@@ -139,6 +139,9 @@ pub struct NtcConfig {
     /// flags a boiler colder than ~6 C (10 C is 3178 mV for a 100k B4267 with 8.2k): a fault, heater
     /// off, which is the safe way to be wrong. A machine indoors never starts that cold.
     pub open_mv: f32,
+    /// A reading colder than this is treated as a fault too (heater off): a second net under
+    /// `open_mv` for an open probe the ADC reads low. A boiler indoors never starts this cold.
+    pub min_c: f32,
     /// Node below this => shorted thermistor / wire to GND. 100 mV is ~230 C,
     /// far above anything the boiler can reach.
     pub short_mv: f32,
@@ -159,6 +162,7 @@ impl Default for NtcConfig {
             cal_gain: 1.0,
             cal_offset_c: 0.0,
             open_mv: 3200.0,
+            min_c: 3.0,
             short_mv: 100.0,
             filter_tau_s: 0.3,
             fault_debounce_s: 0.5,
@@ -343,6 +347,47 @@ impl Default for EngineConfig {
             group_ready_band_c: 3.0,
             yield_settle_s: 4.0,
             exit_holdoff_s: 0.5,
+        }
+    }
+}
+
+/// Hard limits on every setting that guards the heater or the pressure, so no config (from the
+/// API, a file or flash) can switch a safety off. Out-of-range or non-finite values are rejected.
+impl EngineConfig {
+    pub fn check(&self) -> Result<(), &'static str> {
+        fn r(v: f32, lo: f32, hi: f32) -> bool {
+            v.is_finite() && v >= lo && v <= hi
+        }
+        let s = &self.safety;
+        let n = &self.ntc;
+        let t = &self.temp_pid;
+        let checks: [(bool, &'static str); 22] = [
+            (self.mains_hz == 50.0 || self.mains_hz == 60.0, "mains_hz must be 50 or 60"),
+            (r(self.brew_temp_c, 60.0, 105.0), "brew_temp_c out of 60..105"),
+            (r(self.steam_temp_c, 100.0, 150.0), "steam_temp_c out of 100..150"),
+            (r(self.hot_water_temp_c, 60.0, 110.0), "hot_water_temp_c out of 60..110"),
+            (r(self.warmup_boost_c, 0.0, 15.0), "warmup_boost_c out of 0..15"),
+            (r(self.max_boost_c, 0.0, 15.0), "max_boost_c out of 0..15"),
+            (r(s.max_temp_c, 100.0, 160.0), "safety.max_temp_c out of 100..160"),
+            (r(s.max_pressure_bar, 1.0, 15.0), "safety.max_pressure_bar out of 1..15"),
+            (r(s.over_pressure_s, 0.0, 5.0), "safety.over_pressure_s out of 0..5"),
+            (r(s.heater_ineffective_s, 10.0, 120.0), "safety.heater_ineffective_s out of 10..120"),
+            (r(s.heater_ineffective_duty, 0.3, 1.0), "safety.heater_ineffective_duty out of 0.3..1"),
+            (r(s.heater_ineffective_rise_c, 0.2, 10.0), "safety.heater_ineffective_rise_c out of 0.2..10"),
+            (r(s.runaway_margin_c, 1.0, 20.0), "safety.runaway_margin_c out of 1..20"),
+            (r(s.max_temp_step_c, 0.5, 30.0) && r(s.max_rejected_s, 0.1, 10.0), "safety glitch filter out of range"),
+            (r(s.max_brew_s, 5.0, 300.0), "safety.max_brew_s out of 5..300"),
+            (r(n.open_mv, 3000.0, 3250.0) && r(n.short_mv, 20.0, 300.0), "ntc fault thresholds out of range"),
+            (r(n.min_c, -5.0, 15.0), "ntc.min_c out of -5..15"),
+            (r(n.cal_gain, 0.8, 1.2) && r(n.cal_offset_c, -15.0, 15.0), "ntc calibration out of range"),
+            (r(n.beta, 3000.0, 5000.0) && r(n.r25_ohm, 10e3, 1e6), "ntc model out of range"),
+            (r(n.r_ref_ohm, 1e3, 1e5) && r(n.v_ref_mv, 3000.0, 3600.0), "ntc divider out of range"),
+            (r(t.out_min, 0.0, 1.0) && r(t.out_max, 0.0, 1.0) && t.out_min <= t.out_max, "temp_pid output limits out of 0..1"),
+            (r(self.heater_power_w, 100.0, 3000.0), "heater_power_w out of 100..3000"),
+        ];
+        match checks.iter().find(|(ok, _)| !ok) {
+            Some((_, why)) => Err(why),
+            None => Ok(()),
         }
     }
 }

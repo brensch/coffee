@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v15 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v17 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -26,19 +26,20 @@ Gaggia Classic Pro.
    ```sh
    cd hardware/controller
    .venv/bin/python controller.py                      # schematic + checks -> build/parts-120v.json
-   python3 sim/run.py                                  # circuit simulations (59 checks)
+   python3 sim/run.py                                  # circuit simulations (60 checks)
    source ~/opt/kienv.sh
    PLACE_JSON=plan.json FASTROUTE=… python3 ext_route.py fastroute 120   # place, route (fastroute), DRC, gerbers
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v16-gerbers.zip`;
-   - `coffee-v16-bom.csv`;
-   - `coffee-v16-cpl.csv`.
+   - `coffee-v17-gerbers.zip`;
+   - `coffee-v17-bom.csv`;
+   - `coffee-v17-cpl.csv`.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 37.3 × 27 mm, no slots, no castellations.
+   - 37.3 × 27 mm, no slots, no castellations;
+   - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
    - Everything is SMD, so there's nothing to hand-solder.
    - In JLC's placement preview, glance over the seven GH connectors, the USB-C, the module and the diodes (all rotations were solved against JLC's footprints; D2's from a same-package record, cross-checked against JLC's drawings).
@@ -72,10 +73,10 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
    - temperature reads room temperature, and rises when you hold the probe;
    - pressure reads about 0 bar;
    - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3.
-4. **Outputs:** with nothing plugged into J2/J3/J8, measure pin 1 to pin 2 of each.
-   - ~5 V when the UI turns that load on (the MOSFET pulls pin 2 to GND).
-   - ~0 V when off, and while the board resets or flashes: the gate pull-downs hold every output off.
-   - With a module plugged in, its own LED shows the same.
+4. **Outputs:** put a load across pin 1 and pin 2 of J2, J3 and J8: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output's pin 2 floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 1 to pin 2:
+   - ~5 V when the UI turns that load on (the MOSFET pulls pin 2 to GND);
+   - ~0 V when off, and while the board resets or flashes: the gate pull-downs hold every output off;
+   - with a module plugged in, its own LED shows the same.
 
 ## 4. Fit sensors and plumbing (machine unplugged)
 1. Unplug, drain, cool. **Photograph all the wiring** before touching it.

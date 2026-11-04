@@ -108,9 +108,14 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let (mut ntc_mv, mut pressure_mv) = (0u16, 0u16);
     let (mut v3_mv, mut v5_mv) = (0u16, 0u16);
     let mut k: u32 = 0;
+    // Cycles in a row with no thermistor sample (ADC read errors): past STALE_CYCLES the reading is
+    // reported open, so a stuck ADC can't freeze the temperature near setpoint.
+    const STALE_CYCLES: u32 = 30;
+    let mut ntc_stale: u32 = 0;
 
     loop {
         // ---- one mains cycle of sampling: [tick k, tick k+1) ----
+        let mut ntc_fresh = false;
         for i in 0..SAMPLES {
             until(clock.sample_us(k, i, SAMPLES)).await;
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_pressure)) {
@@ -118,6 +123,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
             }
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_ntc)) {
                 ntc_acc.push(mv);
+                ntc_fresh = true;
             }
             // The rails move slowly: one sample of each per 4 slots is plenty.
             if i % 4 == 0 {
@@ -136,7 +142,16 @@ pub async fn run(p: Pins, mut node: NodeT) {
         // ---- tick k: frame for the cycle that just ended ----
         v3_mv = v3_acc.take(v3_mv);
         v5_mv = v5_acc.take(v5_mv);
-        ntc_mv = ratiometric(ntc_acc.take(ntc_mv), v3_mv, 2, 3300);
+        // Open probe: judged on the raw reading as well as the rail-corrected one, so a rail sense
+        // that reads high can't scale an open probe (node at the rail) down below the threshold.
+        let ntc_raw = ntc_acc.take(ntc_mv);
+        ntc_stale = if ntc_fresh { 0 } else { ntc_stale.saturating_add(1) };
+        let open_mv = node.engine.cfg.ntc.open_mv as u16;
+        ntc_mv = if ntc_raw >= open_mv || ntc_stale > STALE_CYCLES {
+            3300
+        } else {
+            ratiometric(ntc_raw, v3_mv, 2, 3300)
+        };
         pressure_mv = ratiometric(p_acc.take(pressure_mv), v5_mv, 3, 5000);
         let mut inputs = 0u8;
         if brew.update(brew_sw.is_low()) {

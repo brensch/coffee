@@ -265,6 +265,7 @@ impl Engine {
                 if self.brew.is_some() {
                     return Err("cannot change config while brewing");
                 }
+                c.check()?;
                 self.cfg = c;
             }
             Command::ClearFaults => {

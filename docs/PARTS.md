@@ -1,4 +1,4 @@
-# Parts record: v15 low-voltage board
+# Parts record: v17 low-voltage board
 
 Everything on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-04). "basic" parts carry no
 setup fee; each "extended" part type adds about $3 to an assembly order. Off-board modules and cables: [BUY.md](BUY.md).
@@ -6,7 +6,7 @@ setup fee; each "extended" part type adds about $3 to an assembly order. Off-boa
 | Refs | Value | Part | LCSC | JLC library | Stock | Notes |
 |---|---|---|---|---|---|---|
 | C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7645140 | Module decoupling at the 3V3 pin |
-| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37633469 | ADC reservoir |
+| C4 C8 C9 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 37633469 | C4: module decoupling. C8-C11: ADC reservoirs |
 | C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12118706 | EN delay |
 | C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3589841 | Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age) |
 | D1 | red | KT-0603R | C2286 | base | 6742764 | Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional) |
@@ -16,7 +16,7 @@ setup fee; each "extended" part type adds about $3 to an assembly order. Off-boa
 | J2 | Heater | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / - |
 | J3 | Pump | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / - |
 | J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 160176 | Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power |
-| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | 100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused |
+| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | 100k Semitec 104NT (B 4267) M4 probe in the brew-thermostat hole. Pins 1-2 (no polarity), 3 unused |
 | J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | 0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND |
 | J7 | Switches | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | 1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts |
 | J8 | Valve | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 34206 | VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / - |
@@ -24,7 +24,7 @@ setup fee; each "extended" part type adds about $3 to an assembly order. Off-boa
 | Q4 | AO3401A | AO3401A | C15127 | base | 1639709 | Reverse-polarity protection |
 | R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4912144 | Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim) |
 | R10 R11 R16 R22 R23 R25 R26 | 10k | 0603WAF1002T5E | C25804 | base | 44446972 | Divider 2/3 |
-| R12 R18 R19 | 1k | 0603WAF1001T5E | C21190 | base | 28492729 | GPIO series protection |
+| R12 R18 R19 R27 | 1k | 0603WAF1001T5E | C21190 | base | 28492729 | R12: LED current. R18 R19 R27: GPIO series protection (a 5 V plug in the wrong socket) |
 | R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20635164 | USB-C sink identification |
 | R15 | 8.2k | 0603WAF8201T5E | C25981 | base | 730112 | NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C |
 | R17 R24 | 20k | 0603WAF2002T5E | C4184 | base | 5917071 | V5_SNS divider top |

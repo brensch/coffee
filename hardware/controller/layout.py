@@ -159,17 +159,18 @@ def silkscreen(board, mains_v, footprints=None):
     for text; it keeps only the connectors' own pin-1 marks. Optional top labels: plan "label_pos"."""
     LABELS = _plan.get("labels", {
         "J1": ("5V IN", ["+5V", "GND", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
-        "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["NTC", "GND", ""]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
+        "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["", "", "NC"]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
         "J7": ("SWITCH", ["BREW", "STEAM", "GND"]), "J4": ("USB", [])})
-    def silk(txt, x, y, size=0.8, angle=0, layer=pcbnew.B_SilkS):
+    def silk(txt, x, y, size=1.0, angle=0, layer=pcbnew.B_SilkS):
+        size = max(size, 1.0)              # JLC's recommended minimum text height (1.0 mm, 0.16 mm stroke)
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(layer)
-        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(0.15))
+        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(0.16))
         t.SetTextAngleDegrees(angle)
         if layer == pcbnew.B_SilkS:
             t.SetMirrored(True)
         board.Add(t)
-    tlen = lambda txt, size: 0.85 * size * len(txt)      # KiCad stroke font advance (measured on the render)
+    tlen = lambda txt, size: 0.85 * max(size, 1.0) * len(txt)      # KiCad stroke font advance (measured on the render)
     fps = {f.GetReference(): f for f in (footprints or board.GetFootprints())}
     for ref, (name, words) in LABELS.items():
         fp = fps.get(ref)
@@ -191,12 +192,13 @@ def silkscreen(board, mains_v, footprints=None):
             if not word:
                 continue
             px, py = pads[num]
-            off = 0.9 + tlen(word, 0.8) / 2
+            off = 0.5 + tlen(word, 0.8) / 2           # the pads are on the top side: the word can start close
             silk(word, px + inward[0] * off, py + inward[1] * off, 0.8, ang)
-            reach = max(reach, 0.9 + tlen(word, 0.8))
+            reach = max(reach, 0.5 + tlen(word, 0.8))
         # the name on the outer side of the pins, under the connector's own body (free on the bottom)
         cx = sum(p[0] for p in pads.values()) / 3; cy = sum(p[1] for p in pads.values()) / 3
-        silk(name, cx - inward[0] * 2.1, cy - inward[1] * 2.1, 0.8, 90 if edge in ("L", "R") else 0)
+        nx, ny = _plan.get("name_shift", {}).get(ref, (0, 0))      # plan: move a name clear of a neighbour's words
+        silk(name, cx - inward[0] * 2.1 + nx, cy - inward[1] * 2.1 + ny, 0.8, 90 if edge in ("L", "R") else 0)
     for txt, x, y, size in _plan.get("bottom_text", []):
         silk(txt, x, y, size)
     for ref, (x, y, ang, txt) in _plan.get("label_pos", {}).items():
@@ -271,13 +273,17 @@ def build(spec, mains_v):
         if ref == "J4":
             # USB-C (HRO TYPE-C-31-M-12). KiCad's and JLC's footprints put the locating posts 0.18 mm apart
             # relative to the signal pads (HRO's drawing: posts 0.50 mm behind the pad row, which KiCad
-            # follows); JLC places by its own. 0.5 mm posts in 0.95 mm holes seat either way. The shell
+            # follows); JLC places by its own. 0.5 mm posts (HRO drawing) in 1.1 mm holes seat either way. The shell
             # legs get paste (paste-in-hole) so reflow solders them.
             for pad in fp.Pads():
                 if pad.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
-                    pad.SetDrillSize(V(mm(0.95), mm(0.95))); pad.SetSize(V(mm(0.95), mm(0.95)))
+                    pad.SetDrillSize(V(mm(1.1), mm(1.1))); pad.SetSize(V(mm(1.1), mm(1.1)))
                 elif pad.GetNumber() == "S1":
                     ls = pad.GetLayerSet(); ls.AddLayer(pcbnew.F_Paste); pad.SetLayerSet(ls)
+        # footprint silkscreen lines at JLC's 0.153 mm minimum (KiCad's libraries draw 0.12 mm)
+        for g in fp.GraphicalItems():
+            if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and hasattr(g, "GetShape") and g.GetWidth() < mm(0.16):
+                g.SetWidth(mm(0.16))
         # footprint silkscreen that reaches the board edge (the USB-C's outline marks the edge): drop it
         for g in list(fp.GraphicalItems()):
             if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and hasattr(g, "GetShape"):
@@ -468,13 +474,9 @@ def obstacles(board, net="GND"):
     """Other-net copper (and every hole) as simple shapes, for placing GND vias/tracks."""
     items = []
     for fp in board.GetFootprints():
-        for p in fp.Pads():
-            if p.GetNetname() != "GND" or p.GetDrillSize().x > 0:     # holes: keep vias clear of them too
-                bb = p.GetBoundingBox()
-                g = 0.25 if p.GetNetname() == "GND" else 0.0
-                items.append(("r", [pcbnew.ToMM(v) for v in (bb.GetLeft(), bb.GetTop(), bb.GetRight(), bb.GetBottom())]))
-                if g:
-                    items[-1] = ("r", [items[-1][1][0] - g, items[-1][1][1] - g, items[-1][1][2] + g, items[-1][1][3] + g])
+        for p in fp.Pads():   # every pad, GND ones too: a via in an SMD pad wicks solder away from the joint
+            bb = p.GetBoundingBox()
+            items.append(("r", [pcbnew.ToMM(v) for v in (bb.GetLeft(), bb.GetTop(), bb.GetRight(), bb.GetBottom())]))
     for t in board.GetTracks():
         if t.GetNetname() == "GND" and t.Type() != pcbnew.PCB_VIA_T:
             continue
@@ -507,7 +509,7 @@ def is_free(items, x, y, r):
     return True
 
 
-def stitch(board, pitch=2.5, d=0.6, drill=0.3, clr=0.3):
+def stitch(board, pitch=2.0, d=0.6, drill=0.3, clr=0.3):
     """GND stitching vias on a grid over the pours, wherever both layers are free of other nets."""
     gnd = board.GetNetsByName()["GND"]
     items = obstacles(board)
@@ -534,7 +536,7 @@ def finish_own(spec, stem):
             if z.GetZoneName() == "EPAD":
                 b.Remove(z)
     add_pours(b)
-    n = stitch(b)
+    n = stitch(b, pitch=_plan.get("stitch_pitch", 2.0))
     pcb = stem + ".kicad_pcb"
     # fastroute routes at 0.2 mm; the DRC checks against 0.15 mm (JLC standard minimum is 0.127 mm), so
     # the few router neck-downs widened to 0.2 mm by ext_route still pass with margin.
