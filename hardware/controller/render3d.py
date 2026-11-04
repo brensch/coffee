@@ -16,11 +16,19 @@ os.makedirs(out, exist_ok=True)
 b = pcbnew.LoadBoard(pcb)
 
 
+# Models KiCad's footprint names but kicad-packages3D never published: a part with the same body.
+# HRO TYPE-C-31-M-12 -> GCT USB4105: both 16-pin top-mount receptacles, fab body +-4.47 x +-3.65/3.67 mm
+# on the same origin, shell tabs in the same places.
+SAME_BODY = {"Connector_USB.3dshapes/USB_C_Receptacle_HRO_TYPE-C-31-M-12.step":
+             "Connector_USB.3dshapes/USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal.step"}
+
+
 def local_model(path):
     """KiCad model path -> path under $MODELS (KiCad library .wrl -> .step; Espressif STEP as is)."""
     if "espressif.3dshapes/" in path:
         return "espressif.3dshapes/" + path.split("espressif.3dshapes/", 1)[1]
-    return path.split("}/", 1)[-1].replace(".wrl", ".step")
+    rel = path.split("}/", 1)[-1].replace(".wrl", ".step")
+    return SAME_BODY.get(rel, rel)
 
 
 missing = []
