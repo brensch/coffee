@@ -1,50 +1,23 @@
-** Drc report for /home/brensch/.claude/jobs/bbbb1070/tmp/fr_hyb3/coffee-controller-120v.kicad_pcb **
-** Created on 2026-11-03 23:39:47 **
+** Drc report for build/coffee-controller-120v.kicad_pcb **
+** Created on 2026-11-03 23:54:30 **
 
-** Found 97 DRC violations **
+** Found 89 DRC violations **
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
     @(30.8000 mm, 43.0150 mm): Reference 'U2'
     @(34.0350 mm, 43.4750 mm): Line on F.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(31.8000 mm, 51.2150 mm): Line on F.Silkscreen
-    @(30.8000 mm, 51.0000 mm): PCB Text 'coffee 120 V' on F.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(30.8000 mm, 51.0000 mm): PCB Text 'coffee 120 V' on F.Silkscreen
-    @(27.5650 mm, 51.2150 mm): Line on F.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(30.8000 mm, 51.0000 mm): PCB Text 'coffee 120 V' on F.Silkscreen
-    @(30.8000 mm, 51.2150 mm): Arc on F.Silkscreen
-[silk_overlap]: Silkscreen overlap
-    Rule: board setup constraints silk; Severity: warning
-    @(34.3000 mm, 4.0000 mm): Line on F.Silkscreen
-    @(52.7000 mm, 24.5600 mm): Line on F.Silkscreen
+    @(30.8000 mm, 33.8150 mm): Reference 'U3'
+    @(34.0350 mm, 34.2750 mm): Line on F.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
     @(27.3000 mm, 4.0000 mm): Line on F.Silkscreen
     @(52.7000 mm, 24.5600 mm): Line on F.Silkscreen
 [silk_overlap]: Silkscreen overlap
     Rule: board setup constraints silk; Severity: warning
-    @(34.0350 mm, 34.2750 mm): Line on F.Silkscreen
-    @(30.8000 mm, 33.8150 mm): Reference 'U3'
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(50.4000 mm, 46.7000 mm): PCB Text 'STEAM' on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(44.5000 mm, 46.7000 mm): PCB Text 'SWITCHES' on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(50.4000 mm, 48.7000 mm): PCB Text 'BREW' on F.Silkscreen
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; Severity: warning
-    @(50.4000 mm, 44.7000 mm): PCB Text 'GND' on F.Silkscreen
-[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
-    Rule: board setup constraints silk text height; Severity: warning
-    @(30.8000 mm, 51.0000 mm): PCB Text 'coffee 120 V' on F.Silkscreen
+    @(34.3000 mm, 4.0000 mm): Line on F.Silkscreen
+    @(52.7000 mm, 24.5600 mm): Line on F.Silkscreen
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(35.8800 mm, 40.6850 mm): Footprint U2

@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "filename": "coffee-controller.kicad_pro",
+    "version": 1
+  },
+  "sheets": [
+    [
+      "e39c4ecb-22b0-4276-a6f3-230b89177187",
+      ""
+    ]
+  ],
+  "schematic": {
+    "legacy_lib_dir": "",
+    "legacy_lib_list": []
+  },
+  "board": {
+    "design_settings": {
+      "defaults": {
+        "board_outline_line_width": 0.15
+      }
+    }
+  }
+}

@@ -107,7 +107,7 @@ The full table, pigtails and pre-power checks are in INSTALL.md §5.
   The heater triac's tab bolts to the metal chassis, which is its heatsink.
 - **Material:** PC, or V-0 rated PETG/ASA. PLA softens at ~55 °C, and the case interior reaches
   60–70 °C near the boiler.
-- **Design:** parametric OpenSCAD around the board (54 × 51 mm, no mounting holes: held by its edges in grooves, plus the
+- **Design:** parametric OpenSCAD around the board (56 × 52 mm, no mounting holes: held by its edges in grooves, plus the
   triac tab). It needs:
   - edge grooves (no standoffs: the board has no holes; leave 3 mm under it for the bottom-side parts);
   - a separate clip-on cover over the mains half;

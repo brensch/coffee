@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+<rect width="900" height="600" fill="#1d5c3a"/>
+<defs>
+  <path id="bean" d="M0,-112 C62,-112 96,-58 96,6 C96,72 54,112 0,112 C-54,112 -96,72 -96,6 C-96,-58 -62,-112 0,-112 Z"/>
+  <path id="crease" d="M8,-104 C-6,-88 -6,-72 4,-60 M-4,62 C8,74 8,90 -2,104"/>
+  <!-- top hat: brim follows the head's curve, crown centred on the head, sitting on it -->
+  <g id="hat">
+    <path d="M-62,-104 Q0,-124 62,-104"/>
+    <path d="M-38,-110 L-36,-186 Q0,-194 36,-186 L38,-110"/>
+    <path d="M-37,-132 Q0,-140 37,-132" stroke-width="7"/>
+  </g>
+</defs>
+<g fill="none" stroke="#f4f1e8" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+  <!-- A: upright -->
+  <g transform="translate(240,340)">
+    <use href="#bean"/><use href="#crease" stroke-width="8"/>
+    <circle cx="-28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/><circle cx="28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/>
+    <path d="M-24,8 Q0,30 24,8"/>
+    <use href="#hat"/>
+  </g>
+  <!-- B: whole bean (hat included) tipped a little, so the hat stays square on the head -->
+  <g transform="translate(660,340) rotate(8)">
+    <use href="#bean"/><use href="#crease" stroke-width="8"/>
+    <circle cx="-28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/><circle cx="28" cy="-24" r="9" fill="#f4f1e8" stroke="none"/>
+    <path d="M-24,8 Q0,30 24,8"/>
+    <use href="#hat"/>
+  </g>
+</g>
+<g fill="#f4f1e8" font-family="sans-serif" font-size="30" text-anchor="middle">
+<text x="240" y="580">2a  upright</text><text x="660" y="580">2b  tipped (hat moves with him)</text></g>
+</svg>

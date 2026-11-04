@@ -140,6 +140,103 @@ def pad_pos(board, ref, num):
     raise KeyError(f"{ref}.{num}")
 
 
+def bean_logo(board, cx, cy, height=11.0, layer=pcbnew.F_SilkS):
+    """The top-hat bean (logo/tophat.svg, option 2a) as silkscreen strokes, `height` mm tall."""
+    import math
+    s = height / 306.0                         # drawing units: hat top at -194, bean bottom at +112
+    oy = cy - (112 - 194) / 2 * s              # centre the whole figure vertically on cy
+    P = lambda x, y: (cx + x * s, oy + y * s)
+    def line(pts, w):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            g = pcbnew.PCB_SHAPE(board); g.SetShape(pcbnew.SHAPE_T_SEGMENT); g.SetLayer(layer)
+            g.SetWidth(mm(w * s)); g.SetStart(V(mm(x0), mm(y0))); g.SetEnd(V(mm(x1), mm(y1))); board.Add(g)
+    def bez(p0, p1, p2, p3, n=16):
+        return [P(*[(1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b_ + 3 * (1 - t) * t ** 2 * c + t ** 3 * d
+                    for a, b_, c, d in zip(p0, p1, p2, p3)]) for t in [i / n for i in range(n + 1)]]
+    def quad(p0, p1, p2, n=12):
+        return [P(*[(1 - t) ** 2 * a + 2 * (1 - t) * t * b_ + t ** 2 * c for a, b_, c in zip(p0, p1, p2)]) for t in [i / n for i in range(n + 1)]]
+    # bean body (four cubic segments, as in the SVG)
+    for seg_ in (((0, -112), (62, -112), (96, -58), (96, 6)), ((96, 6), (96, 72), (54, 112), (0, 112)),
+                 ((0, 112), (-54, 112), (-96, 72), (-96, 6)), ((-96, 6), (-96, -58), (-62, -112), (0, -112))):
+        line(bez(*seg_), 11)
+    line(bez((8, -104), (-6, -88), (-6, -72), (4, -60)), 8)          # crease, top
+    line(bez((-4, 62), (8, 74), (8, 90), (-2, 104)), 8)              # crease, bottom
+    for ex in (-28, 28):                                             # eyes: filled dots
+        g = pcbnew.PCB_SHAPE(board); g.SetShape(pcbnew.SHAPE_T_CIRCLE); g.SetLayer(layer)
+        c = P(ex, -24); g.SetCenter(V(mm(c[0]), mm(c[1]))); g.SetEnd(V(mm(c[0] + 4.5 * s), mm(c[1])))
+        g.SetWidth(mm(9 * s)); g.SetFilled(True); board.Add(g)
+    line(quad((-24, 8), (0, 30), (24, 8)), 11)                       # smile
+    line(quad((-62, -104), (0, -124), (62, -104)), 11)               # hat brim
+    line([P(-38, -110), P(-36, -186)], 11); line([P(38, -110), P(36, -186)], 11)
+    line(quad((-36, -186), (0, -194), (36, -186)), 11)               # hat top
+    line(quad((-37, -132), (0, -140), (37, -132)), 7)                # hat band
+
+
+def silkscreen(board, mains_v, footprints=None):
+    """Wiring labels at every connector, the barrier marks, the bean, and the board name."""
+    # silkscreen: what plugs in where. Labels sit just outside each connector's body on the inward
+    # side (anything under a screw terminal is hidden once it's fitted), one per pad, then the title.
+    LABELS = {"J1": ("MAINS IN", {"1": "N", "2": "L"}), "J2": ("HEATER", {}), "J3": ("", {"1": "VALVE", "2": "PUMP"}),
+              "J5": ("NTC", {}), "J6": ("PRESSURE", {"1": "+5V", "2": "SIG", "3": "GND"}),
+              "J7": ("", {"1": "B", "2": "S", "3": "G"})}   # BREW/STEAM/GND would sit on the USB shell pads
+    def silk(txt, x, y, size=1.0, angle=0, just=0):
+        t = pcbnew.PCB_TEXT(board)
+        t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
+        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(max(0.15, size * 0.15)))
+        t.SetTextAngleDegrees(angle)
+        t.SetHorizJustify({-1: pcbnew.GR_TEXT_H_ALIGN_LEFT, 0: pcbnew.GR_TEXT_H_ALIGN_CENTER, 1: pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
+        board.Add(t)
+    fps = {f.GetReference(): f for f in (footprints or board.GetFootprints())}
+    for ref, (title, pads) in LABELS.items():
+        fp = fps.get(ref)
+        if fp is None:
+            continue
+        cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
+        x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        # inward = away from the nearest board edge
+        d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
+        edge = min(d, key=d.get)
+        pp = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads()}
+        size = 1.0
+        for num, txt in pads.items():
+            px, py = pp[num]
+            if edge == "L":
+                silk(txt, x1 + 0.6, py, size, 0, -1)
+            elif edge == "R":
+                silk(txt, x0 - 0.6, py, size, 0, 1)
+            elif edge == "B":
+                silk(txt, px, y0 - 0.9, size, 0, 0)
+            else:
+                silk(txt, px, y1 + 0.9, size, 0, 0)
+        if title:
+            if edge in ("L", "R"):
+                w = max([len(t) for t in pads.values()] or [0]) * size * 1.2   # KiCad's font: ~1.1 x size per char
+                tx = (x1 + 1.2 + w + 0.8) if edge == "L" else (x0 - 1.2 - w - 1.8)
+                silk(title, tx, cy, size, 90 if edge == "L" else 270, 0)
+            else:
+                silk(title, cx, (y0 - 2.4) if edge == "B" else (y1 + 2.4), size, 0, 0)
+
+    # silkscreen: mark the barrier and the mains side
+    # free strips: between the fuse and the PSU (mains), and the open top-side area right of the optos (SELV)
+    for txt, x, y, size in ((f"{mains_v}V MAINS", 13.0, 17.0, 1.0), ("SELV", BAND[1] + 6.0, 26.5, 1.0),
+                            ):
+        t = pcbnew.PCB_TEXT(board)
+        t.SetText(txt)
+        t.SetPosition(V(mm(x), mm(y)))
+        t.SetLayer(pcbnew.F_SilkS)
+        t.SetTextSize(V(mm(size), mm(size)))
+        t.SetTextThickness(mm(size * 0.15))
+        if txt.endswith("MAINS"):
+            t.SetTextAngleDegrees(90)
+        board.Add(t)
+    seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
+    seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
+    bean_logo(board, BAND[1] + 6.2, 34.0, 11.0)
+    for k, t in enumerate(("B=BREW", "S=STEAM", "G=GND")):          # legend for J7's single letters
+        silk(t, BAND[1] + 6.2, 41.3 + k * 1.25, 0.8, 0, 0)
+
+
 def build(spec, mains_v):
     board = pcbnew.BOARD()
     board.SetCopperLayerCount(2)
@@ -243,63 +340,7 @@ def build(spec, mains_v):
             v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(nets["GND"]); v.SetLocked(True)
             board.Add(v)
 
-    # silkscreen: what plugs in where. Labels sit just outside each connector's body on the inward
-    # side (anything under a screw terminal is hidden once it's fitted), one per pad, then the title.
-    LABELS = {"J1": ("MAINS IN", {"1": "N", "2": "L"}), "J2": ("HEATER", {}), "J3": ("", {"1": "VALVE", "2": "PUMP"}),
-              "J5": ("NTC", {}), "J6": ("PRESSURE", {"1": "+5V", "2": "SIG", "3": "GND"}),
-              "J7": ("SWITCHES", {"1": "BREW", "2": "STEAM", "3": "GND"})}
-    def silk(txt, x, y, size=1.0, angle=0, just=0):
-        t = pcbnew.PCB_TEXT(board)
-        t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
-        t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(max(0.15, size * 0.15)))
-        t.SetTextAngleDegrees(angle)
-        t.SetHorizJustify({-1: pcbnew.GR_TEXT_H_ALIGN_LEFT, 0: pcbnew.GR_TEXT_H_ALIGN_CENTER, 1: pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
-        board.Add(t)
-    for ref, (title, pads) in LABELS.items():
-        fp = board.FindFootprintByReference(ref)
-        if fp is None:
-            continue
-        cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
-        x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
-        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        # inward = away from the nearest board edge
-        d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
-        edge = min(d, key=d.get)
-        pp = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads()}
-        size = 1.0
-        for num, txt in pads.items():
-            px, py = pp[num]
-            if edge == "L":
-                silk(txt, x1 + 0.6, py, size, 0, -1)
-            elif edge == "R":
-                silk(txt, x0 - 0.6, py, size, 0, 1)
-            elif edge == "B":
-                silk(txt, px, y0 - 0.9, size, 0, 0)
-            else:
-                silk(txt, px, y1 + 0.9, size, 0, 0)
-        if title:
-            if edge in ("L", "R"):
-                w = max([len(t) for t in pads.values()] or [0]) * size * 0.9
-                tx = (x1 + 1.2 + w + 0.8) if edge == "L" else (x0 - 1.2 - w - 0.8)
-                silk(title, tx, cy, size, 90 if edge == "L" else 270, 0)
-            else:
-                silk(title, cx, (y0 - 2.4) if edge == "B" else (y1 + 2.4), size, 0, 0)
-
-    # silkscreen: mark the barrier and the mains side
-    # free strips: between the fuse and the PSU (mains), and the open top-side area right of the optos (SELV)
-    for txt, x, y, size in ((f"{mains_v}V MAINS", 13.0, 17.0, 1.0), ("SELV", BAND[1] + 6.0, 26.5, 1.0),
-                            (f"coffee {mains_v} V", SLOT_X, H - 1.0, 0.6)):
-        t = pcbnew.PCB_TEXT(board)
-        t.SetText(txt)
-        t.SetPosition(V(mm(x), mm(y)))
-        t.SetLayer(pcbnew.F_SilkS)
-        t.SetTextSize(V(mm(size), mm(size)))
-        t.SetTextThickness(mm(size * 0.15))
-        if txt.endswith("MAINS"):
-            t.SetTextAngleDegrees(90)
-        board.Add(t)
-    seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
-    seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
+    silkscreen(board, mains_v)
 
     if os.environ.get("PLACE_ONLY"):   # floorplanning: footprints, outline and band only
         return board
