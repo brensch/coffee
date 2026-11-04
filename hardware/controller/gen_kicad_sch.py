@@ -27,8 +27,10 @@ def font(hide=False):
 
 
 def symbol_def(name, pins):
-    """A box with the pins split left/right; pin connection points on the 2.54 mm grid."""
-    nums = sorted(pins, key=lambda n: (len(n), n))
+    """A box with the pins split left/right; pin connection points on the 2.54 mm grid. `pins` is
+    one (number, copy) per footprint pad, so a pad number used by several pads (SOT-223 tab, USB-C
+    shell, the module's split ground pad) gets a stacked pin per pad and the pin count matches."""
+    nums = sorted(pins, key=lambda nk: (len(nk[0]), nk[0], nk[1]))
     left, right = nums[: (len(nums) + 1) // 2], nums[(len(nums) + 1) // 2:]
     h = max(len(left), len(right)) * G / 2 + G / 2
     out = [f"    (symbol {q('coffee:' + name)} (in_bom yes) (on_board yes)",
@@ -44,19 +46,25 @@ def symbol_def(name, pins):
             y = (len(lst) - 1) * G / 2 - i * G
             y = round(y / 1.27) * 1.27
             pos[n] = (x, y, side)
-            out.append(f"        (pin passive line (at {x:.2f} {y:.2f} {ang}) (length 2.54) (name {q(n)} {font()}) (number {q(n)} {font()}))")
+            out.append(f"        (pin passive line (at {x:.2f} {y:.2f} {ang}) (length 2.54) (name {q(n[0])} {font()}) (number {q(n[0])} {font()}))")
     out.append("      )")
     out.append("    )")
     return "\n".join(out), pos, h
 
 
-def write(spec, out_dir, project):
+def write(spec, out_dir, project, pads=None):
     root = U()
     libs, body, sym_uuid = [], [], {}
     parts = sorted(spec["parts"].items(), key=lambda kv: (re.sub(r"\d", "", kv[0]), int(re.sub(r"\D", "", kv[0]) or 0)))
     x, y, col_h = 25.4, 25.4, 0
     for ref, p in parts:
-        pins = {n for n in p["pins"]}
+        nums = pads.get(ref) if pads else None
+        if not nums:
+            nums = list(p["pins"])
+        seen = {}
+        pins = []
+        for n in nums:
+            pins.append((n, seen.get(n, 0))); seen[n] = seen.get(n, 0) + 1
         d, pos, h = symbol_def(ref, pins)
         libs.append(d)
         if y + 2 * h + 20 > 400:
@@ -70,13 +78,13 @@ def write(spec, out_dir, project):
         body.append(f"  (symbol (lib_id {q('coffee:' + ref)}) (at {X:.2f} {Y:.2f} 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid {su})")
         for k, v, dy, hide in props:
             body.append(f"    (property {q(k)} {q(v)} (at {X:.2f} {Y - dy:.2f} 0) {font(hide)})")
-        for n in sorted(pins):
+        for n in sorted({n for n, _ in pins}):
             body.append(f"    (pin {q(n)} (uuid {U()}))")
         body.append(f"    (instances (project {q(project)} (path {q('/' + root)} (reference {q(ref)}) (unit 1))))")
         body.append("  )")
         for n, (px, py, side) in pos.items():
             ax, ay = X + px, Y - py              # library y is up, schematic y is down
-            net = p["pins"].get(n)
+            net = p["pins"].get(n[0])
             if net:
                 ang, just = (180, "right") if side == "L" else (0, "left")
                 body.append(f"  (global_label {q(net)} (shape passive) (at {ax:.2f} {ay:.2f} {ang}) (fields_autoplaced)"
@@ -130,7 +138,11 @@ if __name__ == "__main__":
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "build", "kicad-project")
     os.makedirs(out, exist_ok=True)
     project = "coffee-controller"
-    sch, root, sym = write(spec, out, project)
+    # one symbol pin per numbered copper pad of the footprint (unnumbered = mechanical holes)
+    pads = {}
+    for fp in pcbnew.LoadBoard(pcb_in).GetFootprints():
+        pads[fp.GetReference()] = [p.GetNumber() for p in fp.Pads() if p.GetNumber()]
+    sch, root, sym = write(spec, out, project, pads)
     link_pcb(pcb_in, os.path.join(out, project + ".kicad_pcb"), root, sym)
     bad, n = check_sch(sch, spec)
     print(f"wrote {out}/{project}.kicad_sch/.kicad_pcb/.kicad_pro: {len(spec['parts'])} symbols; "

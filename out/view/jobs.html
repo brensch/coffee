@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Board jobs</title>
+<style>
+:root{--bg:#f6f4f0;--card:#fff;--ink:#1e1e1e;--mut:#6b6b6b;--line:#ddd6cc;--ok:#178a3c;--warn:#b26b00;--bad:#c22;--sel:#efe9df}
+@media (prefers-color-scheme:dark){:root{--bg:#161616;--card:#202020;--ink:#eaeaea;--mut:#9a9a9a;--line:#333;--sel:#2a2a2a}}
+body{margin:0;padding:16px;font:14px system-ui;background:var(--bg);color:var(--ink)}
+h1{font-size:18px;margin:0 0 4px}h2{font-size:16px;margin:22px 0 4px}.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:12px 0}
+.top{display:flex;gap:12px;flex-wrap:wrap;align-items:baseline}
+.kind{font-weight:600}.pill{font:12px ui-monospace,monospace;padding:2px 6px;border-radius:6px;border:1px solid var(--line)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+pre{margin:8px 0 0;max-height:320px;overflow:auto;background:rgba(0,0,0,.04);padding:8px;border-radius:6px;font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap}
+@media (prefers-color-scheme:dark){pre{background:rgba(255,255,255,.05)}}
+a{color:inherit}.env span{margin-right:10px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th{font-weight:600;color:var(--mut);font-size:12px}tr.run{cursor:pointer}tr.run:hover,tr.open{background:var(--sel)}
+td.n{text-align:right}.det td{white-space:normal;background:var(--sel)}
+.svgs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.svgs figure{margin:0;flex:1 1 300px}
+
+.svgs figcaption{font-size:12px;color:var(--mut)}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9;cursor:zoom-out}
+#zoom .wrap{width:min(96vw,96vh*1.08);cursor:zoom-out}
+.wrap{position:relative;cursor:zoom-in}.wrap img{display:block;width:100%;background:#fff;border:1px solid var(--line);border-radius:6px}
+.ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dc{fill:rgba(220,30,30,.18);stroke:#e01b1b;stroke-width:.3;animation:pulse 1.2s ease-in-out infinite}
+.dl{stroke:#e01b1b;stroke-width:.25;stroke-dasharray:.6 .4}
+.ur{stroke:#ff8a00;stroke-width:.35;stroke-dasharray:.8 .5}.urd{fill:#ff8a00}
+@keyframes pulse{50%{stroke-width:.7;fill:rgba(220,30,30,.35)}}
+.mk.hi .dc{stroke:#000;stroke-width:.8;fill:rgba(255,230,0,.6)}.mk.hi .ur{stroke:#000;stroke-width:.7}
+.issues{margin:10px 0}.iss{padding:4px 6px;border-radius:6px;cursor:default}.iss:hover{background:rgba(255,200,0,.25)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}.dsw{background:#e01b1b}.ursw{background:#ff8a00}
+.cols{display:flex;gap:24px;flex-wrap:wrap}.cols>div{min-width:240px}
+</style></head><body>
+<h1>Board jobs <span class="mut" id="t"></span></h1>
+<div class="mut">Ranking: DRC clean first, then fewest unconnected, fewest DRC errors, fewest vias, shortest track. Refreshed every 2 s. CPU near 0 % for a long time means stuck.</div>
+<h2>Running now</h2><div id="run"></div>
+<h2>Runs <label style="font-weight:400;font-size:13px"><input type="checkbox" id="byscore" onchange="lastRuns='';render(window._d)"> best first</label> <span class="mut" style="font-weight:400;font-size:13px">(newest first, click a row for details and renders)</span></h2>
+<div class="tw"><table><thead><tr><th>run</th><th>finished</th><th>result</th><th>unrouted</th><th>DRC errors</th><th>vias</th><th>track mm</th><th>router time</th><th>setup</th></tr></thead><tbody id="runs"></tbody></table></div>
+<div id="zoom" onclick="this.style.display='none'"></div>
+<script>
+const fmt=s=>s<60?Math.round(s)+" s":s<3600?Math.floor(s/60)+" m "+Math.round(s%60)+" s":Math.floor(s/3600)+" h "+Math.floor(s%3600/60)+" m";
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const ago=t=>fmt(Date.now()/1000-t)+" ago";
+const shortRule=k=>k.replace(/\(IEC[^)]*\)/,"").replace(/ clearance [\d.]+ mm\)/,")").replace(/\s+\)/,")");
+let open=new Set(), lastRuns="", firstLoad=true;
+function zoomFig(w){const z=document.getElementById("zoom");z.innerHTML=w.outerHTML;z.style.display="flex"}
+document.addEventListener("mouseover",e=>{const t=e.target.closest(".iss");document.querySelectorAll(".mk.hi").forEach(m=>m.classList.remove("hi"));if(t)document.querySelectorAll(`.mk[data-k="${t.dataset.k}"]`).forEach(m=>m.classList.add("hi"))});
+function toggle(n){open.has(n)?open.delete(n):open.add(n);lastRuns="";render(window._d)}
+function render(d){
+  const R=d.running.sort((a,b)=>a.elapsed-b.elapsed);
+  const rk=R.map(r=>r.pid+":"+r.tail.slice(-1)).join();
+  if(rk!==window._rk){window._rk=rk;
+  const ifr=[...document.querySelectorAll("#run iframe")].map(f=>f.src);
+  document.getElementById("run").innerHTML=R.length?R.map(r=>{
+    const cpuCls=r.cpu<2&&r.elapsed>60?"bad":r.cpu<20?"warn":"ok";
+    const env=Object.entries(r.env).map(([k,v])=>`<span><b>${k}</b> ${esc(v.replace(/^.*\/(tmp|controller)\//,""))}</span>`).join("");
+    const age=r.log_age==null?"":` · log updated ${fmt(r.log_age)} ago`;
+    return `<div class="card"><div class="top"><span class="kind">${r.kind}</span><span class="pill">pid ${r.pid}</span>
+      <span>running ${fmt(r.elapsed)}</span><span class="${cpuCls}">CPU ${r.cpu.toFixed(0)} %</span><span class="mut">${r.rss_mb} MB${age}</span>
+      ${r.live?`<a href="${r.live}" target="_blank">watch routing live ↗</a>`:""}</div>
+      <div class="env mut">${env}</div><div class="mut" style="font:12px ui-monospace,monospace;margin-top:4px">${esc(r.cmd)}</div>
+      ${r.live?`<iframe src="${r.live}" style="width:100%;height:560px;border:1px solid var(--line);border-radius:6px;margin-top:8px;background:#fff"></iframe>`:""}
+      ${r.tail.length?`<pre>${esc(r.tail.join("\n"))}</pre>`:""}</div>`}).join("")
+    :`<div class="card mut">Nothing running.</div>`;}
+  const key=JSON.stringify(d.runs)+[...open].join();
+  if(key===lastRuns)return; lastRuns=key;
+  const runs=[...(d.runs||[])]; if(document.getElementById("byscore").checked)runs.sort((a,b)=>{for(let i=0;i<a.score.length;i++)if(a.score[i]!==b.score[i])return a.score[i]-b.score[i];return 0});
+  document.getElementById("runs").innerHTML=runs.map(r=>{
+    const un=r.unconnected;
+    const errs=r.drc_errors;
+    const clean=errs===0&&un===0;
+    const res=errs==null?`<span class="mut">no DRC</span>`:clean?`<b class="ok">✓ clean</b>`:`<b class="bad">✗ ${errs} error${errs==1?"":"s"}</b>`;
+    const env=r.run&&r.run.env?Object.entries(r.run.env).map(([k,v])=>`${k}=${v}`).join(" "):"";
+    const row=`<tr class="run ${open.has(r.name)?"open":""}" onclick="toggle('${r.name}')"><td><b>${esc(r.name)}</b>${r.best?' <span class="pill ok">best</span>':''}</td><td>${ago(r.mtime)}</td><td>${res}</td>
+      <td class="n ${un?"bad":""}">${un??"–"}</td><td class="n">${errs??"–"}</td><td class="n">${r.final?r.final.vias:(r.router?r.router.vias:"–")}</td>
+      <td class="n">${r.router?Math.round(r.router.trace_length_mm):"–"}</td><td class="n">${r.router?fmt(r.router.time_s):"–"}</td>
+      <td class="mut" style="font:12px ui-monospace,monospace">${esc(r.run.tool||"")} ${esc(env)}</td></tr>`;
+    if(!open.has(r.name))return row;
+    const drc=Object.entries(r.drc||{}).map(([k,v])=>`<div>${v} × ${esc(shortRule(k))}</div>`).join("")||"<div class='mut'>none</div>";
+    const unr=(r.unrouted||[]).map(u=>`<div><b>${esc(u.net)}</b> ${esc(u.a)} → ${esc(u.b)} <span class="mut">(${esc(u.why||"?")})</span></div>`).join("")||"<div class='mut'>none</div>";
+    const M=r.marks, id=r.name.replace(/\W/g,"_");
+    const W=M?+M.viewBox.split(" ")[2]:0;
+    const ov=(flip)=>M?`<svg class="ov" viewBox="${M.viewBox}" preserveAspectRatio="xMidYMid meet"><g ${flip?`transform="translate(${W} 0) scale(-1 1)"`:""}>${
+      M.unrouted.map((u,i)=>`<g class="mk" data-k="${id}u${i}"><line x1="${u.a[0]}" y1="${u.a[1]}" x2="${u.b[0]}" y2="${u.b[1]}" class="ur"/><circle cx="${u.a[0]}" cy="${u.a[1]}" r=".6" class="urd"/><circle cx="${u.b[0]}" cy="${u.b[1]}" r=".6" class="urd"/></g>`).join("")}${
+      M.drc.map((e,i)=>`<g class="mk" data-k="${id}d${i}">${e.pts.length>1?`<line x1="${e.pts[0][0]}" y1="${e.pts[0][1]}" x2="${e.pts[1][0]}" y2="${e.pts[1][1]}" class="dl"/>`:""}${e.pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="1.4" class="dc"/>`).join("")}</g>`).join("")}</g></svg>`:"";
+    const svgs=r.svgs.map(s=>`<figure><div class="wrap" onclick="event.stopPropagation();zoomFig(this)"><img src="${s}?${Math.round(r.mtime)}">${ov(s.endsWith("bottom.svg"))}</div><figcaption>${s.split("/").pop().replace(".svg","")}</figcaption></figure>`).join("");
+    const issues=M&&(M.drc.length||M.unrouted.length)?`<div class="issues"><b>Problems (hover to find on the board)</b>${
+      M.unrouted.map((u,i)=>`<div class="iss" data-k="${id}u${i}"><span class="sw ursw"></span>unrouted <b>${esc(u.net)}</b></div>`).join("")}${
+      M.drc.map((e,i)=>`<div class="iss" data-k="${id}d${i}"><span class="sw dsw"></span><b>${esc(e.kind)}</b> ${esc(e.msg)}<div class="mut">${e.pts.map(p=>esc(p[2])).join(" ↔ ")}</div></div>`).join("")}</div>`:"";
+    return row+`<tr class="det"><td colspan="9"><div class="cols">
+      <div><b>Router left unrouted</b>${unr}</div><div><b>KiCad DRC</b>${drc}</div>
+      <div><b>Folder</b><div class="mut" style="font:12px ui-monospace,monospace">${esc(r.dir)}</div></div></div>
+      ${issues}<div class="svgs">${svgs||"<span class='mut'>no renders</span>"}</div>
+      <pre>${esc((r.log||[]).join("\n"))}</pre></td></tr>`;
+  }).join("");
+}
+async function tick(){
+  let d; try{d=await (await fetch("jobs/status.json?"+Date.now())).json()}catch(e){document.getElementById("t").textContent="(watcher not running)";return}
+  if(firstLoad&&d.runs&&d.runs.length){open.add(d.runs[0].name);firstLoad=false}
+  window._d=d; document.getElementById("t").textContent="updated "+d.time; render(d);
+  document.querySelectorAll("#run pre").forEach(p=>p.scrollTop=p.scrollHeight);
+}
+tick(); setInterval(tick,2000);
+</script></body></html>

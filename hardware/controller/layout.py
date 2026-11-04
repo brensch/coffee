@@ -14,7 +14,6 @@ importing SKiDL. Pipeline:
     python3 layout.py [--mains 230] [--passes 40]
 """
 
-import argparse
 import json
 import os
 import re
@@ -29,7 +28,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.environ.get("BUILD_DIR", os.path.join(HERE, "build"))
 FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 # Freerouting 2.1.0 jar (Java 21). The 2.5.0 native CLI hangs at 0% CPU after a serialisation crash.
-FREEROUTING_JAR = os.environ.get("FREEROUTING_JAR", os.path.expanduser("~/opt/freerouting/fr-2.1.0.jar"))
 
 # ---------------------------------------------------------------- geometry (mm)
 # The floorplan comes from the layout sandbox (sb.py / opt.py): board size, the barrier and every
@@ -131,15 +129,6 @@ def track(board, net, layer, a, b, width):
     board.Add(t)
 
 
-def pad_pos(board, ref, num):
-    fp = board.FindFootprintByReference(ref)
-    for p in fp.Pads():
-        if p.GetNumber() == num:
-            pos = p.GetPosition()
-            return (pcbnew.ToMM(pos.x), pcbnew.ToMM(pos.y))
-    raise KeyError(f"{ref}.{num}")
-
-
 def bean_logo(board, cx, cy, height=11.0, layer=pcbnew.F_SilkS):
     """The top-hat bean (logo/tophat.svg, option 2a) as silkscreen strokes, `height` mm tall."""
     import math
@@ -178,7 +167,7 @@ def silkscreen(board, mains_v, footprints=None):
     # side (anything under a screw terminal is hidden once it's fitted), one per pad, then the title.
     LABELS = {"J1": ("MAINS IN", {"1": "N", "2": "L"}), "J2": ("HEATER", {}), "J3": ("", {"1": "VALVE", "2": "PUMP"}),
               "J5": ("NTC", {}), "J6": ("PRESSURE", {"1": "+5V", "2": "SIG", "3": "GND"}),
-              "J7": ("", {"1": "B", "2": "S", "3": "G"})}   # BREW/STEAM/GND would sit on the USB shell pads
+              "J7": ("SWITCHES", {"1": "BREW", "2": "STEAM", "3": "GND"})}
     def silk(txt, x, y, size=1.0, angle=0, just=0):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
@@ -210,14 +199,15 @@ def silkscreen(board, mains_v, footprints=None):
             else:
                 silk(txt, px, y1 + 0.9, size, 0, 0)
         if title:
-            if edge in ("L", "R"):
-                w = max([len(t) for t in pads.values()] or [0]) * size * 1.2   # KiCad's font: ~1.1 x size per char
-                tx = (x1 + 1.2 + w + 0.8) if edge == "L" else (x0 - 1.2 - w - 1.8)
-                silk(title, tx, cy, size, 90 if edge == "L" else 270, 0)
+            if edge in ("L", "R") and pads:
+                # a heading directly above the label column, aligned with it
+                ytop = min(pp[n][1] for n in pads) - 1.7
+                silk(title, (x1 + 0.6) if edge == "L" else (x0 - 0.6), ytop, size, 0, -1 if edge == "L" else 1)
+            elif edge in ("L", "R"):
+                silk(title, (x1 + 0.6) if edge == "L" else (x0 - 0.6), cy, size, 0, -1 if edge == "L" else 1)
             else:
                 silk(title, cx, (y0 - 2.4) if edge == "B" else (y1 + 2.4), size, 0, 0)
 
-    # silkscreen: mark the barrier and the mains side
     # free strips: between the fuse and the PSU (mains), and the open top-side area right of the optos (SELV)
     for txt, x, y, size in ((f"{mains_v}V MAINS", 13.0, 17.0, 1.0), ("SELV", BAND[1] + 6.0, 26.5, 1.0),
                             ):
@@ -233,8 +223,6 @@ def silkscreen(board, mains_v, footprints=None):
     seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
     seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
     bean_logo(board, BAND[1] + 6.2, 34.0, 11.0)
-    for k, t in enumerate(("B=BREW", "S=STEAM", "G=GND")):          # legend for J7's single letters
-        silk(t, BAND[1] + 6.2, 41.3 + k * 1.25, 0.8, 0, 0)
 
 
 def build(spec, mains_v):
@@ -344,124 +332,7 @@ def build(spec, mains_v):
 
     if os.environ.get("PLACE_ONLY"):   # floorplanning: footprints, outline and band only
         return board
-    # ---- Mains side: grid-routed here (mainsroute.py), checked by the same DRC rules; Freerouting
-    # only does SELV. Heater first and on both layers, then the supply, the load lines and the rest.
-    import mainsroute
-    # Hand routes from the plan (heater corner): drawn first, locked, obstacles for the router.
-    pre = _plan.get("preroute", [])
-    for r in pre:
-        L = pcbnew.F_Cu if r["layer"] == "F" else pcbnew.B_Cu
-        for a_, b_ in zip(r["pts"], r["pts"][1:]):
-            dx, dy = b_[0] - a_[0], b_[1] - a_[1]
-            assert abs(dx) < 1e-6 or abs(dy) < 1e-6 or abs(abs(dx) - abs(dy)) < 0.02, f"preroute {r['net']}: {a_}->{b_} not 0/45/90"
-            track(board, nets[r["net"]], L, a_, b_, r["w"])
-    if os.environ.get("MAINS_ROUTER") == "none":    # an external router does everything after the hand routes
-        return board
-    rt = mainsroute.Router(board, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS)
-    for r in pre:
-        L = pcbnew.F_Cu if r["layer"] == "F" else pcbnew.B_Cu
-        for a_, b_ in zip(r["pts"], r["pts"][1:]):
-            x0, x1 = sorted((a_[0], b_[0])); y0, y1 = sorted((a_[1], b_[1]))
-            o = dict(kind="seg", net=r["net"], layers=[L], a=tuple(a_), b=tuple(b_), w=r["w"])
-            o["courts"] = rt._touch((x0 - r["w"] / 2, y0 - r["w"] / 2, x1 + r["w"] / 2, y1 + r["w"] / 2))
-            rt.obs.append(o)
-    rt.base_obs = list(rt.obs)
-    rt.load_vias()
-    done = {r["net"] for r in pre}
-    # Rip-up and reroute: nets that fail move to the front of the order, up to ROUNDS times; keep the
-    # best order (fewest failures, then fewest vias) and route it once more for real.
-    base = [o for o in MAINS_ORDER]
-    order, best, seen = list(base), None, set()
-    for rnd in range(int(os.environ.get("ROUTE_ROUNDS", "12"))):
-        rt.failed = set()
-        fails = 0
-        for net, w, layers in order:
-            if net in rt.pads and net not in done:
-                for L in layers:
-                    fails += rt.route_net(net, w, [L] if L is not None else None, optional=L is not None)
-        key = (fails, rt.vias())
-        print(f"  mains round {rnd}: {fails} pads unrouted, {rt.vias()} vias; failed {sorted(rt.failed)}", flush=True)
-        if best is None or key < best[0]:
-            best = (key, list(order))
-        if fails == 0 and rt.vias() == 0:
-            break
-        nxt = [o for o in order if o[0] in rt.failed] + [o for o in order if o[0] not in rt.failed]
-        if not rt.failed or tuple(n for n, *_ in nxt) in seen:
-            import random
-            nxt = list(order); random.Random(rnd).shuffle(nxt)
-        seen.add(tuple(n for n, *_ in nxt))
-        rt.reset()
-        order = nxt
-    if order != best[1] or rt.failed:
-        rt.reset(); rt.failed = set(); fails = 0
-        for net, w, layers in best[1]:
-            if net in rt.pads and net not in done:
-                for L in layers:
-                    fails += rt.route_net(net, w, [L] if L is not None else None, optional=L is not None)
-    # ---- SELV side, same router: 0.2 mm, pad-centre exits, vias only when needed. GND is a pour.
-    if os.environ.get("OWN_SELV", "1") == "1":
-        sel = [n for n in sorted(rt.pads) if n not in spec["mains_nets"] and n != "GND"]   # GND is added last (tree + pours)
-        first = ["USB_D+", "USB_D-", "CC1", "CC2", "EN", "IO8_STRAP", "IO9_BOOT"]
-        power = {"+3V3": 0.4, "+5V": 0.5, "VBUS": 0.4}
-        fine = {"USB_D+": 0.2, "USB_D-": 0.2, "CC1": 0.2, "CC2": 0.2}   # USB-C pads: 0.3 wide on 0.5 pitch
-        mid = [n for n in sel if n not in first and n not in power]
-        if os.environ.get("SELV_SEED", "2"):
-            import random
-            random.Random(int(os.environ.get("SELV_SEED", "2"))).shuffle(mid)
-        sorder = [n for n in first if n in sel] + mid + [n for n in power if n in sel]
-        nf = rt.fanout("GND")
-        print(f"  GND fan-out: {nf} vias", flush=True)
-        # GND pads the pour can't reach (fenced in by tracks on both layers), tied to the sensor connectors'
-        # through-hole ground pins before the signals are routed.
-        extra = [p for p in os.environ.get("GND_TREE", "").split(",") if p]
-        if extra:
-            anchors = [p for p in os.environ.get("GND_ANCHORS", "J5.2,J6.3,J7.3").split(",") if p]
-            ft = rt.route_net("GND", float(os.environ.get("GND_TREE_W", "0.25")), only=set(extra + anchors))
-            print(f"  GND tree for {len(extra)} pads: {ft} unrouted", flush=True)
-            rt.base_obs = list(rt.obs)
-        sbest, sfail = None, None
-        since_best = 0
-        smark = len(rt.added)
-        for srnd in range(int(os.environ.get("SELV_ROUNDS", "10"))):
-            rt.failed = set()
-            f = 0
-            for n in sorder:
-                f += rt.route_net(n, power.get(n, fine.get(n, 0.25)))
-            print(f"  selv round {srnd}: {f} pads unrouted, {rt.vias()} vias total; failed {sorted(rt.failed)}", flush=True)
-            if sbest is None or f < sbest[0]:
-                sbest = (f, list(sorder)); since_best = 0
-            else:
-                since_best += 1
-            # fail fast: stop when PATIENCE rounds in a row haven't beaten the best
-            if f == 0 or srnd == int(os.environ.get("SELV_ROUNDS", "10")) - 1 or since_best >= int(os.environ.get("SELV_PATIENCE", "3")):
-                break
-            # rip up only the SELV copper and retry with the failures first
-            for it in rt.added[smark:]:
-                rt.b.Remove(it)
-            keep = set(map(id, rt.added[:smark]))
-            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep)]
-            rt.added = rt.added[:smark]
-            sorder = [n for n in sorder if n in rt.failed] + [n for n in sorder if n not in rt.failed]
-        if f and sbest[0] < f:                  # replay the best order
-            for it in rt.added[smark:]:
-                rt.b.Remove(it)
-            keep = set(map(id, rt.added[:smark]))
-            rt.obs = [o for o in rt.obs if not (o.get("track") is not None and id(o["track"]) not in keep)]
-            rt.added = rt.added[:smark]
-            rt.failed = set(); f = 0
-            for n in sbest[1]:
-                f += rt.route_net(n, power.get(n, fine.get(n, 0.25)))
-            print(f"  selv replay of the best order: {f} pads unrouted", flush=True)
-        sfail = f
-        fails += sfail
-    rt.widen(set(spec["heater_nets"]))
-    rt.widen({"AC_L", "PUMP_L"}, widths=(1.5, 1.2))
-    if fails:
-        print(f"mainsroute: {fails} pads unrouted", flush=True)
-        if not os.environ.get("KEEP_GOING"):
-            pcbnew.SaveBoard(os.path.join(BUILD, "mains-fail.kicad_pcb"), board)
-            raise SystemExit("mains routing incomplete: build/mains-fail.kicad_pcb")
-    return board
+    return board              # all copper is routed by fastroute (ext_route.py)
 
 
 def sexpr(text):
@@ -646,7 +517,8 @@ def fix_dsn(path, spec):
                       f"      (rule\n        (width {um(width)})\n        (clearance {um(0.5)})\n      )\n    )\n")
     for i in range(len(groups)):
         for j in range(i + 1, len(groups)):
-            blocks.append(f"    (class_class (classes M{i} M{j})\n      (rule (clearance {um(2.0)}))\n    )\n")
+            c = 2.0
+            blocks.append(f"    (class_class (classes M{i} M{j})\n      (rule (clearance {um(c)}))\n    )\n")
     k = txt.index("    (class Heater")
     txt = txt[:k] + "".join(blocks) + txt[k:]
     open(path, "w").write(txt)
@@ -670,7 +542,6 @@ def fab_outputs(pcb, stem):
     run("pdf", pcb, "-o", stem + ".pdf", "-l", "F.Cu,B.Cu,F.SilkS,Edge.Cuts")
 
 
-JOB_TIMEOUT = [120]
 
 
 def obstacles(board, net="GND"):
@@ -735,200 +606,6 @@ def stitch(board, pitch=2.5, d=0.6, drill=0.3, clr=0.3):
     return n
 
 
-def bridge_fragments(b):
-    """A via inside every secondary GND pour fragment, where the other layer has its main pour."""
-    gnd = b.GetNetsByName()["GND"]
-    items = obstacles(b)
-    mains = {}
-    frags = []
-    for z in b.Zones():
-        if z.GetNetname() != "GND" or z.GetIsRuleArea():
-            continue
-        for L in (pcbnew.F_Cu, pcbnew.B_Cu):
-            if not z.IsOnLayer(L):
-                continue
-            ps = z.GetFilledPolysList(L)
-            if ps.OutlineCount() == 0:
-                continue
-            order = sorted(range(ps.OutlineCount()), key=lambda i: -abs(ps.Outline(i).Area()))
-            m = pcbnew.SHAPE_POLY_SET(); m.AddOutline(ps.Outline(order[0]))
-            mains[L] = m
-            for i in order[1:]:
-                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
-                for h in range(ps.HoleCount(i)):
-                    f_.AddHole(ps.Hole(i, h))
-                frags.append((L, f_))
-    n = 0
-    for L, ol in frags:
-        other = pcbnew.B_Cu if L == pcbnew.F_Cu else pcbnew.F_Cu
-        if other not in mains:
-            continue
-        bb = ol.BBox()
-        # the via must sit on fragment copper with a margin, not just inside its outline
-        x0, x1, y0, y1 = pcbnew.ToMM(bb.GetLeft()), pcbnew.ToMM(bb.GetRight()), pcbnew.ToMM(bb.GetTop()), pcbnew.ToMM(bb.GetBottom())
-        done = False
-        y = y0 + 0.4
-        while y < y1 - 0.3 and not done:
-            x = x0 + 0.4
-            while x < x1 - 0.3:
-                pt = V(mm(x), mm(y))
-                ring = [V(mm(x + dx), mm(y + dy)) for dx, dy in ((0.35, 0), (-0.35, 0), (0, 0.35), (0, -0.35))]
-                if ol.Contains(pt) and all(ol.Contains(q) for q in ring) and mains[other].Contains(pt) and is_free(items, x, y, 0.6):
-                    v = pcbnew.PCB_VIA(b); v.SetPosition(pt); v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(gnd); v.SetLocked(True); b.Add(v)
-                    items.append(("c", (x, y, 0.3))); n += 1; done = True
-                    break
-                x += 0.2
-            y += 0.2
-    return n
-
-
-def gnd_components(b):
-    """GND copper as a graph (pour fragments, pads, vias, tracks); returns the isolated components as
-    lists of (x, y, layers) source points, plus the main component's fragments per layer."""
-    F, B = pcbnew.F_Cu, pcbnew.B_Cu
-    frs = []
-    for z in b.Zones():
-        if z.GetNetname() != "GND" or z.GetIsRuleArea():
-            continue
-        for L in (F, B):
-            if not z.IsOnLayer(L):
-                continue
-            ps = z.GetFilledPolysList(L)
-            for i in range(ps.OutlineCount()):
-                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
-                for h in range(ps.HoleCount(i)):
-                    f_.AddHole(ps.Hole(i, h))
-                frs.append((L, f_, abs(ps.Outline(i).Area())))
-    items = []
-    for t in b.GetTracks():
-        if t.GetNetname() != "GND":
-            continue
-        if t.Type() == pcbnew.PCB_VIA_T:
-            items.append(((F, B), [t.GetPosition()]))
-        else:
-            items.append(((t.GetLayer(),), [t.GetStart(), t.GetEnd()]))
-    for fp in b.GetFootprints():
-        for p in fp.Pads():
-            if p.GetNetname() == "GND":
-                items.append((tuple(L for L in (F, B) if p.IsOnLayer(L)), [p.GetPosition()]))
-    N = len(frs) + len(items); par = list(range(N))
-    def find(x):
-        while par[x] != x:
-            par[x] = par[par[x]]; x = par[x]
-        return x
-    for j, (Ls, pts) in enumerate(items):
-        for i, (L, f_, a) in enumerate(frs):
-            if L in Ls and any(f_.Contains(p) for p in pts):
-                par[find(len(frs) + j)] = find(i)
-    pos = {}
-    for j, (Ls, pts) in enumerate(items):
-        for p in pts:
-            for L in Ls:
-                pos.setdefault((p.x // 1000, p.y // 1000, L), []).append(j)
-    for js in pos.values():
-        for j in js[1:]:
-            par[find(len(frs) + j)] = find(len(frs) + js[0])
-    comps = {}
-    for i in range(N):
-        comps.setdefault(find(i), []).append(i)
-    # main = the component holding the most pour area
-    area = lambda c: sum(frs[i][2] for i in c if i < len(frs))
-    main = max(comps.values(), key=area)
-    iso = []
-    for c in comps.values():
-        if c is main:
-            continue
-        pts = []
-        for i in c:
-            if i >= len(frs):
-                Ls, ps_ = items[i - len(frs)]
-                pts += [(pcbnew.ToMM(p.x), pcbnew.ToMM(p.y), Ls) for p in ps_]
-        if pts:
-            iso.append(pts)
-    mainfr = {F: [frs[i][1] for i in main if i < len(frs) and frs[i][0] == F], B: [frs[i][1] for i in main if i < len(frs) and frs[i][0] == B]}
-    return iso, mainfr
-
-
-def fragment_pads(b):
-    """GND pads sitting only on small pour fragments that hold no via (on every layer they touch)."""
-    vias = [t.GetPosition() for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == "GND"]
-    small = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}
-    for z in b.Zones():
-        if z.GetNetname() != "GND" or z.GetIsRuleArea() or z.GetZoneName() != "GND":
-            continue
-        for L in small:
-            if not z.IsOnLayer(L):
-                continue
-            ps = z.GetFilledPolysList(L)
-            for i in range(ps.OutlineCount()):
-                if abs(ps.Outline(i).Area()) / 1e12 > 60:
-                    continue
-                f_ = pcbnew.SHAPE_POLY_SET(); f_.AddOutline(ps.Outline(i))
-                for h in range(ps.HoleCount(i)):
-                    f_.AddHole(ps.Hole(i, h))
-                if not any(f_.Contains(v) for v in vias):
-                    small[L].append(f_)
-    out = []
-    for fp in b.GetFootprints():
-        for p in fp.Pads():
-            if p.GetNetname() != "GND" or p.GetDrillSize().x == 0:
-                continue
-            if all(any(f_.Contains(p.GetPosition()) for f_ in small[L]) for L in small):
-                out.append(p)
-    return out
-
-
-def gnd_islands(b, tmp):
-    """GND pads the DRC reports as unconnected (the binding's connectivity queries aren't reliable)."""
-    pcbnew.SaveBoard(tmp + ".kicad_pcb", b)
-    bb = pcbnew.LoadBoard(tmp + ".kicad_pcb")
-    pcbnew.WriteDRCReport(bb, tmp + ".rpt", pcbnew.EDA_UNITS_MILLIMETRES, True)
-    found = set()
-    for blk in re.split(r"\n(?=\[)", open(tmp + ".rpt").read()):
-        if not blk.startswith("[unconnected_items"):
-            continue
-        for m in re.finditer(r"Pad (\S+) \[GND\] of (\S+) on", blk):
-            found.add((m.group(2), m.group(1)))
-    pads = []
-    for ref, num in sorted(found):
-        fp = b.FindFootprintByReference(ref)
-        pads += [p for p in fp.Pads() if p.GetNumber() == num and p.GetNetname() == "GND"][:1]
-    return pads
-
-
-def dogbones(b, pads, d=0.6, clr=0.3, w=0.3):
-    """For each isolated GND pad: a via within ~1.6 mm (both layers clear) and a short track to it."""
-    import math
-    gnd = b.GetNetsByName()["GND"]
-    items = obstacles(b)
-    added = 0
-    for p in pads:
-        c = p.GetPosition(); px, py = pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)
-        bb = p.GetBoundingBox(); half = max(pcbnew.ToMM(bb.GetWidth()), pcbnew.ToMM(bb.GetHeight())) / 2
-        layer = pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
-        done = False
-        for rr in (half + 0.55, half + 0.9, half + 1.3, half + 1.7, half + 2.2, half + 2.8):
-            for k in range(32):
-                a_ = k * math.pi / 16
-                vx, vy = round((px + rr * math.cos(a_)) * 20) / 20, round((py + rr * math.sin(a_)) * 20) / 20
-                if not (BAND[1] + 0.8 < vx < W - 1.0 and 1.0 < vy < H - 1.0):
-                    continue
-                if not is_free(items, vx, vy, d / 2 + clr):
-                    continue
-                # the track from the pad centre to the via must clear other nets too
-                ok = all(is_free(items, px + (vx - px) * t, py + (vy - py) * t, w / 2 + 0.2) for t in [i / 20 for i in range(4, 20)])
-                if not ok:
-                    continue
-                v = pcbnew.PCB_VIA(b); v.SetPosition(V(mm(vx), mm(vy))); v.SetWidth(mm(d)); v.SetDrill(mm(0.3)); v.SetNet(gnd); v.SetLocked(True); b.Add(v)
-                track(b, gnd, layer, (px, py), (vx, vy), w)
-                items.append(("c", (vx, vy, d / 2)))
-                added += 1; done = True
-                break
-            if done:
-                break
-    return added
-
-
 def finish_own(spec, stem):
     placed = stem + "-placed.kicad_pcb"
     b = pcbnew.LoadBoard(placed)
@@ -955,74 +632,6 @@ def finish_own(spec, stem):
     for t in dead:
         b.Remove(t)
     pcbnew.ZONE_FILLER(b).Fill(b.Zones())
-    for it in range(4):                     # isolated GND pads: dogbones, then routed joins
-        iso = gnd_islands(b, stem + "-iso") + fragment_pads(b)
-        print(f"  GND islands round {it}: {len(iso)} pads", flush=True)
-        if not iso:
-            break
-        if it < 2 and dogbones(b, iso):
-            pcbnew.ZONE_FILLER(b).Fill(b.Zones())
-            continue
-        import mainsroute
-        rt = mainsroute.Router(b, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS, BAND[1])
-        rt.load_tracks()
-        pos = [(pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in iso]
-        src = [o for o in rt.pads["GND"] if any(abs((o["rect"][0] + o["rect"][2]) / 2 - x) < 0.02 and abs((o["rect"][1] + o["rect"][3]) / 2 - y) < 0.02 for x, y in pos)]
-        tgt = set()     # only the main pour: other GND pads may sit on islands themselves
-        # the main pour on each layer (its largest filled outline), rasterised: the place real ground is
-        R = mainsroute.RES
-        for z in b.Zones():
-            if z.GetNetname() != "GND" or z.GetIsRuleArea():
-                continue
-            for L in (pcbnew.F_Cu, pcbnew.B_Cu):
-                if not z.IsOnLayer(L):
-                    continue
-                ps = z.GetFilledPolysList(L)
-                if ps.OutlineCount() == 0:
-                    continue
-                k = max(range(ps.OutlineCount()), key=lambda i: abs(ps.Outline(i).Area()))
-                main = pcbnew.SHAPE_POLY_SET(); main.AddOutline(ps.Outline(k))
-                for h in range(ps.HoleCount(k)):
-                    main.AddHole(ps.Hole(k, h))
-                bb = ps.Outline(k).BBox()
-                x0, x1 = pcbnew.ToMM(bb.GetLeft()), pcbnew.ToMM(bb.GetRight()); y0, y1 = pcbnew.ToMM(bb.GetTop()), pcbnew.ToMM(bb.GetBottom())
-                for i in range(int(x0 / R) + 1, int(x1 / R), 2):
-                    for j in range(int(y0 / R) + 1, int(y1 / R), 2):
-                        if main.Contains(V(mm(i * R), mm(j * R))):
-                            tgt.add((i, j, L))
-        n_join = rt.join("GND", src, tgt)
-        print(f"  routed {n_join} of {len(src)} island pads to the main GND pour", flush=True)
-        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
-    import mainsroute
-    for it in range(3):                      # isolated GND groups: route each to the main GND copper
-        iso, mainfr = gnd_components(b)
-        print(f"  isolated GND groups round {it}: {len(iso)}", flush=True)
-        if not iso:
-            break
-        rt = mainsroute.Router(b, spec, W, H, BAND[0], MAINS_PARTS, SAME_POTENTIAL_GROUPS, BAND[1])
-        rt.load_tracks()
-        R = mainsroute.RES
-        tgt = set()
-        for L, fl in mainfr.items():
-            for f_ in fl:
-                bb = f_.BBox()
-                for i in range(int(pcbnew.ToMM(bb.GetLeft()) / R) + 1, int(pcbnew.ToMM(bb.GetRight()) / R), 2):
-                    for j in range(int(pcbnew.ToMM(bb.GetTop()) / R) + 1, int(pcbnew.ToMM(bb.GetBottom()) / R), 2):
-                        if f_.Contains(V(mm(i * R), mm(j * R))):
-                            tgt.add((i, j, L))
-        ok = 0
-        for pts in iso:
-            src = {(int(round(x / R)), int(round(y / R)), L) for x, y, Ls in pts for L in Ls}
-            if rt.join_cells("GND", src, tgt):
-                ok += 1
-        print(f"  joined {ok} of {len(iso)}", flush=True)
-        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
-    for it in range(3):
-        nb = bridge_fragments(b)
-        print(f"  pour fragments bridged: {nb}", flush=True)
-        if not nb:
-            break
-        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
     pcbnew.SaveBoard(pcb, b)
     rpt = stem + "-drc.rpt"
     pcbnew.WriteDRCReport(b, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
@@ -1030,145 +639,18 @@ def finish_own(spec, stem):
     un = b.GetConnectivity().GetUnconnectedCount(False)
     vias = sum(1 for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T)
     fab_outputs(pcb, stem)
-    print(f"own route: {n} GND stitching vias, {vias} vias total, unconnected {un}\nwrote {pcb}\nDRC: {rpt}")
+    print(f"finished: {n} GND stitching vias, {vias} vias total, unconnected {un}\nwrote {pcb}\nDRC: {rpt}")
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--mains", type=int, default=120)
-    ap.add_argument("--passes", type=int, default=40)
-    ap.add_argument("--no-route", action="store_true")
-    ap.add_argument("--attempts", type=int, default=3, help="batches")
-    ap.add_argument("--parallel", type=int, default=4, help="attempts per batch, run side by side")
-    ap.add_argument("--snap", choices=["90", "45"], default="45")
-    ap.add_argument("--timeout", type=int, default=360, help="seconds per routing attempt (fail fast)")
-    ap.add_argument("--no-stage2", action="store_true", help="skip the sequential finishing pass (quick checks)")
-    a = ap.parse_args()
-    JOB_TIMEOUT[0] = a.timeout
-    spec = json.load(open(os.path.join(BUILD, f"parts-{a.mains}v.json")))
-    stem = os.path.join(BUILD, f"coffee-controller-{a.mains}v")
-    if os.environ.get("FINISH_ONLY"):          # reuse the routed board: pour, stitch, islands, DRC, fab
-        return finish_own(spec, stem)
-    board = build(spec, a.mains)
+    """Placement only (routing: ext_route.py, fastroute end to end)."""
+    spec = json.load(open(os.path.join(BUILD, "parts-120v.json")))
+    stem = os.path.join(BUILD, "coffee-controller-120v")
+    board = build(spec, 120)
     pcbnew.SaveBoard(stem + "-placed.kicad_pcb", board)
     write_rules(stem + "-placed.kicad_dru", spec)
-    if a.no_route:
-        print("placed:", stem + "-placed.kicad_pcb")
-        return
-    if os.environ.get("OWN_SELV", "1") == "1":     # everything routed in build(): pour, stitch, fill, DRC, fab
-        return finish_own(spec, stem)
-    dsn, ses = stem + ".dsn", stem + ".ses"
-    # Fill the heater pours first, so the router sees them as copper to keep clear of.
-    board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
-    board.BuildConnectivity()
-    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    pcbnew.SaveBoard(stem + "-placed.kicad_pcb", board)
-    if not pcbnew.ExportSpecctraDSN(board, dsn):
-        raise SystemExit("DSN export failed")
-    fix_dsn(dsn, spec)
-    # Manhattan routing (90-degree corners only) reads far neater than 45-degree spaghetti.
-    if a.snap == "90":
-        txt = open(dsn).read()
-        txt = txt.replace("(structure", "(structure\n    (snap_angle ninety_degree)", 1)
-        open(dsn, "w").write(txt)
-    def freeroute(dsn_path, ses_path, passes, timeout):
-        if os.path.exists(ses_path):
-            os.remove(ses_path)
-        try:
-            r = subprocess.run(["java", "-Djava.awt.headless=true", "-jar", FREEROUTING_JAR, "--gui.enabled=false",
-                                "-de", dsn_path, "-do", ses_path, "-mp", str(passes), "-mt", "4"],
-                               capture_output=True, text=True, timeout=timeout)
-            open(stem + "-freerouting.log", "a").write(r.stdout + r.stderr)
-        except subprocess.TimeoutExpired:
-            return False
-        return os.path.exists(ses_path)
+    print("placed:", stem + "-placed.kicad_pcb")
 
-    def finish(board):
-        board.BuildListOfNets()
-        board.BuildConnectivity()
-        return board.GetConnectivity().GetUnconnectedCount(False)
-
-    # Freerouting is single-threaded for most of its work and not deterministic, so run a
-    # batch of independent attempts side by side and keep the best (first complete) one.
-    def launch(dsn_path, ses_path, passes):
-        if os.path.exists(ses_path):
-            os.remove(ses_path)
-        return subprocess.Popen(["java", "-Xmx3g", "-Djava.awt.headless=true", "-jar", FREEROUTING_JAR, "--gui.enabled=false",
-                                 "-de", dsn_path, "-do", ses_path, "-mt", "2",
-                                 # Freerouting 2.1 ignores -mp; its job timeout does stop it AND writes the session
-                                 f"--router.job_timeout={JOB_TIMEOUT[0] // 3600:02d}:{JOB_TIMEOUT[0] // 60 % 60:02d}:{JOB_TIMEOUT[0] % 60:02d}"],
-                                stdout=open(ses_path + ".log", "w"), stderr=subprocess.STDOUT)   # live progress per attempt
-
-    def evaluate(ses_path):
-        board = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")
-        n_t, n_v = import_ses(board, ses_path)
-        stubs = remove_stubs(board)
-        return board, n_t, n_v, stubs, finish(board)
-
-    def violations(board):
-        """Clearance/short violations against the mains rules (the router can still leave some)."""
-        tmp = stem + "-check.kicad_pcb"
-        pcbnew.SaveBoard(tmp, board)
-        write_rules(stem + "-check.kicad_dru", spec)
-        b = pcbnew.LoadBoard(tmp)
-        pcbnew.WriteDRCReport(b, stem + "-check.rpt", pcbnew.EDA_UNITS_MILLIMETRES, False)
-        return sum(1 for l in open(stem + "-check.rpt") if l.startswith(("[clearance", "[shorting", "[items_not_allowed")))
-
-    best = None
-    for batch in range(1, a.attempts + 1):
-        procs = {i: launch(dsn, f"{stem}-a{i}.ses", a.passes) for i in range(a.parallel)}
-        deadline = time.time() + a.timeout + 30   # routers stop themselves at a.timeout; 30 s to write out
-        for i, pr in procs.items():
-            try:
-                pr.wait(timeout=max(0.1, deadline - time.time()))
-            except subprocess.TimeoutExpired:
-                pr.kill()
-        for i in procs:
-            ses_i = f"{stem}-a{i}.ses"
-            if not os.path.exists(ses_i):
-                continue
-            board, n_t, n_v, stubs, unrouted = evaluate(ses_i)
-            stage = "1"
-            if unrouted and not a.no_stage2:   # stage 2: finish the leftovers on top of this attempt's copper
-                dsn2, ses2 = stem + f"-a{i}-s2.dsn", stem + f"-a{i}-s2.ses"
-                pcbnew.ExportSpecctraDSN(board, dsn2)
-                fix_dsn(dsn2, spec)
-                pr = launch(dsn2, ses2, 20)
-                try:
-                    pr.wait(timeout=a.timeout)
-                except subprocess.TimeoutExpired:
-                    pr.kill()
-                if os.path.exists(ses2):
-                    b2, t2, v2, s2, u2 = evaluate(ses2)
-                    if u2 < unrouted:
-                        board, n_t, n_v, stubs, unrouted, stage = b2, t2, v2, s2, u2, "2"
-            bad = violations(board)
-            print(f"batch {batch} attempt {i}: {n_t} segments, {n_v} vias, unconnected {unrouted}, violations {bad} (stage {stage})", flush=True)
-            if best is None or (unrouted, bad, n_v) < (best[0], best[5], best[3]):   # fewest vias breaks ties
-                pcbnew.SaveBoard(stem + "-best.kicad_pcb", board)   # finish from disk: pcbnew aborts filling a board juggled in memory
-                best = (unrouted, None, n_t, n_v, stubs, bad)
-        if best and best[0] == 0:
-            break
-    if best is not None:
-        b_ = pcbnew.LoadBoard(stem + "-best.kicad_pcb")
-        add_pours(b_)
-        b_.BuildConnectivity()
-        pcbnew.ZONE_FILLER(b_).Fill(b_.Zones())
-        best = (finish(b_), b_) + best[2:]
-    if best is None:
-        raise SystemExit("routing failed")
-    unrouted, board, n_t, n_v, stubs, _ = best
-    pcb = stem + ".kicad_pcb"
-    pcbnew.SaveBoard(pcb, board)
-    write_rules(stem + ".kicad_dru", spec)
-    board = pcbnew.LoadBoard(pcb)          # reload so the rules apply to fill + DRC
-    board.BuildConnectivity()
-    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    pcbnew.SaveBoard(pcb, board)
-    rpt = stem + "-drc.rpt"
-    pcbnew.WriteDRCReport(board, rpt, pcbnew.EDA_UNITS_MILLIMETRES, True)
-    fab_outputs(pcb, stem)
-    print(f"routed: {n_t} track segments ({stubs} stubs removed), {n_v} vias, unconnected: {unrouted}\nwrote {pcb}\nDRC: {rpt}")
 
 if __name__ == "__main__":
     main()
