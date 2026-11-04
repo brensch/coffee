@@ -1,37 +1,29 @@
 Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
-C1 C2,2,10nF X2,"Murata GA355QR7GB103KW01L (10 nF X2 250 VAC, 2220)",Coffee:C_2220_Murata_GA355,Y,"X2 safety capacitor, ceramic, 250 VAC",MAINS: snubber
-C3,1,10uF 10V X7R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,Module decoupling at the 3V3 pin
+C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,Module decoupling at the 3V3 pin
 C4 C8 C9 C10 C11,5,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir | ADC reservoir; ~240 Hz with the divider: keeps the pump's 60 Hz pulses | ADC sampling reservoir / noise filter | Module decoupling at the 3V3 pin
-C5,1,1uF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
-C6 C7,2,22uF 10V X7R,Murata GRM21BZ71A226ME15L,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk, X7R (125 C), no electrolytics to age at 60-70 C"
-D1,1,green,LED,LED_SMD:LED_0603_1608Metric,Y,LED,Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)
-D2,1,SS14,SS14,Diode_SMD:D_SMA,Y,Schottky 1 A 40 V,USB bench power
-F1,1,T500mA,"Littelfuse 37205000411 (TR5, 500 mA slow, 250 VAC)",Fuse:Fuse_Littelfuse_372_D8.50mm,Y,"Fuse, TR5 radial",MAINS. Protects the PSU branch
-J1,1,Mains in,"Phoenix Contact MKDS 1,5/2-5.08 (1715721)","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=N 2=L (silk-labelled), after the machine's power switch. Feeds pump, valve and PSU (~0.5 A)."
-J2,1,Heater,"Phoenix Contact MKDS 3/2-5.08 (1711725), 24 A IEC / UL 15 A, 4 mm2",TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-3-2-5.08_1x02_P5.08mm_Horizontal,Y,Screw_Terminal_01x02_5.08_24A,"MAINS, HEATER CURRENT (11.4 A at 120 V). In place of the brew thermostat: the stock steam thermostat and thermal fuse stay in series."
-J3,1,Valve / pump,"Phoenix Contact MKDS 1,5/2-5.08 (1715721)","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,Screw_Terminal_01x02_5.08,"MAINS. 1=switched L to the 3-way valve, 2=switched L to the pump."
-J4,1,USB-C,GCT USB4105-GF-A,Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
-J5,1,Thermistor,JST_PH_2,Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,Y,JST_PH_2,100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity)
-J6,1,Pressure,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,"0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND"
-J7,1,Switches,JST_PH_3,Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,Y,JST_PH_3,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
-PS1,1,RAC03E-05SK/277,RECOM RAC03E-05SK/277,Recom:RAC03E-K_277,Y,"Isolated AC-DC 5 V 0.6 A, 3 W, 85 C rated, 4 kVAC reinforced (EN60335-1)",Isolated supply; straddles the slot. Rated to 85 C: the machine's case runs at 60-70 C
-Q1,1,BTA24-800BW,"ST BTA24-800BWRG (25 A, 800 V, insulated tab, snubberless)",Coffee:TO-220-3_Vertical_Drill1.2,Y,"Triac, insulated tab",MAINS: HEATER
-Q2,1,BTA08-800BW,"ST BTA08-800BWRG (8 A, 800 V, insulated tab, snubberless; the CW gate grade is 600 V only)",Coffee:TO-220-3_Vertical_Drill1.2,Y,"Triac, insulated tab",MAINS: PUMP
-Q3,1,Z0109NN,"ST Z0109NN5AA4 (1 A, 800 V, IGT 10 mA)",Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"Triac, sensitive gate",MAINS: VALVE
-R1 R2 R4,3,360,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: limits opto surge current (1 A peak)
-R3 R6,2,100 1W,R,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: snubber (inductive load)
-R5,1,330,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: gate-MT1 for a sensitive-gate triac
-R7 R8 R9,3,150,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Opto LED current from the GPIO
-R10 R11,2,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad
-R12,1,100,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,green LED Vf ~2.9-3.1 V: ~2-4 mA from 3.3 V
+C5,1,1uF X5R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
+C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
+D1 D6 D7 D8,4,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,HEATER on | Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional) | PUMP on | VALVE on
+D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
+D3 D4 D5,3,1N4148W,1N4148W,Diode_SMD:D_SOD-123,Y,Switching diode 75 V 150 mA,Flyback for a relay coil
+J1,1,5V in,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"1=+5V 2=GND 3=GND, from the 5 V AC-DC module"
+J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
+J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
+J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
+J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused"
+J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND"
+J7,1,Switches,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
+J8,1,Valve,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
+Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate","HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
+Q4,1,AO3401A,AO3401A,Package_TO_SOT_SMD:SOT-23,Y,"P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",Reverse-polarity protection
+R1 R2 R3,3,100,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate series resistor
+R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
+R7 R8 R9 R12 R18 R19,6,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | Output indicator LED current (~3 mA) | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R10 R11 R16 R22 R23 R25 R26,7,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3 | EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | P-FET gate to GND | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom
 R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
-R15,1,8.2k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
-R16 R22 R23 R25,4,10k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 2/3 | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom
-R17 R24,2,20k 0.1%,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
-R18 R19,2,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection
+R15,1,8.2k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C"
+R17 R24,2,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
 R20 R21,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,switch pull-up / wetting current
-TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.5mm,Y,Bare test pad,Recovery only: short to TP2 (GND) while plugging USB in
-TP2,1,GND,TestPad,TestPoint:TestPoint_Pad_D1.5mm,Y,Bare test pad,
-U1 U2 U3,3,MOC3083,"onsemi MOC3083TVM (0.4"" leads)",Package_DIP:DIP-6_W10.16mm,Y,"Zero-cross triac driver opto, 800 V, IFT 5 mA max","HEATER: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | PUMP: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing | VALVE: isolation barrier, pins 1-2 SELV, 4-6 mains. Fires only within ±20 V of a zero crossing"
+TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (USB shell) while plugging USB in
 U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
-U5,1,TLV1117LV33,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable",Tab pour is the heatsink
+U5,1,ME6211C33M5G-N,Microne ME6211C33M5G-N,Package_TO_SOT_SMD:SOT-23-5,Y,"LDO 3.3 V 500 mA, ceramic-stable",EN tied to VIN

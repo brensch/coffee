@@ -16,7 +16,7 @@ calculations: docs/CIRCUIT.md.
 Outputs in build/: KiCad netlist, BOM CSV, parts-120v.json (input to layout.py and jlc.py).
 
 Pinouts: ESP32-C6-MINI-1U (Espressif datasheet / KiCad library, lib/Espressif.pretty),
-TLV1117LV (AMS1117 pinout), AO3400A / AO3401A (SOT-23: 1 G, 2 S, 3 D).
+ME6211 (SOT-23-5: 1 VIN, 2 GND, 3 EN, 5 VOUT), AO3400A / AO3401A (SOT-23: 1 G, 2 S, 3 D).
 """
 
 import csv
@@ -65,11 +65,11 @@ TWO = [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)]
 R = tmpl("R", "R", FP_R, TWO, "Resistor")
 C = tmpl("C", "C", FP_C, TWO, "Capacitor")
 LED = tmpl("LED", "D", "LED_SMD:LED_0603_1608Metric", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "LED")
-SCHOTTKY = tmpl("SS14", "D", "Diode_SMD:D_SMA", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Schottky 1 A 40 V")
+SCHOTTKY = tmpl("B5819W", "D", "Diode_SMD:D_SOD-123", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Schottky 1 A 40 V")
 SIGDIODE = tmpl("1N4148W", "D", "Diode_SMD:D_SOD-123", [(1, "K", T.PASSIVE), (2, "A", T.PASSIVE)], "Switching diode 75 V 150 mA")
 NMOS = tmpl("AO3400A", "Q", "Package_TO_SOT_SMD:SOT-23", [(1, "G", T.PASSIVE), (2, "S", T.PASSIVE), (3, "D", T.PASSIVE)], "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate")
 PMOS = tmpl("AO3401A", "Q", "Package_TO_SOT_SMD:SOT-23", [(1, "G", T.PASSIVE), (2, "S", T.PASSIVE), (3, "D", T.PASSIVE)], "P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate")
-TESTPAD = tmpl("TestPad", "TP", "TestPoint:TestPoint_Pad_D1.5mm", [(1, "1", T.PASSIVE)], "Bare test pad")
+TESTPAD = tmpl("TestPad", "TP", "TestPoint:TestPoint_Pad_D1.0mm", [(1, "1", T.PASSIVE)], "Bare test pad")
 HOLE = tmpl("MountingHole", "H", "MountingHole:MountingHole_3.2mm_M3", [], "M3 mounting hole (unplated)")
 
 
@@ -77,13 +77,15 @@ def conn(n, name, fp):
     return tmpl(name, "J", fp, [(i, str(i), T.PASSIVE) for i in range(1, n + 1)], name)
 
 
-# One connector type for every cable (one JLC extended-part fee): JST PH 3-pin, SMD, side entry.
-JST3 = conn(3, "JST_PH_3_SMD", "Connector_JST:JST_PH_S3B-PH-SM4-TB_1x03-1MP_P2.00mm_Horizontal")
+# One connector type for every cable (one JLC extended-part fee): JST GH 3-pin (1.25 mm), SMD, side
+# entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
+JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
 
-# TI TLV1117LV33: stable with ceramic output caps (the AMS1117 wants tantalum ESR and can oscillate on
-# ceramics), 455 mV dropout at 1 A, AMS1117 pinout.
-LDO = tmpl("TLV1117LV33", "U", "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
-               [(1, "GND", T.PWRIN), (2, "VOUT", T.PWROUT), (3, "VIN", T.PWRIN)], "LDO 3.3 V 1 A, ceramic-stable")
+# Microne ME6211C33M5G-N: 500 mA, stable with ceramic caps (the AMS1117 wants tantalum ESR), 6 V max in,
+# SOT-23-5 (8.8 x 7.2 mm SOT-223 courtyard -> 3.3 x 3.6). Peak ESP32-C6 TX ~350 mA.
+LDO = tmpl("ME6211C33M5G-N", "U", "Package_TO_SOT_SMD:SOT-23-5",
+           [(1, "VIN", T.PWRIN), (2, "GND", T.PWRIN), (3, "EN", T.INPUT), (4, "NC", T.NOCONNECT), (5, "VOUT", T.PWROUT)],
+           "LDO 3.3 V 500 mA, ceramic-stable")
 # ESP32-C6-MINI-1U pads (Espressif datasheet / KiCad symbol "ESP32-C6-MINI-1/U"; lib/README.md).
 # 36-53 are GND: the inner row, the 3x3 exposed pad (49, nine sub-pads) and the four corners.
 _c6 = {1: "GND", 2: "GND", 3: "3V3", 4: "NC", 5: "IO2", 6: "IO3", 7: "NC", 8: "EN", 9: "IO4", 10: "IO5", 11: "GND",
@@ -112,7 +114,7 @@ for n in (gnd, v5, v3):
 # connector, source to the rail, gate to GND): ~0.3 V less drop than a diode, so the transducer
 # keeps its full 5 V. A swapped lead leaves the body diode reverse biased and the gate at 0 V: off.
 v5_in = Net("+5V_IN")
-j_pwr = part(JST3, "J1", "5V in", mpn="JST S3B-PH-SM4-TB", notes="1=+5V 2=GND 3=GND, from the 5 V AC-DC module")
+j_pwr = part(JST3, "J1", "5V in", mpn="JST SM03B-GHS-TB", notes="1=+5V 2=GND 3=GND, from the 5 V AC-DC module")
 j_pwr[1, 2, 3] += v5_in, gnd, gnd
 q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
 q_rp["D"] += v5_in
@@ -146,10 +148,8 @@ r = part(R, "R11", "10k", notes="GPIO8 high: required for download mode from the
 r[1, 2] += v3, strap8
 boot = Net("IO9_BOOT")
 u_mcu["IO9"] += boot   # internal pull-up: normal boot
-tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only: short to TP2 (GND) while plugging USB in")
+tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (USB shell) while plugging USB in")
 tp[1] += boot
-tp = part(TESTPAD, "TP2", "GND")
-tp[1] += gnd
 st, st_a = Net("STATUS"), Net("STATUS_A")
 u_mcu["IO23"] += st
 r = part(R, "R12", "1k", notes="red LED Vf ~2.0 V: ~1.3 mA from 3.3 V")
@@ -159,13 +159,15 @@ led["A"] += st_a
 led["K"] += gnd
 
 # Power: J1 -> Q4 -> +5V; USB VBUS joins through D2 (bench power, no back-feed into the PC).
-d2 = part(SCHOTTKY, "D2", "SS14", mpn="SS14", notes="USB bench power")
+d2 = part(SCHOTTKY, "D2", "B5819W", mpn="B5819W SL", notes="USB bench power")
 d2["A"] += vbus
 d2["K"] += v5
-u_ldo = part(LDO, "U5", "TLV1117LV33", mpn="TI TLV1117LV33DCYR", notes="Tab pour is the heatsink")
+u_ldo = part(LDO, "U5", "ME6211C33M5G-N", mpn="Microne ME6211C33M5G-N", notes="EN tied to VIN")
 u_ldo["VIN"] += v5
+u_ldo["EN"] += v5
 u_ldo["GND"] += gnd
 u_ldo["VOUT"] += v3
+u_ldo["NC"] += NC
 for ref, val, net in (("C6", "22uF 25V X5R", v5), ("C7", "22uF 25V X5R", v3)):
     c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Samsung CL21A226MAQNNNE", notes="Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)")
     c[1, 2] += net, gnd
@@ -205,7 +207,7 @@ for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
     q["G"] += gate
     q["S"] += gnd
     q["D"] += out
-    j = part(JST3, jref, name.capitalize(), mpn="JST S3B-PH-SM4-TB", notes=f"{name}: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -")
+    j = part(JST3, jref, name.capitalize(), mpn="JST SM03B-GHS-TB", notes=f"{name}: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -")
     j[1, 2, 3] += v5, out, gnd
     d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for a relay coil")
     d["A"] += out
@@ -218,7 +220,7 @@ for name, gpio, jref, qref, rg_, rpd, rled, dfb, dled in (
 
 # Thermistor: 100k B3950 NTC (probe) to GND, 8.2k reference to 3V3: ~95 C sits near mid-scale.
 ntc = Net("NTC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST S3B-PH-SM4-TB", notes="100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="100k B3950 M4 probe in the brew-thermostat hole. 1=NTC 2=GND (no polarity), 3 unused")
 j_ntc[1, 2] += ntc, gnd
 j_ntc[3] += NC
 r = part(R, "R15", "8.2k", notes="NTC reference: 3.05 V at 25 C, ~1.65 V at 95 C, 0.7 V at 145 C")
@@ -229,7 +231,7 @@ u_mcu["IO1"] += ntc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", mpn="JST S3B-PH-SM4-TB", notes="0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND")
+j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0-1.6 MPa, 5 V, 0.5-4.5 V. 1=+5V 2=SIG 3=GND")
 j_p[1, 2, 3] += v5, p_sig, gnd
 r = part(R, "R16", "10k", notes="Divider 2/3")
 r[1, 2] += p_sig, p_adc
@@ -240,7 +242,7 @@ c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 
 # Front-panel switches: dry contacts to GND; internal pull-ups, debounced in firmware.
-j_sw = part(JST3, "J7", "Switches", mpn="JST S3B-PH-SM4-TB", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
+j_sw = part(JST3, "J7", "Switches", mpn="JST SM03B-GHS-TB", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
 # GPIO6/7: plain GPIOs on the module edge beside the analog pins, so all three sensor/switch
 # connectors sit together on the right edge (GPIO21/22 face the optos and are boxed in).
 # 4.7k pull-up at the connector: ~0.7 mA wetting current keeps old switch contacts clean. 1k series
@@ -270,9 +272,7 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
 
 for p in ("IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
     u_mcu[p] += NC
-# Two M3 holes (diagonal corners) onto heat-set inserts in the printed holder.
-for ref in ("H1", "H2"):
-    part(HOLE, ref, "M3")
+# No mounting holes (each costs ~50 mm2 of board): the printed holder grips the board's edges.
 
 
 # ================================================================ checks + outputs

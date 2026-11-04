@@ -132,7 +132,7 @@ meas ac g100 FIND vdb(a) AT=100
 
 # --------------------------------------------------------------- 5. 5 V / 3.3 V rails under load steps
 def rails(vpsu, label):
-    net = f"""* PSU -> 22u -> TLV1117LV33 (dropout ~0.18 V @ 0.1 A, ~0.3 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
+    net = f"""* PSU -> P-FET -> 22u -> ME6211C33 (dropout ~0.12 V @ 0.1 A, ~0.55 V @ 0.5 A) -> 22u||10u||0.1u -> ESP32
 .model SS14 D(IS=5e-6 N=1.1 RS=0.05)
 Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.21             ; PSU + wiring (0.15) + AO3401A (0.06) in series
@@ -140,7 +140,7 @@ C1 v5 0 22u
 * other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 72 + 3 LEDs 9 mA
 Rl5 v5 0 41
 * LDO: tracks 3.3 V unless dropout bites
-Bldo v33r 0 V = min(3.3, v(v5) - (0.15 + 0.3*i(Vsense)))   ; TLV1117LV33: 455 mV dropout at 1 A
+Bldo v33r 0 V = min(3.3, v(v5) - (0.03 + 1.05*i(Vsense)))   ; ME6211C33: 120 mV at 100 mA, ~0.55 V at 500 mA (datasheet curve)
 Rout v33r v33s 0.02
 Vsense v33s v33 0
 Bin v5 0 I = i(Vsense)        ; LDO input current = output current

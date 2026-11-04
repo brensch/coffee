@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Build, route and check the controller PCB from controller.py's output.
+"""Place the low-voltage controller PCB from controller.py's output (KiCad's Python, pcbnew).
 
-Runs in KiCad's Python (pcbnew), so it reads build/parts-<V>v.json rather than
-importing SKiDL. Pipeline:
+  1. place footprints from plan.json (all on the top side), draw the outline;
+  2. ext_route.py exports Specctra DSN, routes it with fastroute, imports the session;
+  3. finish_own(): GND pours, stitching, zone fill, DRC, gerbers/drill/renders.
 
-  1. place footprints (positions below), draw the outline, the isolation slots
-     and the creepage keep-out band, add GND pours on the SELV side;
-  2. hand-route the heater current path (3 mm, short, both layers);
-  3. export Specctra DSN -> Freerouting -> import the session (.ses);
-  4. fill zones, run DRC, write the .kicad_pcb plus gerbers/drill/renders.
+JLC standard capabilities only (cheapest tier): 2 layers, 0.2 mm tracks/gaps (0.15 min), 0.3 mm
+drills, 0.6 mm vias, 0.3 mm copper to edge.
 
     source ~/opt/kienv.sh            # KiCad 7 libraries + pcbnew on PYTHONPATH
-    python3 layout.py [--mains 230] [--passes 40]
+    python3 layout.py                # placement only
 """
 
 import json
@@ -30,15 +28,9 @@ FP_DIR = os.environ.get("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
 # Freerouting 2.1.0 jar (Java 21). The 2.5.0 native CLI hangs at 0% CPU after a serialisation crash.
 
 # ---------------------------------------------------------------- geometry (mm)
-# The floorplan comes from the layout sandbox (sb.py / opt.py): board size, the barrier and every
-# part's (x, y, rotation, side). Mains zone is x < BAND[0], SELV x > BAND[1].
 PLAN = os.environ.get("PLACE_JSON", os.path.join(HERE, "plan.json"))
 _plan = json.load(open(PLAN))
 W, H = _plan["W"], _plan["H"]
-BAND = (max(x for x, _ in _plan["mains"]), min(x for x, _ in _plan["selv"]))   # 7 mm, no copper on any layer
-SLOT_X = (BAND[0] + BAND[1]) / 2                 # milled isolation slot through the band
-SLOT_W = 2.0
-SLOTS = [(2.0, H / 2 - 0.75), (H / 2 + 0.75, H - 2.0)]   # a web of board in the middle for stiffness
 PLACE = {r: tuple(v) for r, v in _plan["place"].items()}
 for _k, _v in _plan.get("route", {}).items():      # routing settings that reproduce this plan's board
     os.environ.setdefault(_k, str(_v))
@@ -162,13 +154,11 @@ def bean_logo(board, cx, cy, height=11.0, layer=pcbnew.F_SilkS):
 
 
 def silkscreen(board, mains_v, footprints=None):
-    """Wiring labels at every connector, the barrier marks, the bean, and the board name."""
-    # silkscreen: what plugs in where. Labels sit just outside each connector's body on the inward
-    # side (anything under a screw terminal is hidden once it's fitted), one per pad, then the title.
-    LABELS = {"J1": ("MAINS IN", {"1": "N", "2": "L"}), "J2": ("HEATER", {}), "J3": ("", {"1": "VALVE", "2": "PUMP"}),
-              "J5": ("NTC", {}), "J6": ("PRESSURE", {"1": "+5V", "2": "SIG", "3": "GND"}),
-              "J7": ("SWITCHES", {"1": "BREW", "2": "STEAM", "3": "GND"})}
-    def silk(txt, x, y, size=1.0, angle=0, just=0):
+    """A short label beside every connector (what plugs in) and the logo where the plan puts it.
+    The GH connectors' 1.25 mm pitch is too fine for per-pin words: the pinout is in docs/WIRING.md
+    and every connector has the same order (pin 1 = +5 V or the signal)."""
+    LABELS = _plan.get("labels", {"J1": "5V IN", "J2": "HEATER", "J3": "PUMP", "J8": "VALVE", "J5": "NTC", "J6": "PRESS", "J7": "SWITCH", "J4": "USB"})
+    def silk(txt, x, y, size=0.9, angle=0, just=0):
         t = pcbnew.PCB_TEXT(board)
         t.SetText(txt); t.SetPosition(V(mm(x), mm(y))); t.SetLayer(pcbnew.F_SilkS)
         t.SetTextSize(V(mm(size), mm(size))); t.SetTextThickness(mm(max(0.15, size * 0.15)))
@@ -176,53 +166,31 @@ def silkscreen(board, mains_v, footprints=None):
         t.SetHorizJustify({-1: pcbnew.GR_TEXT_H_ALIGN_LEFT, 0: pcbnew.GR_TEXT_H_ALIGN_CENTER, 1: pcbnew.GR_TEXT_H_ALIGN_RIGHT}[just])
         board.Add(t)
     fps = {f.GetReference(): f for f in (footprints or board.GetFootprints())}
-    for ref, (title, pads) in LABELS.items():
+    pos = _plan.get("label_pos", {})
+    for ref, txt in LABELS.items():
         fp = fps.get(ref)
         if fp is None:
             continue
-        cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
+        if ref in pos:                       # placed by hand in the plan: [x, y, angle]
+            x, y, ang = pos[ref]
+            silk(txt, x, y, 0.9, ang, 0)
+            continue
+        cb = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
         x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
-        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        # inward = away from the nearest board edge
         d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
-        edge = min(d, key=d.get)
-        pp = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads()}
-        size = 1.0
-        for num, txt in pads.items():
-            px, py = pp[num]
-            if edge == "L":
-                silk(txt, x1 + 0.6, py, size, 0, -1)
-            elif edge == "R":
-                silk(txt, x0 - 0.6, py, size, 0, 1)
-            elif edge == "B":
-                silk(txt, px, y0 - 0.9, size, 0, 0)
-            else:
-                silk(txt, px, y1 + 0.9, size, 0, 0)
-        if title:
-            if edge in ("L", "R") and pads:
-                # a heading directly above the label column, aligned with it
-                ytop = min(pp[n][1] for n in pads) - 1.7
-                silk(title, (x1 + 0.6) if edge == "L" else (x0 - 0.6), ytop, size, 0, -1 if edge == "L" else 1)
-            elif edge in ("L", "R"):
-                silk(title, (x1 + 0.6) if edge == "L" else (x0 - 0.6), cy, size, 0, -1 if edge == "L" else 1)
-            else:
-                silk(title, cx, (y0 - 2.4) if edge == "B" else (y1 + 2.4), size, 0, 0)
-
-    # free strips: between the fuse and the PSU (mains), and the open top-side area right of the optos (SELV)
-    for txt, x, y, size in ((f"{mains_v}V MAINS", 13.0, 17.0, 1.0), ("SELV", BAND[1] + 6.0, 26.5, 1.0),
-                            ):
-        t = pcbnew.PCB_TEXT(board)
-        t.SetText(txt)
-        t.SetPosition(V(mm(x), mm(y)))
-        t.SetLayer(pcbnew.F_SilkS)
-        t.SetTextSize(V(mm(size), mm(size)))
-        t.SetTextThickness(mm(size * 0.15))
-        if txt.endswith("MAINS"):
-            t.SetTextAngleDegrees(90)
-        board.Add(t)
-    seg(board, pcbnew.F_SilkS, [(BAND[0], 4), (BAND[0], H - 4)], width=0.3, closed=False)
-    seg(board, pcbnew.F_SilkS, [(BAND[1], 4), (BAND[1], H - 4)], width=0.3, closed=False)
-    bean_logo(board, BAND[1] + 6.2, 34.0, 11.0)
+        edge = min(d, key=d.get)             # the label goes on the inward side
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        if edge == "T":
+            silk(txt, cx, y1 + 0.7, 0.9)
+        elif edge == "B":
+            silk(txt, cx, y0 - 0.7, 0.9)
+        elif edge == "L":
+            silk(txt, x1 + 0.7, cy, 0.9, 90)
+        else:
+            silk(txt, x0 - 0.7, cy, 0.9, 90)
+    if "logo" in _plan:
+        lx, ly, lh = _plan["logo"]
+        bean_logo(board, lx, ly, lh)
 
 
 def build(spec, mains_v):
@@ -230,12 +198,12 @@ def build(spec, mains_v):
     board.SetCopperLayerCount(2)
     ds = board.GetDesignSettings()
     ds.SetCopperLayerCount(2)
-    ds.m_TrackMinWidth = mm(0.2)
-    ds.m_MinClearance = mm(0.2)
-    ds.m_ViasMinSize = mm(0.6)
+    ds.m_TrackMinWidth = mm(0.15)     # JLC standard: 0.127 mm (5 mil) at 1 oz
+    ds.m_MinClearance = mm(0.15)
+    ds.m_ViasMinSize = mm(0.6)        # JLC standard via: 0.3 mm drill, 0.6 mm pad
     ds.m_MinThroughDrill = mm(0.3)
-    ds.m_CopperEdgeClearance = mm(0.5)
-    ds.m_HoleClearance = mm(0.15)    # USB4105 footprint: shell holes sit 0.2 mm from pads
+    ds.m_CopperEdgeClearance = mm(0.3)
+    ds.m_HoleClearance = mm(0.15)
 
     # nets
     nets = {}
@@ -245,7 +213,7 @@ def build(spec, mains_v):
         board.Add(ni)
         nets[name] = ni
 
-    # net classes: SELV signals, SELV power, mains, heater
+    # net classes: signals (default), power
     ns = ds.m_NetSettings
     def netclass(name, width, clearance, via=0.8, drill=0.4):
         nc = pcbnew.NETCLASS(name)
@@ -260,14 +228,11 @@ def build(spec, mains_v):
     dflt.SetClearance(mm(0.2))
     dflt.SetViaDiameter(mm(0.6))
     dflt.SetViaDrill(mm(0.3))
-    classes = {
-        "Power": netclass("Power", 0.6, 0.25),
-        "Mains": netclass("Mains", 0.8, 2.0, via=1.2, drill=0.6),   # functional insulation between mains nets (IEC 60664: ~1.6 mm at 120 V)
-        "Heater": netclass("Heater", 2.5, 2.0, via=1.6, drill=0.8),
-    }
-    power = {"GND", "+5V", "+3V3", "VBUS", "5V_PSU"}
+    dflt.SetTrackWidth(mm(0.2))
+    classes = {"Power": netclass("Power", 0.4, 0.2, via=0.6, drill=0.3)}
+    power = {"GND", "+5V", "+3V3", "VBUS", "+5V_IN"}
     for name, ni in nets.items():
-        cls = "Heater" if name in spec["heater_nets"] else "Mains" if name in spec["mains_nets"] else "Power" if name in power else None
+        cls = "Power" if name in power else None
         if cls:
             ns.m_NetClassPatternAssignments.append(
                 pcbnew.NETCLASS_PATTERN_ASSIGNMENT(f"^{re.escape(name)}$", cls)) if hasattr(pcbnew, "NETCLASS_PATTERN_ASSIGNMENT") else None
@@ -290,8 +255,7 @@ def build(spec, mains_v):
         fp.SetOrientationDegrees(rot)
         # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
         # sit on pads and on each other; the assembly drawing and BOM carry them)
-        if not ref.startswith(("Q", "U1", "U2", "U3", "F", "PS", "TP")):
-            fp.Reference().SetVisible(False)      # connectors carry their wiring labels instead
+        fp.Reference().SetVisible(ref.startswith("TP"))   # connectors carry their wiring labels instead
         for pad in fp.Pads():
             num = pad.GetNumber()
             if ref in SWAP and num in ("1", "2"):
@@ -302,13 +266,10 @@ def build(spec, mains_v):
     if missing:
         raise SystemExit(f"no placement for: {' '.join(sorted(missing))}")
 
-    # outline + slots (Edge.Cuts) and the creepage band keep-out
+    # outline (Edge.Cuts); copper keeps 0.3 mm off the edge (DRC rule, and these guards for the router)
     seg(board, pcbnew.Edge_Cuts, rect(0, 0, W, H))
-    for y0, y1 in SLOTS:
-        seg(board, pcbnew.Edge_Cuts, rect(SLOT_X - SLOT_W / 2, y0, SLOT_X + SLOT_W / 2, y1))
-    zone(board, None, pcbnew.F_Cu, rect(BAND[0], 0, BAND[1], H), keepout=True, name="ISOLATION BAND")
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        for i, r in enumerate((rect(0, 0, W, 0.8), rect(0, H - 0.8, W, H), rect(W - 0.8, 0, W, H), rect(0, 0, 0.8, H))):
+        for i, r in enumerate((rect(0, 0, W, 0.3), rect(0, H - 0.3, W, H), rect(W - 0.3, 0, W, H), rect(0, 0, 0.3, H))):
             guard(board, layer, r, f"edge {i}")
 
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
@@ -330,8 +291,6 @@ def build(spec, mains_v):
 
     silkscreen(board, mains_v)
 
-    if os.environ.get("PLACE_ONLY"):   # floorplanning: footprints, outline and band only
-        return board
     return board              # all copper is routed by fastroute (ext_route.py)
 
 
@@ -388,54 +347,14 @@ def remove_stubs(board):
 def add_pours(board):
     gnd = board.GetNetsByName()["GND"]
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        z = zone(board, gnd, layer, rect(BAND[1] + 0.5, 0.8, W - 0.8, H - 0.8), name="GND")
+        z = zone(board, gnd, layer, rect(0.3, 0.3, W - 0.3, H - 0.3), name="GND")
         z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
         z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
 
 
-# Mains nets within a few volts of each other in normal operation: 0.5 mm between them is enough.
-# (Not the fuse: if F1 blows, AC_L and AC_L_FUSED have full line voltage between them.)
-SAME_POTENTIAL_GROUPS = [
-    # L and the nets hanging off it through a resistor that carries ~nothing: the opto feeds
-    # (360 R, no current while off) and the snubber mid-points (100 R carrying the snubber
-    # capacitor's ~0.5 mA: 0.05 V; at turn-on the zero-cross opto fires below ~20 V).
-    ("AC_L", "PUMP_OPTO", "VALVE_OPTO", "PUMP_SNUB", "VALVE_SNUB"),
-    ("PUMP_L", "PUMP_GATE"), ("VALVE_L", "VALVE_GATE"), ("HTR_A", "HEATER_GATE"),   # gate <-> MT1
-    ("HTR_B", "HEATER_OPTO"),
-]
-SAME_POTENTIAL = [(g[i], g[j]) for g in SAME_POTENTIAL_GROUPS for i in range(len(g)) for j in range(i + 1, len(g))]
-MAINS_PARTS = ["Q1", "Q2", "Q3", "U1", "U2", "U3", "PS1"]   # parts whose own pin pitch governs inside their courtyard
-F_, B_ = pcbnew.F_Cu, pcbnew.B_Cu
-# (net, width, layers): None = router picks layers (vias allowed); heater copper on both layers
-MAINS_ORDER = [("HTR_A", 2.0, [None, F_, B_]), ("HTR_B", 2.0, [None, F_, B_]),
-               ("AC_L_FUSED", 0.8, [None]), ("AC_N", 0.8, [None]), ("AC_L", 0.8, [None]),
-               ("PUMP_L", 0.8, [None]), ("VALVE_L", 0.8, [None]),
-               ("HEATER_GATE", 0.5, [None]), ("PUMP_GATE", 0.5, [None]), ("VALVE_GATE", 0.5, [None]),
-               ("HEATER_OPTO", 0.5, [None]), ("PUMP_OPTO", 0.5, [None]), ("VALVE_OPTO", 0.5, [None]),
-               ("PUMP_SNUB", 0.8, [None]), ("VALVE_SNUB", 0.8, [None])]
-
-
 def write_rules(path, spec):
-    """KiCad design rules = the mains lint. 2.0 mm between mains nets everywhere, except
-    (a) inside one part's footprint, where the manufacturer's pin spacing governs, and
-    (b) net pairs at (nearly) the same potential. Reinforced isolation is the 7 mm band."""
-    nets = spec["mains_nets"]
-    isin = lambda side: "(" + " || ".join(f"{side}.NetName == '{n}'" for n in nets) + ")"
-    # Both items inside the same part's courtyard: that part's own pins and the copper leaving them.
-    # ("A or B inside" would let any neighbour's pad sit 0.5 mm from an opto or triac pin.)
-    inside = " || ".join(f"(A.insideCourtyard('{r}') && B.insideCourtyard('{r}'))" for r in MAINS_PARTS)
-    pairs = " || ".join(f"(A.NetName == '{a}' && B.NetName == '{b}') || (A.NetName == '{b}' && B.NetName == '{a}')" for a, b in SAME_POTENTIAL)
-    open(path, "w").write(f"""(version 1)
-(rule "MAINS: 2.0 mm between mains nets (IEC 60664 functional, 120 V: ~1.6 mm)"
-  (condition "{isin('A')} && {isin('B')}")
-  (constraint clearance (min 2.0mm)))
-(rule "MAINS: pins of one part (manufacturer's pitch)"
-  (condition "{isin('A')} && {isin('B')} && ({inside})")
-  (constraint clearance (min 0.5mm)))
-(rule "MAINS: same-potential pairs"
-  (condition "{pairs}")
-  (constraint clearance (min 0.5mm)))
-""")
+    """KiCad custom rules: none beyond the board's design settings (a low-voltage board)."""
+    open(path, "w").write("(version 1)\n")
 
 
 def parse_ses(path):
@@ -493,35 +412,8 @@ def import_ses(board, path):
 
 
 def fix_dsn(path, spec):
-    """Give Freerouting the same mains rules as the DRC. KiCad 7's Python API doesn't carry netclass
-    membership into the Specctra export (every net lands in kicad_default), so: one DSN class per
-    same-potential group of mains nets (0.5 mm inside it) and 2.0 mm between every pair of
-    mains classes (class_class rules). SELV nets stay in the default class."""
-    txt = open(path).read()
-    m = re.search(r'\(class kicad_default ""(.*?)\n      \(circuit', txt, re.S)
-    names = re.findall(r'"[^"]*"|\S+', m.group(1))
-    plain = lambda n: n.strip('"')
-    present = {plain(n): n for n in names}
-    mains = [n for n in spec["mains_nets"] if n in present]
-    groups = [[n for n in g if n in present] for g in SAME_POTENTIAL_GROUPS]
-    grouped = {n for g in groups for n in g}
-    groups = [g for g in groups if g] + [[n] for n in mains if n not in grouped]
-    rest = [n for n in names if plain(n) not in mains]
-    txt = txt[:m.start(1)] + " " + " ".join(rest) + txt[m.end(1):]
-    um = lambda v: f"{v * 1000:.1f}"
-    blocks = []
-    for i, g in enumerate(groups):
-        heater = any(n in spec["heater_nets"] for n in g)
-        width, via = (2.5, "Via[0-1]_1600:800_um") if heater else (0.8, "Via[0-1]_1200:600_um")
-        blocks.append(f"    (class M{i} {' '.join(present[n] for n in g)}\n      (circuit\n        (use_via {via})\n      )\n"
-                      f"      (rule\n        (width {um(width)})\n        (clearance {um(0.5)})\n      )\n    )\n")
-    for i in range(len(groups)):
-        for j in range(i + 1, len(groups)):
-            c = 2.0
-            blocks.append(f"    (class_class (classes M{i} M{j})\n      (rule (clearance {um(c)}))\n    )\n")
-    k = txt.index("    (class Heater")
-    txt = txt[:k] + "".join(blocks) + txt[k:]
-    open(path, "w").write(txt)
+    """Nothing to add for a low-voltage board (kept so ext_route's flow stays the same)."""
+    return []
 
 
 def fab_outputs(pcb, stem):
@@ -588,11 +480,11 @@ def is_free(items, x, y, r):
 
 
 def stitch(board, pitch=2.5, d=0.6, drill=0.3, clr=0.3):
-    """GND stitching vias on a grid over the SELV pours, wherever both layers are free of other nets."""
+    """GND stitching vias on a grid over the pours, wherever both layers are free of other nets."""
     gnd = board.GetNetsByName()["GND"]
     items = obstacles(board)
     n = 0
-    x = BAND[1] + 1.5
+    x = 1.2
     while x < W - 1.2:
         y = 1.5
         while y < H - 1.2:
