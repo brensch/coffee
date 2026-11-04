@@ -61,7 +61,14 @@ if tool == "fastroute":
 else:
     cmd = ["java", "-Xmx4g", "-Djava.awt.headless=true", "-jar", os.environ["FREEROUTING_JAR"], "--gui.enabled=false",
            "-de", dsn, "-do", ses, f"--router.job_timeout=00:{secs // 60:02d}:{secs % 60:02d}"]
-r = subprocess.run(cmd, capture_output=True, text=True, timeout=secs + 120)
+if os.environ.get("SES_REUSE"):
+    # re-finish an earlier fastroute session on the same placement (same pads and nets; the
+    # import and the KiCad DRC below check it against the current rules like any fresh route)
+    import shutil
+    shutil.copy(os.environ["SES_REUSE"], ses)
+    r = subprocess.CompletedProcess(cmd, 0, f"reused session {os.environ['SES_REUSE']}\n", "")
+else:
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=secs + 120)
 open(stem + f"-{tool}.log", "w").write(r.stdout + r.stderr)
 print(f"{tool}: {time.time() - t0:.0f} s, exit {r.returncode}, session {'written' if os.path.exists(ses) else 'MISSING'}", flush=True)
 b = pcbnew.LoadBoard(stem + "-placed.kicad_pcb")

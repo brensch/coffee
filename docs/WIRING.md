@@ -66,8 +66,8 @@ All mains crimps are fully insulated nylon (from the Nilight kit in BUY.md §8: 
 | # | From (terminal) | Wire | To (terminal) | Crimp at each end | Notes |
 |---|---|---|---|---|---|
 | M1 | C.4 brown (female receptacle, ex brew switch) | 16 AWG, brown/red | WAGO 221-415 "L", port 1 | insulated **male** 6.3 mm tab, 16-14 (blue) ← C.4 / bare 11 mm strip into WAGO | Switched L feed |
-| M2 | WAGO L, port 2 | 18 AWG (RECOM lead extended or direct) | fuse holder, lead 1 | bare into WAGO / per holder | |
-| M3 | fuse holder, lead 2 | — | RECOM **brown** lead (L in) | solder + heat-shrink, or butt splice | 1 A slow-blow 5×20 fuse in holder |
+| M2 | WAGO L, port 2 | 18 AWG | fuse holder (HTB-26M-R) **end** tab | bare into WAGO / insulated **female** 6.3 mm, 22-18 (red) | Holder mounted in the printed holder (12.9 mm D-hole) |
+| M3 | fuse holder **side** tab | 18 AWG | RECOM **brown** lead (L in) | insulated female 6.3 mm, 22-18 (red) / solder + heat-shrink, or butt splice | 1 A time-delay ceramic 5×20 (S505-1-R) in the holder. Usual practice for panel holders: line to the end (rear) tab, load to the side tab. The live contact then sits at the bottom of the holder, away from fingers when the cap is out |
 | M4 | S.5 white (female receptacle, ex steam switch) | 16 AWG, blue | WAGO 221-415 "N", port 1 | insulated **male** tab ← S.5 / bare into WAGO | Neutral feed |
 | M5 | WAGO N, port 2 | RECOM **blue** lead | — | bare into WAGO | RECOM N in |
 | M6 | WAGO L, port 3 | 18 AWG | pump SSR (EZ240D5) load tab 1 | bare / insulated **female** 6.3 mm, 22-18 (red) | Load polarity doesn't matter |
@@ -98,7 +98,7 @@ Mechanical:
   If the stock wires are too short for that, don't leave a nylon joint on the boiler. Run the new 16 AWG silicone all the way and use bare (uninsulated) tabs under fibreglass sleeve.
 
 **Crimp count** (all from the one Nilight kit, BUY.md §8):
-- 22-18 female, red: **9** (M6 ×1, M7 ×2, J3 ×2, J7 ×4);
+- 22-18 female, red: **11** (M2, M3, M6 ×1, M7 ×2, J3 ×2, J7 ×4);
 - 16-14 male, blue: **5** (M1, M4, M9, M10, M11);
 - #8 insulated forks, 16-14: **2** (M10, M11).
 

@@ -36,9 +36,9 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 | Isolation | 4 kV AC in/out and to case; 6 kV impulse | OK |
 | I²t | 259 A²s (8.33 ms, 60 Hz) | |
 | Approvals | UL 508, CSA C22.2 No 14, CE; ambient −40…80 °C | OK |
-| Terminals | output fork 11.7 × 4.5 mm (#8), 20–8 AWG; input fork 9.2 × 4 mm (#6), 24–12 AWG | |
+| Terminals | output 20–10 AWG with a lug (20–8 without); input 24–12 AWG | |
 
-The datasheet I opened has no current-vs-ambient derating curve, so that wasn't checked.
+**Derating (datasheet p6):** on Schneider's 2.5 °C/W heatsink it carries about 16 A at 60 °C ambient and 11 A at 80 °C. The HS25ET is 2.0 °C/W, so 11.4 A is fine below ~75 °C inside the case. Mounting holes are 47.6 mm apart (HS25ET: 48 mm, fits).
 
 **Why not the Gefran GQ-25-24-D-1-3** (AutomationDirect, $25.00, 64 available, page opened
 2026-11-04):
@@ -94,21 +94,16 @@ The datasheet I opened has no current-vs-ambient derating curve, so that wasn't 
   - **$33.07 each**, Buy 1, condition **New**, **50 available**, + **$3.99** standard shipping. 30-day returns. Item specifics: brand Phoenix Contact, model 1119897, country of origin Germany. Seen 2026-11-04.
   - It's a third-party seller, not an authorised distributor. Check the label on arrival (PLC-RSC- 5DC/21, 1119897).
 - **Authorised single-unit sources (check by hand, bot-blocked):** Digi-Key <https://www.digikey.com/en/products/detail/phoenix-contact/1119897/17938740>; Mouser <https://www.mouser.com/c/?q=1119897>.
-- **Specs, from the RSP Supply product page** (<https://rspsupply.com/p-68447-phoenix-contact-1119897-relay-module-plc-rsc-5dc21.aspx>, opened earlier on 2026-11-04; RSP sells only in packs of 10):
-  - SPDT (1 changeover), DIN rail NS 35/7.5, screw connection;
-  - 5 V DC input, coil range 4–6 V;
-  - **input current 38 mA** at 5 V: below the 150 mA limit;
-  - contacts 250 V AC; AgSnO contacts;
-  - "Safe isolation between coil and contact side";
-  - integrated input circuit and interference suppression.
-- **Datasheet: UNVERIFIED.**
-  - phoenixcontact.com returned "Access Denied" to the browser.
-  - Web-search excerpts of Phoenix's own product page (not opened) give: typical input current 38 mA at 5 V DC, input range 4.2–7 V DC, "Safe isolation, reinforced insulation", 4 kVrms winding/contact test voltage, 6 kV rated surge, 250 V AC rated insulation voltage. Treat these as unconfirmed until you read the datasheet.
-  - The "Product Specification.pdf" on the RSP page is a datasheet for a Phoenix **power supply**, not this relay.
-  - The load (~80–150 mA solenoid at 120 V) is far below any 6 A-class contact rating.
-- **Terminal names** (standard Phoenix PLC /21 marking, **UNVERIFIED** against a datasheet):
-  - A1 (+) and A2 (−) for the coil;
-  - 11 COM, 14 NO, 12 NC for the contacts.
+- **Datasheet (verified):** Phoenix-generated catalog exports of the product data, French (9 Jan 2024) <https://res.cloudinary.com/sonepar-fr/raw/upload/s--VsUJ23XL--/v1/documents/126/phoenix-contact-1119897-FR.pdf> and Chinese (24 Feb 2025) <https://docs.rs-online.com/df3e/A700000012977652.pdf>. The two agree on every value. Phoenix's own English page refuses automated browsers: <https://www.phoenixcontact.com/en-us/products/relay-module-plc-rsc-5dc21-1119897> (open by hand if you want the English copy).
+- **Specs from that datasheet:**
+  - input 5 V DC, **input range 4.2–7 V DC at 20 °C**, **38 mA** typical; polarised input with protection and freewheeling diodes;
+  - **ambient −40…60 °C.** The minimum pick-up voltage rises with temperature, to about 4.45 V at 60 °C. In the machine the board passes on the RECOM's 5.0 V (≈ 0.55 V margin). On USB bench power (~4.6 V) the margin is only ~0.15 V when hot. Mount it on the side panel, away from the boiler;
+  - reinforced isolation coil-to-contact: 4 kVrms test, 6 kV surge, 250 VAC rated insulation voltage;
+  - contacts 6 A; AC15 (solenoid-type loads) 3 A at 120 V; minimum load 10 mA at 12 V. The ~0.1 A valve is well inside;
+  - UL/cUL approved;
+  - **no touch protection above 25 VAC:** it must sit under the case cover (it does);
+  - terminals A1, A2 (input), 11 (common), 12 (NC), 14 (NO), from the connection diagram. A1 is + (the input is polarised, with a protection diode), though the drawing doesn't print a "+".
+- **Packaging:** Phoenix itself sells 10 minimum; the eBay single above is the one-unit source.
 - **Alternatives looked at (2026-11-04):**
   - **Amazon** <https://www.amazon.com/dp/B0FSJYXPSW>: "1119897, Industrial Relays PLC-RSC- 5DC/21", $54.99 + $9.99 delivery, In Stock, sold by Neutron USA under brand "Generic". Rejected: dearer, and its spec text (SPST-NO, 4.5 V, 1 mA coil) doesn't match the part.
   - **Weidmüller TRS 5VDC 1CO (1122740000):** on the eBay search page only (listing not opened), US seller ddwoodlee, **pack of 5** for $36.54 + $8.95; single units from China sellers at $35–45 + ~$15 shipping. A fallback if the Phoenix sells out. Its coil current and isolation weren't checked.
@@ -142,11 +137,11 @@ The datasheet I opened has no current-vs-ambient derating curve, so that wasn't 
 
 | Item | Part | Qty | Buy (opened 2026-11-04) | Price / stock | Spec source |
 |---|---|---|---|---|---|
-| Fuse holder, panel-mount 5×20, pre-wired | MECCANIXITY panel-mount screw-cap 5×20 holder (2-pack), ASIN B0FL26HFMG | 1 pack | <https://www.amazon.com/dp/B0FL26HFMG> | **$6.69**, "Only 5 left in stock" | Listing: "10/15A AC 125/250V", pre-soldered wires, copper nuts. **No UL/CSA marking claimed; no datasheet.** Boot the rear terminals with heat-shrink |
-| Fuse, 1 A time-delay 5×20 mm, 250 V, **ceramic, 1500 A breaking** | Eaton Bussmann **S505-1-R** | 1 (buy 2: a spare) | <https://www.digikey.com/en/products/result?keywords=S505-1-R> | **$4.38** each (Digi-Key search result, "FUSE CERAMIC 1A 250VAC 5X20MM", opened 2026-11-04) | Distributor listings: ceramic tube, time-delay, **1.5 kA at 250 V AC**, UL/CSA. A glass fuse (GDC, 35 A breaking) is too weak for a mains branch: a dead short can draw far more than 35 A and arc across a glass fuse. Datasheet not opened (Eaton/Mouser blocked the browser) |
+| Fuse holder, panel-mount 5×20, 6.3 mm quick-connect terminals | Eaton Bussmann **HTB-26M-R** | 1 | <https://crimpsupply.com/bussmann-htb-26m-r-fuseholder.html> | **$13.82**, "In Stock" (Crimp Supply, seen 2026-11-04; not confirmed as an authorised Eaton distributor) | **Datasheet:** Eaton Technical Data 2119 (Jan 2024): 5×20 mm, **UL Recognized E14853, CSA 47235**, 250 V (UL 300 V), 16 A, −55…85 °C, 1/4" quick-connect terminals, 12.9 mm D-hole in a panel up to 7.6 mm thick (mount it in the printed holder) |
+| Fuse, 1 A time-delay 5×20 mm, 250 V, **ceramic, 1500 A breaking** | Eaton Bussmann **S505-1-R** | 1 (buy 2: a spare) | <https://www.digikey.com/en/products/result?keywords=S505-1-R> | **$4.38** each (Digi-Key search result, "FUSE CERAMIC 1A 250VAC 5X20MM", seen 2026-11-04; check at checkout) | **Datasheet:** Eaton Technical Data 2037 (Oct 2020): time-delay ceramic, 1 A, 250 VAC, **1500 A breaking at 250 VAC**, UL Recognized E19180, CSA 53787. A glass fuse (GDC, 35 A breaking) is too weak for a mains branch |
 
 - **Not the GDC-1A** listed here before: it is glass, with only 35 A breaking capacity (Eaton datasheet).
-- **Listed holder (better than the Amazon one, check by hand):** Littelfuse **01500520Z** in-line 5×20 holder (150520 series), described by Littelfuse as UL Recognized, 20 A, 600 V. Littelfuse's and Digi-Key's pages blocked the browser, so stock and price are unverified.
+- **Rejected holders:** the MECCANIXITY Amazon holder (no datasheet, no UL/CSA claim); Littelfuse 01500520Z (404 on Littelfuse's site; the 150520 datasheet's only part, 01500520H, is obsolete and sold in 100s); Eaton HHT in-line (neither its datasheet nor Eaton's page states UL/CSA).
 - **Rejected:** Littelfuse 0218001.MXP is $8.08 + $7.99 delivery but comes as 25; BOJACK and Delon packs aren't major brands.
 - Inline holders on Amazon were all automotive (32 V) or unrated, so they were rejected.
 
@@ -260,7 +255,7 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 | 3 | Crydom EZ240D5 (Enrgtech, £23.05 ≈ $30, FX unverified) | ~$30.00 |
 | 4 | Phoenix 1119897, **1 unit** (eBay, saleaxis) | $33.07 |
 | 5 | RECOM RAC05-05SK/277/W | $13.85 |
-| 6 | Fuse holder 2-pack + Bussmann S505-1-R ceramic fuse | $6.69 + $4.38 |
+| 6 | Bussmann HTB-26M-R holder + S505-1-R ceramic fuse | $13.82 + $4.38 |
 | 7 | DIN rail DN-R35S-150-4 | $8.00 |
 | 8 | Wire 16 + 18 AWG | $9.98 + $13.98 |
 | 8 | Nilight 400-pc nylon spade kit | $19.77 |
@@ -269,7 +264,7 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 | 10a | Trianglelab 104NT-4 M4 thermistor (regular price) | $6.66 |
 | 10b | 1.6 MPa transducer | $24.34 |
 | 11 | MHF3→RP-SMA 15 cm pigtail + Bingfu 2 dBi antenna 2-pack | $3.32 + $8.89 |
-| | **Total** | **≈ $260.69** |
+| | **Total** | **≈ $267.82** |
 
 **Shipping seen on the pages, not in the total:**
 - eBay relay $3.99;
@@ -277,7 +272,7 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 - Amazon: free over $35 for items shipped by Amazon.
 - Enrgtech's UK shipping wasn't recorded.
 
-With those it comes to about **$273**, plus Digi-Key shipping, plus Enrgtech shipping, tax and tariffs.
+With those it comes to about **$280**, plus Digi-Key and Crimp Supply shipping, plus Enrgtech shipping, tax and tariffs.
 
 **Ways to cut it further:**
 - Nilight 160-pc kit instead of the 400-pc kit: −$8.08 (contents not itemised);
@@ -288,9 +283,9 @@ With those it comes to about **$273**, plus Digi-Key shipping, plus Enrgtech shi
 
 1. **Thermistor (10a):** M4 thread pitch, thread and lead length, and the insulation between the leads and the screw body (meter-check it). The element's 100 kΩ / B 4267 K / −50…300 °C figures are datasheet-verified; the probe assembly is listing-only.
 2. **Antenna (11):** the generic MHF3 plug's fit on the W.FL receptacle (test-fit), and the Bingfu 2 dBi gain (listing only, no datasheet). The Pulse W3921T0150 and Adafruit 5444 + 944 are still out of stock or unlisted.
-3. **Phoenix PLC-RSC-5DC/21:** datasheet not opened (phoenixcontact.com blocked). Reinforced isolation, 38 mA coil and 4 kV winding/contact are from the RSP listing and search-result excerpts of Phoenix's page. The eBay seller isn't an authorised distributor: check the label on arrival.
+3. **Phoenix PLC-RSC-5DC/21:** datasheet verified from Phoenix's French and Chinese catalog exports (English page blocked). The eBay seller isn't an authorised distributor: check the label on arrival.
 4. **EZ240D5 US single-unit source:** RS/Allied at $15.70 was seen via Findchips only (check by hand). The opened source is UK-based Enrgtech, with a £→$ conversion I didn't verify.
-5. **Fuse holder:** the Amazon holder claims no UL/CSA marking; the Littelfuse 01500520Z alternative is UL Recognized per Littelfuse, but its page was not opened. **S505-1-R:** rating from distributor listings; Eaton datasheet not opened.
+5. **Fuse and holder:** both datasheet-verified (Eaton TD 2037, TD 2119). Prices at Digi-Key and Crimp Supply as seen, not re-checked at checkout.
 6. **Silicone wire:** 600 V / 200 °C from the listing text only, no UL style number. Fibreglass sleeve temperature rating not stated.
 7. **JST GH leads:** clone housings, not genuine JST. Check the latch fit in SM03B-GHS-TB before wiring. Genuine JST parts (AGHGH28K305 + GHR-03V-S) are on Digi-Key only (check by hand).
 8. **Spade kit:** the 6.3 mm tab width isn't printed in the Nilight listing text. Check one on an SSR tab first.
