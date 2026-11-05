@@ -59,8 +59,8 @@ def part(template, ref, value="", mpn="", notes="", populate="Y", footprint=None
 
 
 # --------------------------------------------------------------- templates
-FP_R, FP_R_1206, FP_R_2512 = "Resistor_SMD:R_0402_1005Metric", "Resistor_SMD:R_1206_3216Metric", "Resistor_SMD:R_2512_6332Metric"
-FP_C, FP_C_1206 = "Capacitor_SMD:C_0402_1005Metric", "Capacitor_SMD:C_1206_3216Metric"
+FP_R, FP_R_1206, FP_R_2512 = "Resistor_SMD:R_0603_1608Metric", "Resistor_SMD:R_1206_3216Metric", "Resistor_SMD:R_2512_6332Metric"
+FP_C, FP_C_1206 = "Capacitor_SMD:C_0603_1608Metric", "Capacitor_SMD:C_1206_3216Metric"
 TWO = [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)]
 R = tmpl("R", "R", FP_R, TWO, "Resistor")
 C = tmpl("C", "C", FP_C, TWO, "Capacitor")
@@ -161,7 +161,7 @@ tp[1] += boot
 # Status LED on U0TXD (GPIO16), v24: the ROM prints its boot log there and holds it high while it
 # waits in download mode, so the LED flickers at every reset, glows while programming, then shows the
 # firmware's heartbeat. (On the steam lamp, the same pin lit "steam ready" at every boot: review M1.)
-# v25: two M3 holes along the bottom edge for the upright mount in the machine's back-right corner
+# two M3 holes in the bottom corners for the upright mount in the machine's back-right corner
 for ref in ("H1", "H2"):
     part(HOLE, ref, "M3", notes="M3 mounting hole, unplated: a nylon standoff or screw into the printed holder")
 st, st_a = Net("STATUS"), Net("STATUS_A")
