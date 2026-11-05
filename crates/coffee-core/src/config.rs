@@ -403,7 +403,7 @@ impl EngineConfig {
             (r(s.over_pressure_s, 0.0, 5.0), "safety.over_pressure_s out of 0..5"),
             (r(s.heater_ineffective_s, 30.0, 300.0), "safety.heater_ineffective_s out of 30..300"),
             (r(s.heater_check_c_max_j_k, 800.0, 10000.0), "safety.heater_check_c_max_j_k out of 800..10000"),
-            (r(s.heater_check_loss_max_w, 50.0, 600.0), "safety.heater_check_loss_max_w out of 50..600"),
+            (r(s.heater_check_loss_max_w, 50.0, 300.0), "safety.heater_check_loss_max_w out of 50..300"),
             (r(s.runaway_margin_c, 1.0, 20.0), "safety.runaway_margin_c out of 1..20"),
             (r(s.max_temp_step_c, 0.5, 30.0) && r(s.max_rejected_s, 0.1, 10.0), "safety glitch filter out of range"),
             (r(s.max_brew_s, 5.0, 300.0), "safety.max_brew_s out of 5..300"),
@@ -441,7 +441,11 @@ impl EngineConfig {
             (r(p.divider, 0.5, 0.8) && r(p.span_gain, 0.8, 1.2) && r(p.zero_offset_bar, -1.0, 1.0), "pressure_sensor calibration out of limits"),
             (r(p.fault_low_mv, 50.0, 450.0) && r(p.filter_tau_s, 0.0, 0.5), "pressure_sensor fault/filter out of limits"),
             (r(p.auto_zero_s, 0.0, 10.0) && r(p.auto_zero_band_bar, 0.0, 1.0) && r(p.auto_zero_max_temp_c, 20.0, 60.0), "pressure_sensor auto-zero out of limits"),
-            (r(self.heater_power_w, 100.0, 3000.0), "heater_power_w out of 100..3000"),
+            // the energy-balance check counts heat from this number: it must be the real element's
+            (r(self.heater_power_w, 1000.0, 1600.0) && self.heater_power_w > 3.0 * s.heater_check_loss_max_w,
+                "heater_power_w out of 1000..1600 (or not well above the loss bound)"),
+            (r(self.pressure_ramp_ff_ml_per_bar, 0.0, 20.0) && r(self.yield_settle_s, 0.0, 30.0)
+                && r(self.exit_holdoff_s, 0.0, 10.0), "brew timing / pressure feed-forward out of range"),
         ];
         match checks.iter().find(|(ok, _)| !ok) {
             Some((_, why)) => Err(why),

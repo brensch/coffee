@@ -109,7 +109,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
     // correction is applied once per reading and never compounds.
     let (mut ntc_raw, mut p_raw) = (0u16, 0u16);
     let (mut v3_mv, mut v5_mv) = (0u16, 0u16);
-    let mut k: u32 = 0;
+    let mut k: u64 = 0;   // u64: a u32 cycle count wraps after ~828 days at 60 Hz
     // Cycles in a row with no thermistor sample (ADC read errors): past STALE_CYCLES the reading is
     // reported open, so a stuck ADC can't freeze the temperature near setpoint.
     const STALE_CYCLES: u32 = 30;
@@ -172,7 +172,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
             inputs |= input::STEAM;
         }
         let s = SensorFrame {
-            cycle: k,
+            cycle: k as u32,
             t_us: t,
             ntc_mv,
             pressure_mv,

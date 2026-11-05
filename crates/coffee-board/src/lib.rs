@@ -73,16 +73,16 @@ impl CycleClock {
     }
 
     /// Time of tick `k` (the boundary between cycle `k - 1` and cycle `k`).
-    pub fn tick_us(&self, k: u32) -> u64 {
-        self.t0_us + (k as u64 * self.period_ns + 500) / 1000
+    pub fn tick_us(&self, k: u64) -> u64 {
+        self.t0_us + (k * self.period_ns + 500) / 1000
     }
 
     /// Time of ADC sample `i` of `n` in the cycle that starts at tick `k`. The
     /// samples are spread uniformly across the whole cycle, so their mean is the
     /// true cycle average of anything periodic with the mains (pump pressure
     /// ripple, mains pickup).
-    pub fn sample_us(&self, k: u32, i: u32, n: u32) -> u64 {
-        let base = k as u64 * self.period_ns * n as u64 + (2 * i as u64 + 1) * self.period_ns / 2;
+    pub fn sample_us(&self, k: u64, i: u32, n: u32) -> u64 {
+        let base = k * self.period_ns * n as u64 + (2 * i as u64 + 1) * self.period_ns / 2;
         self.t0_us + (base / n as u64 + 500) / 1000
     }
 }

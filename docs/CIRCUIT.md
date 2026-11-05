@@ -6,7 +6,7 @@ A 43 × 27 mm two-layer board with every part on the top side, assembled by JLCP
 - **Mains switching:** certified modules mounted beside it in the machine do that:
   - a zero-cross SSR for the heater (in place of the brew thermostat);
   - a zero-cross SSR without a snubber for the vibration pump;
-  - a 5 V relay module for the 3-way valve;
+  - a 1-channel 5 V SSR board (Omron G3MB-202P) for the 3-way valve, with a snubber;
   - a certified 5 V AC-DC module that powers the board.
 
 Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md).
@@ -62,13 +62,13 @@ GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. The MOSFET sinks the module's
 
 Notes per part:
 - **3.3 kΩ pull-down:** holds the gate under 0.47 V even against a 20 kΩ internal pull-up while the pin floats during reset, boot or flashing. A 100 kΩ pull-down would let a 45 kΩ pull-up switch the heater on at boot (2.3 V on the gate, simulated).
-- **J8 (valve):** drives a relay module, so it has a 1N4148W flyback diode. The simulated turn-off spike is 5.8 V. The Phoenix module also has its own suppression diode; the board's diode covers a bare relay or coil plugged in instead.
+- **J8 (valve):** has a 1N4148W flyback diode, so a relay coil can be plugged in instead of the SSR board (simulated turn-off spike 5.8 V).
 - **J2 and J3:** the SSR inputs aren't inductive, so they need no diode (3.9–5.1 V spike with 1 µH of cable).
 - **No LED per output:** every module shows its input on its own LED.
 - **Margins, worst case** (GPIO at 2.64 V, the C6's guaranteed 0.8 × VDD output high; AO3400A at its maximum threshold; +5 V at 4.6 V from USB):
   - the pump SSR sees 4.6 V, over its 3.0 V turn-on;
   - the heater SSR sees 4.6 V, over 3.0 V;
-  - the relay module sees 4.6 V, over the 4.2 V bottom of its input range at 20 °C (Phoenix: ~4.45 V at 60 °C). This is the tightest margin. On USB alone, a weak port (4.75 V, minus ~0.40 V across D2 at 0.5 A per its curve) can leave it under. In the machine, the 5 V module gives it 5.0 V.
+  - each SSR board sees ~4.6 V on VCC (a 5 V board; the G3MB-202P itself is a 5 V-input part). On USB alone, check at bring-up that the board LEDs and SSRs switch.
 
 ### Sensors
 | Input | Parts | Notes |
@@ -147,10 +147,10 @@ The models are behavioural and fitted to datasheet values, so the point is the m
 ## Status and what needs a human
 - **D2 orientation (verified):** its rotation came from the same-package 1N4148W record while EasyEDA's API refused this machine; JLC's own footprint and symbol drawings confirm pad 1 on the same side and pin 1 = cathode for both.
 - **Pump SSR on the real pump:** on the first install, count strokes and listen for hum while it's off. This is the one module behaviour not verified against the Ulka's half-wave diode load.
-- **Valve coil:** read its label to confirm the current (expected 80–150 mA; the relay's contacts have huge margin).
+- **Valve coil:** read its label to confirm the current (expected 80–150 mA, well inside the SSR board's 2 A; the snubber keeps a small load switching cleanly).
 - **Thermistor:** the firmware defaults are the Molex 218537-3919's (Steinhart-Hart from its table, B25/95 4109, 15 s lag). A different probe needs its own coefficients. The two-point calibration removes the rest.
 - **First article:** bench bring-up on USB (INSTALL.md §3) before anything touches the machine. Also check there:
   - the raw 3V3 sense (`V3_SNS` × 2) reads within ±5 % of 3300 mV: outside that the firmware reports the thermistor open (safe, but the board won't heat);
   - with J5 unplugged, the raw NTC reading is ≥ 3200 mV (the open-probe threshold);
   - with a scope if you have one, +5 V when a USB cable is hot-plugged: the TLV1117LV's absolute maximum input is 6 V.
-- **Accepted risk:** nothing on the board clamps +5 V below the LDO's 6 V absolute maximum, and the RECOM's overvoltage protection only trips at 125–195 % (its datasheet). A RECOM regulation fault could therefore kill the LDO and the C6; the outputs' gate pull-downs then hold the modules off, and the steam thermostat and thermal fuse stay in series with the heater.
+- **Accepted risk:** nothing on the board clamps +5 V below the LDO's 6 V absolute maximum. A 5 V supply that fails high could kill the LDO and the C6; the outputs' gate pull-downs then hold the modules off, and the steam thermostat and thermal fuse stay in series with the heater.

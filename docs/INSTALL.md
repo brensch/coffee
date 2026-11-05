@@ -5,7 +5,7 @@ the certified modules that switch the machine (BUY.md, WIRING.md). The machine i
 Gaggia Classic Pro.
 
 > ⚠️ **Mains voltage.** The board itself carries only 5 V. The mains is in the machine's wiring and
-> the modules: the heater and pump SSRs, the valve relay and the 5 V supply. Work only with the
+> the modules: the heater SSR, the pump and valve SSR boards and the 5 V supply. Work only with the
 > machine unplugged and, after it's been on, cooled. Keep the stock steam thermostat and thermal
 > fuse in series with the heater: they're the protection that doesn't depend on software. If you
 > aren't comfortable with mains wiring, have steps 4–6 checked by an electrician.
@@ -13,7 +13,7 @@ Gaggia Classic Pro.
 ## 0. What you need
 - **The board:** ordered assembled from JLCPCB (§1).
 - **Everything off the board:** [BUY.md](BUY.md) has the exact parts, verified links and datasheets:
-  - modules: heater SSR + heatsink, pump SSR, valve relay, 5 V supply, fuse;
+  - modules: heater SSR, two 1-channel SSR boards (pump, valve) + snubber, 5 V supply;
   - wire and crimps;
   - JST GH leads;
   - thermistor, pressure transducer and antenna.
@@ -112,7 +112,7 @@ mechanical steps; it has photos.
 
 ## 5. Wire the machine and the board
 Follow [WIRING.md](WIRING.md): the wiring diagram and a terminal-by-terminal table for the 5 V
-supply, the heater SSR (in place of the brew thermostat), the pump SSR, the valve relay and the
+supply, the heater SSR (in place of the brew thermostat), the pump and valve SSR boards and the
 board's JST GH leads, plus the multimeter checks to do before mains.
 
 ## 6. First power-on
@@ -122,7 +122,7 @@ heat with no temperature rise and, within about 2 minutes, latches a `HEATER_INE
 (clear it in the UI, or reboot).
 
 **Close the case before any mains power-on**, every time: top cover on with its two earth wires
-reconnected (WIRING check 9), side panels on. The relay's terminals and the SSRs' screw terminals
+reconnected (WIRING check 9), side panels on. The SSR boards' and the heater SSR's screw terminals
 are live and not touch-protected. To look at something inside, unplug first.
 
 The firmware heats from the moment it boots, and §4 drained the boiler and opened the plumbing.
@@ -133,7 +133,7 @@ prime.
 2. Plug the machine into the power meter, hand on the plug, and power on. **Straight away, switch
    the brew switch on** (the firmware starts a brew on it even while heating) and leave it on until
    water comes out of the group steadily, then switch it off:
-   - the pump runs and the relay LED is on;
+   - the pump runs and water flows;
    - A drained pump pulls air for the first seconds, so the engine may stop with `NO_WATER`
      (no pressure within 6 s). That's expected here: switch the brew switch off, clear the fault
      with the **Clear** button next to the fault on the brew page, and switch it on again until water flows.
@@ -154,8 +154,9 @@ prime.
    - With the heater commanded off, the meter should drop to a few watts.
    - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
 8. **Temperatures inside the case:** after a 30-minute idle and a 2-minute steam session, unplug
-   and measure straight away (a thermometer probe or IR thermometer): the air at the relay
-   < 60 °C (its rating), the WAGO < 85 °C, the M10/M11 joints < 105 °C. Over any of those: move that
+   and measure straight away (a thermometer probe or IR thermometer): the heater SSR's base
+   < 80 °C (above that, add the Auber HS25ET heatsink, BUY.md #1), the air at the SSR boards and
+   the 5 V supply < 60 °C, the M10/M11 joints < 105 °C. Over any of those: move that
    part further from the boiler.
 9. Pull a shot.
 
