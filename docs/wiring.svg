@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1180" viewBox="0 0 1500 1180" font-family="Helvetica, Arial, sans-serif" font-size="13">
-  <title>Coffee controller v17 wiring (US Gaggia Classic Pro, 120 V)</title>
+  <title>Coffee controller v18 wiring (US Gaggia Classic Pro, 120 V)</title>
   <defs>
     <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2.5" fill="#222"/></marker>
   </defs>
@@ -27,7 +27,7 @@
 
   <rect x="0" y="0" width="1500" height="1180" fill="#fbfbf8"/>
 
-  <text x="30" y="34" class="t" font-size="20" font-weight="bold">Coffee controller v17: off-board wiring, US Gaggia Classic Pro (120 V / 60 Hz)</text>
+  <text x="30" y="34" class="t" font-size="20" font-weight="bold">Coffee controller v18: off-board wiring, US Gaggia Classic Pro (120 V / 60 Hz)</text>
   <text x="30" y="56" class="s">Board is low-voltage only. Certified modules switch mains. Thick solid lines = MAINS (brown = live, blue = neutral, red = heater current). Thin dashed green = 5 V low-voltage cables (JST GH 3-pin). Dotted grey = existing machine wiring, left alone.</text>
 
   <!-- ===================== MACHINE SIDE ===================== -->
@@ -80,7 +80,7 @@
   <text x="50" y="941" class="s">in the brew-thermostat hole, hand-tight</text>
 
   <rect x="40" y="970" width="270" height="48" class="mach"/>
-  <text x="50" y="989" class="t">Pressure transducer TE M3200, 17 bar</text>
+  <text x="50" y="989" class="t">Pressure transducer 0–1.6 MPa (GaggiMate)</text>
   <text x="50" y="1006" class="s">G1/4 on the pump-outlet T</text>
 
   <!-- existing wiring hints -->
@@ -99,7 +99,7 @@
   <text x="440" y="218" class="s">5 ports</text>
 
   <rect x="430" y="240" width="130" height="50" class="mod"/>
-  <text x="440" y="260" class="t">WAGO 221-415</text>
+  <text x="440" y="260" class="t">soldered join</text>
   <text x="440" y="277" class="labN">N junction</text>
 
   <rect x="640" y="104" width="150" height="40" class="mod"/>
@@ -139,7 +139,7 @@
 
   <!-- ===================== BOARD ===================== -->
   <rect x="1050" y="90" width="300" height="940" class="brd"/>
-  <text x="1064" y="118" class="h">Controller board v17</text>
+  <text x="1064" y="118" class="h">Controller board v18</text>
   <text x="1064" y="136" class="s">low voltage only, in its printed enclosure</text>
   <text x="1064" y="152" class="s">J4 USB-C: flashing / bench power</text>
 
@@ -202,20 +202,20 @@
   <path class="L" d="M 560 198 L 596 198 L 596 538 L 640 538"/>
   <!-- L junction to relay COM -->
   <path class="L" d="M 560 214 L 582 214 L 582 682 L 640 682"/>
-  <text x="430" y="112" class="labL">L junction feeds (18 AWG):</text>
+  <text x="430" y="112" class="labL">L junction feeds (14 AWG):</text>
   <text x="430" y="126" class="labL">fuse → PSU, pump SSR,</text>
   <text x="430" y="140" class="labL">relay 11 (COM)</text>
 
   <!-- heater: brew-thermostat spade wires to SSR load -->
   <path class="H" d="M 310 340 L 470 340 L 470 384 L 640 384"/>
   <path class="H" d="M 310 362 L 455 362 L 455 400 L 640 400"/>
-  <text x="318" y="333" class="labH">14 AWG, male tab ↔ #8 fork</text>
+  <text x="318" y="333" class="labH">14 AWG, male tab ↔ bare wire in clamp</text>
   <text x="472" y="378" class="labH">to 1/L1</text>
   <text x="472" y="414" class="labH">to 2/T1</text>
 
   <!-- pump SSR second load tab to pump live tab -->
   <path class="L" d="M 640 556 L 380 556 L 380 540 L 310 540"/>
-  <text x="388" y="572" class="labL">pump live, 18 AWG</text>
+  <text x="388" y="572" class="labL">pump live, 14 AWG</text>
 
   <!-- relay NO to valve grey wire -->
   <path class="L" d="M 640 700 L 360 700 L 360 632 L 310 632"/>

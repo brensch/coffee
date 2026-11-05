@@ -725,7 +725,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "TE M3234-000002-250PG, 250 psi, 5 V, 0.5-4.5 V ratiometric. 1=+5V 2=SIG 3=GND"
+   "notes": "0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND"
   },
   "R16": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

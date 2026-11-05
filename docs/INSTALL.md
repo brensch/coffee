@@ -62,7 +62,7 @@ embeds `ui/dist`). The details are in [`firmware/esp32/README.md`](../firmware/e
 On WSL, attach the board's USB with `usbipd` to get `/dev/ttyACM0`.
 
 ## 3. Bench bring-up: USB only, no mains
-Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V module unplugged from J1: on USB alone, Q4 passes ~4.6 V back out of J1. USB and the 5 V module may both be connected: the module then powers the board and D2 keeps it out of the PC. (With USB alone, ~4.6 V also appears on J1; harmless.)
+Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V module unplugged from J1: on USB alone, Q4 passes ~4.6 V back out of J1. (In the machine, USB and the module may both be connected: the module then powers the board and D2 keeps it out of the PC.)
 1. **Rails:** 3.3 V on C7. The board enumerates as an ESP32-C6 USB Serial/JTAG device.
 2. **Flash and join Wi-Fi:**
    - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`.
@@ -72,10 +72,13 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe's tab;
-   - **transducer (no datasheet, BUY.md §10b):** before connecting it, find its +5 V, GND and output
-     wires with a meter, wire them to J6 pins 1, 3 and 2, and check the output reads ~0.5 V at
-     atmospheric pressure. The UI then reads about 0 bar;
+   - **transducer (no datasheet, BUY.md §10b):** use the colour legend printed on its label or the
+     listing to wire +5 V, GND and output to J6 pins 1, 3 and 2, with a **220 Ω resistor in series
+     with the +5 V wire** for this first test (it limits the current to ~20 mA if the legend is
+     wrong). The output should read ~0.5 V at atmospheric pressure, and the UI about 0 bar. If it
+     doesn't, unplug and swap only the two wires you're unsure of. Then remove the resistor;
    - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3;
+   - **calibrate the thermistor now,** before it goes on the boiler: both points of CALIBRATION.md "NTC" (room temperature, then the ring tab in a pot of boiling water). On USB the heater can't run, and nothing is live;
    - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
 4. **Outputs:** put a load across pin 1 and pin 2 of J2, J3 and J8: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output's pin 2 floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 1 to pin 2:
    - ~5 V when the UI turns that load on (the MOSFET pulls pin 2 to GND);
@@ -83,8 +86,12 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
    - with a module plugged in, its own LED shows the same.
 
 ## 4. Fit sensors and plumbing (machine unplugged)
+Follow GaggiMate's Classic Pro guide (<https://docs.gaggimate.eu/docs/installation-gcp>) for the
+mechanical steps; it has photos.
 1. Unplug, drain, cool. **Photograph all the wiring** before touching it.
-2. **Thermistor:** remove the brew thermostat (the 107 °C one on the boiler).
+2. **Thermistor:** remove the brew thermostat (the 107 °C one on the left of the boiler). GaggiMate:
+   to reach it, loosen the steam valve and unscrew the group head so the boiler can tilt; put both
+   back afterwards, torqued as they were.
    - The probe (Molex 218537-3919) is a stainless ring tab with a Ø4.2 mm hole (Molex drawing), so it
      fits under an M4 screw. GaggiMate's GCP install guide gives the brew-thermostat seat as M4
      ("screw in the M4 thermocouple into the boiler": docs.gaggimate.eu/docs/installation-gcp).
@@ -95,10 +102,13 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
      doesn't touch the NTC circuit. Its 300 mm PTFE leads go to J5's GH lead with a soldered,
      heat-shrunk splice away from the boiler (WIRING.md).
    - Keep the thermostat's two spade wires: they become the heater feed in §5.
-3. **Pressure:** fit the plumbing kit's T at the pump outlet, with the transducer on the G1/4 port.
-   You'll check for leaks cold *and* hot in §6.
-4. Route the probe and transducer leads away from the boiler and the mains wires, with fibreglass
-   sleeve near anything hot.
+3. **Pressure:** GaggiMate's plumbing kit puts a G1/8 elbow and push-fit T between the pump and the
+   OPV, and the transducer sits remote on 4/6 mm PTFE tube with a G1/4 push fitting screwed onto it
+   (hand-tight, with its gasket), lying flat at the bottom of the machine. If you take the pump's
+   push-in thermal fuse out to do this, **clip it back** (WIRING check 4a confirms it). You'll check
+   for leaks cold *and* hot in §6.
+4. Route the probe and transducer leads away from the boiler and the mains wires (the probe's own
+   leads are PTFE in fibreglass, rated 250 °C; keep the splices ≥ 50 mm off the boiler).
 
 ## 5. Wire the machine and the board
 Follow [WIRING.md](WIRING.md): the wiring diagram and a terminal-by-terminal table for the 5 V
@@ -111,42 +121,49 @@ still in series with the heater. Don't unplug J2 to "test the pump first": the f
 heat with no temperature rise and, within about 2 minutes, latches a `HEATER_INEFFECTIVE` fault
 (clear it in the UI, or reboot).
 
+**Close the case before any mains power-on**, every time: top cover on with its two earth wires
+reconnected (WIRING check 9), side panels on. The relay's terminals and the SSRs' screw terminals
+are live and not touch-protected. To look at something inside, unplug first.
+
 The firmware heats from the moment it boots, and §4 drained the boiler and opened the plumbing.
 So **fill the tank before you switch on, and prime straight away**: the first minute is a cold
-prime and leak check.
-1. Fill the water tank. No portafilter, a jug under the group.
+prime.
+1. Fill the water tank. No portafilter, a jug under the group. Put a dry paper towel under the
+   pump/T area inside the case before closing it.
 2. Plug the machine into the power meter, hand on the plug, and power on. **Straight away, switch
    the brew switch on** (the firmware starts a brew on it even while heating) and leave it on until
    water comes out of the group steadily, then switch it off:
    - the pump runs and the relay LED is on;
-   - no leaks at the T: look now, while it's still cold. If it leaks, switch off at the wall.
    - A drained pump pulls air for the first seconds, so the engine may stop with `NO_WATER`
      (no pressure within 6 s). That's expected here: switch the brew switch off, clear the fault
      with the **Clear** button next to the fault on the brew page, and switch it on again until water flows.
-3. Then let it heat.
+3. **Cold leak check:** switch off, **unplug**, open the case and look at the paper towel and the T.
+   Dry: close the case and carry on. Wet: fix the fitting first.
+4. Plug in, power on, and let it heat.
    - The board boots from the 5 V module.
    - The heater SSR's LED comes on and the meter reads ~1.37 kW while it heats.
    - If anything smells, smokes or reads wrong, switch off at the wall.
-4. In the UI (`http://coffee.local/`, or the IP from `coffee status --host …`; no USB from now on):
+5. In the UI (`http://coffee.local/`, or the IP from `coffee status --host …`; no USB from now on):
    - temperature rises steadily from room temperature;
    - pressure reads about 0 bar.
-5. **Pump and valve:** with the blind basket, run a flush and check:
-   - pressure rises;
-   - no leaks at the T, now hot.
+6. **Pump and valve:** with the blind basket, run a flush and check that pressure rises. Then switch
+   off, unplug, and check the paper towel again for hot leaks.
    - Listen while the pump is off: no hum (the pump SSR leaks only 0.1 mA).
-6. **Heater:** watch the first heat-up to setpoint in the UI.
+7. **Heater:** watch the first heat-up to setpoint in the UI.
    - Expect ~1.37 kW until near the setpoint, then pulsing.
    - With the heater commanded off, the meter should drop to a few watts.
    - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
-7. Pull a shot.
+8. **Temperatures inside the case:** after a 30-minute idle and a 2-minute steam session, unplug
+   and measure straight away (a thermometer probe or IR thermometer): the air at the relay
+   < 60 °C (its rating), the WAGO < 85 °C, the M10/M11 joints < 105 °C. Over any of those: move that
+   part further from the boiler.
+9. Pull a shot.
 
 ## 7. Calibrate
-1. **Thermistor, two points:** CALIBRATION.md, "NTC". Do the boiling-water point with the
-   **machine unplugged and the board on USB**: unscrew the ring tab and hold it in a pot of boiling
-   water. The firmware stores both points. This also cancels the probe's ±1 % tolerance and its tiny self-heating.
-2. **Pressure:** read zero with the system fully vented (open the steam wand with the pump off,
-   so the boiler is at atmospheric pressure). Then compare against a portafilter gauge at
-   9 bar.
+1. **Thermistor, two points:** done on the bench in §3, before the probe went on the boiler
+   (CALIBRATION.md, "NTC"). The firmware stored both points. This also cancels the probe's ±1 % tolerance and its tiny self-heating.
+2. **Pressure:** the zero is taken automatically at every cold power-on. For the span, compare
+   against a portafilter gauge at 9 bar (case closed, machine running).
 3. **Machine model:** record the logs in [CALIBRATION.md](CALIBRATION.md):
    - cold heat-up;
    - blind basket;

@@ -15,6 +15,31 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 - Prices exclude shipping, tax and tariffs unless stated. Shipping charges seen on the pages are
   listed under the total.
 
+**Choosing rule:** the cheapest part that is safe for its job and has a real manufacturer
+datasheet. Every candidate looked at, with its quotes, links and why it was or wasn't chosen, is
+in [`docs/evidence/parts.jsonl`](evidence/parts.jsonl) (`python3 docs/evidence/check.py` prints
+the current choice per role). To change a choice, flip it there.
+
+## Shopping list (≈ $211)
+
+| # | Part | Qty | Where | Price |
+|---|---|---|---|---|
+| 1 | Schneider **SSP1A125BDT** heater SSR | 1 | Standard Electric Supply | $24.97 |
+| 2 | Auber **HS25ET** heatsink | 1 | Auber | $13.49 |
+| 3 | Crydom **EZ240D5** pump SSR | 1 | RS/Allied (check by hand) | $15.70 |
+| 4 | Phoenix **PLC-RSC- 5DC/21** (1119897) valve relay | 1 | RS/Allied (check by hand) | $19.46 |
+| 5 | AutomationDirect **DN-R35S-150-4** DIN rail | 1 pack | AutomationDirect | $8.00 |
+| 6 | RECOM **RAC05-05SK/277/W** 5 V supply | 1 | Sager | $13.85 |
+| 7 | Eaton **S505-1-R** fuse + **HTB-22M-R** holder | 1 + 1 | Digi-Key / RS (check by hand) | $4.38 + $6.96 |
+| 8 | Tensility **30-03445** 14 AWG silicone | 5 m | Digi-Key (check by hand) | ~$17 |
+| 8 | TE **3-520107-2** male / **3-520140-2** female FASTON | 6 / 10 | TE / distributors | $3.98 + ~$3.45 |
+| 8 | WAGO **221-415** lever nut | 1 | (check by hand) | ~$1.65 |
+| 8 | 3M **FP-301** black heat-shrink, 1/4" and 3/8" | 1 stick each | Digi-Key (check by hand) | ~$6 |
+| 9 | JST **AGHGH28K305** jumper / **GHR-03V-S** housing | 10 / 8 | Digi-Key (check by hand) | ~$5.50 |
+| 10a | Molex **218537-3919** NTC probe | 1 | Heilind | $9.76 |
+| 10b | GaggiMate 0–1.6 MPa transducer + plumbing kit | 1 + 1 | AliExpress / GaggiMate shop | ~$20 + €26.84 |
+| 11 | Taoglas **CAB.A02** pigtail + **GW.15.2113** antenna | 1 + 1 | Sager | $2.97 + $4.76 |
+
 ---
 
 ## 1. Heater SSR: Schneider Electric **SSP1A125BDT**, qty 1
@@ -66,7 +91,8 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 
 ## 3. Pump SSR: Sensata Crydom **EZ240D5**, qty 1
 
-- **Buy (opened):** <https://enrgtechglobal.com/product/solid-state-relays/ET16685817/ez240d5> (Enrgtech, UK; ships to the US).
+- **Buy (cheapest, check by hand):** RS/Allied US <https://www.alliedelec.com/product/sensata-crydom/ez240d5/70131324/>: **$15.70**, 18 in stock, as shown by Findchips (RS's own page shows automated browsers a verification page).
+- **Also (opened):** <https://enrgtechglobal.com/product/solid-state-relays/ET16685817/ez240d5> (Enrgtech, UK; ships to the US).
   **£23.05** ex VAT (≈ $30; exchange rate not verified). **15 in stock**, ships in 2–3 business days, est. ship 05 Nov 2026.
 - **US source, seen only via aggregator:**
   - Findchips (<https://www.findchips.com/search/EZ240D5>, opened 2026-11-04) lists RS (formerly Allied), part 70131324, with **18 in stock at $15.70**.
@@ -90,7 +116,8 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 
 ## 4. Valve relay module: Phoenix Contact **PLC-RSC- 5DC/21** (order no. **1119897**), qty 1
 
-- **Buy (single unit):** <https://www.ebay.com/itm/137391576922> (eBay, seller **saleaxis**, 99.6 % positive, 35.3K ratings, located in the US).
+- **Buy (cheapest, check by hand):** RS/Allied US, search "1119897" on <https://www.alliedelec.com>: **$19.46**, 135 in stock, as shown by Findchips.
+- **Also (single unit, opened):** <https://www.ebay.com/itm/137391576922> (eBay, seller **saleaxis**, 99.6 % positive, 35.3K ratings, located in the US).
   - **$33.07 each**, Buy 1, condition **New**, **50 available**, + **$3.99** standard shipping. 30-day returns. Item specifics: brand Phoenix Contact, model 1119897, country of origin Germany. Seen 2026-11-04.
   - It's a third-party seller, not an authorised distributor. Check the label on arrival (PLC-RSC- 5DC/21, 1119897).
 - **Authorised single-unit sources (check by hand, bot-blocked):** Digi-Key <https://www.digikey.com/en/products/detail/phoenix-contact/1119897/17938740>; Mouser <https://www.mouser.com/c/?q=1119897>.
@@ -137,8 +164,9 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 
 | Item | Part | Qty | Buy (opened 2026-11-04) | Price / stock | Spec source |
 |---|---|---|---|---|---|
-| Fuse holder, panel-mount 5×20, 6.3 mm quick-connect terminals | Eaton Bussmann **HTB-26M-R** | 1 | <https://crimpsupply.com/bussmann-htb-26m-r-fuseholder.html> | **$13.82**, "In Stock" (Crimp Supply, seen 2026-11-04; not confirmed as an authorised Eaton distributor) | **Datasheet:** Eaton Technical Data 2119 (Jan 2024): 5×20 mm, **UL Recognized E14853, CSA 47235**, 250 V (UL 300 V), 16 A, −55…85 °C, 1/4" quick-connect terminals, 12.9 mm D-hole in a panel up to 7.6 mm thick (mount it in the printed holder) |
-| Fuse, 1 A time-delay 5×20 mm, 250 V, **ceramic, 1500 A breaking** | Eaton Bussmann **S505-1-R** | 1 (buy 2: a spare) | <https://www.digikey.com/en/products/result?keywords=S505-1-R> | **$4.38** each (Digi-Key search result, "FUSE CERAMIC 1A 250VAC 5X20MM", seen 2026-11-04; check at checkout) | **Datasheet:** Eaton Technical Data 2037 (Oct 2020): time-delay ceramic, 1 A, 250 VAC, **1500 A breaking at 250 VAC**, UL Recognized E19180, CSA 53787. A glass fuse (GDC, 35 A breaking) is too weak for a mains branch |
+| Fuse holder, panel-mount 5×20, **solder** terminals | Eaton Bussmann **HTB-22M-R** | 1 | RS/Allied, search "HTB-22M-R" on <https://www.alliedelec.com> (check by hand) | **$6.96**, 1300 in stock (Findchips) | Same Eaton datasheet (TD 2119) as the HTB-26M-R: UL E14853, 16 A, 250 V, "-2 Solder or 3/16" Quick-connect". The 6.3 mm-tab HTB-26M-R is $13.82 at Crimp Supply if you'd rather crimp |
+| *(was)* | *HTB-26M-R* | | <https://crimpsupply.com/bussmann-htb-26m-r-fuseholder.html> | *$13.82* | **Datasheet:** Eaton Technical Data 2119 (Jan 2024): 5×20 mm, **UL Recognized E14853, CSA 47235**, 250 V (UL 300 V), 16 A, −55…85 °C, 1/4" quick-connect terminals, 12.9 mm D-hole in a panel up to 7.6 mm thick (mount it in the printed holder) |
+| Fuse, 1 A time-delay 5×20 mm, 250 V, **ceramic, 1500 A breaking** | Eaton Bussmann **S505-1-R** | 1 (a spare is $4.38 more) | <https://www.digikey.com/en/products/result?keywords=S505-1-R> | **$4.38** each (Digi-Key search result, "FUSE CERAMIC 1A 250VAC 5X20MM", seen 2026-11-04; check at checkout) | **Datasheet:** Eaton Technical Data 2037 (Oct 2020): time-delay ceramic, 1 A, 250 VAC, **1500 A breaking at 250 VAC**, UL Recognized E19180, CSA 53787. A glass fuse (GDC, 35 A breaking) is too weak for a mains branch |
 
 - **Not the GDC-1A** listed here before: it is glass, with only 35 A breaking capacity (Eaton datasheet).
 - **Rejected holders:** the MECCANIXITY Amazon holder (no datasheet, no UL/CSA claim); Littelfuse 01500520Z (404 on Littelfuse's site; the 150520 datasheet's only part, 01500520H, is obsolete and sold in 100s); Eaton HHT in-line (neither its datasheet nor Eaton's page states UL/CSA).
@@ -155,45 +183,35 @@ or, where no datasheet exists, from the product page itself (said so in each cas
 
 Every item here is checked against the maker's own datasheet or product page. GaggiMate (an open
 controller for this machine) confirms the machine side: all switch, thermostat and pump
-connections are 6.35 mm quick-connects (gaggimate docs).
+connections are 6.35 mm quick-connects.
 
-| What | Exact part | Qty | Buy (seen 2026-11-04) | Price / stock | Datasheet (verified) |
+| What | Exact part | Qty | Buy | Price / stock (seen 2026-11-04) | Datasheet (verified) |
 |---|---|---|---|---|---|
-| **14 AWG** silicone, heater-SSR legs M10/M11 (11.4 A) | Tensility **30-03445** (red), cut to length | 1 m | <https://www.digikey.com/en/products/detail/tensility-international-corp/30-03445/25572263> (open by hand) | ~€3.50/m, 121 m in stock (Digi-Key EU site; US price not seen) | Tensility spec sheet rev A 2024: **UL AWM 3530, file E339579, 200 °C, 600 V**, cUL, FT2; 41 × 0.254 mm tinned, OD 3.44 mm (fits the 16-14 FASTONs: TE allows insulation to 6.6 mm) |
-| 16 AWG silicone (M1, M4, M9) | CnC Tech **3135-16-1-0500-004-1-TS** (red), by the foot | 10 ft | <https://www.digikey.com/en/products/detail/cnc-tech/3135-16-1-0500-004-1-TS/28739631> (Digi-Key: open by hand, it shows automated browsers a verification page) | ~€1.38/ft, 351 ft in stock (Digi-Key's EU site; US price not seen) | CnC datasheet <https://www.cnctech.us/pdfs/3135-XX-1-0500-0XX-1-TS_.pdf> p.1: **UL AWM 3135, 600 V, 200 °C**, C-UL SEWF-2, UL file **E205197**, VW-1/FT1, OD 3.02 mm. (Digi-Key's listing says 150 °C; the datasheet governs.) |
-| 18 AWG silicone (M2, M3, M6, M7, M8) | CnC Tech **3135-18-1-0500-005-1-TS** (blue), by the foot | 15 ft | <https://www.digikey.com/en/products/detail/cnc-tech/3135-18-1-0500-005-1-TS/3766970> (open by hand) | ~€1.33/ft, 3,613 ft in stock (EU site) | same datasheet, OD 2.72 mm |
-| 22-18 AWG insulated female 6.35 mm | TE **2-520183-2** | 12 | <https://www.te.com/en/product-2-520183-2.html> (TE store, min 1) | $0.516, 323,686 in stock | TE page: nylon, 600 V, −40…110 °C, UL. 22-18 AWG only |
-| 16-14 AWG insulated male 6.35 mm | TE **3-520107-2** | 6 | <https://www.te.com/en/product-3-520107-2.html> | $0.664, 36,922 in stock | TE page: nylon, 600 V, UL; **TE spec 108-2017 p.3: 10 A on 16 AWG, 15 A on 14 AWG, 105 °C max** |
-| #8 fork, 16-14 AWG (heater SSR output) | TE **325199** (PIDG) | 3 | <https://www.te.com/en/product-325199.html> | $2.11, 2,558 in stock | TE page: #8 / M4 stud, 300 V, 0…105 °C, UL file E13288 |
-| L and N junctions | WAGO **221-415** lever nuts, 25-pack | 1 (uses 2) | <https://www.amazon.com/dp/B0107SYYGU> (third-party seller) | $22.03 | WAGO page <https://www.wago.com/us/wire-splicing-connectors/compact-splicing-connector/p/221-415> + UL certificate: **US rating 600 V / 20 A**, UL 486C, file E69654; 24-12 AWG, 11 mm strip; **max ambient 85 °C**, so mount them away from the boiler |
-| Fibreglass sleeve, wire runs | Techflex **SFAG.08** (3.4 mm), 10 ft | 1 | <https://www.wirecare.com/product-lines/fr-silicone-flex-glass-grade-a> (dealer listed on techflex.com) | $16.52 | Techflex catalog <https://assets.techflex.com/assets/products/catalogs/pdf/sfg.pdf>: silicone-coated fibreglass, **200 °C**, Grade A 8 kV, VW-1 |
-| Fibreglass sleeve, joints | Techflex **SFAG.02** (6.7 mm), 10 ft | 1 | same dealer | $25.82 | same |
+| Wire, **all** mains runs and pigtails | Tensility **30-03445** (red), 14 AWG silicone, cut to length | 5 m (about 4.2 m used: measure first) | <https://www.digikey.com/en/products/detail/tensility-international-corp/30-03445/25572263> (check by hand) | ~€3.13/m at 5 m, 121 m in stock (Digi-Key EU site) | Tensility spec sheet rev A 2024 p1: **UL AWM 3530, file E339579, 200 °C, 600 V**, OD 3.44 mm. One gauge is cheapest, and the heater legs need 14 AWG anyway (below) |
+| Male FASTON, 16-14 AWG | TE **3-520107-2** | 6 (5 used) | <https://www.te.com/en/product-3-520107-2.html> | $0.664 | TE page: nylon, 600 V, UL; **108-2017 p3: 15 A on 14 AWG**, 105 °C max; insulation ≤ 4.06 mm (drawing C-520107) |
+| Female FASTON, 16-14 AWG | TE **3-520140-2** | 10 (9 used) | distributors (TE store showed none) | ~$0.345 at 10 | **TE 108-2043 p3: 15 A on 14 AWG**; 600 V, 105 °C |
+| Live split | WAGO **221-415** lever nut | 1 | <https://www.digikey.com/en/products/result?keywords=221-415> (check by hand) | ~$1.65 (Findchips) | WAGO page + UL certificate: **600 V / 20 A** (UL 486C, E69654), 24-12 AWG, 11 mm strip, **max 85 °C**: mount it away from the boiler |
+| Heat-shrink for solder joints | 3M **FP-301 black**, 1/4" (splices) and 3/8" (bare parked receptacles) | one 4 ft stick each | <https://www.digikey.com/en/products/result?keywords=FP301-1%2F4-BLACK> (check by hand) | ~$3 per stick (estimate) | 3M FP-301 data sheet p1: **UL E-39100, 600 V @ 125 °C**, 135 °C continuous; **the clear version is not flame-rated**; 1/4" recovers to 3.18 mm |
 
-**Why 14 AWG on the heater legs:** TE rates these 6.35 mm FASTONs at **10 A on 16 AWG and 15 A on 14 AWG**
-(product specs 108-2017 and 108-2043). The heater draws 11.4 A, so 16 AWG would run the terminals over
-their rating. Everything else on the mains side carries under 1 A.
+**Why 14 AWG on the heater legs:** TE rates these 6.35 mm FASTONs at **10 A on 16 AWG and 15 A on
+14 AWG** (108-2017, 108-2043). The heater draws 11.4 A. (GaggiMate uses 18 AWG there, where TE
+allows 7 A.)
 
-**Crimps used** (matches WIRING.md):
-- 22-18 female (2-520183-2): **11**: M2, M3, M6, M7 ×2, J3 ×2, J7 ×4;
-- 16-14 male (3-520107-2): **5**: M1, M4, M9 (16 AWG) and M10, M11 (14 AWG);
-- #8 fork (325199): **2**: M10, M11.
-
-Buy one or two spares of each for practice crimps.
-
-Notes:
-- **Joints near the boiler:** the nylon terminals are rated 105–110 °C and the boiler runs at 93–145 °C, so every nylon joint stays ≥ 50 mm off it, under SFAG.02 sleeve (WIRING.md).
-- **Not chosen** (no maker datasheet): the BNTECHGO silicone wire, Nilight spade kit, Baomain forks and uxcell sleeve of earlier versions. Also rejected: TE 63301-1 bare high-temperature tab (made for solid nichrome heater wire on machine-crimp strips, no current rating), and GaggiMate's 18 AWG for the heater path (TE allows 7 A per terminal there).
-- **Optional, not in the total:** with a ferrule crimper, 0.25 mm² ferrules on the GH-lead ends at the heater SSR input and the relay coil, and 1.5 mm² on the relay contacts.
+**What's not needed** (dropped in the cheapest-safe pass; records in `docs/evidence/`):
+- **Fibreglass sleeve:** the wire is rated 200 °C, and every nylon joint stays ≥ 50 mm from the boiler. (The 6.7 mm sleeve listed before couldn't fit over a FASTON anyway: its housing is 13.3 × 7.4 mm.)
+- **Forks:** the heater SSR's output takes bare 20–8 AWG wire (Schneider datasheet p2).
+- **A neutral splice block:** neutral is a single soldered join (WIRING.md M4).
+- **16 and 18 AWG wire, 22-18 terminals:** one gauge does it all.
 
 ## 9. Low-voltage leads: genuine JST **GH** 1.25 mm, 3-pin
 
 Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB). The mating cable housing is the **GHR-03V-S**.
 
-- **Datasheet (verified):** JST GH catalogue <https://www.jst-mfg.com/product/pdf/eng/eGH.pdf> (April 2026): housing **GHR-03V-S**, contact **SSHL-002T-P0.2**, header SM03B-GHS-TB; **1.0 A** (26 AWG), **50 V**, **−40 to +105 °C**, wire 30–26 AWG.
-- **Part:** JST **AGHGH28K305** pre-crimped jumper (305 mm, 28 AWG UL1571, SSHL-002T-P0.2 at both ends; JST drawing) + **GHR-03V-S** housings. Per lead: push three jumpers' contacts into one housing; the far ends then go to the module (cut off the far contacts and strip). 7 leads = **21 jumpers + 7 housings**.
-- **Buy (check by hand: Digi-Key shows a human-verification page to automated browsers):** <https://www.digikey.com/en/products/detail/jst-sales-america-inc/AGHGH28K305/6009450> and <https://www.digikey.com/en/products/result?keywords=GHR-03V-S>. LCSC showed 1 jumper and 0 housings in stock, so it isn't an alternative.
-- **Not chosen:** the AliExpress "JST GH compatible" clone leads in earlier versions of this list (no datasheet; latch fit unknown).
-- **Wire gauge:** 28 AWG. How to join the leads to each module is in WIRING.md, "Joining the GH leads".
+- **Datasheet (verified):** JST GH catalogue <https://www.jst-mfg.com/product/pdf/eng/eGH.pdf>: housing **GHR-03V-S**, contact **SSHL-002T-P0.2**; **1.0 A** (26 AWG), **50 V**, **−40 to +105 °C**, wire 30–26 AWG.
+- **Part:** JST **AGHGH28K305** pre-crimped jumper (305 mm, 28 AWG UL1571, a contact at both ends; JST drawing) cut in half: each half is a ~150 mm wire with one contact. 17 contacts are used, so **10 jumpers** (one spare) + **8 housings**.
+- **Buy (check by hand: Digi-Key shows a verification page to automated browsers):** <https://www.digikey.com/en/products/detail/jst-sales-america-inc/AGHGH28K305/6009450> (~£0.365 each on Digi-Key UK) and <https://www.digikey.com/en/products/result?keywords=GHR-03V-S>.
+- **Not chosen:** the AliExpress "JST GH compatible" clone leads (no datasheet; latch fit unknown); loose SSHL-002T-P0.2 contacts (JST lists only machine crimping, no hand tool).
+- **Joins:** each lead is spliced to a short 14 AWG pigtail at the module (WIRING.md, "Joining the GH leads").
 
 ## 10. Sensors
 
@@ -252,35 +270,24 @@ manufacturer datasheet**, so its specs are checked on the bench instead (below).
 
 ---
 
-## Cost total (2026-11-04, prices as seen; several Digi-Key prices still to confirm by hand)
+## Cost total
 
-| # | Item | Cost |
-|---|---|---|
-| 1 | Schneider SSP1A125BDT | $24.97 |
-| 2 | Auber HS25ET | $13.49 |
-| 3 | Crydom EZ240D5 (Enrgtech, £23.05 ≈ $30, FX unverified) | ~$30.00 |
-| 4 | Phoenix 1119897, 1 unit (eBay) | $33.07 |
-| 5 | RECOM RAC05-05SK/277/W | $13.85 |
-| 6 | Bussmann HTB-26M-R holder + S505-1-R fuse | $13.82 + $4.38 |
-| 7 | DIN rail DN-R35S-150-4 | $8.00 |
-| 8 | Wire: Tensility 14 AWG 1 m + CnC 16 AWG 10 ft + 18 AWG 15 ft (EU prices ×1.1) | ~$4 + ~$15 + ~$22 |
-| 8 | TE terminals (12 + 6 + 3) | $6.19 + $3.98 + $6.32 |
-| 8 | WAGO 221-415 25-pack | $22.03 |
-| 8 | Techflex SFAG.08 + SFAG.02 sleeve | $16.52 + $25.82 |
-| 9 | JST AGHGH28K305 ×21 + GHR-03V-S ×7 (Digi-Key, price not seen) | ~$30 (estimate, check) |
-| 10a | Molex 218537-3919 | $9.76 |
-| 10b | GaggiMate 0–1.6 MPa transducer + plumbing kit (prices on their pages) | ~$20 + kit |
-| 11 | Taoglas CAB.A02 + GW.15.2113 | $2.97 + $4.76 |
-| | **Total** | **≈ $330** plus the GaggiMate plumbing kit and shipping |
+The shopping list at the top: **≈ $211** plus shipping (RS/Allied, Digi-Key, Sager, Heilind,
+Auber, Standard Electric Supply, AutomationDirect, TE, AliExpress, GaggiMate). Prices marked
+"check by hand" were seen on Findchips or a Digi-Key non-US site, because the vendor's own page
+shows automated browsers a verification page.
 
-The verified parts cost more than the earlier unverified ones (≈ $268), mostly the sleeve (+$34)
-and genuine JST leads.
+**Optional, ≈ $11 less:** drop the external fuse and holder. RECOM's datasheet (p3): "Input Fuse
+internal T1A, slow blow", and "Refer to local safety regulations if input over-current
+protection is also required". With it removed, the supply's 100 mm input leads are protected only
+by the wall breaker. Kept here as the safer default.
 
 ## Couldn't verify
 
 Everything above was checked against the maker's own datasheet or product page, except:
-1. **Prices behind human-verification pages** (Digi-Key, Mouser): the 14/16/18 AWG wire, the JST GH leads, the S505-1-R fuse, and the TE transducer's Digi-Key stock. Open those links yourself.
-2. **Transducer (your choice, §10b):** GaggiMate's sensor has no manufacturer datasheet. Its pinout, 0.5 V zero and ratiometric output are checked on the bench before fitting.
-3. **The machine itself:** no datasheet exists. Machine facts come from GaggiMate's docs (6.35 mm quick-connects, M4 at the brew-thermostat hole, G1/8 at the pump/OPV, G1/4 tee port). Check the thermostat screws are M4 before fitting the probe.
-4. **Phoenix relay:** read from Phoenix's French and Chinese datasheet exports (the English page is blocked). The eBay seller isn't an authorised distributor.
+1. **Prices behind verification pages** (Digi-Key, Mouser, RS/Allied): the pump SSR, relay, fuse holder, wire, FASTON females, WAGO, heat-shrink and JST parts. Open those links yourself before ordering.
+2. **Transducer (your choice, §10b):** GaggiMate's sensor has no manufacturer datasheet. Its wires, 0.5 V zero and ratiometric output are checked on the bench before fitting (INSTALL §3).
+3. **The machine itself:** no datasheet exists. Machine facts come from GaggiMate's docs (6.35 mm quick-connects, M4 at the brew-thermostat seat, G1/8 at the pump/OPV, G1/4 tee port, two cup-warmer earths, monoblock connectors on some units); each is a `machine-fact/*` record in `docs/evidence/parts.jsonl`.
+4. **Phoenix relay:** read from Phoenix's French and Chinese datasheet exports (the English page is blocked).
 5. **EZ240D5 on the Ulka pump:** the datasheet doesn't cover a half-wave (diode) pump load; bench-test it (INSTALL.md §6).
+6. **Wire lengths:** estimated from GaggiMate's runs; measure on the machine.

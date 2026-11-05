@@ -12,7 +12,7 @@ J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_
 J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
 J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused"
-J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"TE M3234-000002-250PG, 250 psi, 5 V, 0.5-4.5 V ratiometric. 1=+5V 2=SIG 3=GND"
+J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND
 J7,1,Switches,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts
 J8,1,Valve,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate","HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
