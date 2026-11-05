@@ -217,6 +217,11 @@ impl Profile {
     }
 
     pub fn validate(&self) -> Result<(), &'static str> {
+        if let Some(t) = self.temperature_c {
+            if !(t.is_finite() && (60.0..=105.0).contains(&t)) {
+                return Err("profile temperature out of range 60..105");
+            }
+        }
         if self.phases.is_empty() {
             return Err("profile has no phases");
         }

@@ -1,8 +1,8 @@
-# Wiring: v17 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
+# Wiring: v18 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
-This replaces INSTALL.md §5 for the v17 board. The board carries no mains: certified modules
+This replaces INSTALL.md §5 for the v18 board. The board carries no mains: certified modules
 switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply.
 
@@ -133,7 +133,7 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
 | J3.1 | +5 V | pump SSR **+** input tab | Insulated 22-18 female 6.3 mm receptacle, strands folded |
 | J3.2 | OUT | pump SSR **−** input tab | |
 | J3.3 | GND | — | Unused |
-| J8.1 | +5 V | relay **A1 (+)** | Coil ≈ 38 mA at 5 V (distributor listing; datasheet UNVERIFIED) |
+| J8.1 | +5 V | relay **A1 (+)** | Input 38 mA typical at 5 V, range 4.2–7 V (Phoenix datasheet, BUY.md §4) |
 | J8.2 | OUT | relay **A2 (−)** | Polarity matters: the module has an LED and a suppression diode |
 | J8.3 | GND | — | Unused |
 | J7.1 | BREW | brew switch, terminal **C.1** | Insulated 22-18 female receptacle |
@@ -152,8 +152,9 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
 
 1. **Supply input:** across RECOM brown and blue (through the fuse), expect a high reading (several kΩ or more), not a short.
 2. **Heater SSR open:** the 1/L1–2/T1 load terminals read open or very high on the Ω range.
-3. **Heater circuit intact:** temporarily short the two brew-thermostat wires (SSR out of circuit). From C.4 through the heater to neutral you should now read the heater's ~10 Ω. Remove the short afterwards. If it reads open, a parked wire (e.g. S.4) was part of the heater path. Stop and re-check against GaggiMate's diagram before going further.
+3. **Heater circuit intact:** with the **machine's power switch ON** (still unplugged), temporarily short the two brew-thermostat wires (SSR out of circuit). From C.4 through the heater to neutral you should now read the heater's ~10 Ω. Remove the short afterwards. If it reads open, a parked wire (e.g. S.4) was part of the heater path. Stop and re-check against GaggiMate's diagram before going further.
 4. **Pump SSR and relay open:** pump SSR load tabs open; relay 11–14 open, 11–12 closed.
+4a. **Pump and valve still connected after the switch wires were parked** (WIRING step 7): pump SSR tab 2 (M7) through the pump to the neutral WAGO reads the pump coil (a few hundred Ω to a few kΩ, not open); relay 14 (M9) through the valve coil to the neutral WAGO reads the valve coil (not open). An open reading means a parked wire was part of that path.
 5. **Isolation:** no continuity from any mains wire, SSR load terminal or relay contact to:
    - J1–J8 pins;
    - the RECOM red/black leads;
@@ -161,7 +162,9 @@ GH leads are thin (**26–28 AWG**; the ones in BUY.md are 28 AWG). Crimps and s
    No continuity from any mains wire to the chassis.
 6. **Earth:** chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's heatsink** to the plug's earth pin < 0.5 Ω. That bond runs through its mounting screws: scrape paint under them if it reads high.
 7. **Switches:** J7.1–J7.3 closes when brew is pressed; J7.2–J7.3 closes when steam is pressed.
-8. **Thermistor:** before fitting it, ~100 kΩ between its two leads at room temperature (25 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
+8. **Thermistor** (do this before INSTALL §4 fits it): **~50 kΩ** between its two leads at 25 °C (Molex 218537-3919: 50 kΩ ± 1 %; about 63 kΩ at 20 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
+
+9. **After the case goes back together:** every earth wire you unplugged is back on. GaggiMate's install guide warns that the top cover (cup warmer) has **two** earth wires. Measure each panel, the top cover included, to the plug's earth pin: < 0.5 Ω.
 
 ## First power-on
 

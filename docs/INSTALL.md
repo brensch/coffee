@@ -72,7 +72,9 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe's tab;
-   - pressure reads about 0 bar;
+   - **transducer (no datasheet, BUY.md §10b):** before connecting it, find its +5 V, GND and output
+     wires with a meter, wire them to J6 pins 1, 3 and 2, and check the output reads ~0.5 V at
+     atmospheric pressure. The UI then reads about 0 bar;
    - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3;
    - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
 4. **Outputs:** put a load across pin 1 and pin 2 of J2, J3 and J8: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output's pin 2 floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 1 to pin 2:
@@ -84,9 +86,9 @@ Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both 
 1. Unplug, drain, cool. **Photograph all the wiring** before touching it.
 2. **Thermistor:** remove the brew thermostat (the 107 °C one on the boiler).
    - The probe (Molex 218537-3919) is a stainless ring tab with a Ø4.2 mm hole (Molex drawing), so it
-     fits under an M4 screw. Check the thermostat's screws are M4 before you start. If they're
-     larger, use a stainless M4 screw in one of the holes only if the hole is M4-threaded; otherwise
-     stop and ask.
+     fits under an M4 screw. GaggiMate's GCP install guide gives the brew-thermostat seat as M4
+     ("screw in the M4 thermocouple into the boiler": docs.gaggimate.eu/docs/installation-gcp).
+     Meter-check the probe first (WIRING.md check 8).
    - Clean the seat, add a thin film of thermal paste, then put the ring tab flat on the seat under
      one screw, **hand-tight plus a nip**: the boss is soft, and over-tightening can strip it.
    - The probe's body is isolated from its leads (1500 VAC, Molex drawing), so the earthed boiler
@@ -106,8 +108,8 @@ board's JST GH leads, plus the multimeter checks to do before mains.
 ## 6. First power-on
 Leave every lead plugged in, the heater SSR's included. The steam thermostat and thermal fuse are
 still in series with the heater. Don't unplug J2 to "test the pump first": the firmware sees full
-heat with no temperature rise and, after 30 s, latches a `HEATER_INEFFECTIVE` fault that blocks
-everything until reboot.
+heat with no temperature rise and, within about 2 minutes, latches a `HEATER_INEFFECTIVE` fault
+(clear it in the UI, or reboot).
 
 The firmware heats from the moment it boots, and §4 drained the boiler and opened the plumbing.
 So **fill the tank before you switch on, and prime straight away**: the first minute is a cold
@@ -118,6 +120,9 @@ prime and leak check.
    water comes out of the group steadily, then switch it off:
    - the pump runs and the relay LED is on;
    - no leaks at the T: look now, while it's still cold. If it leaks, switch off at the wall.
+   - A drained pump pulls air for the first seconds, so the engine may stop with `NO_WATER`
+     (no pressure within 6 s). That's expected here: switch the brew switch off, clear the fault
+     with the **Clear** button next to the fault on the brew page, and switch it on again until water flows.
 3. Then let it heat.
    - The board boots from the 5 V module.
    - The heater SSR's LED comes on and the meter reads ~1.37 kW while it heats.
@@ -136,9 +141,9 @@ prime and leak check.
 7. Pull a shot.
 
 ## 7. Calibrate
-1. **Thermistor, two points.** Read the probe at room temperature against a thermometer. Then
-   with the boiler open to boiling water (100 °C at sea level; ~95 °C at 1500 m). The firmware
-   stores both points. This also cancels the probe's ±1 % tolerance and its tiny self-heating.
+1. **Thermistor, two points:** CALIBRATION.md, "NTC". Do the boiling-water point with the
+   **machine unplugged and the board on USB**: unscrew the ring tab and hold it in a pot of boiling
+   water. The firmware stores both points. This also cancels the probe's ±1 % tolerance and its tiny self-heating.
 2. **Pressure:** read zero with the system fully vented (open the steam wand with the pump off,
    so the boiler is at atmospheric pressure). Then compare against a portafilter gauge at
    9 bar.

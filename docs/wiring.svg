@@ -209,7 +209,7 @@
   <!-- heater: brew-thermostat spade wires to SSR load -->
   <path class="H" d="M 310 340 L 470 340 L 470 384 L 640 384"/>
   <path class="H" d="M 310 362 L 455 362 L 455 400 L 640 400"/>
-  <text x="318" y="333" class="labH">16 AWG, male tab ↔ #8 fork</text>
+  <text x="318" y="333" class="labH">14 AWG, male tab ↔ #8 fork</text>
   <text x="472" y="378" class="labH">to 1/L1</text>
   <text x="472" y="414" class="labH">to 2/T1</text>
 
@@ -260,7 +260,7 @@
   <rect x="30" y="1040" width="1440" height="128" class="warn"/>
   <path class="L" d="M 45 1062 L 95 1062"/><text x="104" y="1066" class="lab">mains live (switched L)</text>
   <path class="N" d="M 45 1084 L 95 1084"/><text x="104" y="1088" class="lab">mains neutral</text>
-  <path class="H" d="M 45 1106 L 95 1106"/><text x="104" y="1110" class="lab">heater current, ~12 A (16 AWG)</text>
+  <path class="H" d="M 45 1106 L 95 1106"/><text x="104" y="1110" class="lab">heater current, 11.4 A (14 AWG)</text>
   <path class="lv" d="M 45 1128 L 95 1128"/><text x="104" y="1132" class="lab">5 V low voltage, JST GH 3-pin lead</text>
   <path class="ex" d="M 45 1150 L 95 1150"/><text x="104" y="1154" class="lab">existing machine wiring (unchanged)</text>
   <text x="330" y="1066" class="lab">• Mains and low-voltage leads never share a terminal, a switch or a cable tie. Keep the 5 V leads ≥ 6 mm from bare mains parts and away from the boiler.</text>

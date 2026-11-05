@@ -60,10 +60,10 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.316 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
 | Pressure gain error from 1 % divider resistors | worst-case ratio | 0.0573 bar | < 0.15 bar at 9 bar (zero is calibrated at power-up) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 5.0 V | 4.87 V | >= 4.2 V (pressure transducer) | ✅ |
+| 5 V rail | PSU 5.0 V | 4.87 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 4.75 V (-5%) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 4.75 V (-5%) | 4.62 V | >= 4.2 V (pressure transducer) | ✅ |
+| 5 V rail | PSU 4.75 V (-5%) | 4.62 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.52 V | >= 4.2 V (pressure transducer) | ✅ |
+| 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.52 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
 **61 / 61 checks pass.**

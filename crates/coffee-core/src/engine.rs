@@ -149,7 +149,11 @@ pub struct Engine {
     prev_target: Option<f32>,
 
     // safety windows
-    heater_window: Option<(f64, f32)>,
+    /// (start time, reading, heater energy) of the current energy-balance window.
+    heater_window: Option<(f64, f32, f64)>,
+    /// Heater energy actually delivered (J, after fault overrides), and the last time water moved.
+    heater_energy_j: f64,
+    last_flow_t: f64,
     runaway_since: Option<f64>,
     no_water_since: Option<f64>,
 }
@@ -205,6 +209,8 @@ impl Engine {
             water_est: None,
             prev_target: None,
             heater_window: None,
+            heater_energy_j: 0.0,
+            last_flow_t: 0.0,
             runaway_since: None,
             no_water_since: None,
         }
@@ -256,8 +262,8 @@ impl Engine {
                 self.profile.temperature_c = None;
             }
             Command::SetSteamTemp(t) => {
-                if !(110.0..=150.0).contains(&t) {
-                    return Err("steam temperature out of range 110..150");
+                if !(110.0..=142.0).contains(&t) {
+                    return Err("steam temperature out of range 110..142 (the steam thermostat opens ~145)");
                 }
                 self.cfg.steam_temp_c = t;
             }
@@ -287,7 +293,8 @@ impl Engine {
     }
 
     fn brew_setpoint(&self) -> f32 {
-        self.profile.temperature_c.unwrap_or(self.cfg.brew_temp_c)
+        // Clamped as well as validated: profiles also arrive from flash and imports.
+        self.profile.temperature_c.unwrap_or(self.cfg.brew_temp_c).clamp(60.0, 105.0)
     }
 
     fn setpoint(&self) -> f32 {
@@ -386,6 +393,13 @@ impl Engine {
             self.heater_duty = 0.0;
             self.pump_duty = 0.0;
         }
+        // What the heater really does (after the fault override): the duty average and the
+        // energy balance must not count heat that was requested but never delivered.
+        self.heater_duty_avg.update(self.heater_duty, dt, 20.0);
+        self.heater_energy_j += (self.heater_duty * self.cfg.heater_power_w * dt) as f64;
+        if self.flow_est >= 0.3 || self.pump_duty > 0.0 {
+            self.last_flow_t = self.t;
+        }
         let valve = self.faults == 0
             && matches!(self.state, EngineState::Brewing)
             && self.brew.as_ref().is_some_and(|b| b.ended.is_none());
@@ -443,9 +457,22 @@ impl Engine {
         }
         let v = self.temp.update(t, dt, self.cfg.ntc.filter_tau_s);
         if let Some(prev) = self.temp_prev {
-            self.temp_rate.update((v - prev) / dt, dt, 3.0);
+            if dt > 0.0 {
+                let r = (v - prev) / dt;
+                if r.is_finite() {
+                    self.temp_rate.update(r, dt, 3.0);
+                }
+            }
         }
         self.temp_prev = Some(v);
+    }
+
+    /// Boiler body temperature for control: the probe reading plus its lag (first-order lead,
+    /// `probe_lag_s` x the filtered rate). The probe trails the body by about lag x rate while the
+    /// temperature moves. Safety checks use the plain reading.
+    fn body_temp(&self) -> f32 {
+        let lead = self.cfg.ntc.probe_lag_s * self.temp_rate.get();
+        self.temp.get() + if lead.is_finite() { lead } else { 0.0 }
     }
 
     fn temp_valid(&self) -> bool {
@@ -577,30 +604,34 @@ impl Engine {
                 self.set_fault(fault::OVER_TEMP, true);
             }
 
-            // Heater ineffective: commanding lots of heat, no temperature rise. This is also
-            // what catches a probe that reads wrong (open but under the open threshold, backed
-            // out of its hole, or stuck): the PID drives full heat and the reading doesn't move.
-            // Disabled while water is flowing (cold water legitimately absorbs it). In steam mode
-            // only well below setpoint: steaming holds the boiler flat at full power, and the
-            // steam thermostat bounds that mode anyway.
-            let sp = self.setpoint();
-            let near_ok = self.state != EngineState::Steam || temp < sp - 5.0;
-            let heating_hard = self.heater_duty_avg.get() > sc.heater_ineffective_duty
-                && near_ok
-                && self.flow_est < 0.3;
-            if heating_hard {
-                let (t0, temp0) = *self.heater_window.get_or_insert((now, temp));
-                if now - t0 > sc.heater_ineffective_s as f64 {
-                    if temp - temp0 < sc.heater_ineffective_rise_c {
+            // Heater ineffective, as an energy balance: over each window, the heat actually
+            // delivered minus the most the boiler can lose (`heater_check_loss_max_w`), spread over
+            // the most it can hold (`heater_check_c_max_j_k`), is the least the reading must rise.
+            // A reading that rises less than half of that (minus 1 C) is wrong: a probe that is
+            // open but under the open threshold, backed out of its seat, or stuck at any value
+            // (the PID then keeps adding heat the reading never shows), or a heater that isn't
+            // heating. At idle the duty is far below the loss allowance, so nothing is expected
+            // and nothing is checked. Disarmed while water moves and for 90 s after (fresh cold
+            // water absorbs heat unseen by the probe on the body), and in steam mode (steaming
+            // holds the boiler flat at full power; the steam thermostat bounds that mode).
+            let armed = self.state != EngineState::Steam && now - self.last_flow_t > 90.0;
+            if armed {
+                let (t0, temp0, e0) = *self.heater_window.get_or_insert((now, temp, self.heater_energy_j));
+                let w = now - t0;
+                if w >= sc.heater_ineffective_s as f64 {
+                    let net = (self.heater_energy_j - e0) - sc.heater_check_loss_max_w as f64 * w;
+                    let expected = (net / sc.heater_check_c_max_j_k as f64) as f32;
+                    if expected >= 1.5 && temp - temp0 < 0.5 * expected - 0.5 {
                         self.set_fault(fault::HEATER_INEFFECTIVE, true);
                     }
-                    self.heater_window = Some((now, temp));
+                    self.heater_window = Some((now, temp, self.heater_energy_j));
                 }
             } else {
                 self.heater_window = None;
             }
 
             // Runaway: heater off, far above setpoint and still climbing.
+            let sp = self.setpoint();
             let runaway = self.heater_duty_avg.get() < 0.05
                 && temp > sp + sc.runaway_margin_c
                 && self.temp_rate.get() > 0.1;
@@ -913,16 +944,15 @@ impl Engine {
             if flowing {
                 gains.kp *= self.cfg.flow_kp_scale;
             }
-            self.heater_duty = self.temp_pid.update(&gains, sp, self.temp.get(), ff, dt);
+            self.heater_duty = self.temp_pid.update(&gains, sp, self.body_temp(), ff, dt);
         } else {
             self.heater_duty = 0.0;
             self.temp_pid.reset();
         }
-        self.heater_duty_avg.update(self.heater_duty, dt, 20.0);
 
         // Water observer: C_w dTw/dt = h (T_wall - Tw) - q c_p (Tw - T_in).
         if self.temp_valid() && self.cfg.brew_boost_h_w_k > 0.0 {
-            let tb = self.temp.get();
+            let tb = self.body_temp();
             let tw = self.water_est.get_or_insert(tb);
             let q_in = if matches!(self.state, EngineState::Brewing | EngineState::HotWater) {
                 self.flow_est
@@ -942,7 +972,7 @@ impl Engine {
         // room. A flush therefore warms it, which a lag filter can't express.
         if self.temp_valid() {
             let c = &self.cfg;
-            let wall = self.temp.get();
+            let wall = self.body_temp();
             let water = self.water_est.unwrap_or(wall);
             let g = *self.group_est.get_or_insert(wall);
             let flowing = matches!(self.state, EngineState::Brewing | EngineState::HotWater)
@@ -1086,6 +1116,38 @@ mod tests {
             scale_mg: 0,
             inputs,
         }
+    }
+
+    #[test]
+    fn stuck_reading_under_setpoint_latches_heater_ineffective() {
+        // The reading freezes 4 C under setpoint: the PID keeps adding heat the reading never
+        // shows. The energy balance must catch it; a real boiler would have risen far more.
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let hz = cfg.mains_hz as u32;
+        let mut k = 0;
+        for _ in 0..(400 * hz) {
+            // pressure climbing as the sealed boiler heats (thermal expansion), as in the emulator
+            let bar = (3.0 + k as f32 / hz as f32 * 0.012).min(8.0);
+            e.tick(&frame(&cfg, k, 89.0, bar, 0));
+            k += 1;
+            if e.faults & fault::HEATER_INEFFECTIVE != 0 {
+                break;
+            }
+        }
+        assert!(e.faults & fault::HEATER_INEFFECTIVE != 0, "not latched after {} s, duty avg {}", k / hz, e.heater_duty_avg.get());
+    }
+
+    #[test]
+    fn steady_at_setpoint_does_not_trip_heater_check() {
+        // A reading sitting at setpoint with idle duty must never trip the energy balance.
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let hz = cfg.mains_hz as u32;
+        for k in 0..(900 * hz) {
+            e.tick(&frame(&cfg, k, cfg.brew_temp_c, 0.0, 0));
+        }
+        assert_eq!(e.faults & fault::HEATER_INEFFECTIVE, 0);
     }
 
     #[test]

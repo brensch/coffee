@@ -308,7 +308,7 @@ pub struct PressureSensor {
 impl Default for PressureSensor {
     fn default() -> Self {
         Self {
-            range_bar: 17.24, // TE M3234-000002-250PG: 250 psi
+            range_bar: 16.0, // GaggiMate 0-1.6 MPa sensor (BUY.md 10b)
             v_zero_mv: 500.0,
             v_full_mv: 4500.0,
             divider: 100.0 / 147.0,

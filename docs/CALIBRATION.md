@@ -22,8 +22,8 @@ config (`PUT /api/config`, or the config file), not the model.
 
 ### NTC: two points, room temperature and boiling water
 
-The 100k B3950 thermistor is decoded with the beta model (or Steinhart–Hart
-coefficients in `ntc.steinhart_hart`), then a linear correction
+The Molex 218537-3919 50k thermistor is decoded with Steinhart–Hart coefficients fitted to
+Molex's R–T table (`ntc.steinhart_hart`, the default; within ~1 °C of the table from 25 to 200 °C), then a linear correction
 `T = ntc.cal_gain × T_model + ntc.cal_offset_c`. That correction absorbs the
 part's tolerance, the reference resistor, and how well the probe is coupled to
 the boiler.
@@ -31,16 +31,17 @@ the boiler.
 1. **Room point.** Machine off overnight, so boiler and room agree. Note a
    reference thermometer's reading `R1` near the boiler and the engine's raw
    `temp_c` `M1` (with gain 1 and offset 0).
-2. **Boiling point.** Take the probe out of its boiler hole, keep it wired, and
-   hold it in a pot at a rolling boil for 2 minutes. Read `M2`. The true
+2. **Boiling point.** **Unplug the machine** and power the board from USB (INSTALL §3): the
+   heater can't run, and nothing in the open case is live. Unscrew the probe's ring tab, keep it
+   wired, and hold it in a pot at a rolling boil for 2 minutes (keep the splice out of the water). Read `M2`. The true
    temperature is the boiling point at your altitude, not 100 °C:
    `R2 ≈ 100 − 0.0033 × altitude_m` °C. That is about 1 °C per 300 m, so
    Denver (1600 m) boils at about 94.7 °C. On a day of unusual weather, use the
    local station pressure: `R2 = 100 + 0.0277 × (p_hPa − 1013.25)`.
 3. `cal_gain = (R2 − R1) / (M2 − M1)` and `cal_offset_c = R1 − cal_gain × M1`.
    Typical values are within 1 ± 0.02 and ±1.5 °C. Anything far outside that
-   points to a wrong `r_ref_ohm`, or to a different thermistor curve (B3435?).
-4. Refit the probe with heat-sink paste. The boiler-wall offset that remains
+   points to a wrong `r_ref_ohm`, or to a different probe than the Molex 218537-3919.
+4. Refit the probe's ring tab with thermal paste under its M4 screw, hand-tight plus a nip. The boiler-wall offset that remains
    is what the water observer handles. Validate it with log test 5.
 
 The boiling point is close to the 93 °C brew range, so the calibration is most

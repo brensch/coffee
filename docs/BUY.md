@@ -1,4 +1,4 @@
-# Buy list: off-board parts for the low-voltage controller (board v17)
+# Buy list: off-board parts for the low-voltage controller (board v18)
 
 US Gaggia Classic Pro, 120 V / 60 Hz. Everything here sits off the PCB. Wiring is in
 [WIRING.md](WIRING.md).
@@ -212,31 +212,30 @@ Every board connector is a JST GH 1.25 mm 3-pin side-entry header (SM03B-GHS-TB)
 - **Board and firmware:** R15 is 4.7 kΩ to match (1.50 V at 93 °C). The firmware default is a Steinhart-Hart fit to Molex's table, within 0.2 °C from 25 to 200 °C; the two-point calibration removes the rest (tolerance, mounting).
 - **To check on the machine:** that the thermostat's screws are M4 (INSTALL.md §4).
 
-### 10b. Pressure transducer: TE Connectivity M3200 series, qty 1 (**variant: your choice, see below**)
+### 10b. Pressure transducer: GaggiMate's 0–1.6 MPa sensor, qty 1 (**no datasheet: your choice**)
 
-**Requirement:** 0–~17 bar gauge, 5 V supply, 0.5–4.5 V ratiometric, G1/4 into GaggiMate-style tee
-(GaggiMate's pressure tee takes a G1/4 male transducer and sits between the pump outlet and the
-OPV, which are G1/8: gaggimate docs), water above 95 °C, load ≤ the board's 147 kΩ.
+**Chosen by you (2026-11-04) over the datasheet-verified TE M3200 options**, because it is the
+part GaggiMate ships for this exact machine. **It is the one part on this list with no
+manufacturer datasheet**, so its specs are checked on the bench instead (below).
 
-**Datasheet (verified):** TE M3200, 06/2026 (local copy in the research notes; te.com product pages):
-0.5–4.5 V ratiometric on 5 ± 0.25 V (p.8); **load > 100 kΩ** (p.2; the board's divider is 147 kΩ);
-±0.25 % FS, total error band ±1.5 % FS (p.2); proof 2×, burst 5×; −40…125 °C (cable versions 105 °C);
-17-4PH stainless wetted parts. Every variant below is in this one datasheet.
-
-| Variant | Connection | Port | Buy | Catch |
-|---|---|---|---|---|
-| **M323M-000004-017BG** | 1 m cable: red +5 V, black GND, white output; vent in the cable (p.4) | 7/16-20 UNF male, O-ring (p.5) | Digi-Key via te.com <https://www.te.com/en/product-20014203-07.html>: **$104.81**, 36 in stock | Needs a 7/16-20 UNF female → G1/4 male adapter. No stainless adapter with its own datasheet found yet (Adaptall 9036-04-04 is carbon steel, unrated) |
-| **M3234-000002-250PG** | Packard A connector: A +5 V, B GND, C output; vent through the connector | 1/4-19 BSPP = G1/4 (p.5) | Digi-Key via te.com <https://www.te.com/en/product-20005027-00.html>: **$90.84**, 4 in stock | TE names no mating plug. Sibling TE datasheets (M5200, U5300) name Aptiv **12078090** + 3 × **12103881**, but that plug's seals may block the gauge vent |
-| **M323M-000002-017BG** | 1 m cable | G1/4 | factory order only (no stock found) | Lead time |
-
-- **Firmware:** `range_bar` is 17.24 for the 250 psi part and 17.0 for the 017BG parts (set it in the config).
-- **Not chosen:**
-  - GaggiMate's own transducer, an unbranded AliExpress 0–1.6 MPa part with no datasheet;
-  - the XYNLHZQ listing in earlier versions of this list (no datasheet);
-  - WIKA A-10: its ratiometric version is limited to 0–80 °C water;
-  - Gems 3500: $330, minimum 5;
-  - Variohm EPT3100: its current datasheet sits behind a form, and the 2013 sheet doesn't state the load or ratiometric output;
-  - Honeywell PX2 (not for water) and PX3 (no cable version).
+- **Part:** "Pressure Transducer 0 - 1.6MPa, 5V Supply, 0.5 - 4.5V Output", G1/4 male, flying
+  leads: the item in GaggiMate's kit and DIY BOM (<https://docs.gaggimate.eu/docs/sourcing-lego>,
+  AliExpress item 1005005510454084).
+- **Plumbing:** GaggiMate's plumbing kit (<https://shop.gaggimate.eu/collections/parts/products/gaggimate-plumbing-kit>):
+  a G1/8 elbow + G1/8 push tee between the pump outlet and the OPV, 4/6 mm PTFE tube, and a
+  6 mm push fitting to G1/4 female that screws onto the transducer with a 1/4" silicone gasket
+  (hand-tight). Installation: <https://docs.gaggimate.eu/docs/installation-gcp> §5.
+- **Board side:** any 0.5–4.5 V ratiometric 5 V transducer works with the board: the 47k/100k
+  divider loads it with 147 kΩ, more than any common transducer asks for.
+- **Firmware:** `range_bar` = 16.0 (the default).
+- **Bench check before fitting** (INSTALL §3, on USB): identify +5 V, GND and output with a meter
+  (GaggiMate's board labels them +5V / Analog In / GND, but the wire colours aren't documented);
+  then at atmospheric pressure the output reads about 0.5 V, and it scales with the supply
+  (ratiometric) if you vary +5 V slightly.
+- **If you want a datasheet-verified part instead:** TE M3200 (datasheet 06/2026: 0.5–4.5 V
+  ratiometric, load > 100 kΩ, ±0.25 % FS). M323M-000004-017BG ($104.81, Digi-Key, 36 in stock;
+  cable with vent, 7/16-20 UNF port, so it needs a G1/4 adapter) or M3234-000002-250PG ($90.84,
+  G1/4, Packard connector whose mating plug TE doesn't name). Set `range_bar` to 17.0 or 17.24.
 
 ## 11. Antenna: Taoglas CAB.A02 pigtail + Taoglas GW.15.2113 2 dBi dipole
 
@@ -270,18 +269,18 @@ OPV, which are G1/8: gaggimate docs), water above 95 °C, load ≤ the board's 1
 | 8 | Techflex SFAG.08 + SFAG.02 sleeve | $16.52 + $25.82 |
 | 9 | JST AGHGH28K305 ×21 + GHR-03V-S ×7 (Digi-Key, price not seen) | ~$30 (estimate, check) |
 | 10a | Molex 218537-3919 | $9.76 |
-| 10b | TE M3200 transducer (variant to choose) | $90.84–$104.81 |
+| 10b | GaggiMate 0–1.6 MPa transducer + plumbing kit (prices on their pages) | ~$20 + kit |
 | 11 | Taoglas CAB.A02 + GW.15.2113 | $2.97 + $4.76 |
-| | **Total** | **≈ $400–415**, plus shipping |
+| | **Total** | **≈ $330** plus the GaggiMate plumbing kit and shipping |
 
-The verified parts cost more than the earlier unverified ones (≈ $268), mostly the transducer
-(+$70–80), the sleeve (+$34) and genuine JST leads.
+The verified parts cost more than the earlier unverified ones (≈ $268), mostly the sleeve (+$34)
+and genuine JST leads.
 
 ## Couldn't verify
 
 Everything above was checked against the maker's own datasheet or product page, except:
 1. **Prices behind human-verification pages** (Digi-Key, Mouser): the 14/16/18 AWG wire, the JST GH leads, the S505-1-R fuse, and the TE transducer's Digi-Key stock. Open those links yourself.
-2. **Transducer:** the M323M's G1/4 adapter (no stainless part with a datasheet found yet) or the M3234's mating plug (only named in sibling TE datasheets). See §10b.
+2. **Transducer (your choice, §10b):** GaggiMate's sensor has no manufacturer datasheet. Its pinout, 0.5 V zero and ratiometric output are checked on the bench before fitting.
 3. **The machine itself:** no datasheet exists. Machine facts come from GaggiMate's docs (6.35 mm quick-connects, M4 at the brew-thermostat hole, G1/8 at the pump/OPV, G1/4 tee port). Check the thermostat screws are M4 before fitting the probe.
 4. **Phoenix relay:** read from Phoenix's French and Chinese datasheet exports (the English page is blocked). The eBay seller isn't an authorised distributor.
 5. **EZ240D5 on the Ulka pump:** the datasheet doesn't cover a half-wave (diode) pump load; bench-test it (INSTALL.md §6).

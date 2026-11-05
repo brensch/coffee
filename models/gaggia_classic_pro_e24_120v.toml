@@ -76,22 +76,22 @@ resolution_g = 0.1
 noise_g = 0.03
 
 [thermistor]
-# 100k B3950 NTC in a brass screw probe, 8.2k 0.1 % reference to 3.3 V,
-# read by the ESP32-C6 ADC1 (curve-calibrated, oversampled per mains cycle).
-tau_s = 3.0               # bead in a brass probe, heat-sink paste (est); fit from a heat-up log
-r25_ohm = 100000.0
-beta = 3950.0
-r_ref_ohm = 8200.0
+# Molex 218537-3919 50k ring-tab probe (B25/95 4109 from its R-T table) under an M4 screw at the
+# brew-thermostat seat; 4.7k 1 % reference to 3.3 V, read by the ESP32-C6 ADC1.
+tau_s = 15.0              # Molex: 15 s in water (sales drawing note 4); fit from a heat-up log
+r25_ohm = 50000.0
+beta = 4109.0
+r_ref_ohm = 4700.0
 v_ref_mv = 3300.0
 offset_c = 0.0            # placement / contact error; the two-point calibration removes it
 noise_mv = 1.5            # per-cycle average of ~32 samples (est)
 
 [pressure_sensor]
-# 0.5-4.5 V ratiometric on 5 V, through a 10k/20k divider (x2/3) to ADC1.
+# 0.5-4.5 V ratiometric on 5 V (GaggiMate 0-1.6 MPa sensor), through the 47k/100k divider to ADC1.
 range_bar = 16.0
 v_zero_mv = 500.0
 v_full_mv = 4500.0
-divider = 0.6666667
+divider = 0.6802721
 noise_bar = 0.02
 tau_s = 0.003
 offset_bar = 0.0          # zero drift of the part; the power-on self-zero removes it

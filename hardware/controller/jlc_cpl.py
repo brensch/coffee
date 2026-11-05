@@ -39,6 +39,7 @@ PROXY = {"C8598": "C81598"}
 # Parts whose JLC pin numbers differ from the board footprint's: JLC pad -> board pad. Checked against
 # JLC's own symbol: KT-0603R (C2286) numbers 1 = anode, 2 = cathode; KiCad's LED_0603 has 1 = cathode.
 PAD_MAP = {"C2286": {"1": "2", "2": "1"}}
+HOLE_WEIGHT = 50.0
 
 
 def easyeda_pads(lcsc):
@@ -58,6 +59,8 @@ def easyeda_pads(lcsc):
         f = s.split("~")
         if f[0] == "PAD":
             pads.append((f[8], (float(f[2]) - ox) * 0.254, (float(f[3]) - oy) * 0.254))   # 10 mil units, y down
+        elif f[0] == "HOLE":                  # non-plated locating holes (USB-C pegs): fitted too, see solve()
+            pads.append(("HOLE", (float(f[1]) - ox) * 0.254, (float(f[2]) - oy) * 0.254))
     return pads, d["head"].get("c_para", {}).get("package", "")
 
 
@@ -95,7 +98,13 @@ def solve(board_pads, ee_pads, bottom):
         for n, px, py in pairs:
             q = min(board_pads[n], key=lambda q: math.hypot(px + P[0] - q[0], py + P[1] - q[1]))
             matched.append((px, py, q))
-        P = (sum(q[0] - px for px, py, q in matched) / len(matched), sum(q[1] - py for px, py, q in matched) / len(matched))
+        # Locating pegs decide where the part physically sits, so they outweigh the pads (whose
+        # copper has slack): the USB-C's pads and pegs differ by 0.18 mm between JLC's footprint and
+        # HRO's drawing, and a 0.50 mm peg has only 0.05 mm of room in its 0.60 mm hole.
+        wt = [HOLE_WEIGHT if n == "HOLE" else 1.0 for n, _, _ in pairs]
+        W = sum(wt)
+        P = (sum(w * (q[0] - px) for w, (px, py, q) in zip(wt, matched)) / W,
+             sum(w * (q[1] - py) for w, (px, py, q) in zip(wt, matched)) / W)
         err = max(math.hypot(px + P[0] - q[0], py + P[1] - q[1]) for px, py, q in matched)
         fits.append((err, a, P))
     fits.sort()
@@ -119,9 +128,11 @@ def main():
             bottom = fp.IsFlipped()
             bp = {}
             for p in fp.Pads():
+                c = p.GetPosition()
                 if p.GetAttribute() in (pcbnew.PAD_ATTRIB_SMD, pcbnew.PAD_ATTRIB_PTH):
-                    c = p.GetPosition()
                     bp.setdefault(p.GetNumber(), []).append((pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)))
+                elif p.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH:
+                    bp.setdefault("HOLE", []).append((pcbnew.ToMM(c.x), pcbnew.ToMM(c.y)))
             err, a, P, second = solve(bp, ee, bottom)
             polar = second > 0.25          # only one angle fits: orientation is determined by the pads
             tol = TOLERANCE.get(ref, 0.25)

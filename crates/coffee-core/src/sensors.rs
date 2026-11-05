@@ -198,13 +198,13 @@ mod tests {
     #[test]
     fn pressure_decoding() {
         let c = PressureSensorConfig::default();
-        // 0.5 V -> 0 bar, 4.5 V -> 17.24 bar (250 psi), through the 100/147 divider.
+        // 0.5 V -> 0 bar, 4.5 V -> 16 bar (1.6 MPa), through the 100/147 divider.
         assert!((pressure_to_mv(&c, 0.0, 0.0) - 340.1).abs() < 0.1);
-        assert!((pressure_to_mv(&c, 17.24, 0.0) - 3061.2).abs() < 0.1);
+        assert!((pressure_to_mv(&c, 16.0, 0.0) - 3061.2).abs() < 0.1);
         let PressureReading::Bar(b) = pressure(&c, 3061, 0.0) else {
             panic!()
         };
-        assert!((b - 17.24).abs() < 0.01);
+        assert!((b - 16.0).abs() < 0.01);
         // 1 mV at the pin is ~6.3 mbar.
         for bar in [0.0f32, 2.5, 9.0, 12.0] {
             let mv = pressure_to_mv(&c, bar, 0.0).round() as u16;
