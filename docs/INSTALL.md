@@ -36,6 +36,7 @@ Gaggia Classic Pro.
    - `coffee-v21-bom.csv`;
    - `coffee-v21-cpl.csv`.
    - (`coffee-v21-hand-solder.csv` is the eight connectors you order yourself and solder on; see step 6.)
+   - **Or order v22 instead (every part on one side):** `coffee-v22-gerbers.zip`, `coffee-v22-bom.csv`, `coffee-v22-cpl.csv`. 44.5 × 29.4 mm (v21 is 40 × 24), every part including the connectors on the top, so Economic PCBA (top side) places everything and there is nothing to solder. The connectors add 3 extended part types to the order. Its BOOT pad (TP1) is on the top, left of the module. Mounting is simpler too: the underside is flat, so the board can sit on a 1 mm ledge all round; the connectors still exit past the long edges.
    - **Or have JLC place both sides:** upload `coffee-v21-2side-bom.csv` and `coffee-v21-2side-cpl.csv` instead, and choose **Standard PCBA, both sides** (Economic does one side only). The connectors are then included and step 6 is skipped. It costs more (a second side's setup and stencil); compare the two quotes. JLC reflows the bottom (the connectors) first and the top last, so the ESP32 module only goes through the oven once, right way up. In the placement preview, check the eight connectors on the bottom: openings face outward past the long edges, and pin 1 matches the silkscreen.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;

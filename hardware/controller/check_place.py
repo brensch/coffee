@@ -14,6 +14,13 @@ spec = json.load(open(os.path.join(layout.HERE, "build", "parts-120v.json")))
 board = layout.build(spec, 120)
 W, H = layout.W, layout.H
 fps = list(board.GetFootprints())
+if os.environ.get("PADS_OUT"):          # optional: every pad's net and position, to judge placement by
+    with open(os.environ["PADS_OUT"], "w") as f:
+        for fp in fps:
+            for p in fp.Pads():
+                if p.GetNetname():
+                    q = p.GetPosition()
+                    f.write(f"{fp.GetReference()} {p.GetNumber()} {p.GetNetname()} {pcbnew.ToMM(q.x):.2f} {pcbnew.ToMM(q.y):.2f}\n")
 for fp in fps:
     fp.BuildCourtyardCaches()
 

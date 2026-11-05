@@ -101,6 +101,8 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 **Board:** 40 × 24 mm, 2 layers, 1 oz (v21 = v20 with tidier bottom labels). v20 made it skinnier (from 45.5 × 32): everything except the connectors is on the top side, and the eight GH connectors go on the bottom, soldered by hand (JLC's Economic PCBA assembles one side only). Each connector's resistors and capacitors sit on the top directly over it.
 
+**v22 variant:** the same circuit with every part on the top side (44.5 × 29.4 mm), for one-sided JLC assembly with nothing to hand-solder. The module sits at the right edge with its pinless side outward; the connectors run 4 + 4 along the long edges (top: pressure, NTC, scale, 5 V in; bottom: valve, pump, heater, front panel), each with its parts directly inside it. fastroute: 0 unrouted, 79 vias; DRC 0; JLC gates pass (57 placed parts, 92 pin functions). Files `build/coffee-v22-*`, snapshot `versions/v22-all-top`.
+
 **Connectors:** four along each long edge, on the bottom face, openings outward:
 - top edge (left to right, top view): pressure (J6), thermistor (J5), scale (J10, 6-pin), 5 V in (J1);
 - bottom edge: front panel (J7, 7-pin), heater (J2), pump (J3), valve (J8);
