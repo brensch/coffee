@@ -163,6 +163,7 @@ impl<S: Storage> Node<S> {
             if let Some(p) = storage
                 .load(&key)
                 .and_then(|b| serde_json::from_slice::<Profile>(&b).ok())
+                .filter(|p| p.validate().is_ok())   // a corrupt or out-of-range stored profile is skipped
             {
                 library.retain(|q| q.name != p.name);
                 library.push(p);
@@ -179,6 +180,7 @@ impl<S: Storage> Node<S> {
         let profile = active
             .and_then(|n| library.iter().find(|p| p.name == n).cloned())
             .or_else(|| library.first().cloned())
+            .filter(|p| p.validate().is_ok())
             .unwrap_or_else(Profile::classic_9bar);
         let next_id = storage
             .list(PREFIX_SHOTS)

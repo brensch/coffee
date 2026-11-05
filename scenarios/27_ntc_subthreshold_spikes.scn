@@ -1,0 +1,12 @@
+name "EMI spikes too small to reject must not bias the boiler hot"
+machine "../models/gaggia_classic_pro_e24_230v.toml"
+duration 16min
+model thermistor.noise_mv = 3
+
+# 250 mV (~10 C) spikes pass the 12 C step filter. The control loop must average them out, not
+# turn them into net heat (a D term on the lag-compensated reading held the water at 105 C).
+when engine.state == ready for 20s as warm: set ntc.spike_mv = 250; set ntc.spikes = 0.03
+
+expect never engine.state == fault
+expect always boiler.water_temp < 96 from warm+60s
+expect always boiler.water_temp > 90 from warm+60s

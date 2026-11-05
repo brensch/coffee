@@ -100,8 +100,9 @@ pub struct Faults {
     pub heater_triac: TriacMode,
     pub element_open: bool,
     pub pump_airlock: bool,
-    /// Probability per cycle of an EMI spike on the NTC reading.
+    /// Probability per cycle of an EMI spike on the NTC reading, and its size (mV, either sign).
     pub ntc_spike_prob: f64,
+    pub ntc_spike_mv: f64,
 }
 
 impl Default for Faults {
@@ -113,6 +114,7 @@ impl Default for Faults {
             element_open: false,
             pump_airlock: false,
             ntc_spike_prob: 0.0,
+            ntc_spike_mv: 400.0,
         }
     }
 }
@@ -660,11 +662,8 @@ impl Machine {
                     && self.rng.r#gen::<f64>() < self.faults.ntc_spike_prob
                 {
                     // A burst of interference corrupting the cycle's average.
-                    v += if self.rng.r#gen::<bool>() {
-                        400.0
-                    } else {
-                        -400.0
-                    };
+                    let a = self.faults.ntc_spike_mv;
+                    v += if self.rng.r#gen::<bool>() { a } else { -a };
                 }
                 v
             }
@@ -858,6 +857,7 @@ impl Machine {
         ("cup.mass", "g"),
         ("ntc.fault", "ok|open|short|detached|stuck"),
         ("ntc.spikes", "prob/cycle, 0.02"),
+        ("ntc.spike_mv", "spike size, mV (default 400)"),
         ("pressure_sensor.fault", "ok|disconnected|stuck"),
         ("heater_triac.fault", "ok|stuck_on|stuck_off"),
         ("heater.element", "ok|open"),
@@ -885,6 +885,7 @@ impl Machine {
                 self.drip_store_g = 0.0;
             }
             "ntc.spikes" => self.faults.ntc_spike_prob = v.as_num()?.clamp(0.0, 1.0),
+            "ntc.spike_mv" => self.faults.ntc_spike_mv = v.as_num()?.clamp(0.0, 3300.0),
             "ntc.fault" => {
                 self.faults.ntc = match v.as_word().as_str() {
                     "ok" | "none" => NtcMode::Ok,

@@ -62,7 +62,7 @@ embeds `ui/dist`). The details are in [`firmware/esp32/README.md`](../firmware/e
 On WSL, attach the board's USB with `usbipd` to get `/dev/ttyACM0`.
 
 ## 3. Bench bring-up: USB only, no mains
-Power over USB-C: D2 feeds the board from VBUS. USB and the 5 V module may both be connected: the module then powers the board and D2 keeps it out of the PC. (With USB alone, ~4.6 V also appears on J1; harmless.)
+Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V module unplugged from J1: on USB alone, Q4 passes ~4.6 V back out of J1. USB and the 5 V module may both be connected: the module then powers the board and D2 keeps it out of the PC. (With USB alone, ~4.6 V also appears on J1; harmless.)
 1. **Rails:** 3.3 V on C7. The board enumerates as an ESP32-C6 USB Serial/JTAG device.
 2. **Flash and join Wi-Fi:**
    - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`.

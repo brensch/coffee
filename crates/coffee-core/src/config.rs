@@ -318,6 +318,8 @@ impl Default for EngineConfig {
             temp_pid: PidGains {
                 kp: 0.06,
                 ki: 0.0015,
+                // D acts on the plain reading (Pid::update_split), not on the lag-compensated one:
+                // a D term on top of the lead would amplify probe noise into net heat
                 kd: 0.6,
                 d_tau_s: 2.0,
                 out_min: 0.0,
@@ -418,6 +420,23 @@ impl EngineConfig {
             // out_min must stay 0: anything else forces heat whatever the reading says.
             (t.out_min == 0.0 && r(t.out_max, 0.3, 1.0), "temp_pid: out_min must be 0, out_max 0.3..1"),
             (gains(t) && gains(&self.pressure_pid), "pid gains must be finite, 0..1e4"),
+            (r(self.pressure_pid.out_min, 0.0, 15.0) && r(self.pressure_pid.out_max, 0.0, 15.0)
+                && self.pressure_pid.out_min <= self.pressure_pid.out_max, "pressure_pid output limits out of 0..15 or min > max"),
+            // every model field that reaches the heater or pump must be finite and physical: a NaN
+            // or runaway estimate would disable the energy-balance and runaway checks
+            (r(self.inlet_temp_c, 0.0, 40.0), "inlet_temp_c out of 0..40"),
+            (r(self.hot_water_pump_duty, 0.0, 1.0), "hot_water_pump_duty out of 0..1"),
+            (r(self.brew_boost_h_w_k, 0.0, 500.0) && r(self.brew_boost_h_flow_gain, 0.0, 50.0), "brew boost conductance out of range"),
+            (r(self.flow_kp_scale, 0.0, 10.0), "flow_kp_scale out of 0..10"),
+            (r(self.water_heat_capacity_j_k, 100.0, 5000.0) && r(self.water_loop_gain, 0.0, 20.0), "water model out of range"),
+            (r(self.boost_taper_s, 0.0, 60.0) && r(self.weight_lag_s, 0.0, 5.0), "boost taper / weight lag out of range"),
+            (r(self.group_heat_capacity_j_k, 10.0, 5000.0) && r(self.group_h_boiler_w_k, 0.0, 50.0)
+                && r(self.group_loss_w_k, 0.0, 10.0) && r(self.group_flow_ua_w_k, 0.0, 50.0)
+                && r(self.group_ready_band_c, 0.0, 20.0), "group model out of range"),
+            (r(self.ready_band_c, 0.1, 10.0) && r(self.ready_over_c, 0.1, 10.0) && r(self.ready_hold_s, 0.0, 120.0)
+                && r(self.warmup_boost_until, 0.0, 1.0), "ready band out of range"),
+            (r(self.pump.flow_scale, 0.2, 5.0) && !self.pump.curve.is_empty()
+                && self.pump.curve.iter().all(|(b, f)| r(*b, 0.0, 20.0) && r(*f, 0.0, 2000.0)), "pump curve out of range"),
             (r(p.range_bar, 5.0, 30.0) && r(p.v_zero_mv, 300.0, 700.0) && r(p.v_full_mv, 4000.0, 5000.0), "pressure_sensor range out of limits"),
             (r(p.divider, 0.5, 0.8) && r(p.span_gain, 0.8, 1.2) && r(p.zero_offset_bar, -1.0, 1.0), "pressure_sensor calibration out of limits"),
             (r(p.fault_low_mv, 50.0, 450.0) && r(p.filter_tau_s, 0.0, 0.5), "pressure_sensor fault/filter out of limits"),
@@ -450,6 +469,23 @@ mod check_tests {
         assert!(c.check().is_err());
         let mut c = EngineConfig::default();
         c.temp_pid.kp = f32::NAN;
+        assert!(c.check().is_err());
+        // fields that reach the heater through the water/portafilter models (review round 5)
+        let mut c = EngineConfig::default();
+        c.brew_boost_h_w_k = 1e5;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.inlet_temp_c = -5000.0;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.flow_kp_scale = -1.0;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.pressure_pid.out_min = 10.0;
+        c.pressure_pid.out_max = 5.0;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.temp_pid.out_min = 1.0;
         assert!(c.check().is_err());
     }
 }

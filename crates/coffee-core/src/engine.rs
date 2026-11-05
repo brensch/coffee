@@ -275,9 +275,9 @@ impl Engine {
                 self.cfg = c;
             }
             Command::ClearFaults => {
+                // The heater and runaway windows keep running: clearing must not reset the
+                // evidence, or a client clearing faults on a timer would stop them ever latching.
                 self.faults &= !LATCHING;
-                self.heater_window = None;
-                self.runaway_since = None;
                 self.no_water_since = None;
             }
         }
@@ -294,7 +294,8 @@ impl Engine {
 
     fn brew_setpoint(&self) -> f32 {
         // Clamped as well as validated: profiles also arrive from flash and imports.
-        self.profile.temperature_c.unwrap_or(self.cfg.brew_temp_c).clamp(60.0, 105.0)
+        let t = self.profile.temperature_c.unwrap_or(self.cfg.brew_temp_c);
+        if t.is_finite() { t.clamp(60.0, 105.0) } else { self.cfg.brew_temp_c }
     }
 
     fn setpoint(&self) -> f32 {
@@ -389,6 +390,16 @@ impl Engine {
         self.control(p, dt);
 
         // Faults override everything: heater, pump and valve off.
+        // A non-finite duty (a model estimate gone bad) is no heat and no pumping, never NaN:
+        // NaN would poison the duty average and energy totals and disable the checks below.
+        if !self.heater_duty.is_finite() {
+            self.heater_duty = 0.0;
+        }
+        if !self.pump_duty.is_finite() {
+            self.pump_duty = 0.0;
+        }
+        self.heater_duty = self.heater_duty.clamp(0.0, 1.0);
+        self.pump_duty = self.pump_duty.clamp(0.0, 1.0);
         if self.faults != 0 {
             self.heater_duty = 0.0;
             self.pump_duty = 0.0;
@@ -471,8 +482,9 @@ impl Engine {
     /// `probe_lag_s` x the filtered rate). The probe trails the body by about lag x rate while the
     /// temperature moves. Safety checks use the plain reading.
     fn body_temp(&self) -> f32 {
+        // clamped: at most 5 C of lead, so a burst of noise can't swing the control much
         let lead = self.cfg.ntc.probe_lag_s * self.temp_rate.get();
-        self.temp.get() + if lead.is_finite() { lead } else { 0.0 }
+        self.temp.get() + if lead.is_finite() { lead.clamp(-5.0, 5.0) } else { 0.0 }
     }
 
     fn temp_valid(&self) -> bool {
@@ -944,7 +956,7 @@ impl Engine {
             if flowing {
                 gains.kp *= self.cfg.flow_kp_scale;
             }
-            self.heater_duty = self.temp_pid.update(&gains, sp, self.body_temp(), ff, dt);
+            self.heater_duty = self.temp_pid.update_split(&gains, sp, self.body_temp(), self.temp.get(), ff, dt);
         } else {
             self.heater_duty = 0.0;
             self.temp_pid.reset();
@@ -963,6 +975,9 @@ impl Engine {
             let d = (h * (tb - *tw) - q_in * CP_WATER * (*tw - self.cfg.inlet_temp_c))
                 / self.cfg.water_heat_capacity_j_k.max(1.0);
             *tw += d * dt;
+            if !tw.is_finite() {
+                self.water_est = None;   // an unstable estimate restarts from the wall reading
+            }
         } else if !self.temp_valid() {
             self.water_est = None;
         }
@@ -985,7 +1000,8 @@ impl Engine {
             };
             let q = c.group_h_boiler_w_k * (wall - g) + flow_w_k * (water - g)
                 - c.group_loss_w_k * (g - c.inlet_temp_c);
-            self.group_est = Some(g + q / c.group_heat_capacity_j_k.max(1.0) * dt);
+            let ng = g + q / c.group_heat_capacity_j_k.max(1.0) * dt;
+            self.group_est = if ng.is_finite() { Some(ng) } else { None };
         }
 
         // ---- pump ----

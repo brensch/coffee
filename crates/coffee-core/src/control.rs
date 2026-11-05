@@ -51,12 +51,19 @@ impl Pid {
     }
 
     pub fn update(&mut self, g: &PidGains, setpoint: f32, meas: f32, ff: f32, dt: f32) -> f32 {
+        self.update_split(g, setpoint, meas, meas, ff, dt)
+    }
+
+    /// As `update`, with the derivative taken on a separate measurement `d_meas` (e.g. the plain
+    /// probe reading while P and I act on a lag-compensated one, so the D term doesn't
+    /// differentiate the compensation's own derivative and amplify noise).
+    pub fn update_split(&mut self, g: &PidGains, setpoint: f32, meas: f32, d_meas: f32, ff: f32, dt: f32) -> f32 {
         let err = setpoint - meas;
         let raw_d = match self.prev_meas {
-            Some(p) if dt > 0.0 => -(meas - p) / dt,
+            Some(p) if dt > 0.0 => -(d_meas - p) / dt,
             _ => 0.0,
         };
-        self.prev_meas = Some(meas);
+        self.prev_meas = Some(d_meas);
         let d = self.d_filt.update(raw_d, dt, g.d_tau_s);
         let p = g.kp * err;
         let candidate_i = self.integral + g.ki * err * dt;

@@ -230,7 +230,7 @@ u_mcu["IO1"] += ntc_adc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="TE M3234-000002-250PG, 250 psi, 5 V, 0.5-4.5 V ratiometric. 1=+5V 2=SIG 3=GND")
+j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND")
 j_p[1, 2, 3] += v5, p_sig, gnd
 # 147 kOhm total: the TE M3200 datasheet asks for a load > 100 kOhm on its voltage output. Gain 100/147:
 # 4.5 V -> 3.06 V. (300k would leave too little charge in the reservoir for the ADC's sampling cap.)
