@@ -36,7 +36,7 @@ THT = ("TestPoint", "MountingHole")   # bare pads/holes: not assembled. Everythi
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "HRO TYPE-C-31-M-12": "TYPE-C-31-M-12",
-    "JST SM03B-GHS-TB": "SM03B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
+    "JST SM03B-GHS-TB": "SM03B-GHS-TB", "JST SM06B-GHS-TB": "SM06B-GHS-TB", "JST SM07B-GHS-TB": "SM07B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
     "AO3400A": "AO3400A", "AO3401A": "AO3401A", "1N4148W": "1N4148W", "B5819W SL": "B5819W SL",
     "Samsung CL21A226MAQNNNE": "CL21A226MAQNNNE",
 }

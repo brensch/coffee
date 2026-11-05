@@ -32,8 +32,13 @@ price** and pick the variant named.
 | 12 | **Plumbing**: GaggiMate kit, or its AliExpress parts for the Classic Pro (PTFE tube 4/6 mm, PL06-01, PLF06-02, G1/8 tee, 1/4" gasket, PTFE tape) | 1 set | kit <https://shop.gaggimate.eu/collections/parts/products/gaggimate-plumbing-kit> (€26.84) or the parts list on the Lego page | ~$10–30 |
 | 13 | **Antenna**: Taoglas **CAB.A02** pigtail + **GW.15.2113** 2 dBi | 1 + 1 | Sager <https://www.sager.com/product/caba02-taoglas/7168042>, <https://www.sager.com/product/gw152113-taoglas/7168348> | $2.97 + $4.76 |
 | 14 | Heat-shrink assortment, electrical tape, cable ties | | any | |
+| 15 | **Front-panel LEDs**: red 5 mm LEDs, to replace the three 120 V neon lamps (the board has the 330 Ω resistors) | 3 (+ spares) | any; Gaggiuino's printable "Neon Lamp Clip" holds one in the stock lamp position | ~$1 |
+| 16 | **JST GH leads for the new connectors**: 7-pin (front panel) and 6-pin (scale), single-ended | 1 each | same AliExpress GH store as #9 (variants 6P/7P), or genuine JST GHR-07V-S / GHR-06V-S housings with AGHGH28K305 jumpers | ~$3 |
+| 17 | **Scale load cells**: 750 g mini bar cells, as in Gaggiuino's scale | 2 (buy 3–4: quality varies) | Gaggiuino's parts list (AliExpress); datasheet-backed alternative: HT Sensor TAL220F-1kg | ~$6 |
+| 18 | **Scale amplifier**: dual-HX711 board (Gaggiuino's "Vas" board, separate 5 V analog / 3.3 V logic), or 2 generic HX711 modules powered from 3.3 V only | 1 board or 2 modules | PCBWay (Vas board) or AliExpress modules | ~$3–10 |
+| 19 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters, plus magnets per the model | 1 set | Printables model 285370 (print it yourself) | filament |
 
-**Total ≈ $95–115** plus shipping, depending on the AliExpress prices and the plumbing route.
+**Total ≈ $110–135** plus shipping, depending on the AliExpress prices and the plumbing route (≈ $15–20 of it is the scale and front panel, #15–19).
 
 ## Notes per part
 
@@ -57,6 +62,9 @@ price** and pick the variant named.
   this probe. It replaces GaggiMate's K-type thermocouple, which needs a MAX31855 board we don't use.
 - **11 Transducer.** GaggiMate's; no datasheet, so INSTALL §3 identifies its wires on the bench.
 - **13 Antenna.** Mount the SMA bulkhead in a plastic part, not through the steel case.
+
+- **15 Front panel.** The stock lamps are 120 V neons wired across the thermostats; with the board in control they're replaced by LEDs the firmware drives (GaggiMate's owner suggests the same). WIRING.md step 9.
+- **17–19 Scale.** Gaggiuino's built-in scale: the cells sit in a printed base on the chassis floor, the stock tray (side fins trimmed) clips onto it with magnets and still lifts out. Only slow digital lines run to the board (J10). Expect ~0.1 g at rest, ±0.2–0.5 g while the pump runs. Calibrate per CALIBRATION.md.
 
 ## Dropped since the previous list (records kept in docs/evidence)
 

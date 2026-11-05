@@ -1,6 +1,6 @@
-# Controller board v18: low voltage only
+# Controller board v19: low voltage only
 
-A 43 × 27 mm two-layer board with every part on the top side, assembled by JLCPCB. It carries
+A 45.5 × 32 mm two-layer board with every part on the top side, assembled by JLCPCB. It carries
 **no mains**:
 - **The board's job:** read the sensors and drive three 5 V outputs.
 - **Mains switching:** certified modules mounted beside it in the machine do that:
@@ -74,7 +74,8 @@ Notes per part:
 |---|---|---|
 | Thermistor, J5 → R27 1k → GPIO1 (ADC1) | R15 4.7k to 3V3, C8 100 nF, R27 1k series | **Molex 218537-3919** 50 kΩ ±1 % ring-tab probe (−40…250 °C, 1500 VAC body isolation, PTFE leads; Molex sales drawing) under an M4 screw at the brew-thermostat seat. The firmware uses a Steinhart-Hart fit to Molex's R-T table (within ~1 °C of it from 25 to 200 °C; the table's own spread is ±3.6 % at 95 °C, ~±0.9 °C) and compensates the probe's lag for control (`ntc.probe_lag_s`, 15 s per Molex). 4.7k sits near the probe's 3.9 kΩ at 93 °C: 1.50 V there, 26 mV/°C. Self-heating 0.57 mW, ~0.6 °C in still air (1 mW/°C), less on the boiler; calibrated out. R27 carries no current in use (no error) and limits a 5 V plug pushed into J5 by mistake to ~1.2 mA into the pin. **Open probe:** the node reads the 3.3 V rail; the firmware calls ≥ 3200 mV a fault (heater off), 100 mV under the rail because the ADC is only specified to ±40 mV there. That also faults a boiler colder than ~2 °C. An open probe that reads under the threshold anyway, or a probe stuck at any value, is caught by HEATER_INEFFECTIVE: an energy balance of the heat delivered against the rise the reading shows (≈ 2 minutes) |
 | Pressure, J6 → GPIO0 (ADC1) | R16 47k / R17 100k divider, C9 22 nF | Any 0.5–4.5 V ratiometric 5 V transducer: GaggiMate's 0–1.6 MPa sensor by choice (BUY.md §10b), or TE's M3200 (whose datasheet asks for a load > 100 kΩ, hence the 147 kΩ divider). 4.5 V → 3.06 V; −3 dB at ~226 Hz keeps the pump's 60 Hz pulses. On USB power +5 V is ~4.5–4.6 V, so pressure readings there are only indicative |
-| Switches, J7 → GPIO6/7 | R20/R21 4.7k pull-ups, R18/R19 1k series | the stock brew/steam switches as dry contacts. 0.7 mA wetting current; a 5 V plug in the wrong socket pushes ~1.7 mA into a clamp diode |
+| Front panel, J7 (7-pin) → GPIO14/6/7 in, GPIO21/22/16 out | R28/R20/R21 4.7k pull-ups, R29/R18/R19 1k series; R30–R32 330 Ω LED resistors | the stock brew/steam switches as dry contacts. 0.7 mA wetting current; a 5 V plug in the wrong socket pushes ~1.7 mA into a clamp diode |
+| Scale, J10 (6-pin) → GPIO17 (SCK) out, GPIO4/5 (DOUT) in | R33–R35 100 Ω series, R36 10k SCK pull-down | dual HX711 next to the load cells (5 V analog, 3V3 logic); only slow digital lines on the lead |
 | Rail sense → GPIO2/3 | R22/R23 (3V3/2), R24/R25 (5V/3), C10, C11 | the ADC measures absolute volts; measuring both rails lets the firmware divide them out (ratiometric) |
 
 **1 % resistors instead of 0.1 %.** Every resistor is a JLC basic part, which saves three extended-part fees. The cost in accuracy, before the calibration that removes it:
@@ -90,20 +91,22 @@ Notes per part:
 | 3 | V5_SNS | | 20 | HEATER_CMD |
 | 6 / 7 | SW_BREW / SW_STEAM | | 23 | STATUS LED |
 | 8 | pull-up (strap) | | 9 | BOOT pad (strap) |
+| 14 | SW_POWER (front panel) | | 21 / 22 / 16 (TXD0) | LED power / coffee / steam |
+| 17 (RXD0) | SCALE_SCK | | 4 / 5 | SCALE_DOUT1 / DOUT2 (straps only SDIO edges) |
 
 The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a strapping pin (GPIO 4, 5, 8, 9, 15). `controller.py` checks this map against the firmware on every run.
 
 ## Layout
 
-**Board:** 43 × 27 mm, 2 layers, 1 oz, every part on the top side. (v17 was 37.3 mm wide; the SOT-223 regulator needed the room, with C4 kept at the module's 3V3 pin.)
+**Board:** 45.5 × 32 mm, 2 layers, 1 oz, every part on the top side. v19 added the front-panel (7-pin) and scale (6-pin) connectors and arranges the connectors symmetrically.
 
-**Connectors** sit on the edge nearest the pins they serve:
-- top: 5 V in, and the regulator between it and the module;
-- right: heater and pump;
-- bottom: thermistor, USB-C, valve;
-- left: pressure and switches.
+**Connectors** sit symmetrically, three per side edge:
+- left: 5 V in, pressure, thermistor;
+- right: heater, pump, valve (all the outputs);
+- bottom: front panel (7-pin) and USB-C;
+- top: scale (6-pin), beside the module.
 
-All seven are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave along the board edges.
+All nine are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave along the board edges.
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 

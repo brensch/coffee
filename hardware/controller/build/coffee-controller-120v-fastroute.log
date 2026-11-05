@@ -1,1 +1,89 @@
-reused session /home/brensch/.claude/jobs/bbbb1070/tmp/lv/p23/coffee-controller-120v.ses
+    0.000 INFO  fastroute 0.1.14
+    0.000 INFO  live viewer: http://127.0.0.1:43731
+    0.002 INFO  parsed '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.dsn' in 1.4 ms: 2 layers, 58 components, 46 nets, 0 wires
+    0.008 INFO  net class 'PWR': no neck-down
+    0.008 INFO  net class 'FINE': no neck-down
+    0.009 WARN  Board has 16 pre-existing clearance violation(s) in the loaded design (16 unfixable).
+    0.009 INFO  built board in 7.1 ms: 907 items (229 pins, 4 vias, 0 traces)
+    0.009 INFO  threads: autorouting passes run on router.autorouter.max_threads threads (1 = sequential); the optimizer uses router.optimizer.max_threads
+    0.009 INFO  optimizer mode: Parallel { threads: 15 }, board time limits: WallClock, stage wall clock limits: enabled
+    0.010 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    0.359 INFO  Fanout pass #1 completed in 0.35 seconds with 174 SMD pins fanouted, 5 not routed, 0 insert errors, +63 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    0.528 INFO  Fanout pass #2 completed in 0.17 seconds with 42 SMD pins fanouted, 4 not routed, 0 insert errors, +17 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    0.591 INFO  Fanout pass #3 completed in 0.06 seconds with 14 SMD pins fanouted, 6 not routed, 0 insert errors, +2 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    0.659 INFO  Fanout pass #4 completed in 0.07 seconds with 14 SMD pins fanouted, 5 not routed, 0 insert errors, +3 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    0.696 INFO  Fanout pass #5 completed in 0.04 seconds with 8 SMD pins fanouted, 5 not routed, 0 insert errors, +2 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    0.716 INFO  Fanout pass #6 completed in 0.02 seconds with 4 SMD pins fanouted, 5 not routed, 0 insert errors, +2 extra vias (0 SMD pins still to check in pass, ripup costs=600).
+    0.729 INFO  Fanout pass #7 completed in 0.01 seconds with 2 SMD pins fanouted, 5 not routed, 0 insert errors, +1 extra via (0 SMD pins still to check in pass, ripup costs=700).
+    0.736 INFO  Fanout pass #8 completed in 0.01 seconds with 0 SMD pins fanouted, 5 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=800).
+    0.736 INFO  Fanout stage completed: 8 passes, completed in 0.73 seconds.
+    0.740 INFO  checkpoint: best board so far (57 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    0.741 INFO  Auto-routing stage started with baseline score 513.70 for 57 unrouted items.
+    1.225 INFO  Auto-routing pass #1 was completed in 0.48 seconds with score 802.45 (23 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 55, failed 8, ripped 23).
+    1.226 INFO  checkpoint: best board so far (23 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    2.032 INFO  Auto-routing pass #2 was completed in 0.81 seconds with score 819.43 (21 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 19, failed 9, ripped 24).
+    2.033 INFO  checkpoint: best board so far (21 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    2.911 INFO  Auto-routing pass #3 was completed in 0.88 seconds with score 878.88 (14 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 19, failed 5, ripped 22).
+    2.911 INFO  checkpoint: best board so far (14 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    4.022 INFO  Auto-routing pass #4 was completed in 1.11 seconds with score 912.85 (10 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 13, failed 4, ripped 15).
+    4.023 INFO  checkpoint: best board so far (10 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    4.356 INFO  Auto-routing pass #5 was completed in 0.33 seconds with score 938.33 (7 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 8, failed 4, ripped 8).
+    4.357 INFO  checkpoint: best board so far (7 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    4.714 INFO  Auto-routing pass #6 was completed in 0.36 seconds with score 946.82 (6 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 6, failed 2, ripped 6).
+    4.715 INFO  checkpoint: best board so far (6 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    5.076 INFO  Auto-routing pass #7 was completed in 0.36 seconds with score 963.81 (4 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 5, failed 2, ripped 11).
+    5.077 INFO  checkpoint: best board so far (4 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    5.297 INFO  Auto-routing pass #8 was completed in 0.22 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 4, failed 1, ripped 5).
+    5.297 INFO  checkpoint: best board so far (3 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    5.651 INFO  Auto-routing pass #9 was completed in 0.35 seconds with score 963.81 (4 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 3, failed 0, ripped 4).
+    5.685 INFO  Auto-routing pass #10 was completed in 0.03 seconds with score 479.73 (61 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 2, ripped 1).
+    5.695 INFO  Auto-routing pass #10 left 61 items unrouted (best so far 3): continuing from the best board (3 unrouted); failing connections no longer rip their whole net.
+    6.089 INFO  Auto-routing pass #11 was completed in 0.39 seconds with score 963.81 (4 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 3, failed 1, ripped 7).
+    6.142 INFO  Auto-routing pass #12 was completed in 0.05 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 3, failed 1, ripped 3).
+    6.383 INFO  Auto-routing pass #13 was completed in 0.24 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 1, ripped 2).
+    6.435 INFO  Auto-routing pass #14 was completed in 0.05 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 1, ripped 2).
+    6.503 INFO  Auto-routing pass #15 was completed in 0.07 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 1, ripped 2).
+    6.530 INFO  Auto-routing pass #16 was completed in 0.03 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 1, ripped 2).
+    6.749 INFO  Auto-routing pass #17 was completed in 0.22 seconds with score 972.30 (3 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 3, failed 0, ripped 3).
+    6.862 INFO  Auto-routing pass #18 was completed in 0.11 seconds with score 980.79 (2 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 3, failed 0, ripped 3).
+    6.863 INFO  checkpoint: best board so far (2 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    7.319 INFO  Auto-routing pass #19 was completed in 0.46 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 2, failed 0, ripped 1).
+    7.320 INFO  checkpoint: best board so far (1 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    7.385 INFO  Auto-routing pass #20 was completed in 0.06 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+    7.601 INFO  Auto-routing pass #21 was completed in 0.22 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+    7.766 INFO  Auto-routing pass #22 was completed in 0.17 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+    7.817 INFO  Auto-routing pass #23 was completed in 0.05 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+    8.032 INFO  Auto-routing pass #24 was completed in 0.22 seconds with score 989.28 (1 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 3).
+    8.140 INFO  Auto-routing pass #25 was completed in 0.11 seconds with score 997.78 (0 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
+    8.141 INFO  checkpoint: best board so far (0 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    8.141 INFO  Auto-routing pass #26 was completed in 0.00 seconds with score 997.78 (0 unrouted and 16 violations, 16 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
+    8.151 INFO  Auto-routing stage completed: started with 144 unrouted nets, completed in 7.41 seconds, final score: 997.78 (0 unrouted and 16 violations, 16 of them pre-existing between fixed items).
+    8.163 INFO  Optimization stage started. Baseline router score: 997.78, optimizer score: 100.09, incomplete connections: 0, clearance violations: 16.
+    8.163 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
+    8.361 INFO  Stopping optimization pass #1 early after 12 consecutive items could not be improved.
+    8.600 INFO  Optimizer pass #1 was completed in 0.44 seconds (14 of 214 candidates) with the score of 100.40 (0 unrouted and 16 violations, 16 of them pre-existing between fixed items).
+    8.601 INFO  checkpoint: best board so far (0 unrouted, 16 violations) written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses'
+    8.601 INFO  Optimizer pass #1: optimizer score 100.09 -> 100.40 (IMPROVED, 0.3147%), router score: 997.78, incomplete connections: 0, clearance violations: 16.
+    8.601 INFO  Stopping optimizer because the improvement in this pass (0.3147%) is below the threshold (2.50%).
+    8.602 INFO  Optimization stage completed: Baseline router score: 997.78, baseline optimizer score: 100.09, final router score: 997.78, final optimizer score: 100.40, completed in 0.44 seconds.
+    8.604 INFO  routing finished in 8.59 s
+    8.606 WARN  16 clearance violation(s) in the result:
+    8.606 WARN    F.Cu at (28.869, 8.669) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.869, 6.694) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.869, 8.106) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.869, 6.131) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.306, 8.669) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.894, 8.669) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.894, 6.694) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.306, 6.694) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.306, 8.106) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.894, 8.106) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.894, 6.131) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (28.306, 6.131) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.331, 8.669) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.331, 6.694) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.331, 8.106) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.606 WARN    F.Cu at (26.331, 6.131) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+    8.607 INFO  saved '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v.ses' (60844 bytes)
+    8.614 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
+    8.614 INFO  report written to '/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p27/coffee-controller-120v-fastroute.json'

@@ -93,3 +93,16 @@ then 6 (puck). Re-run `coffee-emu test` after each fit. Then copy the fitted
   "?" on the Machine page.
 - **Grid phase:** there is no zero-cross detector. The zero-cross SSRs switch at
   crossings on their own, so there is nothing to tune.
+
+### Scale (built-in drip-tray scale)
+
+Two load cells, each with its own HX711 channel; weight = Σ (raw − `scale.zero[i]`) ×
+`scale.mg_per_count[i]` (engine config). The engine tares at the start of every shot, so the zero
+only matters for the displayed weight.
+1. Empty tray in place: note both raw readings (`coffee status` shows them) and store them as
+   `scale.zero`.
+2. Put a known weight (e.g. 200 g) over the **left** cell only, read raw 1; then over the right
+   cell, raw 2. `mg_per_count[i] = 200000 / (raw_i − zero_i)`; a negative result just means that
+   cell is mounted the other way round.
+3. Check with the weight in the middle: the reading should be the weight ± 0.5 g.
+

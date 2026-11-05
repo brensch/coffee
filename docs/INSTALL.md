@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v18 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v19 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,13 +32,13 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v18-gerbers.zip`;
-   - `coffee-v18-bom.csv`;
-   - `coffee-v18-cpl.csv`.
+   - `coffee-v19-gerbers.zip`;
+   - `coffee-v19-bom.csv`;
+   - `coffee-v19-cpl.csv`.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 43 × 27 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - 45.5 × 32 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
    - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **left and right short edges only**, and add the remark "J4 USB-C overhangs the bottom long edge by 0.46 mm; no rail or V-cut on the bottom edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
@@ -77,7 +77,9 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
      with the +5 V wire** for this first test (it limits the current to ~20 mA if the legend is
      wrong). The output should read ~0.5 V at atmospheric pressure, and the UI about 0 bar. If it
      doesn't, unplug and swap only the two wires you're unsure of. Then remove the resistor;
-   - brew and steam inputs toggle when J7 pin 1 or 2 is shorted to pin 3;
+   - power, brew and steam inputs toggle when J7 pin 1, 2 or 3 is shorted to pin 4. **With J7.1 open the engine sits in Standby** (heater, pump and valve off): short J7.1–J7.4 (or wire the power rocker) to test the outputs;
+   - the three panel LEDs on J7.5–7.7 follow the UI's front-panel card;
+   - with the scale on J10, the UI's cup weight changes when you press on the tray;
    - **calibrate the thermistor now,** before it goes on the boiler: both points of CALIBRATION.md "NTC" (room temperature, then the ring tab in a pot of boiling water). On USB the heater can't run, and nothing is live;
    - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
 4. **Outputs:** put a load across pin 1 and pin 2 of J2, J3 and J8: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output's pin 2 floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 1 to pin 2:

@@ -57,6 +57,23 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
    - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
    - **UNSURE:** whether S.4 is part of the steam-thermostat path on a US machine. If parking it breaks the heater circuit, the heater simply won't heat (fail-safe), and the "heater circuit" check below catches it.
 
+8. **Power switch (two-pole): keep one pole switching the loads, turn the other into an input.**
+   The controller stays powered all the time; the power rocker tells it "on / standby", and still
+   cuts mains to the heater, pump and valve when off.
+   - Machine unplugged. With the meter on Ω, find which pole carries **live**: the plug's narrow
+     blade has continuity to one of the switch's input terminals. That pole keeps its wires: its
+     output is C.4 (the switched live used below).
+   - The other pole carries **neutral**. Join its input and output wires together (crimp both into
+     a piggyback, or splice and heat-shrink): neutral no longer goes through the switch, which is
+     normal practice. Its two switch terminals are now free: they become the dry contact for **J7
+     pins 1 and 4** (power and GND).
+   - The **5 V supply** takes **unswitched** live (the live pole's *input* wire, via a piggyback on
+     that terminal) and neutral (the joined neutral), so the board stays on with the rocker off.
+   - **UNSURE:** terminal numbering on your switch. Go by the meter, not by position. If you can't
+     tell the poles apart with certainty, stop.
+
+9. **Front-panel lamps:** unplug the three 120 V lamps (power, coffee temp, steam temp) from the harness, insulate and tie back their freed wires, and fit the red LEDs in the lamp positions (BUY.md #15).
+
 ## Terminal-by-terminal table
 
 ### Mains side
@@ -67,9 +84,9 @@ quick-connects onto the machine's tabs, **forks** on the heater SSR's screw term
 
 | # | From | To | Ends | Notes |
 |---|---|---|---|---|
-| M1 | C.4 brown (female receptacle, ex brew switch) | **L splice** | male spade ← C.4 / three-way splice: twist the pigtail with branches M2, M6, M8, solder, heat-shrink | Switched L for everything we add |
-| M2 | L splice | 5 V supply **L / AC in** | — / screw terminal, or solder + heat-shrink on a pin-type module | |
-| M4 | S.5 white (female receptacle, ex steam switch) | 5 V supply **N / AC in** | male spade ← S.5 / as M2 | Neutral |
+| M1 | C.4 brown (female receptacle, ex brew switch) | **L splice** | male spade ← C.4 / splice: twist the pigtail with branches M6 and M8, solder, heat-shrink | Switched L (through the power rocker's live pole) for the pump and valve SSRs |
+| M2 | power switch, live pole **input** (unswitched live) | 5 V supply **L / AC in** | piggyback on that terminal / screw terminal, or solder + heat-shrink on a pin-type module | Unswitched: the controller stays on with the rocker off |
+| M4 | S.5 white (female receptacle, ex steam switch) | 5 V supply **N / AC in** | male spade ← S.5 / as M2 | Neutral (unswitched once the power switch's neutral pole is joined through, step 8) |
 | M6 | L splice | **pump** SSR board, load terminal 1 | — / screw terminal | |
 | M7 | pump SSR board, load terminal 2 | pump live tab (where grey PMP.B was) | screw terminal / female spade | |
 | M8 | L splice | **valve** SSR board, load terminal 1 | — / screw terminal | |
@@ -110,9 +127,19 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 | J8.1 | +5 V | **valve** SSR board **VCC** *and* **IN** | as J3 |
 | J8.2 | OUT | valve SSR board **GND** | |
 | J8.3 | GND | — | Unused |
-| J7.1 | BREW | brew switch, terminal **C.1** | Female spade on an 18 AWG pigtail |
-| J7.2 | STEAM | steam switch, terminal **S.4** | |
-| J7.3 | GND | brew switch **C.2** *and* steam switch **S.5** | Splice the one GND lead into two short tails (solder + heat-shrink). C.1/C.2 and S.4/S.5 are the pole positions GaggiMate uses for its LV button wires; **UNSURE** for your switch: check with a meter that each pair closes when its switch is pressed |
+| J7.1 | POWER | power switch, the freed (ex-neutral) pole: one terminal | Dry contact, step 8. Female spade on an 18 AWG pigtail |
+| J7.2 | BREW | brew switch, terminal **C.1** | Female spade on an 18 AWG pigtail |
+| J7.3 | STEAM | steam switch, terminal **S.4** | |
+| J7.4 | GND | power switch freed pole's other terminal, brew switch **C.2**, steam switch **S.5** | One GND lead spliced into three short tails (solder + heat-shrink). **UNSURE** for your switches: check each pair closes when its rocker is on |
+| J7.5 | LED power | power lamp position: LED **anode** | The three 120 V neon lamps are removed and replaced by red LEDs (BUY.md #15). LED cathodes all go to J7.4 GND. The board has the 330 Ω resistors |
+| J7.6 | LED coffee | coffee-temp lamp position: LED anode | |
+| J7.7 | LED steam | steam-temp lamp position: LED anode | |
+| J10.1 | +5 V | scale HX711 board **VCC / AVDD** | Dual-HX711 board with separate supplies: 5 V analog. For generic one-supply HX711 modules leave J10.1 unconnected and use J10.2 for both |
+| J10.2 | +3.3 V | HX711 **VDD / logic** | DOUT then swings 0–3.3 V, safe for the ESP32-C6 |
+| J10.3 | GND | HX711 GND | |
+| J10.4 | SCK | both HX711s' SCK (shared) | |
+| J10.5 | DOUT1 | HX711 #1 DOUT (left load cell) | |
+| J10.6 | DOUT2 | HX711 #2 DOUT (right load cell) | Lead runs behind the water tank, away from the mains wiring |
 | J5.1 | NTC | Molex 218537-3919 lead (PTFE, 28 AWG) | No polarity. Solder + heat-shrink, with the joint well away from the boiler (the probe's 300 mm leads reach). The firmware defaults are this probe's (Steinhart-Hart from Molex's table, BUY.md #10) |
 | J5.2 | GND | thermistor lead | |
 | J5.3 | — | — | Unused |
