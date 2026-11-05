@@ -34,6 +34,10 @@ static KV_REF: CsMutex<RefCell<Option<&'static KvCell>>> = CsMutex::new(RefCell:
 
 /// A shot is running: flash writes wait.
 pub static BUSY: AtomicBool = AtomicBool::new(false);
+/// OTA physical-presence gate: set by the control loop only while the power rocker is off and the
+/// steam rocker is on (a combination never used otherwise). Nobody on the network can flip a rocker,
+/// so a LAN client can't install firmware that drops the standby gating (docs/SWAP-SAFETY.md).
+pub static OTA_ARMED: AtomicBool = AtomicBool::new(false);
 /// Wi-Fi credentials changed (console `wifi set` / `wifi clear`).
 pub static WIFI_CHANGED: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 

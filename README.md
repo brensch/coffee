@@ -42,7 +42,7 @@ Firmware: ESP32-C6 (stable Rust), flashed and provisioned with the `coffee` CLI 
 coffee flash                                  # build + flash over USB (needs espflash)
 coffee wifi set --ssid HomeNet --password ... # store Wi-Fi, wait for an IP
 open http://coffee.local/                     # the same UI and API, served by the board
-coffee ota --host coffee.local                # later updates over Wi-Fi
+coffee ota --host coffee.local                # later updates over Wi-Fi: power rocker off, steam rocker on
 coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```

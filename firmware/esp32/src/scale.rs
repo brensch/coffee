@@ -27,6 +27,18 @@ impl<'a> Scale<'a> {
         Self { sck, dout: [dout1, dout2], delay: Delay::new(), raw: [0, 0], stale: STALE_CYCLES + 1 }
     }
 
+    /// Standby: SCK held high, which powers the HX711s down.
+    pub fn sleep(&mut self) {
+        self.sck.set_high();
+    }
+
+    /// Leave standby: SCK low powers the HX711s back up (first conversion after ~400 ms).
+    pub fn wake(&mut self) {
+        if self.sck.is_set_high() {
+            self.sck.set_low();
+        }
+    }
+
     /// Call once per mains cycle. Reads both chips when both have a conversion ready.
     pub fn poll(&mut self) {
         if self.dout[0].is_high() || self.dout[1].is_high() {

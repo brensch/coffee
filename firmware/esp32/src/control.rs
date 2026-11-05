@@ -24,7 +24,7 @@
 //!   resets the chip, and every pin drops to off.
 
 use crate::link::{self, BUDGET_US, LINK, MAX_PER_CYCLE, TELEMETRY};
-use crate::store::{BUSY, NodeT};
+use crate::store::{BUSY, NodeT, OTA_ARMED};
 use crate::usb;
 use coffee_api::ServerMsg;
 use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
@@ -196,11 +196,15 @@ pub async fn run(p: Pins, mut node: NodeT) {
         if !power.update(power_sw.is_low()) {
             inputs |= input::STANDBY;
         }
-        // In standby SCK stays low: with the front lead out of J7 (the only way the rocker reads off
-        // without being off) a mis-plugged lead may face SCK, and a static low is harmless where a
-        // clock might not be (docs/SWAP-SAFETY.md). The last reading is kept, not counted stale.
+        OTA_ARMED.store(inputs & input::STANDBY != 0 && inputs & input::STEAM != 0, Ordering::Relaxed);
+        // In standby SCK is held high (the HX711s power down after 60 us): with the front lead out of
+        // J7 a mis-plugged lead may face SCK, and a static high is the state that stays harmless even
+        // with a bare LED there (docs/SWAP-SAFETY.md). The last reading is kept, not counted stale.
         if inputs & input::STANDBY == 0 {
+            scale.wake();
             scale.poll();
+        } else {
+            scale.sleep();
         }
         let (scale_mg, scale_ok) = scale.read_mg(&node.engine.cfg.scale);
         if scale_ok {

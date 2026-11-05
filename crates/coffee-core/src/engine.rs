@@ -241,7 +241,12 @@ impl Engine {
 
     pub fn command(&mut self, cmd: Command) -> Result<(), &'static str> {
         match cmd {
-            Command::StartBrew => self.pending_start = true,
+            Command::StartBrew => {
+                if self.state == EngineState::Standby {
+                    return Err("the machine is off: switch the power rocker on");
+                }
+                self.pending_start = true;
+            }
             Command::Flush(secs) => {
                 if !matches!(self.state, EngineState::Heating | EngineState::Ready) {
                     return Err("can only flush while idle");
@@ -383,6 +388,9 @@ impl Engine {
         // dropped; switching back on resumes heating.
         let standby = inputs & input::STANDBY != 0;
         if standby {
+            // A start requested while off is dropped, never latched: it must not fire the moment the
+            // rocker goes on (docs/SWAP-SAFETY.md review).
+            self.pending_start = false;
             if self.state != EngineState::Standby {
                 self.brew = None;
                 self.state = EngineState::Standby;
@@ -1285,6 +1293,17 @@ mod tests {
                     assert_eq!(a.lamps, [false; 3], "lamp on in standby");
                 }
             }
+        }
+        // a (forced) start sent while off is not remembered for when the rocker goes on
+        assert!(e.command(Command::StartBrew).is_err(), "start accepted while off");
+        for _ in 0..10 {
+            e.tick(&frame(&cfg, k, cfg.brew_temp_c, 0.0, input::STANDBY));
+            k += 1;
+        }
+        for _ in 0..(cfg.mains_hz as u32 * 2) {
+            let a = e.tick(&frame(&cfg, k, cfg.brew_temp_c, 0.0, 0));
+            k += 1;
+            assert!(!a.pump && !a.valve && a.status.state != EngineState::Brewing, "latched start fired");
         }
     }
 

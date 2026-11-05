@@ -172,6 +172,6 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 ## First power-on
 
 Follow INSTALL.md §6:
-1. The board boots from the 5 V supply. The firmware heats from boot: the UI shows the heater on and the power meter reads ~1.37 kW.
+1. The board boots from the 5 V supply. With the power rocker on, the firmware heats from boot: the UI shows the heater on and the power meter reads ~1.37 kW.
 2. A flush (UI or `coffee flush`) runs the pump and opens the valve together: you hear the pump and see water at the group. There is no heater-only or pump-only command.
 3. Listen for pump hum while the pump is "off". The G3MB-202P leaks at most about 1 mA, far below what moves the pump; a hum means something is bypassing the SSR.

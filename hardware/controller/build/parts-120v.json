@@ -858,7 +858,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "front-panel LED (pwr) current limit, ~4 mA"
+   "notes": "front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA"
   },
   "R31": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -875,7 +875,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "front-panel LED (coffee) current limit, ~4 mA"
+   "notes": "front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA"
   },
   "R32": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -892,7 +892,7 @@
    "populate": "Y",
    "desc": "Resistor",
    "mpn": "",
-   "notes": "front-panel LED (steam) current limit, ~4 mA"
+   "notes": "front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA"
   },
   "R37": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

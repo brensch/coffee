@@ -13,8 +13,8 @@ one key, so any lead fits any socket of its size:
 | 7-pin | **J10** scale | the dual HX711 board in the tray base (3.3 V only) | – / – / DOUT1 / SCK / GND / DOUT2 / 3V3 |
 
 **Every lead in every same-size socket is harmless.** No mains load switches on. No supply is shorted. No
-GPIO is overdriven or shorted. No chip is powered through its protection diodes. The firmware can't be
-fooled into leaving standby. You find out you swapped them because the device doesn't work, not because
+GPIO is overdriven or shorted. No chip gets more than a pull-up's ~0.6 mA through its protection
+diodes. The firmware can't be fooled into leaving standby. You find out you swapped them because the device doesn't work, not because
 something breaks. This covers multi-lead swaps too (below).
 
 `hardware/controller/swap_check.py` checks this from the real netlist (`build/parts-120v.json`).
@@ -22,7 +22,7 @@ something breaks. This covers multi-lead swaps too (below).
 
 ## History
 
-v29 claimed this with a simpler checker. An independent review found 3 of the 12 swaps hazardous:
+v29 claimed this with a simpler checker. An independent review found these hazards:
 - **Front lead in J2:** power + brew rockers on joined +5V to the heater output through the lead's common.
 - **Front lead in J10:** with a rocker on, LEDs sat straight across +5V and 3V3.
 - **Scale lead in J7:** the power rocker read "on" and the lamp drives fed the HX711 through its diodes.
@@ -45,8 +45,17 @@ floating common. v30 fixes the board, the leads and the checker.
 
   The pinout came from an exhaustive search: every layout of J2, J7 and J10 (420 × 420 × 1260) and every
   layout of J1, J5 and J6. The one chosen keeps the front-panel lead as it was.
-- **Firmware:** the scale's SCK stays low in standby. The heater, pump, valve and lamps were already off
-  in standby.
+- **Firmware:**
+  - the scale's SCK is held high in standby, which powers the HX711s down;
+  - the lamps are dark in standby, even with a fault;
+  - a "start shot" sent while off is refused, never latched for when the rocker goes on;
+  - OTA is only accepted with the power rocker off and the steam rocker on, so nobody on the network
+    can install firmware without the standby gating.
+
+  The heater, pump and valve were already off in standby.
+
+A second independent review of v30 found no hardware hazard. It found the latched start, the
+unauthenticated OTA, and that SCK-low was the wrong standby state; all three are fixed above.
 
 ## The model
 
@@ -80,11 +89,21 @@ source.
 Current is followed through floating nodes (the front lead's common, the SSRs' chained +5V), across
 diodes and device inputs.
 
-An SSR or SSR board counts as **on** above **1.5 V**. They're only guaranteed off below about 1 V, so the
-undefined region between that and their 3 V turn-on is treated as on.
+An SSR or SSR board counts as **on** when a medium or strong source (mA) puts **1.0 V or more** across it.
+They're only guaranteed off below about 1 V, so the undefined region up to their 3 V turn-on counts as on.
+Weak sources (pull-ups, ≤ 0.3 mA) can't turn on an SSR: the boards need 5 mA, the heater SSR a few mA.
 
-**Standby is part of the safety case.** The engine leaves standby only when the power rocker reads on,
-and in standby the heater, pump, valve and lamps are off and SCK is held low. So when the front lead is
+The same weak sources can push up to ~0.6 mA through a protection diode (below). That's within what CMOS
+inputs tolerate, so the checker ignores it.
+
+`python3 swap_check.py --bare-leds` repeats every case with the front LEDs fitted *without* their own
+resistor. v30 passes that too, so the LED resistor is a second layer, not the only one.
+
+**Standby is part of the safety case.** The engine leaves standby only when the power rocker reads on.
+No API, console or config command clears it. In standby the heater, pump, valve and lamps are off and
+SCK is held high. At boot the rocker's debounce starts open, so the engine is in standby from its first
+tick. Until then the outputs are held off by the gate pull-downs and the lamp, SCK and status pins are
+low or high-Z. So when the front lead is
 not in J7, the board is in standby, as long as whatever is in J7 can't pull the power input low. The
 checker verifies that for every lead in J7, and analyses every lead-in-wrong-socket case with that
 standby state. When the front lead *is* in J7, the rocker can be on, so the other two 7-pin leads are
@@ -108,13 +127,14 @@ single-lead cases.
 - **Front lead in the SSR socket.** The board is in standby, so every output is off. The rockers join
   J2.1 (empty), J2.2 (+5V) and J2.3 (heater drain, off) to the common on the empty J2.4: +5V meets only
   an open drain. The LEDs face J2.5 (empty) and the two off drains.
-- **Front lead in the scale socket.** The board is in standby with SCK held low. The rockers can join
-  J10.1, J10.2 (empty) and DOUT1 to the common on SCK, so DOUT1 is pulled to a low that SCK already holds.
-  The LEDs go from GND, DOUT2 and 3V3 to the common. The 3V3 one lights dimly through its own resistor.
+- **Front lead in the scale socket.** The board is in standby with SCK held high. The rockers can join
+  J10.1, J10.2 (empty) and DOUT1 to the common on SCK. DOUT1 is an input that's already pulled high. The
+  LEDs go from GND, DOUT2 and 3V3 to the common at 3.3 V: reverse-biased or at 0 V, so none conducts.
+  That holds even with bare LEDs.
 - **Scale lead in the front socket.** Its pins 1–2 are empty and face the power and brew inputs, so the
   board stays in standby with the lamps low. The HX711's GND, DOUT2 and supply land on the three lamp
   drives, SCK on the panel's GND, and DOUT1 on the steam input. Everything it touches is at 0 V or weakly
-  pulled up, so it stays unpowered.
+  pulled up. The steam input's pull-up leaks ~0.3 mA into DOUT1's clamp; the chip stays unpowered.
 - **Scale lead in the SSR socket.** Its empty pins 1–2 face J2.1 and the SSRs' +5V, so 5 V reaches
   nothing. Its other pins land on the three drains and two empty pins: only sinks, no source, so the
   HX711 is unpowered.
@@ -129,8 +149,10 @@ single-lead cases.
   transducer's supply and ground land on +5V and GND, and its output on the empty J1.1. It just runs,
   into nothing.
 - **Pressure lead in the thermistor socket.** The transducer's output lands on GND, its supply on the
-  empty pin, and its ground on the NTC node. The NTC node is pulled to ~0.6 V through the transducer's
-  ground-side diode. It reads as a shorted probe: NTC_SHORT fault, heater off.
+  empty pin, and its ground on the NTC node. About 0.6 mA flows from R15 through the transducer's
+  ground-side diode, so the NTC node sits at ~0.6 V. That reads as about 140 °C, a plausible temperature,
+  not a fault. What keeps it safe is J6: it then holds no transducer (the supply lead, the thermistor or
+  nothing), so pressure reads ~0 V, the PRESSURE_SENSOR fault holds, and the heater stays off.
 - **Thermistor lead in J1 or the pressure socket.** It's a resistor. In J1 it goes from the empty pin to
   GND, so nothing. In J6 it goes from SIG to GND: pressure reads ~0, a sensor fault.
 
@@ -141,5 +163,9 @@ single-lead cases.
 - **Your own wiring.** The analysis assumes each lead is wired at the device end exactly as WIRING.md
   says, including the LEDs' own resistors and the scale on 3.3 V. A lead wired wrong at the device end
   isn't something any pinout can catch. Label both ends.
-- **Firmware.** Safety in the swapped cases relies on the standby behaviour above. It is covered by the
-  engine's tests (`coffee-core`), and the scale's SCK gating is in `firmware/esp32/src/control.rs`.
+- **Firmware.** Safety in two swapped cases (front lead in J2, scale lead in J7) relies on the standby
+  behaviour above. With standby forced off, those two are the only failures. It is covered by
+  `standby_keeps_every_output_and_lamp_off` in `coffee-core`. The SCK gating and the OTA gate are in
+  `firmware/esp32/src/control.rs` and `net.rs`.
+- **Reset, download mode, a blank flash.** The connector-facing GPIOs are high-Z at worst and the output
+  gates are pulled down. The review checked this by hand; the checker doesn't model it.

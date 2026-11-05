@@ -397,6 +397,10 @@ async fn ota(sock: &mut TcpSocket<'_>, len: usize, first: Vec<u8>) {
     if store::BUSY.load(core::sync::atomic::Ordering::Relaxed) {
         return respond(sock, 409, "application/json", "", &json_err("a shot is running")).await;
     }
+    if !store::OTA_ARMED.load(core::sync::atomic::Ordering::Relaxed) {
+        let m = "OTA needs physical presence: power rocker off and steam rocker on, then upload";
+        return respond(sock, 403, "application/json", "", &json_err(m)).await;
+    }
     const SECTOR: usize = 4096;
     let mut pending = first;
     let mut written = 0usize;

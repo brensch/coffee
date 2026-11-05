@@ -70,7 +70,7 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
    - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`. The status LED glows while the chip is in programming mode and flickers at every reset.
    - The second command prints the board's address (`http://coffee.local/` works too).
    - No buttons: the C6 resets itself into download mode over USB.
-   - This is the only time the board needs a PC. Later updates go over Wi-Fi (`coffee ota`).
+   - This is the only time the board needs a PC. Later updates go over Wi-Fi (`coffee ota`): the board only accepts one with the power rocker **off** and the steam rocker **on**, so nobody on the network can replace the firmware without someone at the machine.
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe's tab;

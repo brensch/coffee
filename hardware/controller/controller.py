@@ -240,7 +240,8 @@ ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
 j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused")
 j_ntc[1, 3] += gnd, ntc
 j_ntc[2] += NC     # the supply lead's +5V (its pin 2) lands here on nothing; v30: NTC on pin 3, so a
-                   # pressure lead here ties it to the transducer's ground diode (reads shorted: a fault)
+                   # pressure lead here ties it to the transducer's ground diode: ~0.6 V, a plausible ~140 C, but
+                   # J6 then has no transducer, so PRESSURE_SENSOR faults and the heater stays off
 r = part(R, "R15", "4.7k", notes="NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
@@ -281,11 +282,12 @@ for i, (name, gpio, rpu, rs) in enumerate((("POWER", "IO14", "R28", "R29"), ("BR
     r[1, 2] += wire, pin
     u_mcu[gpio] += pin
 j_fp[4] += gnd
-# LEDs: GPIO -> 330R -> LED anode at the panel, cathode to GND: (3.3 - 2.0) / 330 = ~4 mA, bright
-# enough behind the lamp lens, well within the C6's GPIO drive.
+# LEDs: GPIO -> 330R -> lead -> pre-wired LED (its own 150-470R in the lead) -> GND: (3.3 - 2.0) /
+# (330 + 150..470) = ~1.6-2.7 mA, visible behind the lamp lens. The LED's own resistor keeps a
+# front-panel lead harmless in a wrong socket even without the firmware's standby (SWAP-SAFETY.md).
 for i, (name, gpio, rl) in enumerate((("PWR", "IO21", "R30"), ("COFFEE", "IO22", "R31"), ("STEAM", "IO23", "R32"))):
     led = Net(f"LED_{name}")
-    r = part(R, rl, "330", notes=f"front-panel LED ({name.lower()}) current limit, ~4 mA")
+    r = part(R, rl, "330", notes=f"front-panel LED ({name.lower()}) current limit (plus the LED's own in its lead): ~2 mA")
     r[1, 2] += Net(f"LED_{name}_IO"), led
     u_mcu[gpio] += r[1].net
     j_fp[5 + i] += led
@@ -304,8 +306,8 @@ for dref, rref, net, what in (("D3", "R37", "LED_PWR_IO", "power lamp"), ("D4", 
     led["K"] += gnd
 
 # Drip-tray scale: two load cells with a dual HX711 board beside them in the tray base (Gaggiuino's
-# layout), so only slow digital lines run here. 5 V for the HX711's analog supply, 3V3 for its logic
-# (DOUT then swings 0-3.3 V). 100R series on every line; SCK pulled down so the HX711 stays awake
+# layout), so only slow digital lines run here. v30: 3V3 only (VCC and VDD linked at the HX711 board;
+# DOUT swings 0-3.3 V). No series resistors (see below); SCK pulled down so the HX711 stays awake
 # while the C6 boots (SCK held high > 60 us powers it down). GPIO4/5 are strapping pins only for
 # SDIO clock edges (C6 datasheet, "Strapping pins"), unused here, so they serve as the DOUT inputs.
 j_sc = part(JST7, "J10", "Scale", mpn="JST SM07B-GHS-TB",
@@ -324,7 +326,7 @@ for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (3, ("DOUT1", "IO4")), (6, ("
     u_mcu[gpio] += d
     j_sc[pin_no] += d
 r = part(R, "R36", "10k", notes="SCK pull-down: HX711 stays powered while the C6 boots")
-r[1, 2] += u_mcu["RXD0"], gnd      # the GPIO side of R33 (Net("SCALE_SCK") here made a second, unconnected net: v19-v22 bug)
+r[1, 2] += u_mcu["RXD0"], gnd      # the GPIO side of SCK (Net("SCALE_SCK") here made a second, unconnected net: v19-v22 bug)
 
 # Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
 # measures absolute volts. Measuring both rails lets the firmware divide them out, so an open

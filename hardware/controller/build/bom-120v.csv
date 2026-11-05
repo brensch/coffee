@@ -23,7 +23,7 @@ R15,1,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.02 V at
 R16,1,47k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 100/147 (147k load: TE M3200 needs > 100k)
 R17,1,100k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
 R24,1,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
-R30 R31 R32,3,330,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"front-panel LED (coffee) current limit, ~4 mA | front-panel LED (pwr) current limit, ~4 mA | front-panel LED (steam) current limit, ~4 mA"
+R30 R31 R32,3,330,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA
 TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in
 U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
 U5,1,TLV1117LV33DCYR,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable","SOT-223 for heat: ~0.17 W average, +11 C"

@@ -44,7 +44,7 @@ def board_drive(cls, st, i):
     if cls == "DR": return (0.0, STRONG, False) if st["out"][i] else None
     if cls == "LEDDRV": return ((3.3 if st["lamp"][i] else 0.0), MED, False) if pw else None
     if cls == "SWIN": return (3.3, WEAK, True) if pw else None
-    if cls == "SCK": return ((3.3 if st["sck"] else 0.0), STRONG, True) if pw else None
+    if cls == "SCK": return ((3.3 if st["sck"] or st["standby"] else 0.0), STRONG, True) if pw else None   # standby: held high
     if cls == "DIN": return (3.3, WEAK, True) if pw else None
     if cls == "PSIG": return (0.0, WEAK, False)         # 47k + 100k to GND: tolerates 5 V
     if cls == "NTCN": return (3.3, WEAK, True) if pw else None   # 4.7k to 3V3, direct to the ADC pin
@@ -81,7 +81,9 @@ LEADS = {
 }
 GROUPS = [["J1", "J5", "J6"], ["J2", "J7", "J10"]]
 LEAD_NAME = {"J1": "5V supply", "J2": "SSR", "J5": "thermistor", "J6": "pressure", "J7": "front panel", "J10": "scale"}
-SWIN_LOW = 2.5    # ESP32-C6 V_IH min = 0.75 * 3.3 V: a switch input pulled below this may read "on"
+SWIN_LOW = 2.5
+NTC_SHORT_V = 0.1   # firmware fault::NTC_SHORT threshold (short_mv, 100 mV default)
+BARE_LEDS = "--bare-leds" in sys.argv   # what-if: front LEDs fitted without their own resistor    # ESP32-C6 V_IH min = 0.75 * 3.3 V: a switch input pulled below this may read "on"
 
 def role_pins(home_pins, home):
     """role -> list of lead pin indices (a role can sit on several pins, e.g. two GND wires)."""
@@ -150,11 +152,11 @@ def one_state(home, rp, classes, nets, els, st, sock):
     for i, c in enumerate(classes):
         d = board_drive(c, st, i)
         n = uf.f(f"p{i}")
-        drv.setdefault(n, []).append((c, nets[i], d))
+        drv.setdefault(n, []).append((c, nets[i], d, i))
     hz = []
     lvl = {}
     for n, ds in drv.items():
-        act = [(c, net, d) for c, net, d in ds if d]
+        act = [(c, net, d) for c, net, d, _ in ds if d]
         strong = [x for x in act if x[2][1] == STRONG]
         if len({x[2][0] for x in strong}) > 1:
             hz.append("short: " + " to ".join(sorted({x[1] for x in strong})))
@@ -178,7 +180,7 @@ def one_state(home, rp, classes, nets, els, st, sock):
         if n not in lvl: continue
         L, S = lvl[n]
         if S < MED: continue
-        for c, net, d in ds:
+        for c, net, d, i in ds:
             if c == "E": continue
             if L > 3.6 and c in ("SCK", "DIN", "NTCN", "SWIN"):
                 hz.append(f"{L:g} V onto {net} (GPIO)")
@@ -190,7 +192,7 @@ def one_state(home, rp, classes, nets, els, st, sock):
     cond = []   # (from, to, drop, strength) forward conduction
     for e in els:
         a, b = node(e[1]) if isinstance(e[1], str) else None, node(e[2]) if isinstance(e[2], str) else None
-        if e[0] == "LEDR": cond.append((a, b, 1.8, MED, e))
+        if e[0] == "LEDR": cond.append((a, b, 1.8, STRONG if BARE_LEDS else MED, e))
         if e[0] == "HSSR": cond += [(a, b, 1.2, MED, e), (b, a, 0.7, MED, e)]   # worst case: a reverse-protection diode across the input
         if e[0] == "BRD": cond += [(a, b, 1.0, MED, e), (b, a, 0.7, MED, e)]
         if e[0] == "RES": cond += [(a, b, 0.0, WEAK, e), (b, a, 0.0, WEAK, e)]
@@ -215,12 +217,17 @@ def one_state(home, rp, classes, nets, els, st, sock):
                     if f not in lo or c[0] < lo[f][0] or (c[0] == lo[f][0] and c[1] > lo[f][1]): lo[f] = c
         return hi, lo
     for e in els:
+        if e[0] == "LEDR" and BARE_LEDS:   # a bare LED straight across two strong nodes burns
+            hi, lo = bounds(None)
+            a, b = node(e[1]), node(e[2])
+            if a in lvl and b in lvl and lvl[a][1] == STRONG and lvl[b][1] == STRONG and lvl[a][0] - lvl[b][0] >= 1.8:
+                hz.append(f"bare LED across {lvl[a][0]:g} V to {lvl[b][0]:g} V")
         if e[0] in ("HSSR", "BRD"):
             hi, lo = bounds(e)
             a, b = node(e[1]), node(e[2])
             if a in hi and b in lo and hi[a][1] >= MED and lo[b][1] >= MED:
                 dv = hi[a][0] - lo[b][0]
-                on = 1.5   # must-turn-on is 3 V (heater) / ~2.5 V (boards), but only below ~1 V is "off" guaranteed: treat the gap as on
+                on = 1.0   # must-turn-on is 3 V (heater) / ~2.5 V (boards), but only below ~1 V is "off" guaranteed: treat the gap as on
                 if dv >= on - 1e-9 and sock != home:
                     hz.append(("heater SSR" if e[0] == "HSSR" else "pump/valve SSR board") + f" on ({dv:.1f} V)")
             if e[0] == "BRD" and b in hi and a in lo and hi[b][1] >= MED and lo[a][1] >= MED and hi[b][0] - lo[a][0] >= 3.0:
@@ -260,8 +267,10 @@ def one_state(home, rp, classes, nets, els, st, sock):
             if c != "NTCN": continue
             n = uf.f(f"p{i}")
             touched = any(f == n or t == n for f, t, *_ in cond)
-            shorted = (n in lvl and lvl[n][1] >= MED and lvl[n][0] < 0.5) or (n in lo and lo[n][1] >= MED and lo[n][0] <= 0.8)
-            if touched and not shorted:
+            shorted = (n in lvl and lvl[n][1] >= MED and lvl[n][0] <= NTC_SHORT_V) or (n in lo and lo[n][1] >= MED and lo[n][0] <= NTC_SHORT_V)
+            # the pressure lead here means J6 has no transducer: PRESSURE_SENSOR faults and the heater
+            # stays off whatever the thermistor input reads
+            if touched and not shorted and home != "J6":
                 hz.append("thermistor input sees a device (may read a plausible temperature)")
     return hz
 
