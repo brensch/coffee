@@ -95,8 +95,8 @@
 
   <rect x="430" y="168" width="130" height="56" class="mod"/>
   <text x="440" y="188" class="t">L splice</text>
-  <text x="440" y="205" class="labL">L junction</text>
-  <text x="440" y="218" class="s">5 ports</text>
+  <text x="440" y="205" class="labL">soldered, heat-shrunk</text>
+  <text x="440" y="218" class="s">4 wires</text>
 
   <rect x="430" y="240" width="130" height="50" class="mod"/>
   <text x="440" y="260" class="t">soldered join</text>
@@ -126,15 +126,14 @@
   <rect x="640" y="492" width="170" height="108" class="mod"/>
   <text x="650" y="512" class="t" font-weight="bold">Pump SSR</text>
   <text x="650" y="528" class="s">1-ch SSR board (G3MB-202P)</text>
-  <text x="650" y="548" class="labL">load tabs (AC, 6.3 mm)</text>
-  <text x="650" y="568" class="s">input + / − (6.3 mm tabs)</text>
-  <text x="650" y="588" class="s">bolt to chassis, 8-32</text>
+  <text x="650" y="548" class="labL">load terminals 1 → 2</text>
+  <text x="650" y="568" class="s">VCC+IN (+5 V), GND (OUT)</text>
+  <text x="650" y="588" class="s">on a plastic holder</text>
 
   <rect x="640" y="630" width="170" height="112" class="mod"/>
   <text x="650" y="650" class="t" font-weight="bold">Valve SSR board</text>
   <text x="650" y="666" class="s">1-ch G3MB-202P + snubber</text>
   <text x="650" y="686" class="labL">load terminals 1 → 2</text>
-  <text x="650" y="706" class="s">(12 = NC, leave empty)</text>
   <text x="650" y="726" class="s">VCC+IN (+5 V), GND (OUT)</text>
 
   <!-- ===================== BOARD ===================== -->
@@ -265,7 +264,7 @@
   <path class="ex" d="M 45 1150 L 95 1150"/><text x="104" y="1154" class="lab">existing machine wiring (unchanged)</text>
   <text x="330" y="1066" class="lab">• Mains and low-voltage leads never share a terminal, a switch or a cable tie. Keep the 5 V leads ≥ 6 mm from bare mains parts and away from the boiler.</text>
   <text x="330" y="1086" class="lab">• Heater SSR replaces the brew thermostat only. Thermal fuse and steam thermostat stay in series: they still cut the heater if the SSR fails shorted.</text>
-  <text x="330" y="1106" class="lab">• Pump and valve neutrals stay where they are. Chassis earth stays as built; the heatsink and SSR baseplates are bonded to the chassis by their mounting screws.</text>
+  <text x="330" y="1106" class="lab">• Pump and valve neutrals stay where they are. Chassis earth stays as built; the heater SSR's base is bonded to the rear panel by its M4 bolts.</text>
   <text x="330" y="1126" class="lab">• UNVERIFIED on a real US machine: that C.4 (brown) is live only after the power switch, and S.5 (white) is neutral. Check both with a meter before connecting.</text>
   <text x="330" y="1146" class="lab">• SSR terminal numbers are as printed on each housing (typical numbers shown). Go by the housing markings if they differ.</text>
 </svg>

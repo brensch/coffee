@@ -17,7 +17,7 @@ Gaggia Classic Pro.
   - wire and crimps;
   - JST GH leads;
   - thermistor, pressure transducer and antenna.
-- **A printed holder** for the modules and the board. Use flame-retardant PC (V-0), not PLA or PETG. The heater SSR goes on its aluminium heatsink, never on plastic.
+- **A printed holder** (or plastic bracket) for the board, the two SSR boards and the 5 V supply: their undersides carry mains, so never mount them on the steel. Use flame-retardant PC (V-0), not PLA or PETG. The heater SSR bolts to the rear panel, never on plastic.
 - **Tools:** crimper, multimeter, power meter (Kill-A-Watt), 0.1 g scale, blind basket, thermometer for calibration.
 
 ## 1. Order the board
@@ -72,7 +72,7 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe's tab;
-   - **transducer (no datasheet, BUY.md §10b):** use the colour legend printed on its label or the
+   - **transducer (no datasheet, BUY.md #11):** use the colour legend printed on its label or the
      listing to wire +5 V, GND and output to J6 pins 1, 3 and 2, with a **220 Ω resistor in series
      with the +5 V wire** for this first test (it limits the current to ~20 mA if the legend is
      wrong). The output should read ~0.5 V at atmospheric pressure, and the UI about 0 bar. If it
@@ -148,11 +148,11 @@ prime.
    - pressure reads about 0 bar.
 6. **Pump and valve:** with the blind basket, run a flush and check that pressure rises. Then switch
    off, unplug, and check the paper towel again for hot leaks.
-   - Listen while the pump is off: no hum (the pump SSR leaks only 0.1 mA).
+   - Listen while the pump is off: no hum (the pump SSR board leaks at most ~1 mA).
 7. **Heater:** watch the first heat-up to setpoint in the UI.
    - Expect ~1.37 kW until near the setpoint, then pulsing.
    - With the heater commanded off, the meter should drop to a few watts.
-   - The heater SSR's heatsink should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
+   - The heater SSR's base should stay warm, not hot: below 60 °C after a 30-minute idle is fine.
 8. **Temperatures inside the case:** after a 30-minute idle and a 2-minute steam session, unplug
    and measure straight away (a thermometer probe or IR thermometer): the heater SSR's base
    < 80 °C (above that, add the Auber HS25ET heatsink, BUY.md #1), the air at the SSR boards and

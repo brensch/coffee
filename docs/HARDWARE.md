@@ -12,8 +12,8 @@ Where to find what:
 ## Design rules
 
 1. **No mains on our board.** The custom PCB carries only 5 V. Every mains function is a certified, replaceable, factory-tested module:
-   - a zero-cross SSR for the heater (on an aluminium heatsink);
-   - a zero-cross SSR without a snubber for the pump;
+   - a zero-cross SSR for the heater, on the rear panel;
+   - a 1-channel G3MB-202P SSR board for the pump;
    - a 1-channel SSR board for the 3-way valve (as GaggiMate's Lego build), with a snubber;
    - an EN 60335 / UL 62368 5 V AC-DC module.
 
@@ -27,7 +27,7 @@ Where to find what:
 ## What you buy
 - **The board:** from JLCPCB, fully assembled, all SMD on one side. The files are `build/coffee-v18-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md):
-  - modules, heatsink and fuse;
+  - modules (heatsink optional);
   - wire and crimps;
   - JST GH leads;
   - thermistor, pressure transducer and antenna.
@@ -38,7 +38,7 @@ Where to find what:
 | Heater | live → stock steam thermostat → thermal fuse → **heater SSR (in place of the brew thermostat)** → element → neutral |
 | Pump | switched live → **pump SSR** → pump → neutral |
 | 3-way valve | switched live → **valve SSR board** → valve → neutral |
-| Board | switched live → 1 A slow-blow fuse → **5 V module** → board J1 |
+| Board | switched live → **5 V module** (no external fuse, as GaggiMate) → board J1 |
 
 The board's JST GH leads drive the module inputs:
 - J2 → heater SSR;

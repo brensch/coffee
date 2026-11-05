@@ -5,7 +5,7 @@ A 43 × 27 mm two-layer board with every part on the top side, assembled by JLCP
 - **The board's job:** read the sensors and drive three 5 V outputs.
 - **Mains switching:** certified modules mounted beside it in the machine do that:
   - a zero-cross SSR for the heater (in place of the brew thermostat);
-  - a zero-cross SSR without a snubber for the vibration pump;
+  - a 1-channel G3MB-202P SSR board for the vibration pump;
   - a 1-channel 5 V SSR board (Omron G3MB-202P) for the 3-way valve, with a snubber;
   - a certified 5 V AC-DC module that powers the board.
 
@@ -66,7 +66,6 @@ Notes per part:
 - **J2 and J3:** the SSR inputs aren't inductive, so they need no diode (3.9–5.1 V spike with 1 µH of cable).
 - **No LED per output:** every module shows its input on its own LED.
 - **Margins, worst case** (GPIO at 2.64 V, the C6's guaranteed 0.8 × VDD output high; AO3400A at its maximum threshold; +5 V at 4.6 V from USB):
-  - the pump SSR sees 4.6 V, over its 3.0 V turn-on;
   - the heater SSR sees 4.6 V, over 3.0 V;
   - each SSR board sees ~4.6 V on VCC (a 5 V board; the G3MB-202P itself is a 5 V-input part). On USB alone, check at bring-up that the board LEDs and SSRs switch.
 
