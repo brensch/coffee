@@ -1,181 +1,181 @@
-** Drc report for /home/brensch/.claude/jobs/bbbb1070/tmp/lv/p37/coffee-controller-120v.kicad_pcb **
-** Created on 2026-11-04 19:09:35 **
+** Drc report for /home/brensch/.claude/jobs/bbbb1070/tmp/lv/p38/coffee-controller-120v.kicad_pcb **
+** Created on 2026-11-04 19:19:29 **
 
 ** Found 58 DRC violations **
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(34.7000 mm, 10.0000 mm): Footprint C11
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(17.4000 mm, 2.4000 mm): Footprint R10
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(36.4000 mm, 21.0000 mm): Footprint R6
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(6.6600 mm, 18.8500 mm): Footprint R20
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(20.2000 mm, 12.0000 mm): Footprint U4
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(22.1500 mm, 2.6000 mm): Footprint C7
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(38.6000 mm, 19.6000 mm): Footprint D5
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(9.6000 mm, 18.8500 mm): Footprint R21
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(23.0500 mm, 21.0000 mm): Footprint R4
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(5.1900 mm, 18.8500 mm): Footprint R29
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(11.0700 mm, 20.3000 mm): Footprint R19
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(20.4000 mm, 2.4000 mm): Footprint C4
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(33.6000 mm, 21.0000 mm): Footprint Q3
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(28.8000 mm, 14.2000 mm): Footprint R36
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(36.3000 mm, 1.6000 mm): Footprint C6
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(3.7200 mm, 18.8500 mm): Footprint R28
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(18.9000 mm, 2.4000 mm): Footprint C5
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(8.5000 mm, 2.0000 mm): Footprint C8
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(20.4000 mm, 21.0000 mm): Footprint Q1
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(2.5000 mm, 2.0000 mm): Footprint R16
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(14.4000 mm, 20.6000 mm): Footprint R30
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(30.0000 mm, 4.0000 mm): Footprint U5
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(39.0500 mm, 5.6000 mm): Footprint R26
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(4.6000 mm, 5.9500 mm): Footprint R13
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(15.9000 mm, 20.6000 mm): Footprint R31
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(17.4000 mm, 20.6000 mm): Footprint R32
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(3.1900 mm, 12.0000 mm): Footprint J4
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(33.2000 mm, 10.0000 mm): Footprint R25
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(28.7000 mm, 10.0000 mm): Footprint R23
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(5.5000 mm, 2.0000 mm): Footprint C9
+    @(36.3000 mm, 1.6000 mm): Footprint C6
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(27.3000 mm, 14.2000 mm): Footprint R33
+    @(6.6600 mm, 18.8500 mm): Footprint R20
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(4.0000 mm, 2.0000 mm): Footprint R17
+    @(3.7200 mm, 18.8500 mm): Footprint R28
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(30.2000 mm, 10.0000 mm): Footprint C10
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(7.0000 mm, 2.0000 mm): Footprint R15
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(14.4000 mm, 2.4000 mm): Footprint R34
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(31.7000 mm, 10.0000 mm): Footprint R24
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(2.2500 mm, 18.8500 mm): Footprint R11
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(25.7000 mm, 21.0000 mm): Footprint Q2
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(36.6000 mm, 10.0000 mm): Footprint D1
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(24.2500 mm, 2.6000 mm): Footprint C3
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(38.1000 mm, 10.0000 mm): Footprint R12
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(15.9000 mm, 2.4000 mm): Footprint R35
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(7.2000 mm, 4.4000 mm): Footprint R27
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(0.7800 mm, 18.8500 mm): Footprint R14
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(28.4000 mm, 21.0000 mm): Footprint R5
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(36.4000 mm, 5.6000 mm): Footprint Q4
+    @(20.2000 mm, 12.0000 mm): Footprint U4
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(8.1300 mm, 18.8500 mm): Footprint R18
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
+    @(30.2000 mm, 10.0000 mm): Footprint C10
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(27.3000 mm, 14.2000 mm): Footprint R33
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(22.1500 mm, 2.6000 mm): Footprint C7
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(33.2000 mm, 10.0000 mm): Footprint R25
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(7.0000 mm, 2.0000 mm): Footprint R15
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.4000 mm, 21.0000 mm): Footprint R5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(36.4000 mm, 21.0000 mm): Footprint R6
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(38.1000 mm, 10.0000 mm): Footprint R12
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(20.4000 mm, 2.4000 mm): Footprint C4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(5.1900 mm, 18.8500 mm): Footprint R29
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(5.5000 mm, 2.0000 mm): Footprint C9
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
     @(32.0000 mm, 14.2000 mm): Footprint D2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(14.4000 mm, 2.4000 mm): Footprint R34
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(20.4000 mm, 21.0000 mm): Footprint Q1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(34.7000 mm, 10.0000 mm): Footprint C11
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(36.4000 mm, 5.6000 mm): Footprint Q4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(25.7000 mm, 21.0000 mm): Footprint Q2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(15.9000 mm, 2.4000 mm): Footprint R35
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(27.2000 mm, 10.0000 mm): Footprint R22
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(4.4000 mm, 3.2000 mm): Footprint J6
+    @(36.6000 mm, 10.0000 mm): Footprint D1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(7.2000 mm, 4.4000 mm): Footprint R27
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(38.6000 mm, 19.6000 mm): Footprint D5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(23.0500 mm, 21.0000 mm): Footprint R4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(39.0500 mm, 5.6000 mm): Footprint R26
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(4.0000 mm, 2.0000 mm): Footprint R17
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(30.0000 mm, 4.0000 mm): Footprint U5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(2.2500 mm, 18.8500 mm): Footprint R11
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(9.6000 mm, 18.8500 mm): Footprint R21
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(18.9000 mm, 2.4000 mm): Footprint C5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(17.4000 mm, 2.4000 mm): Footprint R10
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(2.5000 mm, 2.0000 mm): Footprint R16
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(8.5000 mm, 2.0000 mm): Footprint C8
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(11.0700 mm, 20.3000 mm): Footprint R19
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(3.1900 mm, 12.0000 mm): Footprint J4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(33.6000 mm, 21.0000 mm): Footprint Q3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(31.7000 mm, 10.0000 mm): Footprint R24
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(4.6000 mm, 5.9500 mm): Footprint R13
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.8000 mm, 14.2000 mm): Footprint R36
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(15.9000 mm, 20.6000 mm): Footprint R31
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.2500 mm, 2.6000 mm): Footprint C3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(14.4000 mm, 20.6000 mm): Footprint R30
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(0.7800 mm, 18.8500 mm): Footprint R14
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(17.4000 mm, 20.6000 mm): Footprint R32
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(12.9000 mm, 3.2000 mm): Footprint J5
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(6.9000 mm, 20.8000 mm): Footprint J7
-[lib_footprint_issues]: The current configuration does not include the library ''.
-    Local override; Severity: warning
-    @(26.4000 mm, 20.8000 mm): Footprint J3
+    @(15.0000 mm, 12.0000 mm): Footprint TP1
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(23.2700 mm, 3.2000 mm): Footprint J10
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
+    @(26.4000 mm, 20.8000 mm): Footprint J3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(4.4000 mm, 3.2000 mm): Footprint J6
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
     @(17.9000 mm, 20.8000 mm): Footprint J2
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(15.0000 mm, 12.0000 mm): Footprint TP1
+    @(33.6500 mm, 3.2000 mm): Footprint J1
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
     @(34.9000 mm, 20.8000 mm): Footprint J8
 [lib_footprint_issues]: The current configuration does not include the library ''.
     Local override; Severity: warning
-    @(33.6500 mm, 3.2000 mm): Footprint J1
+    @(6.9000 mm, 20.8000 mm): Footprint J7
 
 ** Found 0 unconnected pads **
 

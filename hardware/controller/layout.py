@@ -160,7 +160,7 @@ def silkscreen(board, mains_v, footprints=None):
     LABELS = _plan.get("labels", {
         "J1": ("5V IN", ["+5V", "GND", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
         "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["", "", "NC"]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
-        "J7": ("PANEL", ["PWR", "BREW", "STM", "GND", "LP", "LC", "LS"]),
+        "J7": ("FRONT", ["PWR", "BREW", "STM", "GND", "LP", "LC", "LS"]),
         "J10": ("SCALE", ["+5V", "3V3", "GND", "SCK", "D1", "D2"]), "J4": ("USB", [])})
     def silk(txt, x, y, size=1.0, angle=0, layer=pcbnew.B_SilkS):
         size = max(size, 1.0)              # JLC's recommended minimum text height (1.0 mm, 0.16 mm stroke)

@@ -1,4 +1,4 @@
-# Controller board v20: low voltage only
+# Controller board v21: low voltage only
 
 A 40 × 24 mm two-layer board. JLCPCB assembles every part on the top side; you solder the eight
 JST GH connectors onto the bottom yourself (about 5 minutes with a fine tip). It carries
@@ -99,7 +99,7 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 ## Layout
 
-**Board:** 40 × 24 mm, 2 layers, 1 oz. v20 made it skinnier (from 45.5 × 32): everything except the connectors is on the top side, and the eight GH connectors go on the bottom, soldered by hand (JLC's Economic PCBA assembles one side only). Each connector's resistors and capacitors sit on the top directly over it.
+**Board:** 40 × 24 mm, 2 layers, 1 oz (v21 = v20 with tidier bottom labels). v20 made it skinnier (from 45.5 × 32): everything except the connectors is on the top side, and the eight GH connectors go on the bottom, soldered by hand (JLC's Economic PCBA assembles one side only). Each connector's resistors and capacitors sit on the top directly over it.
 
 **Connectors:** four along each long edge, on the bottom face, openings outward:
 - top edge (left to right, top view): pressure (J6), thermistor (J5), scale (J10, 6-pin), 5 V in (J1);
@@ -123,7 +123,7 @@ All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a
 **Silkscreen:** labels are on the **bottom**, beside the connectors, so you read them where you plug in:
 - a word behind every connector pin, and each connector's name;
 - J6 (pressure) and the LED pins of J7 have their pin words on one line instead ("GND SIG +5V", "GND LP LC LS", in pin order as seen from below), because the USB-C's shell legs come through right behind those pins;
-- the title, "low voltage only", and BOOT beside its pad.
+- the title, the bean logo, and BOOT beside its pad. J7 (front panel) is labelled FRONT.
 
 The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
 

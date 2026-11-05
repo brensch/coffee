@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v20 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v21 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,10 +32,10 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v20-gerbers.zip`;
-   - `coffee-v20-bom.csv`;
-   - `coffee-v20-cpl.csv`.
-   - (`coffee-v20-hand-solder.csv` is the eight connectors you order yourself and solder on; see step 6.)
+   - `coffee-v21-gerbers.zip`;
+   - `coffee-v21-bom.csv`;
+   - `coffee-v21-cpl.csv`.
+   - (`coffee-v21-hand-solder.csv` is the eight connectors you order yourself and solder on; see step 6.)
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
