@@ -1,6 +1,7 @@
-# Controller board v19: low voltage only
+# Controller board v20: low voltage only
 
-A 45.5 × 32 mm two-layer board with every part on the top side, assembled by JLCPCB. It carries
+A 40 × 24 mm two-layer board. JLCPCB assembles every part on the top side; you solder the eight
+JST GH connectors onto the bottom yourself (about 5 minutes with a fine tip). It carries
 **no mains**:
 - **The board's job:** read the sensors and drive three 5 V outputs.
 - **Mains switching:** certified modules mounted beside it in the machine do that:
@@ -98,19 +99,18 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 ## Layout
 
-**Board:** 45.5 × 32 mm, 2 layers, 1 oz, every part on the top side. v19 added the front-panel (7-pin) and scale (6-pin) connectors and arranges the connectors symmetrically.
+**Board:** 40 × 24 mm, 2 layers, 1 oz. v20 made it skinnier (from 45.5 × 32): everything except the connectors is on the top side, and the eight GH connectors go on the bottom, soldered by hand (JLC's Economic PCBA assembles one side only). Each connector's resistors and capacitors sit on the top directly over it.
 
-**Connectors** sit symmetrically, three per side edge:
-- left: 5 V in, pressure, thermistor;
-- right: heater, pump, valve (all the outputs);
-- bottom: front panel (7-pin) and USB-C;
-- top: scale (6-pin), beside the module.
+**Connectors:** four along each long edge, on the bottom face, openings outward:
+- top edge (left to right, top view): pressure (J6), thermistor (J5), scale (J10, 6-pin), 5 V in (J1);
+- bottom edge: front panel (J7, 7-pin), heater (J2), pump (J3), valve (J8);
+- USB-C (J4) on the top face at the left short edge.
 
-All nine are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave along the board edges.
+All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the long edges.
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 
-**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias on a 1.2 mm grid wherever both layers are free. The current board has 0 unconnected, 47 routed vias and 178 stitching vias. Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
+**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected, 86 routed vias and 34 stitching vias. Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
 
 **Rules:** JLCPCB standard capabilities only, the cheapest tier:
 - 0.2 mm tracks and gaps (0.15 mm DRC minimum; JLC's is 0.127 mm);
@@ -120,15 +120,15 @@ All nine are JST GH (1.25 mm, positive latch, which suits a machine shaken by a 
 
 **KiCad DRC:** 0 violations, 0 unconnected, run on a fresh load of the saved board file. The report still lists library-table notes, because the footprints are embedded and no KiCad library table exists on the build machine.
 
-**Silkscreen:** labels are on the **bottom**, which carries no parts:
-- a word behind every connector pin;
-- each connector's name under its body;
-- the logo, the title and BOOT.
+**Silkscreen:** labels are on the **bottom**, beside the connectors, so you read them where you plug in:
+- a word behind every connector pin, and each connector's name;
+- J6 (pressure) and the LED pins of J7 have their pin words on one line instead ("GND SIG +5V", "GND LP LC LS", in pin order as seen from below), because the USB-C's shell legs come through right behind those pins;
+- the title, "low voltage only", and BOOT beside its pad.
 
 The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
 
-**JLC:** 22 BOM lines; 4 extended part types (GH connector, USB-C, ESP32-C6 module, LDO), the rest basic. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
-- `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 47 placed parts land on their pads.
+**JLC:** 23 BOM lines assembled by JLC; 3 extended part types (USB-C, ESP32-C6 module, LDO), the rest basic. The eight connectors are on the bottom, so `jlc.py` moves them to `hand.csv` (the hand-solder list). U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
+- `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 49 placed parts land on their pads.
 - `jlc_pins.py` then compares JLC's pin names with the schematic's for every polarised part: 92 pin functions, 0 mismatches. This gate exists because the v15 position file had the status LED reversed.
 
 ## Simulation (ngspice, `sim/run.py`)

@@ -173,12 +173,14 @@ def silkscreen(board, mains_v, footprints=None):
         board.Add(t)
     tlen = lambda txt, size: 0.85 * max(size, 1.0) * len(txt)      # KiCad stroke font advance (measured on the render)
     fps = {f.GetReference(): f for f in (footprints or board.GetFootprints())}
+    skip_words = _plan.get("label_skip", {})      # plan: pins whose word is placed by hand (bottom_text) instead
+    name_pos = _plan.get("label_name_pos", {})    # plan: [x, y, angle] for a connector name placed by hand
     for ref, (name, words) in LABELS.items():
         fp = fps.get(ref)
-        if fp is None:
+        if fp is None or ref in _plan.get("label_off", []):
             continue
         fp.BuildCourtyardCaches()
-        cb = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
+        cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
         x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
         d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
         edge = min(d, key=d.get)
@@ -190,18 +192,25 @@ def silkscreen(board, mains_v, footprints=None):
         ang = 0 if edge in ("L", "R") else 90          # one word per pin, stacked at the 1.25 mm pitch
         reach = 0.0
         for num, word in zip([str(i) for i in range(1, len(words) + 1)], words):
-            if not word:
+            if not word or int(num) in skip_words.get(ref, []):
                 continue
             px, py = pads[num]
-            off = 0.5 + tlen(word, 0.8) / 2           # the pads are on the top side: the word can start close
+            gap = 1.3 if fp.IsFlipped() else 0.5   # a bottom-side connector's own pads are on this layer: start past them
+            off = gap + tlen(word, 0.8) / 2
             silk(word, px + inward[0] * off, py + inward[1] * off, 0.8, ang)
-            reach = max(reach, 0.5 + tlen(word, 0.8))
+            reach = max(reach, gap + tlen(word, 0.8))
         # the name on the outer side of the pins, under the connector's own body (free on the bottom)
         cx = sum(p[0] for p in pads.values()) / len(pads); cy = sum(p[1] for p in pads.values()) / len(pads)
         nx, ny = _plan.get("name_shift", {}).get(ref, (0, 0))      # plan: move a name clear of a neighbour's words
-        silk(name, cx - inward[0] * 2.1 + nx, cy - inward[1] * 2.1 + ny, 0.8, 90 if edge in ("L", "R") else 0)
-    for txt, x, y, size in _plan.get("bottom_text", []):
-        silk(txt, x, y, size)
+        if ref in name_pos:
+            silk(name, *name_pos[ref][:2], 0.8, name_pos[ref][2])
+        elif fp.IsFlipped():   # the body covers the outer side: the name goes inside the pin words, facing the connector
+            d = reach + 0.9
+            silk(name, cx + inward[0] * d + nx, cy + inward[1] * d + ny, 0.8, 90 if edge in ("L", "R") else 0)
+        else:
+            silk(name, cx - inward[0] * 2.1 + nx, cy - inward[1] * 2.1 + ny, 0.8, 90 if edge in ("L", "R") else 0)
+    for txt, x, y, size, *ang in _plan.get("bottom_text", []):
+        silk(txt, x, y, size, ang[0] if ang else 0)
     for ref, (x, y, ang, txt) in _plan.get("label_pos", {}).items():
         silk(txt, x, y, 0.8, ang, pcbnew.F_SilkS)
     if "logo" in _plan:

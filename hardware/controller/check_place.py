@@ -19,16 +19,19 @@ for fp in fps:
 
 
 def cy(fp):
-    b = fp.GetCourtyard(pcbnew.F_CrtYd).BBox()
+    b = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
     return [pcbnew.ToMM(v) for v in (b.GetLeft(), b.GetTop(), b.GetRight(), b.GetBottom())]
 
 
 boxes = {fp.GetReference(): cy(fp) for fp in fps}
+side = {fp.GetReference(): "B" if fp.IsFlipped() else "F" for fp in fps}
 problems = []
 refs = sorted(boxes)
 for i, a in enumerate(refs):
     A = boxes[a]
     for b in refs[i + 1:]:
+        if side[a] != side[b]:
+            continue                      # top and bottom parts may overlap in plan view
         B = boxes[b]
         ox, oy = min(A[2], B[2]) - max(A[0], B[0]), min(A[3], B[3]) - max(A[1], B[1])
         if ox > 0.01 and oy > 0.01:
@@ -72,7 +75,7 @@ svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W * S + 40}" height="{H
 bad = {p.split()[1] for p in problems if p.startswith("overlap")}
 bad = {r for pair in bad for r in pair.rstrip(":").split("/")}
 for ref, (x0, y0, x1, y1) in boxes.items():
-    col = "#d22" if ref in bad else "#999"
+    col = "#d22" if ref in bad else ("#69c" if side[ref] == "B" else "#999")
     svg.append(f'<rect x="{x0}" y="{y0}" width="{x1 - x0}" height="{y1 - y0}" fill="none" stroke="{col}" stroke-width="0.06"/>')
 for r, n, net, x, y, w, h in pads:
     col = "#c33" if net == "GND" else "#b58900" if net in ("+5V", "+3V3", "VBUS", "+5V_IN") else "#268bd2" if net else "#bbb"

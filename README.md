@@ -47,24 +47,22 @@ coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```
 
-## Hardware: the v6 controller board
+## Hardware: the v20 controller board
 
-One 56 × 52 mm board with 57 parts. It sits inside the machine and switches the heater, pump and
-valve itself. The design rule is that anything the firmware can do, the firmware does. What's left on
-the board:
-- isolation;
-- three zero-cross triacs (800 V parts);
+One 40 × 24 mm board with no mains on it, the GaggiMate layout: certified SSR modules beside it
+switch the heater, pump and valve, and a certified 5 V module powers it. The board has:
 - an ESP32-C6-MINI-1U (105 °C rated, W.FL / MHF III antenna connector);
-- a certified 5 V module;
-- a thermistor input and a pressure input, read by the C6's own ADC.
+- three 5 V outputs for the SSRs;
+- thermistor, pressure, front-panel (three switches in, three LEDs out) and drip-tray scale inputs;
+- eight JST GH connectors on the underside (four per long edge), which you solder on; JLCPCB assembles the rest.
 
 | Item | What | Notes |
 |---|---|---|
-| Board | v6 controller, JLCPCB assembles the SMD side | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. You hand-solder the through-hole parts. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
-| Boiler temperature | 100k B3950 NTC thermistor, M4 thread or ring lug | Goes in the brew-thermostat hole, hand-tight. Two-point calibration. |
+| Board | v20 controller, JLCPCB assembles the top side | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. You solder the eight GH connectors. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
+| Boiler temperature | Molex 218537-3919 50k NTC, ring tab | The board's reference resistor is matched to it. Two-point calibration. |
 | Pressure | Transducer 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
 | Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |
-| Scale *(optional)* | Bluetooth scale (Decent / Bookoo / Acaia) | Weight stop. Firmware driver not written yet. |
+| Scale *(optional)* | Two load cells under the drip tray, dual HX711, wired | Weight stop. See docs/CALIBRATION.md. |
 
 The full list and the reasons behind it are in [docs/HARDWARE.md](docs/HARDWARE.md); fitting it is
 [docs/INSTALL.md](docs/INSTALL.md). Off-the-shelf alternatives are compared in

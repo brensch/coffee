@@ -409,7 +409,20 @@ impl EngineConfig {
                     })
             }
         };
+        // The whole reading chain (model, divider and calibration together) must stay within 5 C
+        // of the fitted probe on this board: Molex 218537-3919 under a 4.7k reference. Each field
+        // range-checked alone still allowed combinations that read 93 C at a real 174 C, which
+        // would push OVER_TEMP past the thermal fuse.
+        let probe_ok = {
+            let real = NtcConfig { v_ref_mv: n.v_ref_mv, ..NtcConfig::default() };
+            [25.0f32, 93.0, 140.0, 165.0].iter().all(|&c| {
+                let mv = crate::sensors::ntc_mv_for_c(&real, c);
+                let read = n.cal_gain * crate::sensors::ntc_model_c(n, crate::sensors::ntc_ohms(n, mv)) + n.cal_offset_c;
+                r(read - c, -5.0, 5.0)
+            })
+        };
         let checks: &[(bool, &'static str)] = &[
+            (probe_ok, "ntc settings read more than 5 C off the board's probe (Molex 218537-3919, 4.7k)"),
             (self.mains_hz == 50.0 || self.mains_hz == 60.0, "mains_hz must be 50 or 60"),
             (r(self.brew_temp_c, 60.0, 105.0), "brew_temp_c out of 60..105"),
             // the stock steam thermostat opens at about 145 C: a higher setpoint is never reached
@@ -513,5 +526,21 @@ mod check_tests {
         let mut c = EngineConfig::default();
         c.temp_pid.out_min = 1.0;
         assert!(c.check().is_err());
+        // review round 6: each NTC field in range, together reading 93 C at a real ~174 C
+        let mut c = EngineConfig::default();
+        c.ntc.r25_ohm = 30e3;
+        c.ntc.beta = 5000.0;
+        c.ntc.r_ref_ohm = 6000.0;
+        c.ntc.cal_gain = 0.8;
+        c.ntc.steinhart_hart = None;
+        assert!(c.check().is_err());
+        let mut c = EngineConfig::default();
+        c.ntc.r_ref_ohm = 1e5;
+        assert!(c.check().is_err());
+        // a real two-point calibration (a degree or two) is still accepted
+        let mut c = EngineConfig::default();
+        c.ntc.cal_gain = 1.02;
+        c.ntc.cal_offset_c = -1.5;
+        c.check().unwrap();
     }
 }

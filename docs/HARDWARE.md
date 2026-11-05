@@ -25,7 +25,7 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled, all SMD on one side. The files are `build/coffee-v19-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
+- **The board:** from JLCPCB, top side assembled. The files are `build/coffee-v20-{gerbers.zip,bom.csv,cpl.csv}`; you solder the eight connectors onto the bottom yourself (INSTALL.md §1 step 6); the order settings are in INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md):
   - modules (heatsink optional);
   - wire and crimps;
@@ -50,11 +50,11 @@ On each, pin 1 = +5 V and pin 2 = OUT.
 ## Enclosure
 - **Mounting (as GaggiMate):** the heater SSR bolts to the inside of the rear panel at the ventilation slots (M4 bolts or cable ties through the slots). The board, the two SSR boards and the 5 V supply sit on a plastic part (a printed holder or bracket), never directly on the steel: their undersides carry mains. No DIN rail.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at full power.
-- **Board:** has no mounting holes. The holder grips its edges. Coordinates below are top view, origin at the top-left corner, x right and y down, in mm, board 45.5 × 32:
-  - **Ledge:** the underside has no parts, so the board can sit on a ledge 1 mm wide around its whole perimeter. The ledge only touches solder mask over the ground pour, which stops 0.3 mm short of the edge.
-  - **USB-C notch:** the USB-C shell overhangs the bottom edge by 0.46 mm from x 24.0 to 33.0. Leave the ledge open there, and leave room for a plug.
-  - **Clips over the top face** (no part within 1.5 mm of the edge): the bottom-left corner (bottom edge x 0–7.9, left edge y 24.9–32), the bottom-right corner (bottom edge x 33.8–45.5, right edge y 25.1–32), and the bottom edge x 21.1–23.2. Three clips there plus the ledge hold the board.
-  - **BOOT pad:** TP1 is on the underside at x 33.0, y 11.0 (top-view coordinates). Leave a hole under it, at least 4 mm across, for tweezers.
-- **Connectors:** all nine exit sideways past the edges, so leave about 8 mm of free space outside every edge for the GH plugs and their wires.
+- **Board:** has no mounting holes. Coordinates below are top view, origin at the top-left corner, x right and y down, in mm, board 40 × 24:
+  - **Underneath:** the eight GH connectors hang below the board along both long edges (y 0–6.4 and 17.6–24). The middle strip, y 6.4–17.6, is flat apart from TP1 and the USB-C shell legs (x 1.3–7.4, at y 7.2–8.2 and 15.8–16.8).
+  - **Rest it on a pedestal** under that middle strip, at least 5 mm tall so the connector bodies clear the floor. Leave a hole in it at **x 15, y 12**, at least 4 mm across, for tweezers on the BOOT pad (TP1), and relieve it where the USB-C legs come through.
+  - **Clips over the top face** (no part within 1.5 mm of the edge): right edge y 11.5–17.2, left edge y 0–6.6 and y 20.4–24.
+  - **USB-C:** overhangs the left short edge by 0.96 mm from y 6.7 to 17.3. Leave room there for a plug.
+- **Connectors:** eight exit sideways past the long edges (four each), so leave about 8 mm of free space outside both long edges for the GH plugs and their wires.
 - **Wiring:** keep the mains wiring and the 5 V leads apart (≥ 6 mm, or a barrier), anchor every wire near its terminal, and use fibreglass sleeve near the boiler.
 - **Antenna:** route it out through a plastic part. The case is steel.

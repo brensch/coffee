@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v19 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v20 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,20 +32,22 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v19-gerbers.zip`;
-   - `coffee-v19-bom.csv`;
-   - `coffee-v19-cpl.csv`.
+   - `coffee-v20-gerbers.zip`;
+   - `coffee-v20-bom.csv`;
+   - `coffee-v20-cpl.csv`.
+   - (`coffee-v20-hand-solder.csv` is the eight connectors you order yourself and solder on; see step 6.)
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 45.5 × 32 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
-   - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **left and right short edges only**, and add the remark "J4 USB-C overhangs the bottom long edge by 0.46 mm; no rail or V-cut on the bottom edge";
+   - 40 × 24 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **top and bottom long edges only**, and add the remark "J4 USB-C overhangs the left short edge by 0.96 mm; no rail or V-cut on the left edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
-   - Everything is SMD, so there's nothing to hand-solder.
-   - In JLC's placement preview, glance over the seven GH connectors, the USB-C, the module and the diodes (all rotations were solved against JLC's footprints; D2's from a same-package record, cross-checked against JLC's drawings).
-   - JLC lists 4 extended parts (GH connector, USB-C, ESP32-C6 module, LDO); everything else is basic.
+   - Do **not** add the connectors to the JLC order: they're on the bottom face, and the BOM and CPL leave them out.
+   - In JLC's placement preview, glance over the USB-C, the module and the diodes (all rotations were solved against JLC's footprints; D2's from a same-package record, cross-checked against JLC's drawings).
+   - JLC lists 3 extended parts (USB-C, ESP32-C6 module, LDO); everything else is basic.
 5. No conformal coating needed: there's no mains on the board.
+6. **Solder the connectors** (when the boards arrive). Eight JST GH side-entry headers go on the **bottom** face, openings facing outward past the long edges: 6 × SM03B-GHS-TB (LCSC C514175), 1 × SM06B (C133065, scale), 1 × SM07B (C495552, front panel). The bottom silkscreen names each footprint. Tack one mounting tab, check the pins sit square on their pads, then solder the pins and the other tab. Use a fine tip and flux; check for bridges at the 1.25 mm pitch with a loupe.
 
 ## 2. Software and emulation (your PC)
 

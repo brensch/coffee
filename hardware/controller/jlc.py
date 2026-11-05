@@ -138,7 +138,10 @@ def main():
         lib = c.get("componentLibraryType", "") if c else ""
         stock = c.get("stockCount", 0) if c else 0
         model = c.get("componentModelEn", "") if c else ""
-        is_tht = any(t in row["Footprint"] for t in THT)
+        # through-hole parts, and anything placed on the bottom (connectors you solder yourself:
+        # Economic PCBA assembles the top side only), go on the hand-solder list
+        is_tht = any(t in row["Footprint"] for t in THT) or all(
+            pos.get(r, {}).get("Side", "top").lower().startswith("bottom") for r in refs)
         line = dict(Comment=row["Value"], Designator=",".join(refs), Footprint=row["Footprint"].split(":")[-1], **{"LCSC Part #": code})
         (hand if is_tht else smd).append(line)
         flag = "" if code else "  **NO MATCH: pick by hand**"
