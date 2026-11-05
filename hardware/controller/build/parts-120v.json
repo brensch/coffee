@@ -256,28 +256,6 @@
    "mpn": "",
    "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in"
   },
-  "H1": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": "M3 mounting hole, unplated: a nylon standoff or screw into the printed holder"
-  },
-  "H2": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": "M3 mounting hole, unplated: a nylon standoff or screw into the printed holder"
-  },
   "R12": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "value": "1k",
@@ -943,6 +921,210 @@
    "desc": "Resistor",
    "mpn": "",
    "notes": "front-panel LED (steam) current limit, ~4 mA"
+  },
+  "R37": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_PWR_IO",
+    "2": "LED_PWR_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: power lamp"
+  },
+  "D3": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_PWR_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: power lamp"
+  },
+  "R38": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_COFFEE_IO",
+    "2": "LED_COFFEE_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: coffee lamp"
+  },
+  "D4": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_COFFEE_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: coffee lamp"
+  },
+  "R39": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_STEAM_IO",
+    "2": "LED_STEAM_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: steam lamp"
+  },
+  "D5": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_STEAM_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: steam lamp"
+  },
+  "R40": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "HEATER_CMD",
+    "2": "HEATER_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: heater on"
+  },
+  "D6": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "HEATER_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: heater on"
+  },
+  "R41": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "PUMP_CMD",
+    "2": "PUMP_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: pump on"
+  },
+  "D7": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "PUMP_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: pump on"
+  },
+  "R42": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "VALVE_CMD",
+    "2": "VALVE_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: valve on"
+  },
+  "D8": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "VALVE_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: valve on"
   },
   "J10": {
    "footprint": "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal",

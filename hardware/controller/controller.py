@@ -161,9 +161,6 @@ tp[1] += boot
 # Status LED on U0TXD (GPIO16), v24: the ROM prints its boot log there and holds it high while it
 # waits in download mode, so the LED flickers at every reset, glows while programming, then shows the
 # firmware's heartbeat. (On the steam lamp, the same pin lit "steam ready" at every boot: review M1.)
-# two M3 holes in the bottom corners for the upright mount in the machine's back-right corner
-for ref in ("H1", "H2"):
-    part(HOLE, ref, "M3", notes="M3 mounting hole, unplated: a nylon standoff or screw into the printed holder")
 st, st_a = Net("STATUS"), Net("STATUS_A")
 u_mcu["TXD0"] += st
 r = part(R, "R12", "1k", notes="red LED Vf ~2.0 V: ~1.3 mA from 3.3 V")
@@ -280,6 +277,19 @@ for i, (name, gpio, rl) in enumerate((("PWR", "IO21", "R30"), ("COFFEE", "IO22",
     r[1, 2] += Net(f"LED_{name}_IO"), led
     u_mcu[gpio] += r[1].net
     j_fp[5 + i] += led
+
+# v27 indicator panel: a red LED + 1k on each front-panel lamp GPIO (the same level the lamp gets) and on
+# each output's gate drive (lit exactly while the board turns that SSR on), in a row with the status LED.
+# 1k from 3.3 V: ~1.3 mA each. On the gate lines it only adds load to the 3.3k pull-down at boot.
+for dref, rref, net, what in (("D3", "R37", "LED_PWR_IO", "power lamp"), ("D4", "R38", "LED_COFFEE_IO", "coffee lamp"),
+                              ("D5", "R39", "LED_STEAM_IO", "steam lamp"), ("D6", "R40", "HEATER_CMD", "heater on"),
+                              ("D7", "R41", "PUMP_CMD", "pump on"), ("D8", "R42", "VALVE_CMD", "valve on")):
+    a_net = Net(f"{net}_IND")
+    r = part(R, rref, "1k", notes=f"indicator LED: {what}")
+    r[1, 2] += Net.get(net), a_net
+    led = part(LED, dref, "red", notes=f"indicator: {what}")
+    led["A"] += a_net
+    led["K"] += gnd
 
 # Drip-tray scale: two load cells with a dual HX711 board beside them in the tray base (Gaggiuino's
 # layout), so only slow digital lines run here. 5 V for the HX711's analog supply, 3V3 for its logic

@@ -38,6 +38,7 @@ price** and pick the variant named.
 | 18 | **Scale amplifier**: dual-HX711 board (Gaggiuino's "Vas" board, separate 5 V analog / 3.3 V logic), or 2 generic HX711 modules powered from 3.3 V only | 1 board or 2 modules | PCBWay (Vas board) or AliExpress modules | ~$3–10 |
 | 19 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters, plus magnets per the model | 1 set | Printables model 285370 (print it yourself) | filament |
 | 20 | **JST GH 2-pin lead**, single-ended, for the 5 V supply into J1 (2-pin since v24, so it can't go into an output socket) | 1 | same AliExpress GH store as #9 (variant 2P) | ~$1 |
+| 21 | **Heat-resistant velcro** (hook-and-loop, high-temperature adhesive) to hold the board on the side panel | a strip ~60 × 20 mm | any; check the adhesive's temperature rating is well above 70 °C | ~$5 |
 
 **Total ≈ $110–135** plus shipping, depending on the AliExpress prices and the plumbing route (≈ $15–20 of it is the scale and front panel, #15–19).
 
