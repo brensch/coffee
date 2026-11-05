@@ -6,6 +6,7 @@ C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,C
 C9,1,22nF X7R,C,Capacitor_SMD:C_0402_1005Metric,Y,Capacitor,ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses
 D1,1,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,"Status: boot log flicker, on while programming, then the firmware heartbeat"
 D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
+H1 H2,2,M3,MountingHole,MountingHole:MountingHole_3.2mm_M3,Y,M3 mounting hole (unplated),"M3 mounting hole, unplated: a nylon standoff or screw into the printed holder"
 J1,1,5V in,JST SM02B-GHS-TB,Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal,Y,JST_GH_2_SMD,"1=+5V 2=GND, from the 5 V AC-DC module"
 J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -

@@ -256,6 +256,28 @@
    "mpn": "",
    "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in"
   },
+  "H1": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "pin_names": {},
+   "mains": [],
+   "populate": "Y",
+   "desc": "M3 mounting hole (unplated)",
+   "mpn": "",
+   "notes": "M3 mounting hole, unplated: a nylon standoff or screw into the printed holder"
+  },
+  "H2": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "pin_names": {},
+   "mains": [],
+   "populate": "Y",
+   "desc": "M3 mounting hole (unplated)",
+   "mpn": "",
+   "notes": "M3 mounting hole, unplated: a nylon standoff or screw into the printed holder"
+  },
   "R12": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "1k",

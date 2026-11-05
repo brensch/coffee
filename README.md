@@ -47,20 +47,20 @@ coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```
 
-## Hardware: the v24 controller board
+## Hardware: the v25 controller board
 
-One 46.6 × 26.4 mm board with no mains on it, the GaggiMate layout: certified SSR modules beside it
+One 73.2 × 24 mm board with no mains on it, the GaggiMate layout: certified SSR modules beside it
 switch the heater, pump and valve, and a certified 5 V module powers it. Every part is on the top
 side, all assembled by JLCPCB:
 - an ESP32-C6-MINI-1U (105 °C rated, W.FL / MHF III antenna connector);
 - three 5 V outputs for the SSRs;
 - thermistor, pressure, front-panel (three switches in, three LEDs out) and drip-tray scale inputs;
-- eight latching JST GH connectors, four per long edge;
+- eight latching JST GH connectors in one row, so every cable leaves one edge (it mounts upright in the back-right corner, like GaggiMate's);
 - USB-C for the first flash (then updates go over Wi-Fi) and a status LED that shows programming and the heartbeat.
 
 | Item | What | Notes |
 |---|---|---|
-| Board | v24 controller, fully assembled by JLCPCB | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
+| Board | v25 controller, fully assembled by JLCPCB | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
 | Boiler temperature | Molex 218537-3919 50k NTC, ring tab | The board's reference resistor is matched to it. Two-point calibration. |
 | Pressure | Transducer 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
 | Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |

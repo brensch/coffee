@@ -1,8 +1,9 @@
-# Controller board v24: low voltage only
+# Controller board v25: low voltage only
 
-A 46.6 × 26.4 mm two-layer board: eight JST GH connectors butted along the long edges, the ESP32
-module at the right end touching both rows, and the USB-C socket at the left edge with the LDO above
-it. Every part is on the top side, so JLCPCB's one-sided assembly fits all of it and there is nothing
+A 73.2 × 24 mm two-layer board with all eight JST GH connectors in one row along its top edge, so
+every cable leaves one side: it stands upright in the machine's back-right corner (where GaggiMate
+mounts its controller) with the cables going up into the loom. The ESP32 module is at the right end,
+the USB-C at the left end, and two M3 holes run along the bottom edge. Every part is on the top side, so JLCPCB's one-sided assembly fits all of it and there is nothing
 to solder. It carries
 **no mains**:
 - **The board's job:** read the sensors and drive three 5 V outputs.
@@ -100,20 +101,17 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 ## Layout
 
-**Board:** 46.6 × 26.4 mm, 2 layers, 1 oz, every part on the top side. Passives are 0402 (JLC basic parts; Economic PCBA places 0402).
+**Board:** 73.2 × 24 mm, 2 layers, 1 oz, every part on the top side. Passives are 0402 (JLC basic parts; Economic PCBA places 0402). Two unplated M3 holes, at (4.0, 20.6) and (56.5, 20.6) mm.
 
-**Connectors:** openings outward past the long edges, butted in each row:
-- top edge (left to right): LDO corner, 5 V in (J1, 2-pin), pressure (J6), thermistor (J5), scale (J10, 6-pin, over the module: its data pins land on the module's DOUT pins);
-- bottom edge: valve (J8), heater (J2), front panel (J7, 7-pin, beside the module's switch and LED pins), pump (J3, under the module);
-- USB-C (J4) at the left short edge, between the rows.
+**Connectors:** one row along the top edge, openings outward (up when mounted), left to right: 5 V in (J1, 2-pin), valve (J8), heater (J2), pump (J3), pressure (J6), thermistor (J5), front panel (J7, 7-pin), scale (J10, 6-pin, over the module). Each connector's parts sit directly under its pins: the output drivers under the outputs, the dividers and filters under the sensor pins, the switch and LED resistors under the front-panel pins. USB-C (J4) at the left short edge.
 
-**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm) and v23 (37.8 × 26.4 mm, no USB-C) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
+**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
 
 All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the long edges.
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 
-**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected and 72 routed vias, plus GND stitching. Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
+**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected and 69 routed vias, plus GND stitching. Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
 
 **Rules:** JLCPCB standard capabilities only, the cheapest tier:
 - 0.2 mm tracks and gaps (0.15 mm DRC minimum; JLC's is 0.127 mm);
@@ -127,7 +125,7 @@ All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a
 
 The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
 
-**JLC:** 25 BOM lines, all placed by JLC on the top side; 7 extended part types (the four GH connector sizes, the USB-C, the ESP32-C6 module, the LDO), the rest basic. The 0402 100 nF and 22 nF are pinned to basic parts (C1525, C1532): the matcher picked extended ones. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
+**JLC:** 25 BOM lines, all placed by JLC on the top side; 7 extended part types (the four GH connector sizes, the USB-C, the ESP32-C6 module, the LDO), the rest basic. None of the seven has a basic or preferred-extended equivalent in JLC's library (searched 2026-11-05: no latching wire-to-board connector, USB-C or ESP32 module is basic); only the LDO does (AMS1117-3.3, C6186), kept as the TI part for ceramic-capacitor stability and lower dropout. The 0402 100 nF and 22 nF are pinned to basic parts (C1525, C1532): the matcher picked extended ones. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
 - `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 52 placed parts land on their pads (the two new 0402 capacitors solved from same-package records: EasyEDA's API refused this machine).
 - `jlc_pins.py` then compares JLC's pin names with the schematic's for every polarised part: 90 pin functions, 0 mismatches. This gate exists because the v15 position file had the status LED reversed.
 

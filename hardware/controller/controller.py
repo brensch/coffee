@@ -161,6 +161,9 @@ tp[1] += boot
 # Status LED on U0TXD (GPIO16), v24: the ROM prints its boot log there and holds it high while it
 # waits in download mode, so the LED flickers at every reset, glows while programming, then shows the
 # firmware's heartbeat. (On the steam lamp, the same pin lit "steam ready" at every boot: review M1.)
+# v25: two M3 holes along the bottom edge for the upright mount in the machine's back-right corner
+for ref in ("H1", "H2"):
+    part(HOLE, ref, "M3", notes="M3 mounting hole, unplated: a nylon standoff or screw into the printed holder")
 st, st_a = Net("STATUS"), Net("STATUS_A")
 u_mcu["TXD0"] += st
 r = part(R, "R12", "1k", notes="red LED Vf ~2.0 V: ~1.3 mA from 3.3 V")
