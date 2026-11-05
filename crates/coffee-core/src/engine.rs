@@ -129,6 +129,9 @@ pub struct Engine {
 
     // state tracking
     prev_inputs: u8,
+    /// The coffee switch was turned on and the shot waits for Ready (cleared when it starts or
+    /// when the switch goes off): the switch never starts a shot on a machine still heating.
+    brew_switch_waiting: bool,
     in_band_since: Option<f64>,
     brew: Option<Brew>,
     pending_start: bool,
@@ -196,6 +199,7 @@ impl Engine {
             target_pressure: f32::NAN,
             target_flow: f32::NAN,
             prev_inputs: 0,
+            brew_switch_waiting: false,
             in_band_since: None,
             brew: None,
             pending_start: false,
@@ -432,12 +436,15 @@ impl Engine {
         let heater = self.heater_sd.next(self.heater_duty);
         self.pump_on = self.pump_sd.next(self.pump_duty);
 
+        let status = self.status(p);
         ActuatorFrame {
             cycle: s.cycle,
             heater,
             pump: self.pump_on,
             valve,
-            status: self.status(p),
+            // the front-panel lamps the board drives this cycle, on the sensor frame's crystal clock
+            lamps: coffee_io::panel_leds(status.state, status.faults, status.temp_c, status.setpoint_c, s.t_us / 1000),
+            status,
         }
     }
 
@@ -751,7 +758,19 @@ impl Engine {
     }
 
     fn state_machine(&mut self, inputs: u8, rising: u8, falling: u8, p: f32) {
-        let start_req = core::mem::take(&mut self.pending_start) || rising & input::BREW != 0;
+        if rising & input::BREW != 0 {
+            self.brew_switch_waiting = true;
+        }
+        if inputs & input::BREW == 0 {
+            self.brew_switch_waiting = false;
+        }
+        // The coffee switch never starts a shot on a boiler still warming up: turned on while
+        // heating, it waits for Ready (the coffee lamp blinks meanwhile). A boiler that is too hot
+        // (after steaming) is another matter: running water through is how a Gaggia cools back
+        // down, so then it starts at once. The UI's Brew is gated on Ready by the node unless forced.
+        let too_hot = self.state == EngineState::Heating && self.temp.get() - self.setpoint() > self.cfg.ready_over_c;
+        let switch_start = self.brew_switch_waiting && (self.state == EngineState::Ready || too_hot);
+        let start_req = core::mem::take(&mut self.pending_start) || switch_start;
         let stop_req = core::mem::take(&mut self.pending_stop);
 
         if self.faults != 0 {
@@ -775,7 +794,8 @@ impl Engine {
                 } else if inputs & input::WATER != 0 {
                     self.state = EngineState::HotWater;
                 } else if start_req {
-                    self.start_brew(rising & input::BREW != 0, p);
+                    self.start_brew(switch_start, p);
+                    self.brew_switch_waiting = false;
                 } else {
                     // Judge readiness on the water (what brews), not the wall probe.
                     let water = self.water_est.unwrap_or(self.temp.get());
@@ -1247,6 +1267,62 @@ mod tests {
             "{} vs {expect}",
             shot.pumped_ml
         );
+    }
+
+    #[test]
+    fn brew_switch_waits_for_ready() {
+        // Turned on while heating, the coffee switch arms the shot; it starts when the machine
+        // reaches Ready, never before. Turned off while waiting, it cancels.
+        let cfg = EngineConfig { ready_requires_heat_soak: false, ..Default::default() };
+        let sp = cfg.brew_temp_c;
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for _ in 0..120 {
+            e.tick(&frame(&cfg, k, sp - 30.0, 0.0, 0));
+            k += 1;
+        }
+        // switch on while cold: heating, no shot
+        for _ in 0..600 {
+            let a = e.tick(&frame(&cfg, k, sp - 30.0, 0.0, input::BREW));
+            assert_ne!(a.status.state, EngineState::Brewing, "started while heating");
+            k += 1;
+        }
+        // off and on again while still cold: still nothing
+        e.tick(&frame(&cfg, k, sp - 30.0, 0.0, 0));
+        k += 1;
+        // switch held on while the boiler reaches the setpoint: the shot starts once Ready
+        let mut seen_ready = false;
+        let mut started = false;
+        let mut temp = sp - 30.0;
+        for _ in 0..(cfg.mains_hz as u32 * 600) {
+            temp = (temp + 0.03).min(sp);   // ~2 C/s, like a real boiler heating
+            let a = e.tick(&frame(&cfg, k, temp, 0.0, input::BREW));
+            k += 1;
+            match a.status.state {
+                EngineState::Ready => seen_ready = true,
+                EngineState::Brewing => {
+                    assert!(seen_ready, "started before Ready");
+                    started = true;
+                    break;
+                }
+                _ => {}
+            }
+        }
+        assert!(started, "never started after Ready (seen_ready {seen_ready}, state {:?})", e.state());
+        // a switch turned on and off while heating leaves nothing armed
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for i in 0..200u32 {
+            let on = (60..120).contains(&i);
+            e.tick(&frame(&cfg, i, sp - 30.0, 0.0, if on { input::BREW } else { 0 }));
+        }
+        let mut k = 200;
+        let mut temp = sp - 30.0;
+        for _ in 0..(cfg.mains_hz as u32 * 600) {
+            temp = (temp + 0.03).min(sp);
+            let a = e.tick(&frame(&cfg, k, temp, 0.0, 0));
+            k += 1;
+            assert_ne!(a.status.state, EngineState::Brewing, "a cancelled switch still started a shot");
+        }
     }
 
     fn zero_after_boot(temp_c: f32, nominal_bar: f32) -> f32 {

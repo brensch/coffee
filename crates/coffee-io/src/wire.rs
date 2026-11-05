@@ -121,7 +121,8 @@ pub fn encode(msg: &Message, out: &mut [u8]) -> usize {
         }
         Message::Actuators(a) => {
             w.u32(a.cycle);
-            w.u8((a.heater as u8) | (a.pump as u8) << 1 | (a.valve as u8) << 2);
+            w.u8((a.heater as u8) | (a.pump as u8) << 1 | (a.valve as u8) << 2
+                | (a.lamps[0] as u8) << 3 | (a.lamps[1] as u8) << 4 | (a.lamps[2] as u8) << 5);
             let s = &a.status;
             w.u8(s.state as u8);
             w.u16(s.faults);
@@ -200,6 +201,7 @@ pub fn decode(buf: &[u8]) -> Result<(Message, usize), WireError> {
                 heater: flags & 1 != 0,
                 pump: flags & 2 != 0,
                 valve: flags & 4 != 0,
+                lamps: [flags & 8 != 0, flags & 16 != 0, flags & 32 != 0],
                 status: EngineStatus {
                     state,
                     faults,
@@ -254,6 +256,7 @@ mod tests {
                 heater: true,
                 pump: false,
                 valve: true,
+                lamps: [true, false, true],
                 status: EngineStatus {
                     state: EngineState::Brewing,
                     faults: 3,
@@ -275,6 +278,7 @@ mod tests {
                     assert_eq!(a.status.temp_c, b.status.temp_c);
                     assert!(b.status.target_flow_ml_s.is_nan());
                     assert_eq!(a.valve, b.valve);
+                    assert_eq!(a.lamps, b.lamps);
                 }
                 (a, b) => assert_eq!(a, b),
             }

@@ -87,6 +87,9 @@ pub struct Telemetry {
     /// Front-panel power rocker ON (false = standby).
     #[serde(default = "yes")]
     pub power_switch: bool,
+    /// Front-panel lamps (power, coffee, steam) exactly as the board drives its LED pins.
+    #[serde(default)]
+    pub lamps: [bool; 3],
     pub profile: String,
 }
 
@@ -130,6 +133,7 @@ impl Telemetry {
             brew_switch: inputs & coffee_io::input::BREW != 0,
             steam_switch: inputs & coffee_io::input::STEAM != 0,
             power_switch: inputs & coffee_io::input::STANDBY == 0,
+            lamps: a.lamps,
             profile: profile.name.clone(),
         }
     }

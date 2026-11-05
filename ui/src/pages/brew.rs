@@ -350,32 +350,42 @@ pub fn BrewPage() -> impl IntoView {
 
 /// Previous shots; clicking one opens it in History.
 /// The machine's front panel as it looks on the Gaggia: three latching rockers (power, coffee,
-/// steam), each with its lamp (now an LED the controller drives). Rocker positions come from
-/// telemetry; the LEDs are computed with the same `panel_leds` the firmware uses, on the UI's own
-/// clock, so they blink in step with the real ones (phase aside).
+/// steam), each with its lamp (now an LED the controller drives). The lamps show exactly what the
+/// board drives on its LED pins (telemetry `lamps`, sent on every edge). On the emulator the rockers
+/// are clickable: a click flips the emulated switch, which reaches the engine as the same debounced
+/// input the real rocker gives (coffee on = start a shot, off = stop it). On real hardware they only
+/// show the rockers' positions.
 #[component]
 fn FrontPanel() -> impl IntoView {
     let s = store();
-    let tick = RwSignal::new(0u64);
-    set_interval(move || tick.update(|t| *t += 1), std::time::Duration::from_millis(100));
     let panel = move || {
         let t = s.tel.get();
-        let (sw, leds) = match t.as_ref() {
-            Some(t) => {
-                let leds = coffee_api::panel_leds(t.engine_state(), (!t.faults.is_empty()) as u16, t.temp_c.unwrap_or(f32::NAN), t.setpoint_c, tick.get() * 100);
-                ([t.power_switch, t.brew_switch, t.steam_switch], leds)
-            }
+        let (sw, lamps) = match t.as_ref() {
+            Some(t) => ([t.power_switch, t.brew_switch, t.steam_switch], t.lamps),
             None => ([false; 3], [false; 3]),
         };
-        ["Power", "Coffee", "Steam"].into_iter().enumerate().map(|(i, name)| {
+        let lab = s.lab_connected.get();
+        [("Power", "switch.power"), ("Coffee", "switch.brew"), ("Steam", "switch.steam")].into_iter().enumerate().map(|(i, (name, path))| {
             let on = sw[i];
-            let lit = leds[i];
+            let lit = lamps[i];
+            let class = match (on, lab) {
+                (true, true) => "fp-rocker on click",
+                (true, false) => "fp-rocker on",
+                (false, true) => "fp-rocker click",
+                (false, false) => "fp-rocker",
+            };
+            let title = match (on, lab) {
+                (_, false) => if on { "switch on (the rocker on the machine)" } else { "switch off (the rocker on the machine)" },
+                (true, true) => "on: click to switch off",
+                (false, true) => "off: click to switch on",
+            };
             view! {
                 <div class="fp-unit">
-                    <div class=if lit { "fp-led on" } else { "fp-led" } title=if lit { "lamp on" } else { "lamp off" }></div>
-                    <div class=if on { "fp-rocker on" } else { "fp-rocker" } title=if on { "switch on" } else { "switch off" }>
+                    <div class=if lit { "fp-led on" } else { "fp-led" } title=if lit { "lamp lit (LED pin high)" } else { "lamp off (LED pin low)" }></div>
+                    <button class=class title=title disabled=!lab
+                        on:click=move |_| api::lab_command(coffee_api::lab::LabCommand::Set { path: path.into(), value: if on { "off".into() } else { "on".into() } })>
                         <span class="fp-mark">{if on { "I" } else { "O" }}</span>
-                    </div>
+                    </button>
                     <div class="fp-label">{name}</div>
                 </div>
             }
@@ -383,7 +393,9 @@ fn FrontPanel() -> impl IntoView {
     };
     view! {
         <div class="card">
-            <h2>"Front panel"<span class="spacer"></span><span class="faint small">"switches and lamps on the machine"</span></h2>
+            <h2>"Front panel"<span class="spacer"></span>
+                <span class="faint small">{move || if s.lab_connected.get() { "emulator: click a switch to flip it" } else { "switches and lamps on the machine" }}</span>
+            </h2>
             <div class="fp">{panel}</div>
         </div>
     }

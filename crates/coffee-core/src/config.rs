@@ -348,7 +348,10 @@ impl Default for EngineConfig {
             },
             pressure_pid: PidGains {
                 kp: 2.5,
-                ki: 2.5,
+                // 8 (was 2.5): after a ramp the integral must rebuild the puck's steady flow; at 2.5
+                // the first 3 s of a 9 bar hold sat ~0.2 bar low (0.4 worst). 8 halves the ramp lag
+                // and the post-ramp dip with the same +-0.03 bar ripple (emulator sweep, 2026-11-05).
+                ki: 8.0,
                 kd: 0.0,
                 d_tau_s: 0.05,
                 out_min: 0.0,

@@ -284,6 +284,7 @@ impl<S: Storage> Node<S> {
     pub fn tick(&mut self, s: &SensorFrame) -> ActuatorFrame {
         let t = s.t_us as f64 * 1e-6;
         let a = self.engine.tick(s);
+        let inputs_before = self.inputs;
         self.inputs = s.inputs;
         let flushing = self.engine.profile.name == coffee_core::Profile::FLUSH_NAME;
         self.history.observe(t, &a, flushing);
@@ -320,7 +321,8 @@ impl<S: Storage> Node<S> {
             }
             None => {}
         }
-        if force || t - self.last_telemetry_t >= 0.04 {
+        // a lamp edge goes out at once, so the UI's front panel shows exactly what the pins do
+        if force || a.lamps != self.telemetry.lamps || s.inputs != inputs_before || t - self.last_telemetry_t >= 0.04 {
             self.last_telemetry_t = t;
             self.telemetry = Telemetry::from_frame(t, &a, s.inputs, &self.engine.profile);
             self.events

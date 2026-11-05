@@ -67,6 +67,9 @@ pub struct ActuatorFrame {
     pub pump: bool,
     /// 3-way solenoid energised (boiler connected to group).
     pub valve: bool,
+    /// Front-panel lamps (power, coffee, steam): the levels the board drives on its LED pins
+    /// (GPIO21/22/16) this cycle. Filled by the engine from [`panel_leds`] on the sensor frame's clock.
+    pub lamps: [bool; 3],
     /// Engine state for telemetry / UI / scenario assertions. Not used by hardware.
     pub status: EngineStatus,
 }

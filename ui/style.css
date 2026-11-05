@@ -266,3 +266,9 @@ textarea.code { width: 100%; min-height: 260px; font-family: var(--mono); font-s
   padding-bottom: 8px; box-sizing: border-box; color: #bbb; font: 600 12px var(--sans); }
 .fp-rocker.on { background: linear-gradient(180deg, #151515 0%, #3a3a3a 48%, #2b2b2b 52%, #111 100%); align-items: flex-start; padding: 8px 0 0; color: #fff; }
 .fp-label { font-size: 12px; color: #cfc6bd; letter-spacing: .04em; }
+button.fp-rocker { appearance: none; margin: 0; cursor: default; }
+button.fp-rocker:disabled { opacity: 1; }
+.fp-rocker.click { cursor: pointer; }
+.fp-rocker.click:hover { border-color: #6b5a4a; }
+.fp-rocker.click:active { transform: translateY(1px); }
+.fp-rocker.click:focus-visible { outline: 2px solid var(--accent, #c8875a); outline-offset: 2px; }

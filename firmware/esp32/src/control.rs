@@ -27,7 +27,7 @@ use crate::link::{self, BUDGET_US, LINK, MAX_PER_CYCLE, TELEMETRY};
 use crate::store::{BUSY, NodeT};
 use crate::usb;
 use coffee_api::ServerMsg;
-use coffee_board::{CycleClock, Debounce, Oversample, panel_leds, ratiometric, status_led};
+use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
 use coffee_io::{EngineState, SensorFrame, input};
 use coffee_node::tlog::{LogWriter, Outputs};
 use core::sync::atomic::Ordering;
@@ -215,8 +215,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
         pump.set_level(a.pump.into());
         valve.set_level(a.valve.into());
         led.set_level(status_led(a.status.state, a.status.faults, t / 1000).into());
-        let lamps = panel_leds(a.status.state, a.status.faults, a.status.temp_c, a.status.setpoint_c, t / 1000);
-        for (o, on) in panel.iter_mut().zip(lamps) {
+        for (o, on) in panel.iter_mut().zip(a.lamps) {   // the engine's lamp outputs, as telemetry reports them
             o.set_level(on.into());
         }
         rtc.rwdt.feed();
