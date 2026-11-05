@@ -58,11 +58,12 @@ pub struct Pins {
     pub heater: peripherals::GPIO20<'static>,
     pub brew: peripherals::GPIO6<'static>,
     pub steam: peripherals::GPIO7<'static>,
-    pub led: peripherals::GPIO23<'static>,
+    /// Status LED (v24: on U0TXD, so it also flickers with the ROM boot log)
+    pub led: peripherals::GPIO16<'static>,
     pub power: peripherals::GPIO14<'static>,
     pub led_power: peripherals::GPIO21<'static>,
     pub led_coffee: peripherals::GPIO22<'static>,
-    pub led_steam: peripherals::GPIO16<'static>,
+    pub led_steam: peripherals::GPIO23<'static>,
     pub scale_sck: peripherals::GPIO17<'static>,
     pub scale_dout1: peripherals::GPIO4<'static>,
     pub scale_dout2: peripherals::GPIO5<'static>,
@@ -93,8 +94,9 @@ pub async fn run(p: Pins, mut node: NodeT) {
     ];
     let mut scale = crate::scale::Scale::new(
         Output::new(p.scale_sck, Level::Low, OutputConfig::default()),
-        Input::new(p.scale_dout1, InputConfig::default()),
-        Input::new(p.scale_dout2, InputConfig::default()),
+        // pulled up: with no scale on J10 the lines read "not ready", not noise (review S5)
+        Input::new(p.scale_dout1, InputConfig::default().with_pull(Pull::Up)),
+        Input::new(p.scale_dout2, InputConfig::default().with_pull(Pull::Up)),
     );
 
     let mut rtc = Rtc::new(p.rtc);

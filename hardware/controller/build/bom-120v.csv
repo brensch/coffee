@@ -1,14 +1,15 @@
 Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
-C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,Module decoupling at the 3V3 pin
-C4 C8 C10 C11,4,100nF X7R,C,Capacitor_SMD:C_0402_1005Metric,Y,Capacitor,ADC reservoir | ADC sampling reservoir / noise filter | Module decoupling at the 3V3 pin
+C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
+C4 C8 C10 C11,4,100nF X7R,C,Capacitor_SMD:C_0402_1005Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner | ADC reservoir | ADC sampling reservoir / noise filter"
 C5,1,1uF X5R,C,Capacitor_SMD:C_0402_1005Metric,Y,Capacitor,EN delay
 C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
 C9,1,22nF X7R,C,Capacitor_SMD:C_0402_1005Metric,Y,Capacitor,ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses
+D1,1,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,"Status: boot log flicker, on while programming, then the firmware heartbeat"
 D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
-J1,1,5V in,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"1=+5V 2=GND 3=GND, from the 5 V AC-DC module"
+J1,1,5V in,JST SM02B-GHS-TB,Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal,Y,JST_GH_2_SMD,"1=+5V 2=GND, from the 5 V AC-DC module"
 J2,1,Heater,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
 J3,1,Pump,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -
-J4,1,Prog USB,Prog,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left,N,Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash,"1=VBUS 2=D- 3=D+ 4=GND (USB lead colours: red, white, green, black)"
+J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
 J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused"
 J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND
 J7,1,Front panel,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)
@@ -17,14 +18,14 @@ J10,1,Scale,JST SM06B-GHS-TB,Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_
 Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate","HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
 Q4,1,AO3401A,AO3401A,Package_TO_SOT_SMD:SOT-23,Y,"P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",Reverse-polarity protection
 R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
-R10 R11 R22 R23 R25 R36,6,10k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | SCK pull-down: HX711 stays powered while the C6 boots | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom
-R15 R20 R21 R28,4,4.7k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,"NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table) | switch pull-up / wetting current"
+R10 R11 R20 R21 R22 R23 R25 R28 R36,9,10k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | SCK pull-down: HX711 stays powered while the C6 boots | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom | switch pull-up / wetting current
+R12 R18 R19 R27 R29,5,1k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,GPIO series protection | GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R13 R14,2,5.1k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,USB-C sink identification
+R15,1,4.7k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,"NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)"
 R16,1,47k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,Divider 100/147 (147k load: TE M3200 needs > 100k)
 R17,1,100k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,
-R18 R19 R27 R29,4,1k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,GPIO series protection | GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode
 R24,1,20k,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,V5_SNS divider top
 R30 R31 R32,3,330,R,Resistor_SMD:R_0402_1005Metric,Y,Resistor,"front-panel LED (coffee) current limit, ~4 mA | front-panel LED (pwr) current limit, ~4 mA | front-panel LED (steam) current limit, ~4 mA"
-TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (J4.4) while plugging the USB lead in
-TP2,1,STATUS,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,"Heartbeat output (3.3 V push-pull): probe, or an LED + 1k to GND while debugging"
+TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in
 U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
 U5,1,TLV1117LV33DCYR,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable","SOT-223 for heat: ~0.17 W average, +11 C"

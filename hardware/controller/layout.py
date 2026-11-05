@@ -158,7 +158,7 @@ def silkscreen(board, mains_v, footprints=None):
     and pin order, plus the board name and the logo where the plan puts them. The top is too dense
     for text; it keeps only the connectors' own pin-1 marks. Optional top labels: plan "label_pos"."""
     LABELS = _plan.get("labels", {
-        "J1": ("5V IN", ["+5V", "GND", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
+        "J1": ("5V IN", ["+5V", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
         "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["", "", "NC"]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
         "J7": ("FRONT", ["PWR", "BREW", "STM", "GND", "LP", "LC", "LS"]),
         "J10": ("SCALE", ["+5V", "3V3", "GND", "SCK", "D1", "D2"]), "J4": ("USB", [])})

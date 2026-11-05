@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/04/2026 08:16 PM")
+    (date "11/04/2026 09:15 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -250,6 +250,29 @@
         (tstamps "/"))
       (tstamps "9ccc330f-2a4c-575c-9353-ad8096a286cf"))
     (comp
+      (ref "D1")
+      (value "red")
+      (description "LED")
+      (footprint "LED_SMD:LED_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "LED")
+        (field
+          (name "Footprint") "LED_SMD:LED_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "D1")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "LED"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "730dc923-5f42-5190-a58b-2dbed3a5d5b0"))
+    (comp
       (ref "D2")
       (value "B5819W")
       (description "Schottky 1 A 40 V")
@@ -275,13 +298,13 @@
     (comp
       (ref "J1")
       (value "5V in")
-      (description "JST_GH_3_SMD")
-      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+      (description "JST_GH_2_SMD")
+      (footprint "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
       (fields
         (field
-          (name "Description") "JST_GH_3_SMD")
+          (name "Description") "JST_GH_2_SMD")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -290,7 +313,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_3_SMD"))
+        (part "JST_GH_2_SMD"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -366,14 +389,14 @@
       (tstamps "feeefe1a-2e42-5bb8-adfa-cd7486f50a6d"))
     (comp
       (ref "J4")
-      (value "Prog USB")
-      (description "Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash")
-      (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left")
+      (value "USB-C")
+      (description "USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power")
+      (footprint "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12")
       (fields
         (field
-          (name "Description") "Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash")
+          (name "Description") "USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power")
         (field
-          (name "Footprint") "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left")
+          (name "Footprint") "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12")
         (field
           (name "Datasheet"))
         (field
@@ -382,7 +405,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "Prog"))
+        (part "USB_C_Receptacle_USB2.0"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -618,6 +641,75 @@
         (tstamps "/"))
       (tstamps "146f51db-bb3a-5131-afc8-7744106d2cfe"))
     (comp
+      (ref "R12")
+      (value "1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0402_1005Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0402_1005Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R12")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "9f75750b-4097-5a2a-b9eb-5e3f319978ce"))
+    (comp
+      (ref "R13")
+      (value "5.1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0402_1005Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0402_1005Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R13")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "2e9cb324-63c9-5ad4-ba1a-b618f4020bea"))
+    (comp
+      (ref "R14")
+      (value "5.1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0402_1005Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0402_1005Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R14")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "fc87fb8d-6ec9-5f6a-ba62-fc9d37c462e7"))
+    (comp
       (ref "R15")
       (value "4.7k")
       (description "Resistor")
@@ -734,7 +826,7 @@
       (tstamps "0ead03f1-50b6-599b-864c-cf54dd0f7185"))
     (comp
       (ref "R20")
-      (value "4.7k")
+      (value "10k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0402_1005Metric")
       (fields
@@ -757,7 +849,7 @@
       (tstamps "6d059f79-f7fb-532a-98db-972feb6a8e76"))
     (comp
       (ref "R21")
-      (value "4.7k")
+      (value "10k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0402_1005Metric")
       (fields
@@ -895,7 +987,7 @@
       (tstamps "7b63e68b-3b47-5fd3-988e-1f6c73de73f1"))
     (comp
       (ref "R28")
-      (value "4.7k")
+      (value "10k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0402_1005Metric")
       (fields
@@ -1124,29 +1216,6 @@
         (tstamps "/"))
       (tstamps "ec7b7017-d3a1-52a1-ab31-ef99bc577234"))
     (comp
-      (ref "TP2")
-      (value "STATUS")
-      (description "Bare test pad")
-      (footprint "TestPoint:TestPoint_Pad_D1.0mm")
-      (fields
-        (field
-          (name "Description") "Bare test pad")
-        (field
-          (name "Footprint") "TestPoint:TestPoint_Pad_D1.0mm")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "TP2")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "TestPad"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "21c4b62b-8c2d-56ee-9b42-d10ab095f277"))
-    (comp
       (ref "U4")
       (value "ESP32-C6-MINI-1U-H4")
       (description "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated")
@@ -1307,6 +1376,30 @@
         (pintype "PASSIVE")))
     (net
       (code 4)
+      (name "CC1")
+      (class "Default")
+      (node
+        (ref "J4")
+        (pin "A5")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R13")
+        (pin "1")
+        (pintype "PASSIVE")))
+    (net
+      (code 5)
+      (name "CC2")
+      (class "Default")
+      (node
+        (ref "J4")
+        (pin "B5")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R14")
+        (pin "1")
+        (pintype "PASSIVE")))
+    (net
+      (code 6)
       (name "EN")
       (class "Default")
       (node
@@ -1322,7 +1415,7 @@
         (pin "8")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 5)
+      (code 7)
       (name "GND")
       (class "Default")
       (node
@@ -1362,12 +1455,12 @@
         (pin "2")
         (pintype "PASSIVE"))
       (node
-        (ref "J1")
-        (pin "2")
+        (ref "D1")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "J1")
-        (pin "3")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "J10")
@@ -1383,7 +1476,23 @@
         (pintype "PASSIVE"))
       (node
         (ref "J4")
-        (pin "4")
+        (pin "A1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "A12")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B12")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "S1")
         (pintype "PASSIVE"))
       (node
         (ref "J5")
@@ -1416,6 +1525,14 @@
       (node
         (ref "Q4")
         (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R13")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R14")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "R17")
@@ -1538,7 +1655,7 @@
         (pin "1")
         (pintype "POWER-IN")))
     (net
-      (code 6)
+      (code 8)
       (name "HEATER_CMD")
       (class "Default")
       (node
@@ -1554,7 +1671,7 @@
         (pin "26")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 7)
+      (code 9)
       (name "HEATER_OUT")
       (class "Default")
       (node
@@ -1566,7 +1683,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 8)
+      (code 10)
       (name "IO8_STRAP")
       (class "Default")
       (node
@@ -1578,7 +1695,7 @@
         (pin "22")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 9)
+      (code 11)
       (name "IO9_BOOT")
       (class "Default")
       (node
@@ -1590,7 +1707,7 @@
         (pin "23")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 10)
+      (code 12)
       (name "LED_COFFEE")
       (class "Default")
       (node
@@ -1602,7 +1719,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 11)
+      (code 13)
       (name "LED_COFFEE_IO")
       (class "Default")
       (node
@@ -1614,7 +1731,7 @@
         (pin "28")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 12)
+      (code 14)
       (name "LED_PWR")
       (class "Default")
       (node
@@ -1626,7 +1743,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 13)
+      (code 15)
       (name "LED_PWR_IO")
       (class "Default")
       (node
@@ -1638,7 +1755,7 @@
         (pin "27")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 14)
+      (code 16)
       (name "LED_STEAM")
       (class "Default")
       (node
@@ -1650,7 +1767,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 15)
+      (code 17)
       (name "LED_STEAM_IO")
       (class "Default")
       (node
@@ -1659,10 +1776,10 @@
         (pintype "PASSIVE"))
       (node
         (ref "U4")
-        (pin "31")
+        (pin "29")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 16)
+      (code 18)
       (name "NTC")
       (class "Default")
       (node
@@ -1682,7 +1799,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 17)
+      (code 19)
       (name "NTC_ADC")
       (class "Default")
       (node
@@ -1694,7 +1811,7 @@
         (pin "13")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 18)
+      (code 20)
       (name "PUMP_CMD")
       (class "Default")
       (node
@@ -1710,7 +1827,7 @@
         (pin "25")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 19)
+      (code 21)
       (name "PUMP_OUT")
       (class "Default")
       (node
@@ -1722,7 +1839,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 20)
+      (code 22)
       (name "P_ADC")
       (class "Default")
       (node
@@ -1742,7 +1859,7 @@
         (pin "12")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 21)
+      (code 23)
       (name "P_SIG")
       (class "Default")
       (node
@@ -1754,7 +1871,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 22)
+      (code 24)
       (name "SCALE_DOUT1")
       (class "Default")
       (node
@@ -1766,7 +1883,7 @@
         (pin "9")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 23)
+      (code 25)
       (name "SCALE_DOUT2")
       (class "Default")
       (node
@@ -1778,7 +1895,7 @@
         (pin "10")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 24)
+      (code 26)
       (name "SCALE_SCK")
       (class "Default")
       (node
@@ -1794,19 +1911,31 @@
         (pin "30")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 25)
+      (code 27)
       (name "STATUS")
       (class "Default")
       (node
-        (ref "TP2")
+        (ref "R12")
         (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
-        (pin "29")
+        (pin "31")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 26)
+      (code 28)
+      (name "STATUS_A")
+      (class "Default")
+      (node
+        (ref "D1")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R12")
+        (pin "2")
+        (pintype "PASSIVE")))
+    (net
+      (code 29)
       (name "SW_BREW")
       (class "Default")
       (node
@@ -1822,7 +1951,7 @@
         (pin "15")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 27)
+      (code 30)
       (name "SW_BREW_IN")
       (class "Default")
       (node
@@ -1834,7 +1963,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 28)
+      (code 31)
       (name "SW_POWER")
       (class "Default")
       (node
@@ -1850,7 +1979,7 @@
         (pin "19")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 29)
+      (code 32)
       (name "SW_POWER_IN")
       (class "Default")
       (node
@@ -1862,7 +1991,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 30)
+      (code 33)
       (name "SW_STEAM")
       (class "Default")
       (node
@@ -1878,7 +2007,7 @@
         (pin "16")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 31)
+      (code 34)
       (name "SW_STEAM_IN")
       (class "Default")
       (node
@@ -1890,31 +2019,39 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 32)
+      (code 35)
       (name "USB_D+")
       (class "Default")
       (node
         (ref "J4")
-        (pin "3")
+        (pin "A6")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B6")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
         (pin "18")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 33)
+      (code 36)
       (name "USB_D-")
       (class "Default")
       (node
         (ref "J4")
-        (pin "2")
+        (pin "A7")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B7")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
         (pin "17")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 34)
+      (code 37)
       (name "V3_SNS")
       (class "Default")
       (node
@@ -1934,7 +2071,7 @@
         (pin "5")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 35)
+      (code 38)
       (name "V5_SNS")
       (class "Default")
       (node
@@ -1954,7 +2091,7 @@
         (pin "6")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 36)
+      (code 39)
       (name "VALVE_CMD")
       (class "Default")
       (node
@@ -1970,7 +2107,7 @@
         (pin "24")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 37)
+      (code 40)
       (name "VALVE_OUT")
       (class "Default")
       (node
@@ -1982,7 +2119,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 38)
+      (code 41)
       (name "VBUS")
       (class "Default")
       (node
@@ -1991,5 +2128,17 @@
         (pintype "PASSIVE"))
       (node
         (ref "J4")
-        (pin "1")
+        (pin "A4")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "A9")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B4")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J4")
+        (pin "B9")
         (pintype "PASSIVE")))))

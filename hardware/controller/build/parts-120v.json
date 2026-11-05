@@ -2,23 +2,21 @@
  "mains_v": 120,
  "parts": {
   "J1": {
-   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
+   "footprint": "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal",
    "value": "5V in",
    "pins": {
     "1": "+5V_IN",
-    "2": "GND",
-    "3": "GND"
+    "2": "GND"
    },
    "pin_names": {
     "1": "1",
-    "2": "2",
-    "3": "3"
+    "2": "2"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_3_SMD",
-   "mpn": "JST SM03B-GHS-TB",
-   "notes": "1=+5V 2=GND 3=GND, from the 5 V AC-DC module"
+   "desc": "JST_GH_2_SMD",
+   "mpn": "JST SM02B-GHS-TB",
+   "notes": "1=+5V 2=GND, from the 5 V AC-DC module"
   },
   "Q4": {
    "footprint": "Package_TO_SOT_SMD:SOT-23",
@@ -71,9 +69,9 @@
     "26": "HEATER_CMD",
     "27": "LED_PWR_IO",
     "28": "LED_COFFEE_IO",
-    "29": "STATUS",
+    "29": "LED_STEAM_IO",
     "30": "SCALE_SCK",
-    "31": "LED_STEAM_IO",
+    "31": "STATUS",
     "32": null,
     "33": null,
     "34": null,
@@ -173,7 +171,7 @@
    "populate": "Y",
    "desc": "Capacitor",
    "mpn": "",
-   "notes": "Module decoupling at the 3V3 pin"
+   "notes": "3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
   },
   "C4": {
    "footprint": "Capacitor_SMD:C_0402_1005Metric",
@@ -190,7 +188,7 @@
    "populate": "Y",
    "desc": "Capacitor",
    "mpn": "",
-   "notes": "Module decoupling at the 3V3 pin"
+   "notes": "3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
   },
   "R10": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
@@ -256,22 +254,41 @@
    "populate": "Y",
    "desc": "Bare test pad",
    "mpn": "",
-   "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (J4.4) while plugging the USB lead in"
+   "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in"
   },
-  "TP2": {
-   "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-   "value": "STATUS",
+  "R12": {
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
+   "value": "1k",
    "pins": {
-    "1": "STATUS"
+    "1": "STATUS",
+    "2": "STATUS_A"
    },
    "pin_names": {
-    "1": "1"
+    "1": "1",
+    "2": "2"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "Bare test pad",
+   "desc": "Resistor",
    "mpn": "",
-   "notes": "Heartbeat output (3.3 V push-pull): probe, or an LED + 1k to GND while debugging"
+   "notes": "red LED Vf ~2.0 V: ~1.3 mA from 3.3 V"
+  },
+  "D1": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "STATUS_A"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "Status: boot log flicker, on while programming, then the firmware heartbeat"
   },
   "D2": {
    "footprint": "Diode_SMD:D_SOD-123",
@@ -344,25 +361,81 @@
    "notes": "Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
   },
   "J4": {
-   "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left",
-   "value": "Prog USB",
+   "footprint": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
+   "value": "USB-C",
    "pins": {
-    "1": "VBUS",
-    "2": "USB_D-",
-    "3": "USB_D+",
-    "4": "GND"
+    "A1": "GND",
+    "A4": "VBUS",
+    "A5": "CC1",
+    "A6": "USB_D+",
+    "A7": "USB_D-",
+    "A9": "VBUS",
+    "A12": "GND",
+    "B1": "GND",
+    "B4": "VBUS",
+    "B5": "CC2",
+    "B6": "USB_D+",
+    "B7": "USB_D-",
+    "B9": "VBUS",
+    "B12": "GND",
+    "S1": "GND"
    },
    "pin_names": {
-    "1": "VBUS",
-    "2": "D-",
-    "3": "D+",
-    "4": "GND"
+    "A1": "GND_A1",
+    "A4": "VBUS_A4",
+    "A5": "CC1",
+    "A6": "DP1",
+    "A7": "DN1",
+    "A9": "VBUS_A9",
+    "A12": "GND_A12",
+    "B1": "GND_B1",
+    "B4": "VBUS_B4",
+    "B5": "CC2",
+    "B6": "DP2",
+    "B7": "DN2",
+    "B9": "VBUS_B9",
+    "B12": "GND_B12",
+    "S1": "SHIELD"
    },
    "mains": [],
-   "populate": "N",
-   "desc": "Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash",
+   "populate": "Y",
+   "desc": "USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power",
+   "mpn": "HRO TYPE-C-31-M-12",
+   "notes": "Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
+  },
+  "R13": {
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC1",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
    "mpn": "",
-   "notes": "1=VBUS 2=D- 3=D+ 4=GND (USB lead colours: red, white, green, black)"
+   "notes": "USB-C sink identification"
+  },
+  "R14": {
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC2",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "USB-C sink identification"
   },
   "R4": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
@@ -698,7 +771,7 @@
   },
   "R28": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
-   "value": "4.7k",
+   "value": "10k",
    "pins": {
     "1": "+3V3",
     "2": "SW_POWER"
@@ -732,7 +805,7 @@
   },
   "R20": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
-   "value": "4.7k",
+   "value": "10k",
    "pins": {
     "1": "+3V3",
     "2": "SW_BREW"
@@ -766,7 +839,7 @@
   },
   "R21": {
    "footprint": "Resistor_SMD:R_0402_1005Metric",
-   "value": "4.7k",
+   "value": "10k",
    "pins": {
     "1": "+3V3",
     "2": "SW_STEAM"

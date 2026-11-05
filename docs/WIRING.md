@@ -1,8 +1,8 @@
-# Wiring: v18 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
+# Wiring: v24 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
-This replaces INSTALL.md §5 for the v18 board. The board carries no mains: certified modules
+This replaces INSTALL.md §5 for the v24 board. The board carries no mains: certified modules
 switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply.
 
@@ -36,8 +36,8 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
    - Keep its two spade wires (white, black). They go to the heater SSR's load terminals, so the SSR takes the thermostat's place.
    - The NTC probe goes into the thermostat's M4 hole (INSTALL.md §4).
 2. **Steam thermostat and thermal fuse:** leave them, and their wiring, exactly as they are.
-3. **Switched live (L):** unplug **C.4 (brown)** from the brew switch. It becomes the live feed for everything we add. GaggiMate uses the same wire as its board's L.
-   Confirm it **unplugged**, with the meter on Ω: the plug's **narrow blade (live)** to C.4 reads continuity with the power switch ON and open with it OFF.
+3. **Live (L):** unplug **C.4 (brown)** from the brew switch. It becomes the live feed for everything we add. GaggiMate uses the same wire as its board's L.
+   Confirm it **unplugged**, with the meter on Ω: the plug's **narrow blade (live)** to C.4 reads continuity with the power switch ON and open with it OFF. (After step 8 it reads continuity either way: the power switch no longer carries mains.)
 4. **Neutral (N):** unplug **S.5 (white)** from the steam switch. It becomes the neutral feed for the 5 V supply. GaggiMate uses the same wire as its board's N.
    Confirm it unplugged: the plug's **wide blade (neutral)** to S.5 reads continuity, and S.5 to the earth pin reads open.
 5. **Pump**
@@ -57,18 +57,21 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
    - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
    - **UNSURE:** whether S.4 is part of the steam-thermostat path on a US machine. If parking it breaks the heater circuit, the heater simply won't heat (fail-safe), and the "heater circuit" check below catches it.
 
-8. **Power switch (two-pole): keep one pole switching the loads, turn the other into an input.**
-   The controller stays powered all the time; the power rocker tells it "on / standby", and still
-   cuts mains to the heater, pump and valve when off.
-   - Machine unplugged. With the meter on Ω, find which pole carries **live**: the plug's narrow
-     blade has continuity to one of the switch's input terminals. That pole keeps its wires: its
-     output is C.4 (the switched live used below).
-   - The other pole carries **neutral**. Join its input and output wires together (crimp both into
-     a piggyback, or splice and heat-shrink): neutral no longer goes through the switch, which is
-     normal practice. Its two switch terminals are now free: they become the dry contact for **J7
-     pins 1 and 4** (power and GND).
-   - The **5 V supply** takes **unswitched** live (the live pole's *input* wire, via a piggyback on
-     that terminal) and neutral (the joined neutral), so the board stays on with the rocker off.
+8. **Power switch (two-pole): take all mains off it; both poles become low-voltage only.**
+   The controller stays powered all the time and the rocker only tells it "on / standby". Mains must
+   not share the switch with the 5 V wiring: the insulation between a rocker's two poles isn't rated
+   to separate mains from the low-voltage side (independent review, S3). So:
+   - Machine unplugged. With the meter on Ω, identify the **live** pole (the plug's narrow blade has
+     continuity to one of its terminals) and the **neutral** pole.
+   - **Live pole:** take both its wires off the switch and join them (crimp both into one insulated
+     piggyback receptacle, or splice and heat-shrink). Live now runs through, unswitched.
+   - **Neutral pole:** the same: join its two wires and take them off the switch.
+   - The switch now has no mains wires at all. Use one pole's two terminals as the dry contact for
+     **J7 pins 1 and 4** (power and GND); leave the other pole empty.
+   - The **5 V supply** takes live from that joined live piggyback and neutral from the joined neutral.
+   - **What this changes:** the rocker no longer cuts mains to anything. In standby the heater, pump and
+     valve are off because the controller holds their SSRs off; the steam thermostat and the thermal
+     fuse still limit the heater in hardware. To make the machine dead, **unplug it.**
    - **UNSURE:** terminal numbering on your switch. Go by the meter, not by position. If you can't
      tell the poles apart with certainty, stop.
 
@@ -84,8 +87,8 @@ quick-connects onto the machine's tabs, **forks** on the heater SSR's screw term
 
 | # | From | To | Ends | Notes |
 |---|---|---|---|---|
-| M1 | C.4 brown (female receptacle, ex brew switch) | **L splice** | male spade ← C.4 / splice: twist the pigtail with branches M6 and M8, solder, heat-shrink | Switched L (through the power rocker's live pole) for the pump and valve SSRs |
-| M2 | power switch, live pole **input** (unswitched live) | 5 V supply **L / AC in** | piggyback on that terminal / screw terminal, or solder + heat-shrink on a pin-type module | Unswitched: the controller stays on with the rocker off |
+| M1 | C.4 brown (female receptacle, ex brew switch) | **L splice** | male spade ← C.4 / splice: twist the pigtail with branches M6 and M8, solder, heat-shrink | L (unswitched since step 8; was through the power rocker's live pole) for the pump and valve SSRs |
+| M2 | the joined live piggyback (step 8) | 5 V supply **L / AC in** | piggyback / screw terminal, or solder + heat-shrink on a pin-type module | Unswitched: the controller stays on with the rocker off |
 | M4 | S.5 white (female receptacle, ex steam switch) | 5 V supply **N / AC in** | male spade ← S.5 / as M2 | Neutral (unswitched once the power switch's neutral pole is joined through, step 8) |
 | M6 | L splice | **pump** SSR board, load terminal 1 | — / screw terminal | |
 | M7 | pump SSR board, load terminal 2 | pump live tab (where grey PMP.B was) | screw terminal / female spade | |
@@ -115,9 +118,8 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 
 | Board pin | Signal | Goes to | Notes |
 |---|---|---|---|
-| J1.1 | +5 V in | 5 V supply **+V out** | Solder + heat-shrink |
+| J1.1 | +5 V in | 5 V supply **+V out** | Solder + heat-shrink. J1 is a **2-pin** GH: the supply lead can't go into an output socket, nor an output lead into J1 |
 | J1.2 | GND | 5 V supply **−V / GND out** | |
-| J1.3 | GND | 5 V supply GND too | Two thin wires halve the ground-return resistance |
 | J2.1 | +5 V | heater SSR **3 (+)** input | 18 AWG pigtail in the screw clamp |
 | J2.2 | OUT (pulled low = ON) | heater SSR **4 (−)** input | |
 | J2.3 | GND | — | Unused. Cut back and insulate |
@@ -146,7 +148,7 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 | J6.1 | +5 V | transducer supply wire | GaggiMate's 0–1.6 MPa sensor has no datasheet: identify its wires on the bench first (INSTALL §3) |
 | J6.2 | signal | transducer output wire | ~0.5 V at 0 bar |
 | J6.3 | GND | transducer ground wire | Solder + heat-shrink each splice |
-| J4 | 4 bare pads on the underside (5V, D−, D+, GND) | first flash / bench power: tack a USB lead on (INSTALL.md §3) | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
+| J4 | USB-C | first flash, logs, bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
 | U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail (MHF III → SMA bulkhead) + Taoglas GW.15.2113 2 dBi SMA dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part: on the steel case the dipole's gain can exceed the module's 2.33 dBi limit (Taoglas plots). Press the MHF III plug straight down onto the socket; don't force it |
 
 ## Checks before mains (multimeter, machine unplugged)
@@ -166,7 +168,7 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
    - the switch dry contacts.
    No continuity from any mains wire to the chassis.
 6. **Earth:** touch the meter leads together first and subtract that reading. Chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's metal base** to the earth pin < 0.5 Ω (through its M4 bolts: scrape paint under them if it reads high).
-7. **Switches:** J7.1–J7.3 closes when brew is pressed; J7.2–J7.3 closes when steam is pressed.
+7. **Switches:** J7.1–J7.4 closes with the power rocker on; J7.2–J7.4 closes with brew pressed; J7.3–J7.4 closes with steam pressed (J7.4 is GND).
 8. **Thermistor** (do this before INSTALL §4 fits it): **~50 kΩ** between its two leads at 25 °C (Molex 218537-3919: 50 kΩ ± 1 %; about 63 kΩ at 20 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
 
 9. **After the case goes back together:** every earth wire you unplugged is back on. GaggiMate's install guide warns that the top cover (cup warmer) has **two** earth wires. Measure each panel, the top cover included, to the plug's earth pin: < 0.5 Ω.

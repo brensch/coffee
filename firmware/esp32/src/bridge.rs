@@ -29,7 +29,7 @@ fn main() -> ! {
     let _valve = Output::new(p.GPIO18, Level::Low, OutputConfig::default());
     let _pump = Output::new(p.GPIO19, Level::Low, OutputConfig::default());
     let _heater = Output::new(p.GPIO20, Level::Low, OutputConfig::default());
-    let mut led = Output::new(p.GPIO23, Level::Low, OutputConfig::default());
+    let mut led = Output::new(p.GPIO16, Level::Low, OutputConfig::default());   // status LED (v24)
     let mut usb = UsbSerialJtag::new(p.USB_DEVICE);
 
     let mut node = Node::new(

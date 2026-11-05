@@ -4,16 +4,6 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 
 | Block | Case | Result | Requirement | |
 |---|---|---|---|---|
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 2.64 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output off: current left through the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 0 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 3.91 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
@@ -42,12 +32,15 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Reverse-polarity P-FET | J1 at +5.0 V, 250 mA load | 4.99 V | >= 4.95 V (drop < 50 mV) | ✅ |
 | Reverse-polarity P-FET | J1 wired backwards (-5 V) | 5.01e-09 mA | < 0.01 mA into the board | ✅ |
 | J5 mis-plug (5 V lead in the thermistor socket) | 1k R27 into GPIO1's clamp diode | 1.2 mA | < 2 mA (no damage; was unlimited without R27) | ✅ |
-| Status LED (red, 1k from GPIO23) | 3.3 V | 1.3 mA | 1-3 mA (visible, well within GPIO drive) | ✅ |
-| Pressure input | 4.5 V full scale -> GPIO0 | 2.96 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
+| Status LED (red, 1k from GPIO16 / U0TXD) | 3.3 V | 1.3 mA | 1-3 mA (visible, well within GPIO drive) | ✅ |
+| Front-panel switch closed | 1k series, 10k || 45k pull-up | 0.359 V | <= 0.5 V (C6 VIL max 0.25 x VDD = 0.825 V: >= 0.3 V margin) | ✅ |
+| Front-panel switch wetting current | closed | 0.359 mA | >= 0.2 mA (keeps an old rocker's contacts clean) | ✅ |
+| Front-panel LED drive | 330 R from a 3.3 V GPIO, red LED Vf ~2.0 V | 3.94 mA | 2-8 mA (bright, within the C6's 20 mA drive) | ✅ |
+| Pressure input | 4.5 V full scale -> GPIO0 | 3.06 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
 | Pressure input | 0.5 V (0 bar) -> GPIO0 | 0.34 V | >= 0.1 V (clear of the ADC's non-linear bottom) | ✅ |
 | Pressure transducer load | R16 + R17 | 147 kOhm | > 100 kOhm (TE M3200 datasheet p2, voltage output) | ✅ |
-| Pressure filter | -3 dB corner | 250 Hz | 150-400 Hz (keeps the pump's 60 Hz pulses, kills RF) | ✅ |
-| Pressure filter | 60 Hz pump ripple | 0.0455 dB | > -1 dB (the pulses stay visible to firmware) | ✅ |
+| Pressure filter | -3 dB corner | 257 Hz | 150-400 Hz (keeps the pump's 60 Hz pulses, kills RF) | ✅ |
+| Pressure filter | 60 Hz pump ripple | -0.296 dB | > -1 dB (the pulses stay visible to firmware) | ✅ |
 | Pressure ADC kick-back (estimate) | 10 pF sample cap (assumed) vs 22 nF | 1.36 mV | < 2.7 mV (1/10 of the transducer's +-0.25 % FS at the pin) | ✅ |
 | Thermistor divider voltage | 20 C | 3.07 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
 | Thermistor divider voltage | 93 C | 1.5 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
@@ -66,4 +59,4 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.53 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
-**61 / 61 checks pass.**
+**54 / 54 checks pass.**

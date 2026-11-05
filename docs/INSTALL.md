@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v23 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v24 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,21 +32,21 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v23-gerbers.zip`;
-   - `coffee-v23-bom.csv`;
-   - `coffee-v23-cpl.csv`.
+   - `coffee-v24-gerbers.zip`;
+   - `coffee-v24-bom.csv`;
+   - `coffee-v24-cpl.csv`.
    - Every part is on the top side; JLC places all of it, and there is nothing to solder.
-   - (Older versions' files stay in `build/` for comparison: `coffee-v21-*` with connectors you solder underneath, `coffee-v22-*` all on top at 44.5 × 29.4 mm. Both have the USB-C socket and a pull-down bug on the scale clock, R36, fixed in v23.)
+   - (Older versions' files stay in `build/` for comparison: `coffee-v21-*`, `coffee-v22-*`, `coffee-v23-*`. v24 fixes the independent review's should-fix items: see docs/REVIEW-v23.md.)
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 37.8 × 26.4 mm, no castellations, no slots;
-   - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **left and right short edges only**: the GH connectors' openings sit flush with both long edges;
+   - 46.6 × 26.4 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **right short edge** only (the connectors sit flush with both long edges), and add the remark "J4 USB-C overhangs the left short edge by 0.96 mm; no rail or V-cut on the left edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).
-   - The programming pads (J4) and the BOOT / STATUS pads (TP1, TP2) on the underside are bare copper: nothing to place there.
+   - The BOOT pad (TP1) on the underside is bare copper: nothing to place there.
    - In JLC's placement preview, glance over the connectors (openings outward), the module and D2 (all rotations were solved against JLC's footprints; D2's and the two 0402 capacitors' from same-package records).
-   - JLC lists 5 extended parts (the 3-, 6- and 7-pin GH connectors, the ESP32-C6 module, the LDO); everything else, including every 0402, is basic.
+   - JLC lists 7 extended parts (the 2-, 3-, 6- and 7-pin GH connectors, the USB-C, the ESP32-C6 module, the LDO); everything else, including every 0402, is basic.
 5. No conformal coating needed: there's no mains on the board.
 
 ## 2. Software and emulation (your PC)
@@ -64,15 +64,14 @@ embeds `ui/dist`). The details are in [`firmware/esp32/README.md`](../firmware/e
 On WSL, attach the board's USB with `usbipd` to get `/dev/ttyACM0`.
 
 ## 3. Bench bring-up: USB only, no mains
-**USB lead:** the board has no USB socket. Its USB comes out on four bare pads on the underside (J4, labelled 5V, D−, D+, GND). Cut a USB-A (or USB-C) cable and tack its four wires on: red to 5V, white to D−, green to D+, black to GND. Or hold a 4-pin 2.54 mm header against the pads for the minute the flash takes. Power over USB: D2 feeds the board from VBUS. On the bench, leave the 5 V module unplugged from J1: on USB alone, Q4 passes ~4.6 V back out of J1.
+Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V module unplugged from J1: on USB alone, Q4 passes ~4.6 V back out of J1. (In the machine, USB and the module may both be connected: the module then powers the board and D2 keeps it out of the PC.)
 1. **Rails:** 3.3 V on C7 (by the LDO). The board enumerates as an ESP32-C6 USB Serial/JTAG device.
 2. **Flash and join Wi-Fi:**
-   - Connect the USB lead to the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`.
+   - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`. The status LED glows while the chip is in programming mode and flickers at every reset.
    - The second command prints the board's address (`http://coffee.local/` works too).
    - No buttons: the C6 resets itself into download mode over USB.
-   - This is the only time the board needs a PC. Later updates go over Wi-Fi (`coffee ota`); you can unsolder the lead.
-   - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the GND pad of J4 with tweezers while connecting the lead, then flash again.
-   - The **STATUS** pad (TP2, underside) carries the firmware's heartbeat; an LED with a 1k to GND there blinks it.
+   - This is the only time the board needs a PC. Later updates go over Wi-Fi (`coffee ota`).
+   - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1, on the underside) to the USB-C shell (GND) with tweezers while plugging in, then flash again.
 3. **Sensors:** plug in the thermistor, transducer and a switch lead:
    - temperature reads room temperature, and rises when you hold the probe's tab;
    - **transducer (no datasheet, BUY.md #11):** use the colour legend printed on its label or the

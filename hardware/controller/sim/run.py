@@ -7,7 +7,7 @@ Each block mirrors controller.py's values. Models are behavioural (diodes fitted
 datasheet Vf, opto CTR as a current-controlled source, regulator dropout as a curve),
 so the point is margins at the corners, not exact waveforms.
 """
-import os, re, subprocess, sys, tempfile
+import math, os, re, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 NG = os.environ.get("NGSPICE", os.path.expanduser("~/opt/ngspice-root/usr/bin/ngspice"))
@@ -47,13 +47,12 @@ def check(block, case, value, limit, ok, unit=""):
 NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): Rds(2.5 V) = 1/(KP (2.5 - VTO))
 def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
     """GPIO (25 ohm) -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
-    load: 'ssr_ez' (Crydom EZ240D5: 4-15 V, ~15 mA regulated), 'ssr_sch' (Schneider SSP1A125BDT: 3-32 V, ~10 mA),
+    load: 'ssr_sch' (Schneider SSP1A125BDT heater SSR: 3-32 V, ~10 mA),
           'ssr_board' (1-channel Omron G3MB-202P board, the pump/valve modules: G3MB-202P DC5 input ~250 ohm
           +-20 % plus the board's LED, modelled as 200 ohm; resistive, no coil, so no flyback diode since v23).
           All loads have a 1 uH cable."""
     vto, kp = NMOS[fet]
     loads = {
-        "ssr_ez": "Lcab v5 m 1u\nBssr m out I = min(0.015, max(0, (v(m)-v(out)-1.2)/150))",
         "ssr_sch": "Lcab v5 m 1u\nBssr m out I = min(0.010, max(0, (v(m)-v(out)-1.2)/150))",
         "ssr_board": "Lcab v5 m 1u\nRin m out 200",
     }
@@ -90,11 +89,11 @@ meas tran vgate_rst AVG v(gate) from=0.1m to=20m
 
 # --------------------------------------------------------------- 2. reverse-polarity P-FET (AO3401A)
 def revpol(vin):
-    net = f"""* J1 -> AO3401A (D to J1, S to rail, G to GND via 10k) -> +5V rail with ~0.25 A load
+    net = f"""* J1 -> AO3401A (D to J1, S to rail, G straight to GND since v24) -> +5V rail with ~0.25 A load
 .model P3401 PMOS(LEVEL=1 VTO=-0.9 KP=4.07)   ; 60 mOhm at Vgs -5 V: the AO3401A's max Rds(on) (47 typ)
 Vin in 0 DC {vin}
 M1 in g v5 v5 P3401 L=1u W=1u
-Rg g 0 10k
+Vg g 0 0
 Rload v5 0 20
 C1 v5 0 22u
 .control
@@ -112,13 +111,13 @@ print i(Vin)
 
 # --------------------------------------------------------------- 4. pressure input
 def pressure():
-    net = """* transducer -> 47k/100k -> 22 nF -> ESP32-C6 ADC1 (high-impedance SAR input; leakage modelled as 1 Mohm)
+    net = """* transducer -> 47k/100k -> 22 nF -> ESP32-C6 ADC1 (high-impedance SAR input)
 Vt t 0 DC 4.5 AC 1
 Rs t s 100          ; transducer output impedance (est)
 R1 s a 47k
 R2 a 0 100k
 C1 a 0 22n
-Rin a 0 1meg
+Rin a 0 100meg      ; ESP32-C6 SAR input between samples: leakage only (no datasheet figure; 100 Mohm is conservative)
 .control
 op
 print v(a)
@@ -192,7 +191,7 @@ def ntc_from_v(v, rref=4.7e3, vref=3.3):
 
 def main():
     # 1. outputs: on-state at the corners, with each module type
-    for load, vmin, lab in (("ssr_ez", 3.0, "pump SSR (Crydom EZ240D5, min turn-on 3.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
+    for load, vmin, lab in (("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
                             ("ssr_board", 4.0, "pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V)")):
         for vg in (2.64, 3.3):   # C6 datasheet guarantees VOH >= 0.8 x VDD = 2.64 V
             for fet in ("vth_typ", "vth_max"):
@@ -219,7 +218,15 @@ def main():
     check("J5 mis-plug (5 V lead in the thermistor socket)", "1k R27 into GPIO1's clamp diode", i_clamp, "< 2 mA (no damage; was unlimited without R27)", i_clamp < 2, "mA")
     # status LED
     i_led = (3.3 - 2.0) / 1000 * 1e3
-    check("Status LED (red, 1k from GPIO23)", "3.3 V", i_led, "1-3 mA (visible, well within GPIO drive)", 1 <= i_led <= 3, "mA")
+    check("Status LED (red, 1k from GPIO16 / U0TXD)", "3.3 V", i_led, "1-3 mA (visible, well within GPIO drive)", 1 <= i_led <= 3, "mA")
+    # front panel (v24): 1k series at the connector, 10k pull-up on the GPIO side, plus the C6's 45k internal pull-up
+    rpu = 1 / (1 / 10e3 + 1 / 45e3)
+    v_closed = 3.3 * 1e3 / (1e3 + rpu)
+    check("Front-panel switch closed", "1k series, 10k || 45k pull-up", v_closed, "<= 0.5 V (C6 VIL max 0.25 x VDD = 0.825 V: >= 0.3 V margin)", v_closed <= 0.5, "V")
+    i_wet = 3.3 / (1e3 + rpu) * 1e3
+    check("Front-panel switch wetting current", "closed", i_wet, ">= 0.2 mA (keeps an old rocker's contacts clean)", i_wet >= 0.2, "mA")
+    i_lamp = (3.3 - 2.0) / 330 * 1e3
+    check("Front-panel LED drive", "330 R from a 3.3 V GPIO, red LED Vf ~2.0 V", i_lamp, "2-8 mA (bright, within the C6's 20 mA drive)", 2 <= i_lamp <= 8, "mA")
     # 4. pressure into the C6's ADC1
     v, out = pressure()
     va = float(re.findall(r"v\(a\)\s*=\s*([-+0-9.eE]+)", out)[0])
@@ -228,7 +235,7 @@ def main():
     check("Pressure transducer load", "R16 + R17", 147, "> 100 kOhm (TE M3200 datasheet p2, voltage output)", 147 > 100, "kOhm")
     f3 = v.get("f3db", 0)
     check("Pressure filter", "-3 dB corner", f3, "150-400 Hz (keeps the pump's 60 Hz pulses, kills RF)", 150 <= f3 <= 400, "Hz")
-    g60 = v.get("g60", 0) + 3.95   # relative to the divider's DC gain with the 1 Mohm leakage model (-3.95 dB)
+    g60 = v.get("g60", 0) - 20 * math.log10(va / 4.5)   # relative to the divider's own DC gain
     check("Pressure filter", "60 Hz pump ripple", g60, "> -1 dB (the pulses stay visible to firmware)", g60 > -1.0, "dB")
     # The C6 datasheet doesn't give the ADC's sampling capacitance: 10 pF is an ESTIMATE (typical SAR
     # input). The criterion is a tenth of the transducer's own +-0.25 % FS accuracy at the pin (2.7 mV).
