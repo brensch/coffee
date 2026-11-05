@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v27 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v28 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,15 +32,15 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v27-gerbers.zip`;
-   - `coffee-v27-bom.csv`;
-   - `coffee-v27-cpl.csv`.
+   - `coffee-v28-gerbers.zip`;
+   - `coffee-v28-bom.csv`;
+   - `coffee-v28-cpl.csv`.
    - Every part is on the top side; JLC places all of it, and there is nothing to solder.
-   - (Older versions' files stay in `build/` for comparison: `coffee-v21-*` … `coffee-v26-*`. v24 fixes the independent review's should-fix items: see docs/REVIEW-v23.md.)
+   - (Older versions' files stay in `build/` for comparison: `coffee-v21-*` … `coffee-v27-*`. v24 fixes the independent review's should-fix items: see docs/REVIEW-v23.md.)
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;
-   - 73.2 × 25 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
+   - 73.2 × 19.6 mm, no castellations. The drill file has 4 plated slots, for the USB-C shell legs: standard, no option to change;
    - **edge rails:** if JLC adds rails for assembly (it usually does for a board this small), put them on the **bottom long edge** only (the connectors sit flush with the top edge), and add the remark "J4 USB-C overhangs the left short edge by 0.96 mm; no rail or V-cut on the left edge";
    - **via covering: Tented** (the default). Stitching and signal vias sit under the module's body between its pads; the Gerbers have no mask openings on vias.
 4. **Assembly:** Economic PCBA, **top side only**, 2 boards (the other 3 come bare).

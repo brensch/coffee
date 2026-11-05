@@ -1,9 +1,9 @@
-# Controller board v27: low voltage only
+# Controller board v28: low voltage only
 
-A 73.2 × 25 mm two-layer board with all eight JST GH connectors in one row along its top edge, so
+A 73.2 × 19.6 mm two-layer board with all eight JST GH connectors in one row along its top edge, so
 every cable leaves one side: it stands upright in the machine's back-right corner (where GaggiMate
 mounts its controller) with the cables going up into the loom. The ESP32 module sits in the middle,
-straight against the connector row (pinless side down), with a seven-LED indicator panel under it. The
+straight against the connector row (pinless side down), and the board ends just below it; a seven-LED indicator panel sits in the right-hand area. The
 USB-C is at the left end. No mounting holes: heat-resistant velcro on the flat back holds it. Every part is on the top side, so JLCPCB's one-sided assembly fits all of it and there is nothing
 to solder. It carries
 **no mains**:
@@ -102,23 +102,23 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 ## Layout
 
-**Board:** 73.2 × 25 mm, 2 layers, 1 oz, every part on the top side, 0603 passives (all JLC basic). No mounting holes (v27): the back is flat apart from the bare BOOT pad and the USB-C's four solder legs at the left end, so a strip of heat-resistant velcro holds it.
+**Board:** 73.2 × 19.6 mm (v28: the board stops just below the module; velcro needs no edge margin), 2 layers, 1 oz, every part on the top side, 0603 passives (all JLC basic). No mounting holes (v27): the back is flat apart from the bare BOOT pad and the USB-C's four solder legs at the left end, so a strip of heat-resistant velcro holds it.
 
 **Connectors:** one row along the top edge, openings outward (up when mounted), left to right: 5 V in (J1, 2-pin), valve (J8), heater (J2), pump (J3), scale (J10, 6-pin), front panel (J7, 7-pin), pressure (J6), thermistor (J5). The module sits straight under the scale connector, touching the row; every other connector's parts sit directly under its own pins (drivers under the outputs, dividers under the sensors, the switch and LED resistors under the front panel). USB-C (J4) at the left short edge.
 
-**Indicator panel (v27):** seven red LEDs in a row under the module, labelled on the top silkscreen S P C S H P V:
+**Indicator panel (v27, moved right in v28):** seven red LEDs in a row in the right-hand area, each with its 1k below it, labelled on the top silkscreen S P C S H P V:
 - **S**: status (GPIO16 / U0TXD: boot log, programming, heartbeat);
 - **P C S**: the three front-panel lamps (power, coffee, steam), each on the same GPIO as its lamp through its own 1k (so the board shows exactly what the lamps get);
 - **H P V**: heater, pump, valve, each on its output's gate drive through 1k, lit exactly while the board turns that SSR on.
 All are KT-0603R (C2286, basic) with 1k (basic): ~1.3 mA each. Added cost ~$0.10 per assembled board (parts + joints), no setup fee.
 
-**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) v25 (73.2 × 24, module at the end, 0402) and v26 (73.2 × 26, parts strip between the plugs and the module, M3 holes) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
+**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) v25 (73.2 × 24, module at the end, 0402) and v26 (73.2 × 26, parts strip between the plugs and the module, M3 holes) and v27 (73.2 × 25, LEDs under the module) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
 
 All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the long edges.
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 
-**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected and 89 routed vias, plus 35 GND stitching vias (a 4 mm grid). Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
+**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected and 93 routed vias, plus 10 GND stitching vias (a 4 mm grid). Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
 
 **Rules:** JLCPCB standard capabilities only, the cheapest tier:
 - 0.2 mm tracks and gaps (0.15 mm DRC minimum; JLC's is 0.127 mm);
