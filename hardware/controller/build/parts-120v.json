@@ -5,7 +5,7 @@
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
    "value": "5V in",
    "pins": {
-    "1": "GND",
+    "1": null,
     "2": "+5V_IN",
     "3": "GND"
    },
@@ -18,7 +18,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "1=GND 2=+5V 3=GND, from the 5 V AC-DC module"
+   "notes": "1=- 2=+5V 3=GND, from the 5 V AC-DC module"
   },
   "Q4": {
    "footprint": "Package_TO_SOT_SMD:SOT-23",
@@ -443,9 +443,9 @@
    "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
    "value": "SSRs",
    "pins": {
-    "1": "HEATER_OUT",
+    "1": null,
     "2": "+5V",
-    "3": null,
+    "3": "HEATER_OUT",
     "4": null,
     "5": null,
     "6": "PUMP_OUT",
@@ -464,7 +464,7 @@
    "populate": "Y",
    "desc": "JST_GH_7_SMD",
    "mpn": "JST SM07B-GHS-TB",
-   "notes": "1=heater OUT 2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 6=pump OUT 7=valve OUT; 3-5 unused"
+   "notes": "2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 3=heater OUT 6=pump OUT 7=valve OUT; 1,4,5 unused"
   },
   "R4": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -578,9 +578,9 @@
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
    "value": "Thermistor",
    "pins": {
-    "1": "NTC",
+    "1": "GND",
     "2": null,
-    "3": "GND"
+    "3": "NTC"
    },
    "pin_names": {
     "1": "1",
@@ -591,7 +591,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 3=GND (no polarity), 2 unused"
+   "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused"
   },
   "R15": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -1102,12 +1102,12 @@
    "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
    "value": "Scale",
    "pins": {
-    "1": "GND",
+    "1": null,
     "2": null,
-    "3": "SCALE_SCK",
-    "4": "SCALE_DOUT1",
-    "5": "SCALE_DOUT2",
-    "6": "+5V",
+    "3": "SCALE_DOUT1",
+    "4": "SCALE_SCK",
+    "5": "GND",
+    "6": "SCALE_DOUT2",
     "7": "+3V3"
    },
    "pin_names": {
@@ -1123,7 +1123,7 @@
    "populate": "Y",
    "desc": "JST_GH_7_SMD",
    "mpn": "JST SM07B-GHS-TB",
-   "notes": "1=GND 3=SCK 4=DOUT1 5=DOUT2 6=+5V 7=+3V3, 2 unused (dual HX711 board in the tray base)"
+   "notes": "3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)"
   },
   "R36": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

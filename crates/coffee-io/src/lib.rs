@@ -136,6 +136,11 @@ impl EngineState {
 pub fn panel_leds(state: EngineState, faults: u16, temp_c: f32, setpoint_c: f32, t_ms: u64) -> [bool; 3] {
     let fast = t_ms % 200 < 100;
     let slow = t_ms % 1000 < 500;
+    // Standby is dark even with a fault: the lamp pins must stay low while the power rocker reads
+    // off (docs/SWAP-SAFETY.md). Faults still show on the status LED and in the UI.
+    if state == EngineState::Standby {
+        return [false; 3];
+    }
     if faults != 0 || state == EngineState::Fault {
         return [fast, false, false];
     }

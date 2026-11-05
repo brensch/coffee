@@ -196,7 +196,12 @@ pub async fn run(p: Pins, mut node: NodeT) {
         if !power.update(power_sw.is_low()) {
             inputs |= input::STANDBY;
         }
-        scale.poll();
+        // In standby SCK stays low: with the front lead out of J7 (the only way the rocker reads off
+        // without being off) a mis-plugged lead may face SCK, and a static low is harmless where a
+        // clock might not be (docs/SWAP-SAFETY.md). The last reading is kept, not counted stale.
+        if inputs & input::STANDBY == 0 {
+            scale.poll();
+        }
         let (scale_mg, scale_ok) = scale.read_mg(&node.engine.cfg.scale);
         if scale_ok {
             inputs |= input::SCALE_OK;

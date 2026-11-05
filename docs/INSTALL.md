@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v29 low-voltage controller board** (CIRCUIT.md) and
+The plan from a clean PC to coffee, for the **v30 low-voltage controller board** (CIRCUIT.md) and
 the certified modules that switch the machine (BUY.md, WIRING.md). The machine is a US 120 V
 Gaggia Classic Pro.
 
@@ -32,9 +32,9 @@ Gaggia Classic Pro.
    python3 jlc.py                                      # JLC BOM + position file, checked against JLC's footprints
    ```
 2. **Files to upload** (current ones are in `build/`):
-   - `coffee-v29-gerbers.zip`;
-   - `coffee-v29-bom.csv`;
-   - `coffee-v29-cpl.csv`.
+   - `coffee-v30-gerbers.zip`;
+   - `coffee-v30-bom.csv`;
+   - `coffee-v30-cpl.csv`.
    - Every part is on the top side; JLC places all of it, and there is nothing to solder.
    - (Older versions' files stay in `build/` for comparison: `coffee-v21-*` … `coffee-v27-*`. v24 fixes the independent review's should-fix items: see docs/REVIEW-v23.md.)
 3. **PCB options (all JLC defaults, the cheapest tier):**
@@ -84,7 +84,7 @@ Power over USB-C: D2 feeds the board from VBUS. On the bench, leave the 5 V modu
    - with the scale on J10, the UI's cup weight changes when you press on the tray;
    - **calibrate the thermistor now,** before it goes on the boiler: both points of CALIBRATION.md "NTC" (room temperature, then the ring tab in a pot of boiling water). On USB the heater can't run, and nothing is live;
    - **unplug the probe:** the UI shows a thermistor fault within a second, and the heater output (J2, measured as in step 4) goes off. Do this check here, on USB: in the machine it would mean reaching past live terminals.
-4. **Outputs:** on J2, +5 V is pin 2 and the heater, pump and valve outputs are pins 1, 6 and 7. Put a load from pin 2 to each output pin: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 2 to each output:
+4. **Outputs:** on J2, +5 V is pin 2 and the heater, pump and valve outputs are pins 3, 6 and 7. Put a load from pin 2 to each output pin: a 1–10 kΩ resistor, or the module itself. With nothing plugged in, an off output floats, and a meter alone can read anything from 0 to 5 V. Then measure pin 2 to each output:
    - ~5 V when the UI turns that load on (the MOSFET pulls the output to GND);
    - ~0 V when off, and while the board resets or flashes: the gate pull-downs hold every output off;
    - with a module plugged in, its own LED shows the same.

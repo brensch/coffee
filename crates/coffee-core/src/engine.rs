@@ -1270,6 +1270,25 @@ mod tests {
     }
 
     #[test]
+    fn standby_keeps_every_output_and_lamp_off() {
+        // docs/SWAP-SAFETY.md relies on this: with the power rocker off (or the front lead not in
+        // J7), nothing else, not the brew or steam inputs and not a cold boiler, drives an output.
+        let cfg = EngineConfig { ready_requires_heat_soak: false, ..Default::default() };
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for inputs in [0, input::BREW, input::STEAM, input::BREW | input::STEAM] {
+            for t in [20.0, cfg.brew_temp_c - 30.0, cfg.brew_temp_c] {
+                for _ in 0..(cfg.mains_hz as u32 * 5) {
+                    let a = e.tick(&frame(&cfg, k, t, 0.0, inputs | input::STANDBY));
+                    k += 1;
+                    assert!(!a.heater && !a.pump && !a.valve, "output on in standby (inputs {inputs:#x}, {t} C)");
+                    assert_eq!(a.lamps, [false; 3], "lamp on in standby");
+                }
+            }
+        }
+    }
+
+    #[test]
     fn brew_switch_waits_for_ready() {
         // Turned on while heating, the coffee switch arms the shot; it starts when the machine
         // reaches Ready, never before. Turned off while waiting, it cancels.

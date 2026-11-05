@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/05/2026 12:20 AM")
+    (date "11/05/2026 01:27 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -1561,10 +1561,6 @@
         (pin "1")
         (pintype "PASSIVE"))
       (node
-        (ref "J10")
-        (pin "6")
-        (pintype "PASSIVE"))
-      (node
         (ref "J2")
         (pin "2")
         (pintype "PASSIVE"))
@@ -1706,15 +1702,11 @@
         (pintype "PASSIVE"))
       (node
         (ref "J1")
-        (pin "1")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J1")
         (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "J10")
-        (pin "1")
+        (pin "5")
         (pintype "PASSIVE"))
       (node
         (ref "J4")
@@ -1738,7 +1730,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J5")
-        (pin "3")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "J6")
@@ -1930,7 +1922,7 @@
       (class "Default")
       (node
         (ref "J2")
-        (pin "1")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "Q1")
@@ -2090,7 +2082,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J5")
-        (pin "1")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "R15")
@@ -2194,7 +2186,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "4")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
@@ -2206,7 +2198,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "5")
+        (pin "6")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
@@ -2218,7 +2210,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "3")
+        (pin "4")
         (pintype "PASSIVE"))
       (node
         (ref "R36")

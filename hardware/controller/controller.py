@@ -126,8 +126,9 @@ v5_in = Net("+5V_IN")
 # SSRs on the back panel, the front panel, the scale). Every pinout is chosen so that any lead in any
 # wrong same-size socket is harmless (docs/SWAP-SAFETY.md). J1 is GND / +5V / GND: the supply lead in the
 # pressure or thermistor socket powers nothing, and neither of those leads can feed the board here.
-j_pwr = part(JST3, "J1", "5V in", mpn="JST SM03B-GHS-TB", notes="1=GND 2=+5V 3=GND, from the 5 V AC-DC module")
-j_pwr[1, 2, 3] += gnd, v5_in, gnd
+j_pwr = part(JST3, "J1", "5V in", mpn="JST SM03B-GHS-TB", notes="1=- 2=+5V 3=GND, from the 5 V AC-DC module")
+j_pwr[2, 3] += v5_in, gnd
+j_pwr[1] += NC     # v30: empty, so a pressure lead here is never powered with its signal on GND (SWAP-SAFETY.md)
 q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
 q_rp["D"] += v5_in
 q_rp["S"] += v5
@@ -207,12 +208,14 @@ u_mcu["IO13"] += dp
 # v29: all three SSR inputs on one 7-pin lead to the back panel: 1 = heater OUT, 2 = +5V (shared by all
 # three SSR inputs, ~60 mA), 6 = pump OUT, 7 = valve OUT, 3-5 empty. The empty pin 4 and the single +5V
 # pin are what make a front-panel or scale lead harmless in this socket (docs/SWAP-SAFETY.md).
+# v30: heater OUT on pin 3 (was 1): pin 1 faces the power rocker's input if this lead goes in J7, and
+# an empty pin there can't pull it to "on" through the SSR inputs (swap_check.py).
 j_out = part(JST7, "J2", "SSRs", mpn="JST SM07B-GHS-TB",
-             notes="1=heater OUT 2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 6=pump OUT 7=valve OUT; 3-5 unused")
+             notes="2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 3=heater OUT 6=pump OUT 7=valve OUT; 1,4,5 unused")
 j_out[2] += v5
-for pin in (3, 4, 5):
+for pin in (1, 4, 5):
     j_out[pin] += NC
-for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 1, "Q1", "R4", None), ("PUMP", "IO19", 6, "Q2", "R5", None),
+for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 3, "Q1", "R4", None), ("PUMP", "IO19", 6, "Q2", "R5", None),
                                          ("VALVE", "IO18", 7, "Q3", "R6", None)):
     cmd, out = Net(f"{name}_CMD"), Net(f"{name}_OUT")
     u_mcu[gpio] += cmd
@@ -234,9 +237,10 @@ for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 1, "Q1", "R4", None)
 # would otherwise put the supply straight onto the pin's clamp diode (~1 mA through 1k). No current
 # flows in R27 in normal use, so it adds no measurement error.
 ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 3=GND (no polarity), 2 unused")
-j_ntc[1, 3] += ntc, gnd
-j_ntc[2] += NC     # v29: the supply lead's +5V (its pin 2) lands here on nothing
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused")
+j_ntc[1, 3] += gnd, ntc
+j_ntc[2] += NC     # the supply lead's +5V (its pin 2) lands here on nothing; v30: NTC on pin 3, so a
+                   # pressure lead here ties it to the transducer's ground diode (reads shorted: a fault)
 r = part(R, "R15", "4.7k", notes="NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
@@ -305,13 +309,17 @@ for dref, rref, net, what in (("D3", "R37", "LED_PWR_IO", "power lamp"), ("D4", 
 # while the C6 boots (SCK held high > 60 us powers it down). GPIO4/5 are strapping pins only for
 # SDIO clock edges (C6 datasheet, "Strapping pins"), unused here, so they serve as the DOUT inputs.
 j_sc = part(JST7, "J10", "Scale", mpn="JST SM07B-GHS-TB",
-            notes="1=GND 3=SCK 4=DOUT1 5=DOUT2 6=+5V 7=+3V3, 2 unused (dual HX711 board in the tray base)")
-j_sc[1, 6, 7] += gnd, v5, v3
-j_sc[2] += NC     # v29: an SSR lead's shared +5V lands here on nothing
+            notes="3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)")
+# v30: the scale runs from 3V3 only (HX711 VSUP 2.6-5.5 V): no 5 V on this socket, so an SSR lead here
+# has nothing to switch on. Pins 1-2 empty: pin 1 faces the power rocker's input (J7.1) if this lead goes
+# in J7, pin 2 faces the SSRs' +5V (J2.2) if it goes in J2 (swap_check.py, docs/SWAP-SAFETY.md).
+j_sc[5, 7] += gnd, v3
+j_sc[1] += NC
+j_sc[2] += NC
 # v23: no series resistors on the scale lines (GaggiMate and Gaggiuino have none). J10 sits over the
 # module's DOUT pins with no room between, and SCK runs under the module; the C6's pins have their own
 # ESD diodes, and the HX711s sit at the other end of a 30 cm lead at the same ground.
-for pin_no, (name, gpio) in ((3, ("SCK", "RXD0")), (4, ("DOUT1", "IO4")), (5, ("DOUT2", "IO5"))):
+for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (3, ("DOUT1", "IO4")), (6, ("DOUT2", "IO5"))):
     d = Net(f"SCALE_{name}")
     u_mcu[gpio] += d
     j_sc[pin_no] += d
@@ -427,3 +435,7 @@ if __name__ == "__main__":
     ERC()
     design_checks()
     write_outputs()
+    # every lead in every same-size socket must be harmless (docs/SWAP-SAFETY.md): fail the build if not
+    import subprocess
+    if subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "swap_check.py")]).returncode:
+        sys.exit("swap_check.py: a mis-plugged lead is hazardous")

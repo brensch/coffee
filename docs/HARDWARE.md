@@ -25,7 +25,7 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled (every part on the top side, nothing to solder). The files are `build/coffee-v29-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled (every part on the top side, nothing to solder). The files are `build/coffee-v30-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md):
   - modules (heatsink optional);
   - wire and crimps;
@@ -40,7 +40,7 @@ Where to find what:
 | 3-way valve | switched live → **valve SSR board** → valve → neutral |
 | Board | switched live → **5 V module** (no external fuse, as GaggiMate) → board J1 |
 
-One 7-pin JST GH lead from J2 drives all three module inputs: pin 2 is +5 V, daisy-chained heater SSR 3 (+) → pump board VCC → valve board VCC; pins 1, 6, 7 are the heater, pump and valve returns (OUT, pulled to GND = on). Pins 3–5 are empty. See WIRING.md.
+One 7-pin JST GH lead from J2 drives all three module inputs: pin 2 is +5 V, daisy-chained heater SSR 3 (+) → pump board VCC → valve board VCC; pins 3, 6, 7 are the heater, pump and valve returns (OUT, pulled to GND = on). Pins 1, 4, 5 are empty. See WIRING.md.
 
 ## Enclosure
 - **Mounting (as GaggiMate):** the heater SSR bolts to the inside of the rear panel at the ventilation slots (M4 bolts or cable ties through the slots). The board, the two SSR boards and the 5 V supply sit on a plastic part (a printed holder or bracket), never directly on the steel: their undersides carry mains. No DIN rail.

@@ -1,80 +1,145 @@
-# Mis-plug safety (v29 connectors)
+# Mis-plug safety (v30 connectors)
 
-> **Review result (2026-11-05): the claim below is wrong for 3 of the 12 single swaps.** The checker
-> tests each two-pin element on its own, so it misses series paths through the front lead's floating
-> common (all switch returns and LED cathodes):
-> - **Front lead in J2:** power + brew rockers on join J2.2 (+5V) to J2.1 (heater drain) through the
->   common. When the heater output turns on, +5V is shorted to GND through Q1.
-> - **Front lead in J10:** with the power rocker on, the common sits at GND. The coffee and steam LEDs
->   then sit straight across +5V and 3V3 with no resistor and burn. With the steam rocker on, the LEDs
->   sink into SCK (GPIO17).
-> - **Scale lead in J7:** DOUT1 lands on GND. IO14 reads about 0.5 V, i.e. the power rocker reads ON, and
->   the lamp GPIOs feed the HX711 through its protection diodes.
-> - **Pressure lead in J1 is live:** when the board is powered from USB or from J6, Q4 conducts back to
->   J1.2, powering the transducer with its output shorted to GND.
->
-> Also, `swap_check.py` is not yet run by the build. Until the pinout is fixed: **label both ends of
-> every lead.** The text below is the original (flawed) analysis.
-
-The board has six connectors in two sizes, bundled by where the devices are in the machine:
+The board has six connectors in two sizes, bundled by where the devices are in the machine. JST GH has
+one key, so any lead fits any socket of its size:
 
 | Size | Socket | Lead goes to | Pins 1 / 2 / 3 / 4 / 5 / 6 / 7 |
 |---|---|---|---|
-| 3-pin | **J1** 5 V in | the 5 V supply module | GND / +5V / GND |
+| 3-pin | **J1** 5 V in | the 5 V supply module | – / +5V / GND |
 | 3-pin | **J6** pressure | the transducer | SIG / +5V / GND |
-| 3-pin | **J5** thermistor | the NTC probe | NTC / – / GND |
-| 7-pin | **J2** SSRs | the back panel: heater SSR, pump and valve SSR boards | heater OUT / +5V / – / – / – / pump OUT / valve OUT |
+| 3-pin | **J5** thermistor | the NTC probe | GND / – / NTC |
+| 7-pin | **J2** SSRs | heater SSR, pump and valve SSR boards (+5V daisy-chained) | – / +5V / heater OUT / – / – / pump OUT / valve OUT |
 | 7-pin | **J7** front | the three rockers and their LEDs | PWR / BREW / STM / GND / LED P / LED C / LED S |
-| 7-pin | **J10** scale | the dual HX711 board in the tray base | GND / – / SCK / DOUT1 / DOUT2 / +5V / 3V3 |
+| 7-pin | **J10** scale | the dual HX711 board in the tray base (3.3 V only) | – / – / DOUT1 / SCK / GND / DOUT2 / 3V3 |
 
-Same-size leads fit each other's sockets: JST GH has one key. The pinouts are chosen so that **every
-lead in every wrong same-size socket is harmless**: no mains load switches on, no supply is shorted,
-no board pin is overdriven, no LED runs without its resistor, no HX711 is powered backwards. You
-find out you swapped them because the device doesn't work, not because something breaks.
+**Every lead in every same-size socket is harmless.** No mains load switches on. No supply is shorted. No
+GPIO is overdriven or shorted. No chip is powered through its protection diodes. The firmware can't be
+fooled into leaving standby. You find out you swapped them because the device doesn't work, not because
+something breaks. This covers multi-lead swaps too (below).
 
-`hardware/controller/swap_check.py` checks this from the real netlist (`build/parts-120v.json`) on
-every build and exits 1 if any combination is hazardous. Current result: all 12 combinations harmless.
+`hardware/controller/swap_check.py` checks this from the real netlist (`build/parts-120v.json`).
+`controller.py` runs it on every build and fails if any case is hazardous.
+
+## History
+
+v29 claimed this with a simpler checker. An independent review found 3 of the 12 swaps hazardous:
+- **Front lead in J2:** power + brew rockers on joined +5V to the heater output through the lead's common.
+- **Front lead in J10:** with a rocker on, LEDs sat straight across +5V and 3V3.
+- **Scale lead in J7:** the power rocker read "on" and the lamp drives fed the HX711 through its diodes.
+- **Pressure lead in J1:** it could be powered with its output on GND.
+
+The old checker tested each two-pin element alone, so it never saw series paths through a lead's
+floating common. v30 fixes the board, the leads and the checker.
+
+## What v30 changed
+
+- **Front-panel LEDs carry their own resistor** (pre-wired 5 V LEDs, BUY.md #15). An LED in the wrong
+  socket is then a current-limited load wherever it lands, never a bare diode across a supply.
+- **Scale from 3.3 V only.** VCC and VDD are linked at the HX711 board. There's no 5 V on J10 for a
+  wrong lead to meet, and the freed pin went to the pinout.
+- **Re-pinned sockets:**
+  - J1 pin 1 is now empty.
+  - J5 is now GND / – / NTC.
+  - The heater moved from J2.1 to J2.3.
+  - J10 was re-ordered.
+
+  The pinout came from an exhaustive search: every layout of J2, J7 and J10 (420 × 420 × 1260) and every
+  layout of J1, J5 and J6. The one chosen keeps the front-panel lead as it was.
+- **Firmware:** the scale's SCK stays low in standby. The heater, pump, valve and lamps were already off
+  in standby.
 
 ## The model
 
-Each socket pin is classed by what the board puts on it:
-- **strong supplies:** +5V, 3V3;
-- **strong sinks:** GND, and an output transistor's drain, which is low whenever that output is on;
-- **LED drive:** a GPIO through 330 Ω, 0 or 3.3 V, up to ~10 mA;
-- **switch input:** 1k in series, then a 10k pull-up to 3.3 V, so it can only source ~0.3 mA;
-- **direct GPIO:** the scale's SCK (an output) and DOUT1/2 (inputs), with no series resistor, so 5 V must never reach them;
-- **empty**.
+**Board pins** are classed by net:
+- **strong:** +5V, 3V3, GND, and an output drain, which is 0 V when that output is on;
+- **SCK:** a push-pull GPIO;
+- **medium:** lamp drives, which are a GPIO behind 330 Ω;
+- **weak:** switch inputs (1k + 10k pull-up), DOUT inputs (pull-up), the pressure divider, and the NTC
+  node (4.7k pull-up);
+- **empty.**
 
-Each lead is modelled by the device at its end:
-- **heater SSR input:** switches on from 3 V at a few mA;
-- **SSR boards:** VCC and IN tied together on +5V, GND on the drain; they need about 4 V;
-- **rocker switch** to the panel's common;
-- **LED,** anode to cathode, with no resistor in the lead;
-- **HX711 board:** must only ever be powered the right way round, from its ground on a solid ground;
-- **5 V supply:** an external source;
-- **transducer and NTC.**
+DOUT, SCK, the switch inputs and the NTC node must never see more than 3.6 V from a medium or strong
+source.
+
+**Leads** are modelled as wired in WIRING.md:
+- **Front:** three rockers to the common (each open or closed), and three LEDs with their resistor.
+- **SSR:** the heater SSR input and two SSR boards, all from the shared +5V wire. Worst case, the boards
+  and the heater input also conduct in reverse.
+- **Scale:** an HX711 with protection diodes from every pin to its rail and ground.
+- **Transducer:** the same diode model as the scale.
+- **NTC:** a resistor.
+- **Supply:** a floating 5 V source. It drives nothing until one side is tied to the board.
+
+**States enumerated:**
+- every rocker combination;
+- each output on or off, independently;
+- each lamp high or low, independently;
+- SCK high or low;
+- the board powered (from USB, or from the supply wherever it is) or unpowered.
+
+Current is followed through floating nodes (the front lead's common, the SSRs' chained +5V), across
+diodes and device inputs.
+
+An SSR or SSR board counts as **on** above **1.5 V**. They're only guaranteed off below about 1 V, so the
+undefined region between that and their 3 V turn-on is treated as on.
+
+**Standby is part of the safety case.** The engine leaves standby only when the power rocker reads on,
+and in standby the heater, pump, valve and lamps are off and SCK is held low. So when the front lead is
+not in J7, the board is in standby, as long as whatever is in J7 can't pull the power input low. The
+checker verifies that for every lead in J7, and analyses every lead-in-wrong-socket case with that
+standby state. When the front lead *is* in J7, the rocker can be on, so the other two 7-pin leads are
+analysed in every output state.
+
+Each lead-in-socket case depends only on that lead, that socket, and the firmware and power state. That
+state is enumerated or pinned as above, so a swap of two or three leads at once is covered by its
+single-lead cases.
 
 ## The 7-pin group
 
-- **SSR lead in the front socket.** The SSR inputs land on the switch inputs (pins 1, 2, 3) and LED drives (6, 7). The strongest thing any of them can see is 3.3 V through 330 Ω or ~0.3 mA from a pull-up. The heater SSR needs mA at ≥ 3 V across *its* pair, which lands on two switch inputs (~0 V between them). The SSR boards need ~4 V. Nothing switches on.
-- **SSR lead in the scale socket.** The lead's shared +5V wire (pin 2) lands on the scale socket's empty pin 2. With no supply on that wire, no SSR input can be powered.
-- **Front lead in the SSR socket.** The front panel's common (pin 4) lands on the SSR socket's empty pin 4. Every switch and LED in that lead closes through the common, so none of them completes a circuit.
-- **Front lead in the scale socket.** The common lands on DOUT1, a GPIO input. The switches connect it to GND (pin 1), to nothing (pin 2) or to SCK (pin 3), all logic-level. The LED anodes land on DOUT2, +5V and 3V3. At most an LED from +5V into a GPIO input: 5 V minus the LED's ~2 V is under the pin's 3.6 V limit, and there's no return path for real current.
-- **Scale lead in the SSR socket.** The scale lead's empty wire (pin 2) is the only one facing the SSR socket's +5V. Every other HX711 pin lands on a drain or an empty pin, so the HX711 gets no supply at all.
-- **Scale lead in the front socket.** The HX711's pins land on switch inputs and LED drives: weak, current-limited, ≤ 3.3 V. Nothing is overdriven.
-
-The single shared +5V pin on the SSR socket is deliberate. With two +5V pins, at least one HX711 pin always ended up on +5V while another sat on a drain. That puts current through the chip's protection diodes into the output transistor whenever that output was on, and it was the one combination that failed.
+- **SSR lead in the front socket.** Its pin 1 is empty and faces the power input, so the board stays in
+  standby. The +5V wire and the heater return land on the brew and steam inputs, which can only source
+  ~0.3 mA from their pull-ups. The pump and valve returns land on lamp drives, low in standby. Nothing
+  can push mA through any SSR input.
+- **SSR lead in the scale socket.** The +5V wire lands on the empty J10.2, so the chain floats. The
+  heater return lands on DOUT1 and the pump return on DOUT2, both weak pulled-up inputs that can't sink
+  current. The valve return lands on 3V3. Even if the valve board conducted backwards, the chain only
+  reaches ~2.6 V with nowhere to sink, and no SSR has a path. J10's SCK and GND face the lead's empty
+  pins 4 and 5.
+- **Front lead in the SSR socket.** The board is in standby, so every output is off. The rockers join
+  J2.1 (empty), J2.2 (+5V) and J2.3 (heater drain, off) to the common on the empty J2.4: +5V meets only
+  an open drain. The LEDs face J2.5 (empty) and the two off drains.
+- **Front lead in the scale socket.** The board is in standby with SCK held low. The rockers can join
+  J10.1, J10.2 (empty) and DOUT1 to the common on SCK, so DOUT1 is pulled to a low that SCK already holds.
+  The LEDs go from GND, DOUT2 and 3V3 to the common. The 3V3 one lights dimly through its own resistor.
+- **Scale lead in the front socket.** Its pins 1–2 are empty and face the power and brew inputs, so the
+  board stays in standby with the lamps low. The HX711's GND, DOUT2 and supply land on the three lamp
+  drives, SCK on the panel's GND, and DOUT1 on the steam input. Everything it touches is at 0 V or weakly
+  pulled up, so it stays unpowered.
+- **Scale lead in the SSR socket.** Its empty pins 1–2 face J2.1 and the SSRs' +5V, so 5 V reaches
+  nothing. Its other pins land on the three drains and two empty pins: only sinks, no source, so the
+  HX711 is unpowered.
 
 ## The 3-pin group
 
-- **Supply lead in the pressure socket.** The supply's +5V lands on the board's +5V (pin 2): the board simply runs from it. D2 still keeps it out of a USB host. Its grounds land on SIG (behind 47k) and GND.
-- **Supply lead in the thermistor socket.** The supply's +5V lands on the empty pin 2, so nothing is powered.
-- **Pressure lead in J1.** The transducer's +5V wire lands on the board's power input, with no supply on it; its signal lands on GND. Unpowered, no harm.
-- **Pressure lead in the thermistor socket.** The transducer is unpowered. Its signal wire loads the NTC node, so the temperature reads wrong, the plausibility checks fault, and the heater stays off.
-- **NTC lead in J1 or the pressure socket.** It's a 50k resistor, harmless anywhere (0.1 mA at 5 V). In the pressure socket the pressure reads low and the board faults on it.
+- **Supply lead in the pressure socket.** Its +5V lands on the board's +5V and its GND on GND: the board
+  simply runs from it. D2 still keeps it out of a USB host.
+- **Supply lead in the thermistor socket.** Its +5V lands on the empty J5.2. Its GND touches only the NTC
+  node, so the floating supply drives nothing.
+- **Pressure lead in J1.** J1.2 is live whenever the board is powered: Q4 conducts both ways. The
+  transducer's supply and ground land on +5V and GND, and its output on the empty J1.1. It just runs,
+  into nothing.
+- **Pressure lead in the thermistor socket.** The transducer's output lands on GND, its supply on the
+  empty pin, and its ground on the NTC node. The NTC node is pulled to ~0.6 V through the transducer's
+  ground-side diode. It reads as a shorted probe: NTC_SHORT fault, heater off.
+- **Thermistor lead in J1 or the pressure socket.** It's a resistor. In J1 it goes from the empty pin to
+  GND, so nothing. In J6 it goes from SIG to GND: pressure reads ~0, a sensor fault.
 
 ## What the model doesn't cover
 
-- **Off-centre plugs.** A 3-pin plug can be forced off-centre into a 7-pin header. The latch won't engage, but don't do it.
-- **Reverse-biased LEDs.** These are within their 5 V rating in every case above.
-- **Your own wiring.** The analysis assumes each lead is wired to its device the way WIRING.md says. A lead wired wrong at the device end isn't something any pinout can catch. Label both ends.
+- **Off-centre plugs.** A 3-pin plug can be forced off-centre into a 7-pin header. The latch won't
+  engage, so don't.
+- **Your own wiring.** The analysis assumes each lead is wired at the device end exactly as WIRING.md
+  says, including the LEDs' own resistors and the scale on 3.3 V. A lead wired wrong at the device end
+  isn't something any pinout can catch. Label both ends.
+- **Firmware.** Safety in the swapped cases relies on the standby behaviour above. It is covered by the
+  engine's tests (`coffee-core`), and the scale's SCK gating is in `firmware/esp32/src/control.rs`.
