@@ -2,21 +2,23 @@
  "mains_v": 120,
  "parts": {
   "J1": {
-   "footprint": "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal",
+   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
    "value": "5V in",
    "pins": {
-    "1": "+5V_IN",
-    "2": "GND"
+    "1": "GND",
+    "2": "+5V_IN",
+    "3": "GND"
    },
    "pin_names": {
     "1": "1",
-    "2": "2"
+    "2": "2",
+    "3": "3"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_2_SMD",
-   "mpn": "JST SM02B-GHS-TB",
-   "notes": "1=+5V 2=GND, from the 5 V AC-DC module"
+   "desc": "JST_GH_3_SMD",
+   "mpn": "JST SM03B-GHS-TB",
+   "notes": "1=GND 2=+5V 3=GND, from the 5 V AC-DC module"
   },
   "Q4": {
    "footprint": "Package_TO_SOT_SMD:SOT-23",
@@ -437,6 +439,33 @@
    "mpn": "",
    "notes": "USB-C sink identification"
   },
+  "J2": {
+   "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
+   "value": "SSRs",
+   "pins": {
+    "1": "HEATER_OUT",
+    "2": "+5V",
+    "3": null,
+    "4": null,
+    "5": null,
+    "6": "PUMP_OUT",
+    "7": "VALVE_OUT"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "JST_GH_7_SMD",
+   "mpn": "JST SM07B-GHS-TB",
+   "notes": "1=heater OUT 2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 6=pump OUT 7=valve OUT; 3-5 unused"
+  },
   "R4": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "value": "3.3k",
@@ -472,25 +501,6 @@
    "desc": "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate",
    "mpn": "AO3400A",
    "notes": "HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
-  },
-  "J2": {
-   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
-   "value": "Heater",
-   "pins": {
-    "1": "+5V",
-    "2": "HEATER_OUT",
-    "3": "GND"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2",
-    "3": "3"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "JST_GH_3_SMD",
-   "mpn": "JST SM03B-GHS-TB",
-   "notes": "HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
   },
   "R5": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -528,25 +538,6 @@
    "mpn": "AO3400A",
    "notes": "PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
   },
-  "J3": {
-   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
-   "value": "Pump",
-   "pins": {
-    "1": "+5V",
-    "2": "PUMP_OUT",
-    "3": "GND"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2",
-    "3": "3"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "JST_GH_3_SMD",
-   "mpn": "JST SM03B-GHS-TB",
-   "notes": "PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
-  },
   "R6": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "value": "3.3k",
@@ -583,12 +574,12 @@
    "mpn": "AO3400A",
    "notes": "VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
   },
-  "J8": {
+  "J5": {
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
-   "value": "Valve",
+   "value": "Thermistor",
    "pins": {
-    "1": "+5V",
-    "2": "VALVE_OUT",
+    "1": "NTC",
+    "2": null,
     "3": "GND"
    },
    "pin_names": {
@@ -600,26 +591,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
-  },
-  "J5": {
-   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
-   "value": "Thermistor",
-   "pins": {
-    "1": "NTC",
-    "2": "GND",
-    "3": null
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2",
-    "3": "3"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "JST_GH_3_SMD",
-   "mpn": "JST SM03B-GHS-TB",
-   "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused"
+   "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 3=GND (no polarity), 2 unused"
   },
   "R15": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -676,8 +648,8 @@
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
    "value": "Pressure",
    "pins": {
-    "1": "+5V",
-    "2": "P_SIG",
+    "1": "P_SIG",
+    "2": "+5V",
     "3": "GND"
    },
    "pin_names": {
@@ -689,7 +661,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND"
+   "notes": "0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
   },
   "R16": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -1127,15 +1099,16 @@
    "notes": "indicator: valve on"
   },
   "J10": {
-   "footprint": "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal",
+   "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
    "value": "Scale",
    "pins": {
-    "1": "+5V",
-    "2": "+3V3",
-    "3": "GND",
-    "4": "SCALE_SCK",
-    "5": "SCALE_DOUT1",
-    "6": "SCALE_DOUT2"
+    "1": "GND",
+    "2": null,
+    "3": "SCALE_SCK",
+    "4": "SCALE_DOUT1",
+    "5": "SCALE_DOUT2",
+    "6": "+5V",
+    "7": "+3V3"
    },
    "pin_names": {
     "1": "1",
@@ -1143,13 +1116,14 @@
     "3": "3",
     "4": "4",
     "5": "5",
-    "6": "6"
+    "6": "6",
+    "7": "7"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_6_SMD",
-   "mpn": "JST SM06B-GHS-TB",
-   "notes": "1=+5V 2=+3V3 3=GND 4=SCK 5=DOUT1 6=DOUT2 (dual HX711 board in the tray base)"
+   "desc": "JST_GH_7_SMD",
+   "mpn": "JST SM07B-GHS-TB",
+   "notes": "1=GND 3=SCK 4=DOUT1 5=DOUT2 6=+5V 7=+3V3, 2 unused (dual HX711 board in the tray base)"
   },
   "R36": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

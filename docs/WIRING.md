@@ -1,8 +1,8 @@
-# Wiring: v24 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
+# Wiring: v29 low-voltage board + off-board modules (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
-This replaces INSTALL.md §5 for the v24 board. The board carries no mains: certified modules
+This replaces INSTALL.md §5 for the v29 board. The board carries no mains: certified modules
 switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply.
 
@@ -107,7 +107,7 @@ Mechanical (as GaggiMate):
 
 ### Low-voltage side
 
-Every board connector is a JST **GH** 1.25 mm 3-pin side-entry header (SM03B-GHS-TB). Every cable is a pre-crimped JST GH 3-pin lead, about 300 mm, with the far end stripped (BUY.md #9).
+Six JST **GH** 1.25 mm side-entry headers, bundled by where the devices are: three **3-pin** (5 V in, pressure, thermistor) and three **7-pin** (the SSRs on the back panel, the front panel, the scale). Every cable is a pre-crimped JST GH lead, about 300 mm, with the far end stripped (BUY.md #9, #16). Same-size leads fit each other's sockets; the pinouts make every such swap harmless (docs/SWAP-SAFETY.md), but label both ends anyway.
 
 #### Joining the GH leads
 
@@ -118,38 +118,34 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 
 | Board pin | Signal | Goes to | Notes |
 |---|---|---|---|
-| J1.1 | +5 V in | 5 V supply **+V out** | Solder + heat-shrink. J1 is a **2-pin** GH: the supply lead can't go into an output socket, nor an output lead into J1 |
-| J1.2 | GND | 5 V supply **−V / GND out** | |
-| J2.1 | +5 V | heater SSR **3 (+)** input | 18 AWG pigtail in the screw clamp |
-| J2.2 | OUT (pulled low = ON) | heater SSR **4 (−)** input | |
-| J2.3 | GND | — | Unused. Cut back and insulate |
-| J3.1 | +5 V | **pump** SSR board **VCC** *and* **IN** | Tie VCC and IN together on the board: the board is then on whenever J3 switches its GND |
-| J3.2 | OUT (pulled low = ON) | pump SSR board **GND** | |
-| J3.3 | GND | — | Unused |
-| J8.1 | +5 V | **valve** SSR board **VCC** *and* **IN** | as J3 |
-| J8.2 | OUT | valve SSR board **GND** | |
-| J8.3 | GND | — | Unused |
-| J7.1 | POWER | power switch, the freed (ex-neutral) pole: one terminal | Dry contact, step 8. Female spade on an 18 AWG pigtail |
+| J1.1 | GND | 5 V supply **−V / GND out** | |
+| J1.2 | +5 V in | 5 V supply **+V out** | Solder + heat-shrink |
+| J1.3 | GND | 5 V supply −V too | Two ground wires halve the return resistance |
+| J2.1 | heater OUT (pulled low = on) | heater SSR **4 (−)** input | 7-pin lead to the back panel |
+| J2.2 | +5 V | heater SSR **3 (+)**, then daisy-chained on to the pump SSR board **VCC**, then the valve SSR board **VCC** | No splice: the lead's +5 V wire goes into heater SSR terminal 3, and a short jumper from that terminal (two wires under one screw, or a ferrule for two) goes to the pump board's VCC, another from there to the valve board's VCC. On each SSR board also link VCC to IN: the board is then on whenever its OUT pulls its GND low |
+| J2.3 – J2.5 | — | — | Unused: cut back and insulate (pin 4 empty is what keeps a front-panel lead harmless here) |
+| J2.6 | pump OUT | pump SSR board **GND** | |
+| J2.7 | valve OUT | valve SSR board **GND** | |
+| J7.1 | POWER | power rocker, one pole: one terminal | That pole carries no mains (step 8) |
 | J7.2 | BREW | brew switch, terminal **C.1** | Female spade on an 18 AWG pigtail |
 | J7.3 | STEAM | steam switch, terminal **S.4** | |
-| J7.4 | GND | power switch freed pole's other terminal, brew switch **C.2**, steam switch **S.5** | One GND lead spliced into three short tails (solder + heat-shrink). **UNSURE** for your switches: check each pair closes when its rocker is on |
-| J7.5 | LED power | power lamp position: LED **anode** | The three 120 V neon lamps are removed and replaced by red LEDs (BUY.md #15). LED cathodes all go to J7.4 GND. The board has the 330 Ω resistors |
-| J7.6 | LED coffee | coffee-temp lamp position: LED anode | |
-| J7.7 | LED steam | steam-temp lamp position: LED anode | |
-| J10.1 | +5 V | scale HX711 board **VCC / AVDD** | Dual-HX711 board with separate supplies: 5 V analog. For generic one-supply HX711 modules leave J10.1 unconnected and use J10.2 for both |
-| J10.2 | +3.3 V | HX711 **VDD / logic** | DOUT then swings 0–3.3 V, safe for the ESP32-C6 |
-| J10.3 | GND | HX711 GND | |
-| J10.4 | SCK | both HX711s' SCK (shared) | |
-| J10.5 | DOUT1 | HX711 #1 DOUT (left load cell) | |
-| J10.6 | DOUT2 | HX711 #2 DOUT (right load cell) | Lead runs behind the water tank, away from the mains wiring |
-| J5.1 | NTC | Molex 218537-3919 lead (PTFE, 28 AWG) | No polarity. Solder + heat-shrink, with the joint well away from the boiler (the probe's 300 mm leads reach). The firmware defaults are this probe's (Steinhart-Hart from Molex's table, BUY.md #10) |
-| J5.2 | GND | thermistor lead | |
-| J5.3 | — | — | Unused |
-| J6.1 | +5 V | transducer supply wire | GaggiMate's 0–1.6 MPa sensor has no datasheet: identify its wires on the bench first (INSTALL §3) |
-| J6.2 | signal | transducer output wire | ~0.5 V at 0 bar |
-| J6.3 | GND | transducer ground wire | Solder + heat-shrink each splice |
-| J4 | USB-C | first flash, logs, bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
-| U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail (MHF III → SMA bulkhead) + Taoglas GW.15.2113 2 dBi SMA dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part: on the steel case the dipole's gain can exceed the module's 2.33 dBi limit (Taoglas plots). Press the MHF III plug straight down onto the socket; don't force it |
+| J7.4 | GND | power pole's other terminal, brew switch **C.2**, steam switch **S.5**, and the three LED cathodes | One lead spliced into short tails. **UNSURE** for your switches: check each pair closes when its rocker is on |
+| J7.5 / .6 / .7 | LED power / coffee / steam | LED **anodes** in the three lamp positions | The board has the 330 Ω resistors |
+| J10.1 | GND | HX711 GND | 7-pin lead to the tray base |
+| J10.2 | — | — | Unused |
+| J10.3 | SCK | both HX711s' SCK (shared) | |
+| J10.4 | DOUT1 | HX711 #1 DOUT (left load cell) | |
+| J10.5 | DOUT2 | HX711 #2 DOUT (right load cell) | |
+| J10.6 | +5 V | HX711 board **VCC / AVDD** (analog) | For generic one-supply HX711 modules leave J10.6 unconnected and use J10.7 for both |
+| J10.7 | +3.3 V | HX711 **VDD / logic** | DOUT then swings 0–3.3 V, safe for the ESP32-C6. The lead runs behind the water tank, away from the mains wiring |
+| J5.1 | NTC | Molex 218537-3919 lead | No polarity. Solder + heat-shrink, the joint well away from the boiler |
+| J5.2 | — | — | Unused |
+| J5.3 | GND | the other thermistor lead | |
+| J6.1 | signal | transducer output wire | ~0.5 V at 0 bar. Identify its wires on the bench first (INSTALL §3) |
+| J6.2 | +5 V | transducer supply wire | |
+| J6.3 | GND | transducer ground wire | |
+| J4 | USB-C | first flash, logs, bench power | At the board's right end. **USB and J1 may be connected at the same time:** D2 keeps the 5 V module out of the PC |
+| U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail + GW.15.2113 2 dBi dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part |
 
 ## Checks before mains (multimeter, machine unplugged)
 
@@ -163,12 +159,12 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
    - the valve SSR board's load terminal 2 (M9) through the valve coil reads a few hundred Ω to a few kΩ.
    An open reading means a parked wire was part of that path. **Look** that the pump's thermal fuse is back in its clip if the plumbing step took it out (a loose fuse still conducts).
 5. **Isolation:** no continuity from any mains wire or SSR load terminal to:
-   - J1–J8 pins;
+   - J1, J2, J5, J6, J7, J10 pins;
    - the 5 V supply's output terminals;
    - the switch dry contacts.
    No continuity from any mains wire to the chassis.
 6. **Earth:** touch the meter leads together first and subtract that reading. Chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's metal base** to the earth pin < 0.5 Ω (through its M4 bolts: scrape paint under them if it reads high).
-7. **Switches:** J7.1–J7.4 closes with the power rocker on; J7.2–J7.4 closes with brew pressed; J7.3–J7.4 closes with steam pressed (J7.4 is GND).
+7. **Switches:** J7.1–J7.4 closes with the power rocker on; J7.2–J7.4 with brew pressed; J7.3–J7.4 with steam pressed (J7.4 is GND).
 8. **Thermistor** (do this before INSTALL §4 fits it): **~50 kΩ** between its two leads at 25 °C (Molex 218537-3919: 50 kΩ ± 1 %; about 63 kΩ at 20 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
 
 9. **After the case goes back together:** every earth wire you unplugged is back on. GaggiMate's install guide warns that the top cover (cup warmer) has **two** earth wires. Measure each panel, the top cover included, to the plug's earth pin: < 0.5 Ω.

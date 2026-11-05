@@ -79,11 +79,10 @@ def conn(n, name, fp):
 
 # One connector type for every cable (one JLC extended-part fee): JST GH 3-pin (1.25 mm), SMD, side
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
-JST2 = conn(2, "JST_GH_2_SMD", "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
 # Front panel (3 switches + 3 LEDs + GND) and the drip-tray scale (dual HX711) need more pins.
 JST7 = conn(7, "JST_GH_7_SMD", "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
-JST6 = conn(6, "JST_GH_6_SMD", "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal")
+
 
 # TI TLV1117LV33DCYR (SBVS160C): 1 A, stable with >= 1 uF ceramic at any ESR, VIN <= 5.5 V (6 V abs),
 # dropout 230 mV typ at 500 mA. SOT-223 because of heat: from 5 V it drops 1.7 V, ~0.17 W at the C6's
@@ -123,10 +122,12 @@ for n in (gnd, v5, v3):
 # connector, source to the rail, gate to GND): ~0.3 V less drop than a diode, so the transducer
 # keeps its full 5 V. A swapped lead leaves the body diode reverse biased and the gate at 0 V: off.
 v5_in = Net("+5V_IN")
-# v24: a 2-pin socket, unlike the 3-pin outputs: the supply lead can't go into J2/J3/J8 and an output
-# lead can't go into J1 (with a 3-pin J1, that swap back-fed +5V through Q4 and held a load on; review S1).
-j_pwr = part(JST2, "J1", "5V in", mpn="JST SM02B-GHS-TB", notes="1=+5V 2=GND, from the 5 V AC-DC module")
-j_pwr[1, 2] += v5_in, gnd
+# v29: connectors bundled by location: three 3-pin (5 V in, pressure, thermistor) and three 7-pin (the
+# SSRs on the back panel, the front panel, the scale). Every pinout is chosen so that any lead in any
+# wrong same-size socket is harmless (docs/SWAP-SAFETY.md). J1 is GND / +5V / GND: the supply lead in the
+# pressure or thermistor socket powers nothing, and neither of those leads can feed the board here.
+j_pwr = part(JST3, "J1", "5V in", mpn="JST SM03B-GHS-TB", notes="1=GND 2=+5V 3=GND, from the 5 V AC-DC module")
+j_pwr[1, 2, 3] += gnd, v5_in, gnd
 q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
 q_rp["D"] += v5_in
 q_rp["S"] += v5
@@ -203,8 +204,16 @@ u_mcu["IO13"] += dp
 # Every module has its own input LED, so the board has none per output. All three outputs drive SSR
 # boards (no coil), so there's no flyback diode (v23 dropped D5; a relay module brings its own).
 # GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
-for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", None), ("PUMP", "IO19", "J3", "Q2", "R5", None),
-                                         ("VALVE", "IO18", "J8", "Q3", "R6", None)):
+# v29: all three SSR inputs on one 7-pin lead to the back panel: 1 = heater OUT, 2 = +5V (shared by all
+# three SSR inputs, ~60 mA), 6 = pump OUT, 7 = valve OUT, 3-5 empty. The empty pin 4 and the single +5V
+# pin are what make a front-panel or scale lead harmless in this socket (docs/SWAP-SAFETY.md).
+j_out = part(JST7, "J2", "SSRs", mpn="JST SM07B-GHS-TB",
+             notes="1=heater OUT 2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 6=pump OUT 7=valve OUT; 3-5 unused")
+j_out[2] += v5
+for pin in (3, 4, 5):
+    j_out[pin] += NC
+for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 1, "Q1", "R4", None), ("PUMP", "IO19", 6, "Q2", "R5", None),
+                                         ("VALVE", "IO18", 7, "Q3", "R6", None)):
     cmd, out = Net(f"{name}_CMD"), Net(f"{name}_OUT")
     u_mcu[gpio] += cmd
     r = part(R, rpd, "3.3k", notes="Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)")
@@ -213,8 +222,7 @@ for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", No
     q["G"] += cmd
     q["S"] += gnd
     q["D"] += out
-    j = part(JST3, jref, name.capitalize(), mpn="JST SM03B-GHS-TB", notes=f"{name}: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -")
-    j[1, 2, 3] += v5, out, gnd
+    j_out[jpin] += out
     if dfb:
         d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for the relay coil")
         d["A"] += out
@@ -226,9 +234,9 @@ for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", No
 # would otherwise put the supply straight onto the pin's clamp diode (~1 mA through 1k). No current
 # flows in R27 in normal use, so it adds no measurement error.
 ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused")
-j_ntc[1, 2] += ntc, gnd
-j_ntc[3] += NC
+j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 3=GND (no polarity), 2 unused")
+j_ntc[1, 3] += ntc, gnd
+j_ntc[2] += NC     # v29: the supply lead's +5V (its pin 2) lands here on nothing
 r = part(R, "R15", "4.7k", notes="NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)")
 r[1, 2] += v3, ntc
 c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
@@ -239,8 +247,8 @@ u_mcu["IO1"] += ntc_adc   # ADC1_CH1
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND")
-j_p[1, 2, 3] += v5, p_sig, gnd
+j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)")
+j_p[1, 2, 3] += p_sig, v5, gnd
 # 147 kOhm total: the TE M3200 datasheet asks for a load > 100 kOhm on its voltage output. Gain 100/147:
 # 4.5 V -> 3.06 V. (300k would leave too little charge in the reservoir for the ADC's sampling cap.)
 r = part(R, "R16", "47k", notes="Divider 100/147 (147k load: TE M3200 needs > 100k)")
@@ -296,13 +304,14 @@ for dref, rref, net, what in (("D3", "R37", "LED_PWR_IO", "power lamp"), ("D4", 
 # (DOUT then swings 0-3.3 V). 100R series on every line; SCK pulled down so the HX711 stays awake
 # while the C6 boots (SCK held high > 60 us powers it down). GPIO4/5 are strapping pins only for
 # SDIO clock edges (C6 datasheet, "Strapping pins"), unused here, so they serve as the DOUT inputs.
-j_sc = part(JST6, "J10", "Scale", mpn="JST SM06B-GHS-TB",
-            notes="1=+5V 2=+3V3 3=GND 4=SCK 5=DOUT1 6=DOUT2 (dual HX711 board in the tray base)")
-j_sc[1, 2, 3] += v5, v3, gnd
+j_sc = part(JST7, "J10", "Scale", mpn="JST SM07B-GHS-TB",
+            notes="1=GND 3=SCK 4=DOUT1 5=DOUT2 6=+5V 7=+3V3, 2 unused (dual HX711 board in the tray base)")
+j_sc[1, 6, 7] += gnd, v5, v3
+j_sc[2] += NC     # v29: an SSR lead's shared +5V lands here on nothing
 # v23: no series resistors on the scale lines (GaggiMate and Gaggiuino have none). J10 sits over the
 # module's DOUT pins with no room between, and SCK runs under the module; the C6's pins have their own
 # ESD diodes, and the HX711s sit at the other end of a 30 cm lead at the same ground.
-for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (5, ("DOUT1", "IO4")), (6, ("DOUT2", "IO5"))):
+for pin_no, (name, gpio) in ((3, ("SCK", "RXD0")), (4, ("DOUT1", "IO4")), (5, ("DOUT2", "IO5"))):
     d = Net(f"SCALE_{name}")
     u_mcu[gpio] += d
     j_sc[pin_no] += d

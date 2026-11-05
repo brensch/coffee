@@ -1,7 +1,7 @@
-# Controller board v28: low voltage only
+# Controller board v29: low voltage only
 
-A 73.2 × 19.6 mm two-layer board with all eight JST GH connectors in one row along its top edge, so
-every cable leaves one side: it stands upright in the machine's back-right corner (where GaggiMate
+A 64.3 × 20 mm two-layer board with six JST GH connectors in one row along its top edge, one per
+place in the machine (three 3-pin, three 7-pin), so every cable leaves one side: it stands upright in the machine's back-right corner (where GaggiMate
 mounts its controller) with the cables going up into the loom. The ESP32 module sits in the middle,
 straight against the connector row (pinless side down), and the board ends just below it; a seven-LED indicator panel sits in the right-hand area. The
 USB-C is at the left end. No mounting holes: heat-resistant velcro on the flat back holds it. Every part is on the top side, so JLCPCB's one-sided assembly fits all of it and there is nothing
@@ -42,7 +42,7 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 ### Power in
 | Part | Value | Why |
 |---|---|---|
-| J1 | JST GH **2-pin** (1 +5 V, 2 GND) | from the 5 V AC-DC module. 2-pin since v24, unlike the 3-pin outputs: with a 3-pin J1, swapping the supply lead and an output lead back-fed +5 V through Q4 and held that load on (review S1) |
+| J1 | JST GH 3-pin (1 GND, 2 +5 V, 3 GND) | from the 5 V AC-DC module. v29: the supply lead in any other 3-pin socket powers nothing harmful, and no other lead can feed the board here (docs/SWAP-SAFETY.md). v24–v28 used a 2-pin socket for the same reason; before that, with a 3-pin J1, swapping the supply lead and an output lead back-fed +5 V through Q4 and held that load on (review S1) |
 | Q4 | AO3401A P-MOSFET, gate straight to GND (Vgs −5 V, inside its ±12 V) | reverse-polarity protection: a swapped lead leaves it off (datasheet leakage ≤ 1 µA; 5 nA simulated). Drop ≤ 15 mV at 250 mA (60 mΩ max) vs ~0.35 V for a diode, so the transducer keeps a full 5 V |
 | D2 | B5819W Schottky | USB VBUS → +5 V for bench power. With both connected, the module (5.0 V) powers the board and D2 keeps it out of the PC. With USB alone, Q4 conducts backwards and ~4.6 V sits on J1 / the module's output: harmless (it only charges the unpowered module's output capacitor) |
 | C6, C7 | 22 µF X5R 0805 | +5 V and +3.3 V bulk, ceramic (nothing to dry out at 60–70 °C) |
@@ -59,11 +59,8 @@ The old boards are kept in `hardware/controller/versions/` (v1–v14).
 | D1, R12 | red LED, 1k on **GPIO16 (U0TXD)** | status, ~1.3 mA. On the UART TX pin on purpose (v24): the ROM prints its boot log there, so the LED flickers at every reset and glows while the chip waits in download mode (programming); then the firmware drives it as a heartbeat. The steam lamp moved to GPIO23 (it used to light at every boot on this pin: review M1). The LED's datasheet numbers pin ① = anode, the opposite of KiCad's pad 1; the CPL gate maps it, but glance at D1 in JLC's preview |
 | J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13. Back at the left edge in v24 (v23 had bare pads). Drilled to HRO's recommended layout: locating holes Ø0.60 mm for the Ø0.50 mm posts, shell slots 0.6 × 1.7 and 0.6 × 1.4 mm; the shell legs get paste so reflow solders them. The shell overhangs the left edge by 0.96 mm |
 
-### Outputs (J2 heater, J3 pump, J8 valve)
-GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. The MOSFET sinks the module's input, and every connector uses the same pinout:
-- pin 1 = +5 V;
-- pin 2 = OUT (pulled low = on);
-- pin 3 = GND.
+### Outputs (all three on J2, the 7-pin lead to the back panel)
+GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. Each MOSFET switches its SSR input's return to ground (low-side): J2.2 carries +5 V to all three SSR inputs, daisy-chained through the SSR terminals at the back panel; J2.1 / J2.6 / J2.7 are the heater / pump / valve returns (pulled low = on); J2.3–5 are empty, which is what keeps a wrong lead harmless in this socket.
 
 Notes per part:
 - **3.3 kΩ pull-down:** holds the gate under 0.47 V even against a 20 kΩ internal pull-up while the pin floats during reset, boot or flashing. A 100 kΩ pull-down would let a 45 kΩ pull-up switch the heater on at boot (2.3 V on the gate, simulated).
@@ -79,7 +76,7 @@ Notes per part:
 | Thermistor, J5 → R27 1k → GPIO1 (ADC1) | R15 4.7k to 3V3, C8 100 nF, R27 1k series | **Molex 218537-3919** 50 kΩ ±1 % ring-tab probe (−40…250 °C, 1500 VAC body isolation, PTFE leads; Molex sales drawing) under an M4 screw at the brew-thermostat seat. The firmware uses a Steinhart-Hart fit to Molex's R-T table (within ~1 °C of it from 25 to 200 °C; the table's own spread is ±3.6 % at 95 °C, ~±0.9 °C) and compensates the probe's lag for control (`ntc.probe_lag_s`, 15 s per Molex). 4.7k sits near the probe's 3.9 kΩ at 93 °C: 1.50 V there, 26 mV/°C. Self-heating 0.57 mW, ~0.6 °C in still air (1 mW/°C), less on the boiler; calibrated out. R27 carries no current in use (no error) and limits a 5 V plug pushed into J5 by mistake to ~1.2 mA into the pin. **Open probe:** the node reads the 3.3 V rail; the firmware calls ≥ 3200 mV a fault (heater off), 100 mV under the rail because the ADC is only specified to ±40 mV there. That also faults a boiler colder than ~2 °C. An open probe that reads under the threshold anyway, or a probe stuck at any value, is caught by HEATER_INEFFECTIVE: an energy balance of the heat delivered against the rise the reading shows (≈ 2 minutes) |
 | Pressure, J6 → GPIO0 (ADC1) | R16 47k / R17 100k divider, C9 22 nF | Any 0.5–4.5 V ratiometric 5 V transducer: GaggiMate's 0–1.6 MPa sensor by choice (BUY.md §10b), or TE's M3200 (whose datasheet asks for a load > 100 kΩ, hence the 147 kΩ divider). 4.5 V → 3.06 V; −3 dB at ~226 Hz keeps the pump's 60 Hz pulses. On USB power +5 V is ~4.5–4.6 V, so pressure readings there are only indicative |
 | Front panel, J7 (7-pin) → GPIO14/6/7 in, GPIO21/22/23 out | R29/R18/R19 1k series at the pins, R28/R20/R21 **10k** pull-ups on the GPIO side; R30–R32 330 Ω LED resistors (steam lamp on GPIO23 since v24) | the stock rocker switches as dry contacts. Closed: 3.3 V × 1k / (1k + 10k ∥ 45k internal) = 0.36 V at the GPIO, 0.46 V under the C6's 0.825 V low threshold (4.7k left only 0.2 V: review S2); ~0.36 mA wetting current; a 5 V plug in the wrong socket pushes ~1.5 mA through the 1k into a clamp diode |
-| Scale, J10 (6-pin) → GPIO17 (SCK) out, GPIO4/5 (DOUT) in | R36 10k SCK pull-down; the firmware turns on GPIO4/5's internal pull-ups, so a missing scale reads "not ready" instead of noise (review S5). No series resistors, as GaggiMate and Gaggiuino | dual HX711 next to the load cells (5 V analog, 3V3 logic); only slow digital lines on the lead. v19–v22 had a bug: R36 sat on a separate net and pulled nothing down |
+| Scale, J10 (7-pin: 1 GND, 3 SCK, 4 DOUT1, 5 DOUT2, 6 +5V, 7 3V3; 2 empty) → GPIO17 (SCK) out, GPIO4/5 (DOUT) in | R36 10k SCK pull-down; the firmware turns on GPIO4/5's internal pull-ups, so a missing scale reads "not ready" instead of noise (review S5). No series resistors, as GaggiMate and Gaggiuino | dual HX711 next to the load cells (5 V analog, 3V3 logic); only slow digital lines on the lead. v19–v22 had a bug: R36 sat on a separate net and pulled nothing down |
 | Rail sense → GPIO2/3 | R22/R23 (3V3/2), R24/R25 (5V/3), C10, C11 | the ADC measures absolute volts; measuring both rails lets the firmware divide them out (ratiometric) |
 
 **1 % resistors instead of 0.1 %.** Every resistor is a JLC basic part, which saves three extended-part fees. The cost in accuracy, before the calibration that removes it:
@@ -102,9 +99,9 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 
 ## Layout
 
-**Board:** 73.2 × 19.6 mm (v28: the board stops just below the module; velcro needs no edge margin), 2 layers, 1 oz, every part on the top side, 0603 passives (all JLC basic). No mounting holes (v27): the back is flat apart from the bare BOOT pad and the USB-C's four solder legs at the left end, so a strip of heat-resistant velcro holds it.
+**Board:** 64.3 × 20 mm (v29), 2 layers, 1 oz, every part on the top side, 0603 passives (all JLC basic). No mounting holes: heat-resistant velcro on the flat back.
 
-**Connectors:** one row along the top edge, openings outward (up when mounted), left to right: 5 V in (J1, 2-pin), valve (J8), heater (J2), pump (J3), scale (J10, 6-pin), front panel (J7, 7-pin), pressure (J6), thermistor (J5). The module sits straight under the scale connector, touching the row; every other connector's parts sit directly under its own pins (drivers under the outputs, dividers under the sensors, the switch and LED resistors under the front panel). USB-C (J4) at the left short edge.
+**Connectors (v29: bundled by location):** one row along the top edge, openings outward (up when mounted), left to right: the SSRs (J2, 7-pin, to the back panel), the scale (J10, 7-pin, right over the module), the front panel (J7, 7-pin), pressure (J6, 3-pin: SIG / +5V / GND), the thermistor (J5, 3-pin: NTC / – / GND) and 5 V in (J1, 3-pin: GND / +5V / GND). USB-C (J4) at the right short edge, under 5 V in. Same-size leads fit each other's sockets. The pinouts were chosen to make such swaps harmless, but the independent review found three that are not (front lead in J2 or J10, scale lead in J7): see [SWAP-SAFETY.md](SWAP-SAFETY.md). Label both ends of every lead.
 
 **Indicator panel (v27, moved right in v28):** seven red LEDs in a row in the right-hand area, each with its 1k below it, labelled on the top silkscreen S P C S H P V:
 - **S**: status (GPIO16 / U0TXD: boot log, programming, heartbeat);
@@ -112,9 +109,9 @@ The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a 
 - **H P V**: heater, pump, valve, each on its output's gate drive through 1k, lit exactly while the board turns that SSR on.
 All are KT-0603R (C2286, basic) with 1k (basic): ~1.3 mA each. Added cost ~$0.10 per assembled board (parts + joints), no setup fee.
 
-**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) v25 (73.2 × 24, module at the end, 0402) and v26 (73.2 × 26, parts strip between the plugs and the module, M3 holes) and v27 (73.2 × 25, LEDs under the module) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
+**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) v25 (73.2 × 24, module at the end, 0402) and v26 (73.2 × 26, parts strip between the plugs and the module, M3 holes) and v27 (73.2 × 25, LEDs under the module) and v28 (73.2 × 19.6, eight connectors) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
 
-All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the long edges.
+All six are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the top edge.
 
 **Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
 
@@ -132,7 +129,7 @@ All eight are JST GH (1.25 mm, positive latch, which suits a machine shaken by a
 
 The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
 
-**JLC:** 25 BOM lines, all placed by JLC on the top side; 7 extended part types (the four GH connector sizes, the USB-C, the ESP32-C6 module, the LDO), the rest basic. None of the seven has a basic or preferred-extended equivalent in JLC's library (searched 2026-11-05: no latching wire-to-board connector, USB-C or ESP32 module is basic); only the LDO does (AMS1117-3.3, C6186), kept as the TI part for ceramic-capacitor stability and lower dropout. The 0402 100 nF and 22 nF are pinned to basic parts (C1525, C1532): the matcher picked extended ones. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
+**JLC:** 25 BOM lines, all placed by JLC on the top side; 5 extended part types (the 3- and 7-pin GH connectors, the USB-C, the ESP32-C6 module, the LDO), the rest basic. None of the seven has a basic or preferred-extended equivalent in JLC's library (searched 2026-11-05: no latching wire-to-board connector, USB-C or ESP32 module is basic); only the LDO does (AMS1117-3.3, C6186), kept as the TI part for ceramic-capacitor stability and lower dropout. The 0402 100 nF and 22 nF are pinned to basic parts (C1525, C1532): the matcher picked extended ones. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
 - `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 64 placed parts land on their pads (the two new 0402 capacitors solved from same-package records: EasyEDA's API refused this machine).
 - `jlc_pins.py` then compares JLC's pin names with the schematic's for every polarised part: 102 pin functions, 0 mismatches (every LED's polarity included). This gate exists because the v15 position file had the status LED reversed.
 

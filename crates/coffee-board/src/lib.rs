@@ -3,8 +3,8 @@
 //! peripheral plumbing around these and `coffee_node::Node`.
 //!
 //! Timing model: there is no zero-cross detector. The firmware ticks on the
-//! crystal once per nominal mains period ([`CycleClock`]); the MOC3063 opto-triacs
-//! fire the triacs only at zero crossings, so whatever the window's phase against
+//! crystal once per nominal mains period ([`CycleClock`]); the zero-cross SSR
+//! modules switch only at zero crossings, so whatever the window's phase against
 //! the grid, a load asserted for one window conducts for one full mains cycle,
 //! and the pump (diode in series) makes exactly one stroke. [`grid`] models what
 //! happens when the grid is not exactly at nominal frequency.

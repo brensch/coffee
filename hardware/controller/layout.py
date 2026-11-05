@@ -158,10 +158,11 @@ def silkscreen(board, mains_v, footprints=None):
     and pin order, plus the board name and the logo where the plan puts them. The top is too dense
     for text; it keeps only the connectors' own pin-1 marks. Optional top labels: plan "label_pos"."""
     LABELS = _plan.get("labels", {
-        "J1": ("5V IN", ["+5V", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
-        "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["", "", "NC"]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
+        "J1": ("5V IN", ["GND", "+5V", "GND"]),
+        "J2": ("SSRs", ["HEAT", "+5V", "", "", "", "PUMP", "VALV"]),
+        "J5": ("NTC", ["NTC", "", "GND"]), "J6": ("PRESS", ["SIG", "+5V", "GND"]),
         "J7": ("FRONT", ["PWR", "BREW", "STM", "GND", "LP", "LC", "LS"]),
-        "J10": ("SCALE", ["+5V", "3V3", "GND", "SCK", "D1", "D2"]), "J4": ("USB", [])})
+        "J10": ("SCALE", ["GND", "", "SCK", "D1", "D2", "+5V", "3V3"]), "J4": ("USB", [])})
     def silk(txt, x, y, size=1.0, angle=0, layer=pcbnew.B_SilkS):
         size = max(size, 1.0)              # JLC's recommended minimum text height (1.0 mm, 0.16 mm stroke)
         t = pcbnew.PCB_TEXT(board)

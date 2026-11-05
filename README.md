@@ -47,20 +47,20 @@ coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```
 
-## Hardware: the v28 controller board
+## Hardware: the v29 controller board
 
-One 73.2 × 19.6 mm board with no mains on it, the GaggiMate layout: certified SSR modules beside it
+One 64.3 × 20 mm board with no mains on it, the GaggiMate layout: certified SSR modules beside it
 switch the heater, pump and valve, and a certified 5 V module powers it. Every part is on the top
 side, all assembled by JLCPCB:
 - an ESP32-C6-MINI-1U (105 °C rated, W.FL / MHF III antenna connector);
-- three 5 V outputs for the SSRs;
+- three low-side outputs for the SSRs, all on one lead to the back panel;
 - thermistor, pressure, front-panel (three switches in, three LEDs out) and drip-tray scale inputs;
-- eight latching JST GH connectors in one row, so every cable leaves one edge (it mounts upright in the back-right corner, like GaggiMate's);
+- six latching JST GH connectors in one row, one lead per place in the machine (three 3-pin, three 7-pin), so every cable leaves one edge; label both ends: some same-size mis-plugs are NOT harmless (docs/SWAP-SAFETY.md);
 - USB-C for the first flash (then updates go over Wi-Fi), and a 7-LED indicator panel: status, the three front-panel lamps, and heater/pump/valve.
 
 | Item | What | Notes |
 |---|---|---|
-| Board | v28 controller, fully assembled by JLCPCB | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
+| Board | v29 controller, fully assembled by JLCPCB | `hardware/controller` generates everything: schematic, PCB, DRC, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
 | Boiler temperature | Molex 218537-3919 50k NTC, ring tab | The board's reference resistor is matched to it. Two-point calibration. |
 | Pressure | Transducer 0–1.6 MPa, 5 V, 0.5–4.5 V, G1/4 + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
 | Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |

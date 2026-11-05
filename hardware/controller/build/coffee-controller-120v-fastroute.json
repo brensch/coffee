@@ -1,28 +1,28 @@
 {
   "fastroute": "0.1.14",
-  "input": "/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p110/coffee-controller-120v.dsn",
-  "time_s": {"load": 0.0075, "route": 72.3974, "total": 72.4083, "diagnose": 0.0072},
-  "stats": {"layers": 2, "components": 65, "nets": 47, "pins": 242, "connections": 169, "unrouted": 0, "unrouted_ignored_classes": 0, "violations": 16, "violations_unfixable": 16, "vias": 95, "vias_blind": 0, "vias_buried": 0, "traces": 375, "trace_length_mm": 1349.4979, "bends_90": 3, "bends_45": 374, "bends_other": 0, "router_score": 997.895, "optimizer_score": 130.751},
+  "input": "/home/brensch/.claude/jobs/bbbb1070/tmp/lv/p128/coffee-controller-120v.dsn",
+  "time_s": {"load": 0.0075, "route": 93.9984, "total": 94.0095, "diagnose": 0.0072},
+  "stats": {"layers": 2, "components": 63, "nets": 47, "pins": 238, "connections": 165, "unrouted": 0, "unrouted_ignored_classes": 0, "violations": 16, "violations_unfixable": 16, "vias": 102, "vias_blind": 0, "vias_buried": 0, "traces": 387, "trace_length_mm": 1318.1166, "bends_90": 3, "bends_45": 388, "bends_other": 0, "router_score": 997.8596, "optimizer_score": 137.3999},
   "diagnosis": {"congestion": 0, "blocked": 0, "ignored": 0},
   "unrouted": [
 
   ],
   "clearance_violations": [
-    {"layer": "F.Cu", "xy": [36.3113, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@8", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.3113, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@7", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.3113, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@7", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.3113, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@6", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.2863, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@5", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.8738, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@5", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.8738, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.2863, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.2863, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.8738, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [36.8738, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@3", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.2863, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@3", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.8488, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@2", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.8488, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@1", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.8488, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@1", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
-    {"layer": "F.Cu", "xy": [38.8488, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}}
+    {"layer": "F.Cu", "xy": [18.5413, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@8", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [18.5413, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@7", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [18.5413, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@7", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [18.5413, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@6", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [20.5162, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@5", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [19.1038, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@5", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [20.5162, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [20.5162, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [19.1038, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [19.1038, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@4", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [20.5162, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0713, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@3", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [19.1038, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@3", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [21.0787, 10.9313], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@2", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [21.0787, 12.9062], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@1", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [21.0787, 11.4938], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49@1", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}},
+    {"layer": "F.Cu", "xy": [21.0787, 13.4688], "clearance_mm": 0.2002, "actual_mm": 0.0712, "unfixable": true, "first": {"kind": "pin", "component": "U4", "pin": "49", "layers": ["F.Cu", "F.Cu"]}, "second": {"kind": "via", "layers": ["F.Cu", "B.Cu"]}}
   ]
 }

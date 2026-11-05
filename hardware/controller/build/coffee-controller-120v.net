@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/04/2026 11:11 PM")
+    (date "11/05/2026 12:20 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -436,13 +436,13 @@
     (comp
       (ref "J1")
       (value "5V in")
-      (description "JST_GH_2_SMD")
-      (footprint "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
+      (description "JST_GH_3_SMD")
+      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
       (fields
         (field
-          (name "Description") "JST_GH_2_SMD")
+          (name "Description") "JST_GH_3_SMD")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -451,7 +451,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_2_SMD"))
+        (part "JST_GH_3_SMD"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -459,13 +459,13 @@
     (comp
       (ref "J10")
       (value "Scale")
-      (description "JST_GH_6_SMD")
-      (footprint "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal")
+      (description "JST_GH_7_SMD")
+      (footprint "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
       (fields
         (field
-          (name "Description") "JST_GH_6_SMD")
+          (name "Description") "JST_GH_7_SMD")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -474,21 +474,21 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_6_SMD"))
+        (part "JST_GH_7_SMD"))
       (sheetpath
         (names "/")
         (tstamps "/"))
       (tstamps "a30fad10-12ff-59b6-bb36-3528538f60aa"))
     (comp
       (ref "J2")
-      (value "Heater")
-      (description "JST_GH_3_SMD")
-      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+      (value "SSRs")
+      (description "JST_GH_7_SMD")
+      (footprint "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
       (fields
         (field
-          (name "Description") "JST_GH_3_SMD")
+          (name "Description") "JST_GH_7_SMD")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -497,34 +497,11 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_3_SMD"))
+        (part "JST_GH_7_SMD"))
       (sheetpath
         (names "/")
         (tstamps "/"))
       (tstamps "5e0b731b-c654-5cf6-8847-00f2f042255c"))
-    (comp
-      (ref "J3")
-      (value "Pump")
-      (description "JST_GH_3_SMD")
-      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
-      (fields
-        (field
-          (name "Description") "JST_GH_3_SMD")
-        (field
-          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "J3")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "JST_GH_3_SMD"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "feeefe1a-2e42-5bb8-adfa-cd7486f50a6d"))
     (comp
       (ref "J4")
       (value "USB-C")
@@ -617,29 +594,6 @@
         (names "/")
         (tstamps "/"))
       (tstamps "d3f28a6c-17c1-5c6b-aaa4-b24b96f23d33"))
-    (comp
-      (ref "J8")
-      (value "Valve")
-      (description "JST_GH_3_SMD")
-      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
-      (fields
-        (field
-          (name "Description") "JST_GH_3_SMD")
-        (field
-          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "J8")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "JST_GH_3_SMD"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "18f973cb-a59f-57ca-8fcc-4553ee8b8f10"))
     (comp
       (ref "Q1")
       (value "AO3400A")
@@ -1556,7 +1510,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J10")
-        (pin "2")
+        (pin "7")
         (pintype "PASSIVE"))
       (node
         (ref "R10")
@@ -1608,23 +1562,15 @@
         (pintype "PASSIVE"))
       (node
         (ref "J10")
-        (pin "1")
+        (pin "6")
         (pintype "PASSIVE"))
       (node
         (ref "J2")
-        (pin "1")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J3")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "J6")
-        (pin "1")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J8")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "Q4")
@@ -1644,7 +1590,7 @@
       (class "Default")
       (node
         (ref "J1")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "Q4")
@@ -1760,19 +1706,15 @@
         (pintype "PASSIVE"))
       (node
         (ref "J1")
-        (pin "2")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "J1")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "J10")
-        (pin "3")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J2")
-        (pin "3")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J3")
-        (pin "3")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "J4")
@@ -1796,7 +1738,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J5")
-        (pin "2")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "J6")
@@ -1805,10 +1747,6 @@
       (node
         (ref "J7")
         (pin "4")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J8")
-        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "Q1")
@@ -1992,7 +1930,7 @@
       (class "Default")
       (node
         (ref "J2")
-        (pin "2")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "Q1")
@@ -2211,8 +2149,8 @@
       (name "PUMP_OUT")
       (class "Default")
       (node
-        (ref "J3")
-        (pin "2")
+        (ref "J2")
+        (pin "6")
         (pintype "PASSIVE"))
       (node
         (ref "Q2")
@@ -2244,7 +2182,7 @@
       (class "Default")
       (node
         (ref "J6")
-        (pin "2")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "R16")
@@ -2256,7 +2194,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "5")
+        (pin "4")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
@@ -2268,7 +2206,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "6")
+        (pin "5")
         (pintype "PASSIVE"))
       (node
         (ref "U4")
@@ -2280,7 +2218,7 @@
       (class "Default")
       (node
         (ref "J10")
-        (pin "4")
+        (pin "3")
         (pintype "PASSIVE"))
       (node
         (ref "R36")
@@ -2507,8 +2445,8 @@
       (name "VALVE_OUT")
       (class "Default")
       (node
-        (ref "J8")
-        (pin "2")
+        (ref "J2")
+        (pin "7")
         (pintype "PASSIVE"))
       (node
         (ref "Q3")
