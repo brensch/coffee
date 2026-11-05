@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """JLCPCB assembly files: BOM with LCSC part numbers + placement (CPL).
 
-    python3 jlc.py [--mains 120]
+    python3 jlc.py [--mains 120]                 # top side only (Economic PCBA): bottom parts -> hand.csv
+    python3 jlc.py --both-sides                  # top + bottom (Standard PCBA): writes build/jlc-<V>v-2side/
 
 Reads build/bom-<V>v.csv (controller.py) and build/coffee-controller-<V>v-fab/positions.csv
 (layout.py), looks every line up in JLCPCB's parts library and writes build/jlc-<V>v/:
@@ -122,11 +123,12 @@ def lookup(row):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mains", type=int, default=120)
+    ap.add_argument("--both-sides", action="store_true", help="JLC places the bottom-side parts too (Standard PCBA)")
     a = ap.parse_args()
     b = os.path.join(HERE, "build")
     rows = list(csv.DictReader(open(os.path.join(b, f"bom-{a.mains}v.csv"))))
     pos = {r["Ref"]: r for r in csv.DictReader(open(os.path.join(b, f"coffee-controller-{a.mains}v-fab", "positions.csv")))}
-    out = os.path.join(b, f"jlc-{a.mains}v")
+    out = os.path.join(b, f"jlc-{a.mains}v" + ("-2side" if a.both_sides else ""))
     os.makedirs(out, exist_ok=True)
     smd, hand, report = [], [], []
     for row in rows:
@@ -140,8 +142,8 @@ def main():
         model = c.get("componentModelEn", "") if c else ""
         # through-hole parts, and anything placed on the bottom (connectors you solder yourself:
         # Economic PCBA assembles the top side only), go on the hand-solder list
-        is_tht = any(t in row["Footprint"] for t in THT) or all(
-            pos.get(r, {}).get("Side", "top").lower().startswith("bottom") for r in refs)
+        is_tht = any(t in row["Footprint"] for t in THT) or (not a.both_sides and all(
+            pos.get(r, {}).get("Side", "top").lower().startswith("bottom") for r in refs))
         line = dict(Comment=row["Value"], Designator=",".join(refs), Footprint=row["Footprint"].split(":")[-1], **{"LCSC Part #": code})
         (hand if is_tht else smd).append(line)
         flag = "" if code else "  **NO MATCH: pick by hand**"
@@ -194,13 +196,14 @@ def main():
         f.write("\n".join(report) + "\n")
     # the CPL is then re-solved against JLC's own footprints (jlc_cpl.py): angles and positions proven
     import subprocess
-    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_cpl.py")], capture_output=True, text=True)
+    env = dict(os.environ, JLC_DIR=out)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_cpl.py")], capture_output=True, text=True, env=env)
     print(r.stdout.strip().splitlines()[-1] if r.stdout else r.stderr[-500:])
     if r.returncode:
         raise SystemExit("CPL check failed: see jlc_cpl.py output")
     # and every polarised pin's function checked against JLC's own symbol (catches pad numbers that agree
     # while functions don't, e.g. an LED numbered anode-first by JLC and cathode-first by KiCad)
-    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_pins.py")], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "jlc_pins.py")], capture_output=True, text=True, env=env)
     print(r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-500:])
     if r.returncode:
         print(r.stdout)

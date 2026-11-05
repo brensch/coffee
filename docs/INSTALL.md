@@ -36,6 +36,7 @@ Gaggia Classic Pro.
    - `coffee-v21-bom.csv`;
    - `coffee-v21-cpl.csv`.
    - (`coffee-v21-hand-solder.csv` is the eight connectors you order yourself and solder on; see step 6.)
+   - **Or have JLC place both sides:** upload `coffee-v21-2side-bom.csv` and `coffee-v21-2side-cpl.csv` instead, and choose **Standard PCBA, both sides** (Economic does one side only). The connectors are then included and step 6 is skipped. It costs more (a second side's setup and stencil); compare the two quotes. JLC reflows the bottom (the connectors) first and the top last, so the ESP32 module only goes through the oven once, right way up. In the placement preview, check the eight connectors on the bottom: openings face outward past the long edges, and pin 1 matches the silkscreen.
 3. **PCB options (all JLC defaults, the cheapest tier):**
    - 2 layers, 1.6 mm FR-4, **1 oz** copper;
    - HASL lead-free, green solder mask;

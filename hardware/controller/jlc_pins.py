@@ -69,7 +69,7 @@ def jlc_pins(code):
 def main():
     spec = json.load(open(os.path.join(B, "parts-120v.json")))["parts"]
     bad, checked, skipped = [], 0, []
-    for line in csv.DictReader(open(os.path.join(B, "jlc-120v", "bom.csv"))):
+    for line in csv.DictReader(open(os.path.join(os.environ.get("JLC_DIR", os.path.join(B, "jlc-120v")), "bom.csv"))):
         code = line["LCSC Part #"]
         for ref in line["Designator"].split(","):
             p = spec[ref]

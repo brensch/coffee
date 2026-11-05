@@ -113,7 +113,8 @@ def solve(board_pads, ee_pads, bottom):
 
 def main():
     board = pcbnew.LoadBoard(os.path.join(B, "coffee-controller-120v.kicad_pcb"))
-    bom = list(csv.DictReader(open(os.path.join(B, "jlc-120v", "bom.csv"))))
+    D = os.environ.get("JLC_DIR", os.path.join(B, "jlc-120v"))     # jlc.py --both-sides: jlc-120v-2side
+    bom = list(csv.DictReader(open(os.path.join(D, "bom.csv"))))
     rows, bad = [], []
     print(f"{'ref':5} {'side':6} {'LCSC':9} {'angle':>5}  pad error  angle-fit  EasyEDA package")
     for line in bom:
@@ -141,7 +142,7 @@ def main():
                 bad.append(ref)
             print(f"{ref:5} {'bottom' if bottom else 'top':6} {code:9} {a:5d}  {err:7.3f} mm  {'unique' if polar else 'symmetric':9} {pkg}{flag}")
             rows.append([ref, f"{P[0]:.3f}mm", f"{-P[1]:.3f}mm", "Bottom" if bottom else "Top", f"{a}"])
-    out = os.path.join(B, "jlc-120v", "cpl.csv")
+    out = os.path.join(D, "cpl.csv")
     with open(out, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
