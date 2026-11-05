@@ -160,7 +160,8 @@ def silkscreen(board, mains_v, footprints=None):
     LABELS = _plan.get("labels", {
         "J1": ("5V IN", ["+5V", "GND", "GND"]), "J2": ("HEATER", ["+5V", "OUT", "GND"]), "J3": ("PUMP", ["+5V", "OUT", "GND"]),
         "J8": ("VALVE", ["+5V", "OUT", "GND"]), "J5": ("NTC", ["", "", "NC"]), "J6": ("PRESS", ["+5V", "SIG", "GND"]),
-        "J7": ("SWITCH", ["BREW", "STEAM", "GND"]), "J4": ("USB", [])})
+        "J7": ("PANEL", ["PWR", "BREW", "STM", "GND", "LP", "LC", "LS"]),
+        "J10": ("SCALE", ["+5V", "3V3", "GND", "SCK", "D1", "D2"]), "J4": ("USB", [])})
     def silk(txt, x, y, size=1.0, angle=0, layer=pcbnew.B_SilkS):
         size = max(size, 1.0)              # JLC's recommended minimum text height (1.0 mm, 0.16 mm stroke)
         t = pcbnew.PCB_TEXT(board)
@@ -182,13 +183,13 @@ def silkscreen(board, mains_v, footprints=None):
         d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
         edge = min(d, key=d.get)
         inward = {"L": (1, 0), "R": (-1, 0), "T": (0, 1), "B": (0, -1)}[edge]
-        pads = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads() if p.GetNumber() in ("1", "2", "3")}
+        pads = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads() if p.GetNumber().isdigit()}
         if not words:                      # USB: just the name, centred on the part
             silk(name, (x0 + x1) / 2, (y0 + y1) / 2, 0.8)
             continue
         ang = 0 if edge in ("L", "R") else 90          # one word per pin, stacked at the 1.25 mm pitch
         reach = 0.0
-        for num, word in zip(("1", "2", "3"), words):
+        for num, word in zip([str(i) for i in range(1, len(words) + 1)], words):
             if not word:
                 continue
             px, py = pads[num]
@@ -196,7 +197,7 @@ def silkscreen(board, mains_v, footprints=None):
             silk(word, px + inward[0] * off, py + inward[1] * off, 0.8, ang)
             reach = max(reach, 0.5 + tlen(word, 0.8))
         # the name on the outer side of the pins, under the connector's own body (free on the bottom)
-        cx = sum(p[0] for p in pads.values()) / 3; cy = sum(p[1] for p in pads.values()) / 3
+        cx = sum(p[0] for p in pads.values()) / len(pads); cy = sum(p[1] for p in pads.values()) / len(pads)
         nx, ny = _plan.get("name_shift", {}).get(ref, (0, 0))      # plan: move a name clear of a neighbour's words
         silk(name, cx - inward[0] * 2.1 + nx, cy - inward[1] * 2.1 + ny, 0.8, 90 if edge in ("L", "R") else 0)
     for txt, x, y, size in _plan.get("bottom_text", []):

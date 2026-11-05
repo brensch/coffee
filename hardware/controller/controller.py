@@ -80,6 +80,9 @@ def conn(n, name, fp):
 # One connector type for every cable (one JLC extended-part fee): JST GH 3-pin (1.25 mm), SMD, side
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+# Front panel (3 switches + 3 LEDs + GND) and the drip-tray scale (dual HX711) need more pins.
+JST7 = conn(7, "JST_GH_7_SMD", "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
+JST6 = conn(6, "JST_GH_6_SMD", "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal")
 
 # TI TLV1117LV33DCYR (SBVS160C): 1 A, stable with >= 1 uF ceramic at any ESR, VIN <= 5.5 V (6 V abs),
 # dropout 230 mV typ at 500 mA. SOT-223 because of heat: from 5 V it drops 1.7 V, ~0.17 W at the C6's
@@ -242,21 +245,47 @@ c = part(C, "C9", "22nF X7R", notes="ADC reservoir; ~226 Hz with the 32k divider
 c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 
-# Front-panel switches: dry contacts to GND; internal pull-ups, debounced in firmware.
-j_sw = part(JST3, "J7", "Switches", mpn="JST SM03B-GHS-TB", notes="1=BREW 2=STEAM 3=GND. Stock switches rewired as dry contacts")
-# GPIO6/7: plain GPIOs on the module edge beside the analog pins, so all three sensor/switch
-# connectors sit together on the right edge (GPIO21/22 face the optos and are boxed in).
+# Front panel: the machine's three latching rockers (power, brew, steam) as dry contacts to GND, and
+# its three lamps replaced by LEDs the firmware drives (power, coffee-ready, steam-ready). The power
+# switch no longer switches mains: the controller is always on, and the switch means "on / standby".
+j_fp = part(JST7, "J7", "Front panel", mpn="JST SM07B-GHS-TB",
+            notes="1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)")
 # 4.7k pull-up at the connector: ~0.7 mA wetting current keeps old switch contacts clean. 1k series
 # into the GPIO: a 5 V plug in the wrong socket only pushes ~1.7 mA into the pin's clamp diode.
-for i, (name, gpio, rpu, rs) in enumerate((("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
+for i, (name, gpio, rpu, rs) in enumerate((("POWER", "IO14", "R28", "R29"), ("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
     wire, pin = Net(f"SW_{name}_IN"), Net(f"SW_{name}")
-    j_sw[i + 1] += wire
+    j_fp[i + 1] += wire
     r = part(R, rpu, "4.7k", notes="switch pull-up / wetting current")
     r[1, 2] += v3, wire
     r = part(R, rs, "1k", notes="GPIO series protection")
     r[1, 2] += wire, pin
     u_mcu[gpio] += pin
-j_sw[3] += gnd
+j_fp[4] += gnd
+# LEDs: GPIO -> 330R -> LED anode at the panel, cathode to GND: (3.3 - 2.0) / 330 = ~4 mA, bright
+# enough behind the lamp lens, well within the C6's GPIO drive.
+for i, (name, gpio, rl) in enumerate((("PWR", "IO21", "R30"), ("COFFEE", "IO22", "R31"), ("STEAM", "TXD0", "R32"))):
+    led = Net(f"LED_{name}")
+    r = part(R, rl, "330", notes=f"front-panel LED ({name.lower()}) current limit, ~4 mA")
+    r[1, 2] += Net(f"LED_{name}_IO"), led
+    u_mcu[gpio] += r[1].net
+    j_fp[5 + i] += led
+
+# Drip-tray scale: two load cells with a dual HX711 board beside them in the tray base (Gaggiuino's
+# layout), so only slow digital lines run here. 5 V for the HX711's analog supply, 3V3 for its logic
+# (DOUT then swings 0-3.3 V). 100R series on every line; SCK pulled down so the HX711 stays awake
+# while the C6 boots (SCK held high > 60 us powers it down). GPIO4/5 are strapping pins only for
+# SDIO clock edges (C6 datasheet, "Strapping pins"), unused here, so they serve as the DOUT inputs.
+j_sc = part(JST6, "J10", "Scale", mpn="JST SM06B-GHS-TB",
+            notes="1=+5V 2=+3V3 3=GND 4=SCK 5=DOUT1 6=DOUT2 (dual HX711 board in the tray base)")
+j_sc[1, 2, 3] += v5, v3, gnd
+for pin_no, (name, gpio, rs) in zip((4, 5, 6), (("SCK", "RXD0", "R33"), ("DOUT1", "IO4", "R34"), ("DOUT2", "IO5", "R35"))):
+    wire, pin = Net(f"SCALE_{name}_IN"), Net(f"SCALE_{name}")
+    r = part(R, rs, "100", notes=f"scale {name} series resistor")
+    r[1, 2] += pin, wire
+    u_mcu[gpio] += pin
+    j_sc[pin_no] += wire
+r = part(R, "R36", "10k", notes="SCK pull-down: HX711 stays powered while the C6 boots")
+r[1, 2] += Net("SCALE_SCK"), gnd
 
 # Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
 # measures absolute volts. Measuring both rails lets the firmware divide them out, so an open
@@ -271,8 +300,7 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
     c[1, 2] += sns, gnd
     u_mcu[gpio] += sns
 
-for p in ("IO4", "IO5", "IO14", "IO15", "IO21", "IO22", "RXD0", "TXD0"):
-    u_mcu[p] += NC
+u_mcu["IO15"] += NC
 # No mounting holes (each costs ~50 mm2 of board): the printed holder grips the board's edges.
 
 
@@ -282,7 +310,9 @@ def nets():
 
 
 FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC_ADC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
-                 "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+"}
+                 "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO14": "SW_POWER", "IO23": "STATUS", "IO12": "USB_D-", "IO13": "USB_D+",
+                 "IO21": "LED_PWR_IO", "IO22": "LED_COFFEE_IO", "TXD0": "LED_STEAM_IO", "RXD0": "SCALE_SCK",
+                 "IO4": "SCALE_DOUT1", "IO5": "SCALE_DOUT2"}
 STRAPS = ("IO4", "IO5", "IO8", "IO9", "IO15")   # ESP32-C6 strapping pins
 ADC1 = ("IO0", "IO1", "IO2", "IO3", "IO4", "IO5", "IO6")
 
@@ -313,9 +343,10 @@ def design_checks():
     for pin in STRAPS:
         if netname(pin) and netname(pin).endswith("_CMD"):
             errors.append(f"BOOT-SAFE: {netname(pin)} is on strapping pin {pin}")
-    for pin in ("IO4", "IO5", "IO15"):
-        if netname(pin):
-            errors.append(f"STRAP: {pin} must be left unconnected (is {netname(pin)})")
+    # GPIO4/5 (MTMS/MTDI) strap only SDIO clock edges: allowed as the scale's data *inputs*, nothing else.
+    for pin, ok in (("IO4", "SCALE_DOUT1"), ("IO5", "SCALE_DOUT2"), ("IO15", None)):
+        if netname(pin) != ok:
+            errors.append(f"STRAP: {pin} must be {ok or 'unconnected'} (is {netname(pin)})")
     if netname("IO8") != "IO8_STRAP" or not any(p.part.ref == "R11" for p in u_mcu["IO8"].net.pins):
         errors.append("STRAP: GPIO8 needs its pull-up")
     if errors:

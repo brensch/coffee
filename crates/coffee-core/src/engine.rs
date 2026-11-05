@@ -375,7 +375,20 @@ impl Engine {
         self.prev_inputs = inputs;
 
         self.safety_checks(p);
-        self.state_machine(inputs, rising, falling, p);
+        // Power switch off: idle in Standby (the controller itself stays powered). Any shot is
+        // dropped; switching back on resumes heating.
+        let standby = inputs & input::STANDBY != 0;
+        if standby {
+            if self.state != EngineState::Standby {
+                self.brew = None;
+                self.state = EngineState::Standby;
+            }
+        } else {
+            if self.state == EngineState::Standby {
+                self.state = EngineState::Heating;
+            }
+            self.state_machine(inputs, rising, falling, p);
+        }
         if let Some((until, _)) = self.settle {
             if self.t <= until {
                 let w = self.cup_weight();
@@ -400,7 +413,7 @@ impl Engine {
         }
         self.heater_duty = self.heater_duty.clamp(0.0, 1.0);
         self.pump_duty = self.pump_duty.clamp(0.0, 1.0);
-        if self.faults != 0 {
+        if self.faults != 0 || standby {
             self.heater_duty = 0.0;
             self.pump_duty = 0.0;
         }
@@ -751,7 +764,7 @@ impl Engine {
         }
 
         match self.state {
-            EngineState::Boot | EngineState::Fault => {
+            EngineState::Boot | EngineState::Fault | EngineState::Standby => {
                 if self.temp_valid() {
                     self.state = EngineState::Heating;
                 }

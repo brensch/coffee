@@ -27,7 +27,7 @@ use crate::link::{self, BUDGET_US, LINK, MAX_PER_CYCLE, TELEMETRY};
 use crate::store::{BUSY, NodeT};
 use crate::usb;
 use coffee_api::ServerMsg;
-use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
+use coffee_board::{CycleClock, Debounce, Oversample, panel_leds, ratiometric, status_led};
 use coffee_io::{EngineState, SensorFrame, input};
 use coffee_node::tlog::{LogWriter, Outputs};
 use core::sync::atomic::Ordering;
@@ -59,6 +59,13 @@ pub struct Pins {
     pub brew: peripherals::GPIO6<'static>,
     pub steam: peripherals::GPIO7<'static>,
     pub led: peripherals::GPIO23<'static>,
+    pub power: peripherals::GPIO14<'static>,
+    pub led_power: peripherals::GPIO21<'static>,
+    pub led_coffee: peripherals::GPIO22<'static>,
+    pub led_steam: peripherals::GPIO16<'static>,
+    pub scale_sck: peripherals::GPIO17<'static>,
+    pub scale_dout1: peripherals::GPIO4<'static>,
+    pub scale_dout2: peripherals::GPIO5<'static>,
 }
 
 fn now_us() -> u64 {
@@ -78,6 +85,17 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut led = Output::new(p.led, Level::Low, OutputConfig::default());
     let brew_sw = Input::new(p.brew, InputConfig::default().with_pull(Pull::Up));
     let steam_sw = Input::new(p.steam, InputConfig::default().with_pull(Pull::Up));
+    let power_sw = Input::new(p.power, InputConfig::default().with_pull(Pull::Up));
+    let mut panel = [
+        Output::new(p.led_power, Level::Low, OutputConfig::default()),
+        Output::new(p.led_coffee, Level::Low, OutputConfig::default()),
+        Output::new(p.led_steam, Level::Low, OutputConfig::default()),
+    ];
+    let mut scale = crate::scale::Scale::new(
+        Output::new(p.scale_sck, Level::Low, OutputConfig::default()),
+        Input::new(p.scale_dout1, InputConfig::default()),
+        Input::new(p.scale_dout2, InputConfig::default()),
+    );
 
     let mut rtc = Rtc::new(p.rtc);
     rtc.rwdt.set_timeout(RwdtStage::Stage0, Duration::from_millis(WATCHDOG_MS));
@@ -103,6 +121,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let clock = CycleClock::new(now_us(), mains_hz);
     let mut brew = Debounce::new(DEBOUNCE_CYCLES);
     let mut steam = Debounce::new(DEBOUNCE_CYCLES);
+    let mut power = Debounce::new(DEBOUNCE_CYCLES);
     let (mut ntc_acc, mut p_acc) = (Oversample::default(), Oversample::default());
     let (mut v3_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
     // Last raw (uncorrected) readings: the fallback when a cycle has no samples, so the rail
@@ -171,12 +190,21 @@ pub async fn run(p: Pins, mut node: NodeT) {
         if steam.update(steam_sw.is_low()) {
             inputs |= input::STEAM;
         }
+        // Power rocker open (pulled up) = standby; the controller itself stays powered.
+        if !power.update(power_sw.is_low()) {
+            inputs |= input::STANDBY;
+        }
+        scale.poll();
+        let (scale_mg, scale_ok) = scale.read_mg(&node.engine.cfg.scale);
+        if scale_ok {
+            inputs |= input::SCALE_OK;
+        }
         let s = SensorFrame {
             cycle: k as u32,
             t_us: t,
             ntc_mv,
             pressure_mv,
-            scale_mg: 0,
+            scale_mg,
             inputs,
         };
 
@@ -187,6 +215,10 @@ pub async fn run(p: Pins, mut node: NodeT) {
         pump.set_level(a.pump.into());
         valve.set_level(a.valve.into());
         led.set_level(status_led(a.status.state, a.status.faults, t / 1000).into());
+        let lamps = panel_leds(a.status.state, a.status.faults, a.status.temp_c, a.status.setpoint_c, t / 1000);
+        for (o, on) in panel.iter_mut().zip(lamps) {
+            o.set_level(on.into());
+        }
         rtc.rwdt.feed();
         BUSY.store(a.status.state == EngineState::Brewing, Ordering::Relaxed);
 

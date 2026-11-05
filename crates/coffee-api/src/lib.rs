@@ -29,6 +29,7 @@
 #![no_std]
 extern crate alloc;
 
+pub use coffee_io::panel_leds;
 use alloc::string::String;
 use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
@@ -83,6 +84,9 @@ pub struct Telemetry {
     pub valve: bool,
     pub brew_switch: bool,
     pub steam_switch: bool,
+    /// Front-panel power rocker ON (false = standby).
+    #[serde(default = "yes")]
+    pub power_switch: bool,
     pub profile: String,
 }
 
@@ -125,6 +129,7 @@ impl Telemetry {
             valve: a.valve,
             brew_switch: inputs & coffee_io::input::BREW != 0,
             steam_switch: inputs & coffee_io::input::STEAM != 0,
+            power_switch: inputs & coffee_io::input::STANDBY == 0,
             profile: profile.name.clone(),
         }
     }
@@ -362,4 +367,8 @@ mod tests {
         assert!(grind_advice(3.0, 4.5).text.contains("finer"));
         assert!(grind_advice(6.0, 4.5).text.contains("coarser"));
     }
+}
+
+fn yes() -> bool {
+    true
 }

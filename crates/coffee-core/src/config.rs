@@ -41,6 +41,8 @@ pub struct EngineConfig {
     pub pressure_sensor: PressureSensorConfig,
     pub pump: PumpConfig,
     pub safety: SafetyConfig,
+    /// Built-in drip-tray scale (two load cells, dual HX711). Read by the board firmware.
+    pub scale: ScaleConfig,
     /// Scale + drip latency compensation: stop when weight + rate * lag >= target.
     pub weight_lag_s: f32,
     /// Duty used for the hot-water function.
@@ -281,6 +283,23 @@ pub struct SafetyConfig {
     pub max_brew_s: f32,
 }
 
+/// Drip-tray scale: two load cells, each on its own HX711 channel (gain 128). Weight =
+/// sum of (raw - zero) x mg_per_count. A 750 g, 1 mV/V cell reads ~2,860 counts/g at any HX711
+/// supply (the input range scales with it), so 0.35 mg/count is the uncalibrated default; the sign
+/// depends on how the cell is mounted. Calibrate each cell with a known weight (CALIBRATION.md).
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ScaleConfig {
+    pub mg_per_count: [f32; 2],
+    pub zero: [i32; 2],
+}
+
+impl Default for ScaleConfig {
+    fn default() -> Self {
+        Self { mg_per_count: [0.35, 0.35], zero: [0, 0] }
+    }
+}
+
 impl Default for SafetyConfig {
     fn default() -> Self {
         Self {
@@ -341,6 +360,7 @@ impl Default for EngineConfig {
             pressure_sensor: PressureSensorConfig::default(),
             pump: PumpConfig::default(),
             safety: SafetyConfig::default(),
+            scale: ScaleConfig::default(),
             weight_lag_s: 0.8,
             hot_water_pump_duty: 0.6,
             brew_boost_h_w_k: 45.0,
@@ -444,6 +464,8 @@ impl EngineConfig {
             // the energy-balance check counts heat from this number: it must be the real element's
             (r(self.heater_power_w, 1000.0, 1600.0) && self.heater_power_w > 3.0 * s.heater_check_loss_max_w,
                 "heater_power_w out of 1000..1600 (or not well above the loss bound)"),
+            (self.scale.mg_per_count.iter().all(|k| k.is_finite() && k.abs() >= 0.01 && k.abs() <= 10.0),
+                "scale.mg_per_count out of +-0.01..10"),
             (r(self.pressure_ramp_ff_ml_per_bar, 0.0, 20.0) && r(self.yield_settle_s, 0.0, 30.0)
                 && r(self.exit_holdoff_s, 0.0, 10.0), "brew timing / pressure feed-forward out of range"),
         ];

@@ -45,10 +45,14 @@
 //! | Brew switch     | 6     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
 //! | Steam switch    | 7     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
 //! | Status LED      | 23    | heartbeat heating, solid ready, fast blink fault      |
+//! | Power switch    | 14    | dry contact to GND (J7.1); open = standby             |
+//! | Panel LEDs      | 21/22/16 | power / coffee / steam lamps (J7.5-7), 330R, high = on |
+//! | Scale SCK       | 17    | dual HX711 clock (J10.4), 100R, 10k pull-down          |
+//! | Scale DOUT1/2   | 4/5   | HX711 data (J10.5/6); straps only SDIO edges         |
 //! | USB D- / D+     | 12/13 | native USB Serial/JTAG (flashing, console, log)       |
 //!
-//! Strapping pins 4, 5, 8, 9 and 15 are unused (GPIO8 has its external pull-up,
-//! GPIO9 is the BOOT pad).
+//! Strapping pins 8 and 9: GPIO8 has its external pull-up, GPIO9 is the BOOT pad. GPIO4/5
+//! (MTMS/MTDI) strap only the SDIO clock edges, so they read the scale. GPIO15 is unused.
 
 #![no_std]
 #![no_main]
@@ -73,6 +77,7 @@ mod control;
 mod link;
 #[cfg(not(feature = "bridge"))]
 mod net;
+mod scale;
 #[cfg(not(feature = "bridge"))]
 mod store;
 #[cfg(not(feature = "bridge"))]
@@ -144,6 +149,13 @@ mod machine {
                     brew: p.GPIO6,
                     steam: p.GPIO7,
                     led: p.GPIO23,
+                    power: p.GPIO14,
+                    led_power: p.GPIO21,
+                    led_coffee: p.GPIO22,
+                    led_steam: p.GPIO16,
+                    scale_sck: p.GPIO17,
+                    scale_dout1: p.GPIO4,
+                    scale_dout2: p.GPIO5,
                 },
                 node,
             )

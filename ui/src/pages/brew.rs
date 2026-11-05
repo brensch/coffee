@@ -247,6 +247,7 @@ pub fn BrewPage() -> impl IntoView {
 
         <div class="grid brew-layout">
             <div class="stack">
+            <FrontPanel />
             <div class="card">
                 <h2>"Machine"<span class="spacer"></span><span class="faint small">"live from telemetry"</span></h2>
                 <Diagram data=from_telemetry(s) />
@@ -348,6 +349,46 @@ pub fn BrewPage() -> impl IntoView {
 }
 
 /// Previous shots; clicking one opens it in History.
+/// The machine's front panel as it looks on the Gaggia: three latching rockers (power, coffee,
+/// steam), each with its lamp (now an LED the controller drives). Rocker positions come from
+/// telemetry; the LEDs are computed with the same `panel_leds` the firmware uses, on the UI's own
+/// clock, so they blink in step with the real ones (phase aside).
+#[component]
+fn FrontPanel() -> impl IntoView {
+    let s = store();
+    let tick = RwSignal::new(0u64);
+    set_interval(move || tick.update(|t| *t += 1), std::time::Duration::from_millis(100));
+    let panel = move || {
+        let t = s.tel.get();
+        let (sw, leds) = match t.as_ref() {
+            Some(t) => {
+                let leds = coffee_api::panel_leds(t.engine_state(), (!t.faults.is_empty()) as u16, t.temp_c.unwrap_or(f32::NAN), t.setpoint_c, tick.get() * 100);
+                ([t.power_switch, t.brew_switch, t.steam_switch], leds)
+            }
+            None => ([false; 3], [false; 3]),
+        };
+        ["Power", "Coffee", "Steam"].into_iter().enumerate().map(|(i, name)| {
+            let on = sw[i];
+            let lit = leds[i];
+            view! {
+                <div class="fp-unit">
+                    <div class=if lit { "fp-led on" } else { "fp-led" } title=if lit { "lamp on" } else { "lamp off" }></div>
+                    <div class=if on { "fp-rocker on" } else { "fp-rocker" } title=if on { "switch on" } else { "switch off" }>
+                        <span class="fp-mark">{if on { "I" } else { "O" }}</span>
+                    </div>
+                    <div class="fp-label">{name}</div>
+                </div>
+            }
+        }).collect_view()
+    };
+    view! {
+        <div class="card">
+            <h2>"Front panel"<span class="spacer"></span><span class="faint small">"switches and lamps on the machine"</span></h2>
+            <div class="fp">{panel}</div>
+        </div>
+    }
+}
+
 #[component]
 fn ShotList() -> impl IntoView {
     let s = store();

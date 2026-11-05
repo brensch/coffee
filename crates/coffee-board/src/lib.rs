@@ -171,11 +171,14 @@ pub fn ratiometric(raw: u16, sense_mv: u16, ratio: u32, nominal_mv: u32) -> u16 
     ((raw as u32 * nominal_mv + rail / 2) / rail).min(u16::MAX as u32) as u16
 }
 
+pub use coffee_io::panel_leds;
+
 pub fn status_led(state: EngineState, faults: u16, t_ms: u64) -> bool {
     match state {
         _ if faults != 0 => t_ms % 200 < 100,
         EngineState::Fault => t_ms % 200 < 100,
         EngineState::Boot | EngineState::Heating => t_ms % 1000 < 120,
+        EngineState::Standby => t_ms % 3000 < 60,
         _ => true,
     }
 }
@@ -347,4 +350,17 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn panel_leds_follow_state() {
+        use super::panel_leds;
+        assert_eq!(panel_leds(EngineState::Standby, 0, 20.0, 93.0, 0), [false, false, false]);
+        assert_eq!(panel_leds(EngineState::Ready, 0, 93.0, 93.0, 700), [true, true, false]);
+        assert_eq!(panel_leds(EngineState::Heating, 0, 60.0, 93.0, 700)[1], false); // blinking: off half the time
+        assert_eq!(panel_leds(EngineState::Heating, 0, 60.0, 93.0, 100)[1], true);
+        assert_eq!(panel_leds(EngineState::Steam, 0, 139.0, 140.0, 700), [true, false, true]);
+        assert_eq!(panel_leds(EngineState::Steam, 0, 120.0, 140.0, 700)[2], false);
+        assert_eq!(panel_leds(EngineState::Ready, 1, 93.0, 93.0, 50), [true, false, false]); // fault: power blinks
+    }
 }
+

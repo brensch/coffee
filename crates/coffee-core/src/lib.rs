@@ -15,6 +15,6 @@ pub mod profile;
 pub mod pump;
 pub mod sensors;
 
-pub use config::EngineConfig;
+pub use config::{EngineConfig, ScaleConfig};
 pub use engine::{BrewEnd, Command, Engine, ShotSummary};
 pub use profile::Profile;

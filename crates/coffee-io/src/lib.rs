@@ -33,6 +33,9 @@ pub mod input {
     pub const WATER: u8 = 1 << 2;
     /// A scale is connected and `scale_mg` is valid.
     pub const SCALE_OK: u8 = 1 << 3;
+    /// Front-panel power switch is OFF: the controller stays powered and the engine idles in
+    /// Standby (heater, pump and valve off). Never set on machines without a wired power switch.
+    pub const STANDBY: u8 = 1 << 4;
 }
 
 /// One sample of the world: the cycle that just ended, reported at the tick that
@@ -81,10 +84,11 @@ pub enum EngineState {
     Steam = 5,
     HotWater = 6,
     Fault = 7,
+    Standby = 8,
 }
 
 impl EngineState {
-    pub const ALL: [EngineState; 8] = [
+    pub const ALL: [EngineState; 9] = [
         EngineState::Boot,
         EngineState::Heating,
         EngineState::Ready,
@@ -93,6 +97,7 @@ impl EngineState {
         EngineState::Steam,
         EngineState::HotWater,
         EngineState::Fault,
+        EngineState::Standby,
     ];
 
     pub fn from_u8(v: u8) -> Self {
@@ -112,11 +117,31 @@ impl EngineState {
             EngineState::Steam => "steam",
             EngineState::HotWater => "hot_water",
             EngineState::Fault => "fault",
+            EngineState::Standby => "standby",
         }
     }
 
     pub fn from_name(s: &str) -> Option<Self> {
         Self::ALL.iter().copied().find(|st| st.name() == s)
+    }
+}
+
+/// The machine's three front-panel lamps (replaced by LEDs): `[power, coffee, steam]`.
+/// - power: on while the machine is on, off in standby, fast blink on any fault;
+/// - coffee: slow blink while heating for a shot, solid when ready (and while brewing);
+/// - steam: in steam mode, slow blink until the boiler is within 3 C of the steam setpoint, then solid.
+pub fn panel_leds(state: EngineState, faults: u16, temp_c: f32, setpoint_c: f32, t_ms: u64) -> [bool; 3] {
+    let fast = t_ms % 200 < 100;
+    let slow = t_ms % 1000 < 500;
+    if faults != 0 || state == EngineState::Fault {
+        return [fast, false, false];
+    }
+    match state {
+        EngineState::Standby => [false, false, false],
+        EngineState::Boot | EngineState::Heating => [true, slow, false],
+        EngineState::Ready | EngineState::Brewing | EngineState::BrewDone | EngineState::HotWater => [true, true, false],
+        EngineState::Steam => [true, false, if (setpoint_c - temp_c).abs() <= 3.0 { true } else { slow }],
+        EngineState::Fault => [fast, false, false],
     }
 }
 
