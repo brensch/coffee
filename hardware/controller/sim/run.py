@@ -48,12 +48,14 @@ NMOS = {"vth_typ": (1.05, 14.4), "vth_max": (1.45, 14.4)}   # VTO, KP (A/V^2): R
 def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
     """GPIO (25 ohm) -> gate, rpd to GND, optional internal pull-up rpu (GPIO in reset = high-Z).
     load: 'ssr_ez' (Crydom EZ240D5: 4-15 V, ~15 mA regulated), 'ssr_sch' (Schneider SSP1A125BDT: 3-32 V, ~10 mA),
-          'relay' (Phoenix PLC-RSC-5DC/21 input: 38 mA at 5 V = 131 ohm, coil inductance taken as 50 mH; plus the board's 1N4148W flyback on J8). SSR loads have a 1 uH cable."""
+          'ssr_board' (1-channel Omron G3MB-202P board, the pump/valve modules: G3MB-202P DC5 input ~250 ohm
+          +-20 % plus the board's LED, modelled as 200 ohm; resistive, no coil, so no flyback diode since v23).
+          All loads have a 1 uH cable."""
     vto, kp = NMOS[fet]
     loads = {
         "ssr_ez": "Lcab v5 m 1u\nBssr m out I = min(0.015, max(0, (v(m)-v(out)-1.2)/150))",
         "ssr_sch": "Lcab v5 m 1u\nBssr m out I = min(0.010, max(0, (v(m)-v(out)-1.2)/150))",
-        "relay": "Rcoil v5 mid 131\nLcoil mid out 50m\nDfb out v5 D4148",
+        "ssr_board": "Lcab v5 m 1u\nRin m out 200",
     }
     drive = f"Vg g 0 PULSE(0 {vgpio} 1m 1u 1u 8m 20m)\nRgpio g pin 25" if rpu is None else f"Rpu v33 pin {rpu}\nVv33 v33 0 3.3"
     net = f"""* output stage
@@ -138,8 +140,8 @@ def rails(vpsu, label):
 Vpsu psu 0 DC {vpsu}
 Rpsu psu v5 0.21             ; PSU + wiring (0.15) + AO3401A (0.06) in series
 C1 v5 0 22u
-* other 5 V loads: transducer 10 mA + heater SSR 15 + pump SSR 15 + valve relay 38 + 3 LEDs 9 mA
-Rl5 v5 0 41
+* other 5 V loads: transducer 10 mA + heater SSR 10 + pump and valve SSR boards 2 x 25 + 3 LEDs 12 mA
+Rl5 v5 0 61
 * LDO: tracks 3.3 V unless dropout bites
 Bldo v33r 0 V = min(3.3, v(v5) - 0.7*i(Vsense))   ; TLV1117LV33: 230 mV typ at 500 mA, 700 mV max at 1 A (SBVS160C table 6.5)
 Rout v33r v33s 0.02
@@ -191,15 +193,15 @@ def ntc_from_v(v, rref=4.7e3, vref=3.3):
 def main():
     # 1. outputs: on-state at the corners, with each module type
     for load, vmin, lab in (("ssr_ez", 3.0, "pump SSR (Crydom EZ240D5, min turn-on 3.0 V)"), ("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
-                            ("relay", 4.2, "valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V)")):
+                            ("ssr_board", 4.0, "pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V)")):
         for vg in (2.64, 3.3):   # C6 datasheet guarantees VOH >= 0.8 x VDD = 2.64 V
             for fet in ("vth_typ", "vth_max"):
                 for v5 in (4.6, 5.0):
                     r = output(vg, fet, v5, load)
                     check("Output on: voltage across the module input", f"{lab}, GPIO {vg} V, {fet}, +5V {v5} V", r["vin_on"], f">= {vmin} V", r["vin_on"] >= vmin, "V")
         r = output(2.64, "vth_max", 5.0, load)
-        check("Output off: current left through the module input", lab, abs(r["iin_off"]) * 1e3, "< 0.1 mA (SSR/relay must-release ~1 mA)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
-        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; flyback diode on the relay output only)", r["vdrain_pk"] < 20, "V")
+        check("Output off: current left through the module input", lab, abs(r["iin_off"]) * 1e3, "< 0.1 mA (SSR must-release ~1 mA)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
+        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode)", r["vdrain_pk"] < 20, "V")
     # boot/reset: GPIO high-Z with a weak internal pull-up fighting the 4.7k pull-down
     for rpu in ("45k", "20k"):
         r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpu=rpu)

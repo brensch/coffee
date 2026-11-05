@@ -25,7 +25,7 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, top side assembled. The files are `build/coffee-v21-{gerbers.zip,bom.csv,cpl.csv}`; you solder the eight connectors onto the bottom yourself (INSTALL.md §1 step 6); the order settings are in INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled (every part on the top side, nothing to solder). The files are `build/coffee-v23-{gerbers.zip,bom.csv,cpl.csv}`; the order settings are in INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md):
   - modules (heatsink optional);
   - wire and crimps;
@@ -50,11 +50,10 @@ On each, pin 1 = +5 V and pin 2 = OUT.
 ## Enclosure
 - **Mounting (as GaggiMate):** the heater SSR bolts to the inside of the rear panel at the ventilation slots (M4 bolts or cable ties through the slots). The board, the two SSR boards and the 5 V supply sit on a plastic part (a printed holder or bracket), never directly on the steel: their undersides carry mains. No DIN rail.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at full power.
-- **Board:** has no mounting holes. Coordinates below are top view, origin at the top-left corner, x right and y down, in mm, board 40 × 24:
-  - **Underneath:** the eight GH connectors hang below the board along both long edges (y 0–6.4 and 17.6–24). The middle strip, y 6.4–17.6, is flat apart from TP1 and the USB-C shell legs (x 1.3–7.4, at y 7.2–8.2 and 15.8–16.8).
-  - **Rest it on a pedestal** under that middle strip, at least 5 mm tall so the connector bodies clear the floor. Leave a hole in it at **x 15, y 12**, at least 4 mm across, for tweezers on the BOOT pad (TP1), and relieve it where the USB-C legs come through.
-  - **Clips over the top face** (no part within 1.5 mm of the edge): right edge y 11.5–17.2, left edge y 0–6.6 and y 20.4–24.
-  - **USB-C:** overhangs the left short edge by 0.96 mm from y 6.7 to 17.3. Leave room there for a plug.
+- **Board:** has no mounting holes. Coordinates below are top view, origin at the top-left corner, x right and y down, in mm, board 37.8 × 26.4:
+  - **Underneath:** flat. The only features are bare pads: the USB programming pads (J4, x 17–23, y 8.5–17), BOOT (TP1, x 24.6, y 17.0) and STATUS (TP2, x 30.0, y 16.0).
+  - **Rest it on a 1 mm ledge** around the whole perimeter (an open frame), so the pads stay reachable from below.
+  - **Clips over the top face** (no part within 1.5 mm of the edge): the left edge y 17.2–20.0 and the top-right corner (top edge x 36.6–37.8). The connector bodies run flush to both long edges, so a clip there would press on a connector; two clips plus the ledge, or a light strap across the module, hold it.
 - **Connectors:** eight exit sideways past the long edges (four each), so leave about 8 mm of free space outside both long edges for the GH plugs and their wires.
 - **Wiring:** keep the mains wiring and the 5 V leads apart (≥ 6 mm, or a barrier), anchor every wire near its terminal, and use fibreglass sleeve near the boiler.
 - **Antenna:** route it out through a plastic part. The case is steel.

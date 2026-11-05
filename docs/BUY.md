@@ -37,7 +37,7 @@ price** and pick the variant named.
 | 17 | **Scale load cells**: 750 g mini bar cells, as in Gaggiuino's scale | 2 (buy 3–4: quality varies) | Gaggiuino's parts list (AliExpress); datasheet-backed alternative: HT Sensor TAL220F-1kg | ~$6 |
 | 18 | **Scale amplifier**: dual-HX711 board (Gaggiuino's "Vas" board, separate 5 V analog / 3.3 V logic), or 2 generic HX711 modules powered from 3.3 V only | 1 board or 2 modules | PCBWay (Vas board) or AliExpress modules | ~$3–10 |
 | 19 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters, plus magnets per the model | 1 set | Printables model 285370 (print it yourself) | filament |
-| 20 | **Board connectors** (you solder them to the board's underside, INSTALL §1 step 6): JST GH side-entry SMT headers | 6 × SM03B-GHS-TB (LCSC C514175), 1 × SM06B-GHS-TB (C133065), 1 × SM07B-GHS-TB (C495552), plus 2 spare SM03B | LCSC (add to the JLC order as a parts-only purchase, or order from LCSC) | ~$4 (estimate: check LCSC at order time) |
+| 20 | **A spare USB cable** to cut for the first flash (the board has 4 programming pads, no USB socket) | 1 | any USB-A or USB-C data cable | ~$2 |
 
 **Total ≈ $110–135** plus shipping, depending on the AliExpress prices and the plumbing route (≈ $15–20 of it is the scale and front panel, #15–19).
 

@@ -146,7 +146,7 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 | J6.1 | +5 V | transducer supply wire | GaggiMate's 0–1.6 MPa sensor has no datasheet: identify its wires on the bench first (INSTALL §3) |
 | J6.2 | signal | transducer output wire | ~0.5 V at 0 bar |
 | J6.3 | GND | transducer ground wire | Solder + heat-shrink each splice |
-| J4 | USB-C | flashing / bench power | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
+| J4 | 4 bare pads on the underside (5V, D−, D+, GND) | first flash / bench power: tack a USB lead on (INSTALL.md §3) | **USB and J1 may be connected at the same time.** The board feeds VBUS in through a Schottky diode (D2) and J1 through a P-MOSFET. With both connected, the 5 V module supplies the board and nothing back-feeds the PC. With the case open, still flash and bench-test with the machine unplugged |
 | U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail (MHF III → SMA bulkhead) + Taoglas GW.15.2113 2 dBi SMA dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part: on the steel case the dipole's gain can exceed the module's 2.33 dBi limit (Taoglas plots). Press the MHF III plug straight down onto the socket; don't force it |
 
 ## Checks before mains (multimeter, machine unplugged)

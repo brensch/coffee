@@ -12,8 +12,8 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output off: current left through the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 0 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 3.91 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
+| Output off: current left through the module input | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 0 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
+| Output turn-off spike at the drain | pump SSR (Crydom EZ240D5, min turn-on 3.0 V) | 3.91 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
@@ -22,18 +22,18 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
 | Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output off: current left through the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 0 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 4.35 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 2.64 V, vth_max, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.2 V | ✅ |
-| Output on: voltage across the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.2 V | ✅ |
-| Output off: current left through the module input | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V) | 4.9e-08 mA | < 0.1 mA (SSR/relay must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | valve relay module (Phoenix PLC-RSC-5DC/21, input range 4.2-7 V) | 5.79 V | < 20 V (AO3400A 30 V rating; flyback diode on the relay output only) | ✅ |
+| Output off: current left through the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 0 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
+| Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 4.35 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
+| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
+| Output off: current left through the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V) | 5.01e-09 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
+| Output turn-off spike at the drain | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V) | 5.55 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 45k vs 3.3k pull-down | 0.225 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
 | Output during reset: module input current | internal pull-up 45k | 3.81e-09 mA | < 0.1 mA (off) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 20k vs 3.3k pull-down | 0.467 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
@@ -60,10 +60,10 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.316 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
 | Pressure gain error from 1 % divider resistors | worst-case ratio | 0.0573 bar | < 0.15 bar at 9 bar (zero is calibrated at power-up) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 5.0 V | 4.87 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
+| 5 V rail | PSU 5.0 V | 4.88 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | PSU 4.75 V (-5%) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 4.75 V (-5%) | 4.62 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
+| 5 V rail | PSU 4.75 V (-5%) | 4.63 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.52 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
+| 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.53 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
 **61 / 61 checks pass.**

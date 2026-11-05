@@ -24,7 +24,7 @@
    "footprint": "Package_TO_SOT_SMD:SOT-23",
    "value": "AO3401A",
    "pins": {
-    "1": "RP_GATE",
+    "1": "GND",
     "2": "+5V",
     "3": "+5V_IN"
    },
@@ -38,23 +38,6 @@
    "desc": "P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",
    "mpn": "AO3401A",
    "notes": "Reverse-polarity protection"
-  },
-  "R26": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "10k",
-   "pins": {
-    "1": "RP_GATE",
-    "2": "GND"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "P-FET gate to GND"
   },
   "U4": {
    "footprint": "Espressif:ESP32-C6-MINI-1U",
@@ -193,7 +176,7 @@
    "notes": "Module decoupling at the 3V3 pin"
   },
   "C4": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "100nF X7R",
    "pins": {
     "1": "+3V3",
@@ -210,7 +193,7 @@
    "notes": "Module decoupling at the 3V3 pin"
   },
   "R10": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
     "1": "+3V3",
@@ -227,7 +210,7 @@
    "notes": "EN pull-up (Espressif RC delay)"
   },
   "C5": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "1uF X5R",
    "pins": {
     "1": "EN",
@@ -244,7 +227,7 @@
    "notes": "EN delay"
   },
   "R11": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
     "1": "+3V3",
@@ -273,41 +256,22 @@
    "populate": "Y",
    "desc": "Bare test pad",
    "mpn": "",
-   "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (USB shell) while plugging USB in"
+   "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (J4.4) while plugging the USB lead in"
   },
-  "R12": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "1k",
+  "TP2": {
+   "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+   "value": "STATUS",
    "pins": {
-    "1": "STATUS",
-    "2": "STATUS_A"
+    "1": "STATUS"
    },
    "pin_names": {
-    "1": "1",
-    "2": "2"
+    "1": "1"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "Resistor",
+   "desc": "Bare test pad",
    "mpn": "",
-   "notes": "red LED Vf ~2.0 V: ~1.3 mA from 3.3 V"
-  },
-  "D1": {
-   "footprint": "LED_SMD:LED_0603_1608Metric",
-   "value": "red",
-   "pins": {
-    "1": "GND",
-    "2": "STATUS_A"
-   },
-   "pin_names": {
-    "1": "K",
-    "2": "A"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "LED",
-   "mpn": "",
-   "notes": "Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)"
+   "notes": "Heartbeat output (3.3 V push-pull): probe, or an LED + 1k to GND while debugging"
   },
   "D2": {
    "footprint": "Diode_SMD:D_SOD-123",
@@ -380,84 +344,28 @@
    "notes": "Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
   },
   "J4": {
-   "footprint": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
-   "value": "USB-C",
+   "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left",
+   "value": "Prog USB",
    "pins": {
-    "A1": "GND",
-    "A4": "VBUS",
-    "A5": "CC1",
-    "A6": "USB_D+",
-    "A7": "USB_D-",
-    "A9": "VBUS",
-    "A12": "GND",
-    "B1": "GND",
-    "B4": "VBUS",
-    "B5": "CC2",
-    "B6": "USB_D+",
-    "B7": "USB_D-",
-    "B9": "VBUS",
-    "B12": "GND",
-    "S1": "GND"
+    "1": "VBUS",
+    "2": "USB_D-",
+    "3": "USB_D+",
+    "4": "GND"
    },
    "pin_names": {
-    "A1": "GND_A1",
-    "A4": "VBUS_A4",
-    "A5": "CC1",
-    "A6": "DP1",
-    "A7": "DN1",
-    "A9": "VBUS_A9",
-    "A12": "GND_A12",
-    "B1": "GND_B1",
-    "B4": "VBUS_B4",
-    "B5": "CC2",
-    "B6": "DP2",
-    "B7": "DN2",
-    "B9": "VBUS_B9",
-    "B12": "GND_B12",
-    "S1": "SHIELD"
+    "1": "VBUS",
+    "2": "D-",
+    "3": "D+",
+    "4": "GND"
    },
    "mains": [],
-   "populate": "Y",
-   "desc": "USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power",
-   "mpn": "HRO TYPE-C-31-M-12",
-   "notes": "Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
-  },
-  "R13": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "5.1k",
-   "pins": {
-    "1": "CC1",
-    "2": "GND"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
+   "populate": "N",
+   "desc": "Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash",
    "mpn": "",
-   "notes": "USB-C sink identification"
-  },
-  "R14": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "5.1k",
-   "pins": {
-    "1": "CC2",
-    "2": "GND"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "USB-C sink identification"
+   "notes": "1=VBUS 2=D- 3=D+ 4=GND (USB lead colours: red, white, green, black)"
   },
   "R4": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "3.3k",
    "pins": {
     "1": "HEATER_CMD",
@@ -512,7 +420,7 @@
    "notes": "HEATER: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
   },
   "R5": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "3.3k",
    "pins": {
     "1": "PUMP_CMD",
@@ -567,7 +475,7 @@
    "notes": "PUMP: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
   },
   "R6": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "3.3k",
    "pins": {
     "1": "VALVE_CMD",
@@ -621,23 +529,6 @@
    "mpn": "JST SM03B-GHS-TB",
    "notes": "VALVE: 1=+5V 2=OUT (low = on) 3=GND. To the module input + / -"
   },
-  "D5": {
-   "footprint": "Diode_SMD:D_SOD-123",
-   "value": "1N4148W",
-   "pins": {
-    "1": "+5V",
-    "2": "VALVE_OUT"
-   },
-   "pin_names": {
-    "1": "K",
-    "2": "A"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Switching diode 75 V 150 mA",
-   "mpn": "1N4148W",
-   "notes": "Flyback for the relay coil"
-  },
   "J5": {
    "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
    "value": "Thermistor",
@@ -658,7 +549,7 @@
    "notes": "Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=NTC 2=GND (no polarity), 3 unused"
   },
   "R15": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "4.7k",
    "pins": {
     "1": "+3V3",
@@ -675,7 +566,7 @@
    "notes": "NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)"
   },
   "C8": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "100nF X7R",
    "pins": {
     "1": "NTC",
@@ -692,7 +583,7 @@
    "notes": "ADC sampling reservoir / noise filter"
   },
   "R27": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "1k",
    "pins": {
     "1": "NTC",
@@ -728,7 +619,7 @@
    "notes": "0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=+5V 2=SIG 3=GND"
   },
   "R16": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "47k",
    "pins": {
     "1": "P_SIG",
@@ -745,7 +636,7 @@
    "notes": "Divider 100/147 (147k load: TE M3200 needs > 100k)"
   },
   "R17": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "100k",
    "pins": {
     "1": "P_ADC",
@@ -762,7 +653,7 @@
    "notes": ""
   },
   "C9": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "22nF X7R",
    "pins": {
     "1": "P_ADC",
@@ -806,11 +697,11 @@
    "notes": "1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)"
   },
   "R28": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "4.7k",
    "pins": {
     "1": "+3V3",
-    "2": "SW_POWER_IN"
+    "2": "SW_POWER"
    },
    "pin_names": {
     "1": "1",
@@ -823,7 +714,7 @@
    "notes": "switch pull-up / wetting current"
   },
   "R29": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "1k",
    "pins": {
     "1": "SW_POWER_IN",
@@ -840,11 +731,11 @@
    "notes": "GPIO series protection"
   },
   "R20": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "4.7k",
    "pins": {
     "1": "+3V3",
-    "2": "SW_BREW_IN"
+    "2": "SW_BREW"
    },
    "pin_names": {
     "1": "1",
@@ -857,7 +748,7 @@
    "notes": "switch pull-up / wetting current"
   },
   "R18": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "1k",
    "pins": {
     "1": "SW_BREW_IN",
@@ -874,11 +765,11 @@
    "notes": "GPIO series protection"
   },
   "R21": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "4.7k",
    "pins": {
     "1": "+3V3",
-    "2": "SW_STEAM_IN"
+    "2": "SW_STEAM"
    },
    "pin_names": {
     "1": "1",
@@ -891,7 +782,7 @@
    "notes": "switch pull-up / wetting current"
   },
   "R19": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "1k",
    "pins": {
     "1": "SW_STEAM_IN",
@@ -908,7 +799,7 @@
    "notes": "GPIO series protection"
   },
   "R30": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "330",
    "pins": {
     "1": "LED_PWR_IO",
@@ -925,7 +816,7 @@
    "notes": "front-panel LED (pwr) current limit, ~4 mA"
   },
   "R31": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "330",
    "pins": {
     "1": "LED_COFFEE_IO",
@@ -942,7 +833,7 @@
    "notes": "front-panel LED (coffee) current limit, ~4 mA"
   },
   "R32": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "330",
    "pins": {
     "1": "LED_STEAM_IO",
@@ -965,9 +856,9 @@
     "1": "+5V",
     "2": "+3V3",
     "3": "GND",
-    "4": "SCALE_SCK_IN",
-    "5": "SCALE_DOUT1_IN",
-    "6": "SCALE_DOUT2_IN"
+    "4": "SCALE_SCK",
+    "5": "SCALE_DOUT1",
+    "6": "SCALE_DOUT2"
    },
    "pin_names": {
     "1": "1",
@@ -983,62 +874,11 @@
    "mpn": "JST SM06B-GHS-TB",
    "notes": "1=+5V 2=+3V3 3=GND 4=SCK 5=DOUT1 6=DOUT2 (dual HX711 board in the tray base)"
   },
-  "R33": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "100",
-   "pins": {
-    "1": "SCALE_SCK",
-    "2": "SCALE_SCK_IN"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "scale SCK series resistor"
-  },
-  "R34": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "100",
-   "pins": {
-    "1": "SCALE_DOUT1",
-    "2": "SCALE_DOUT1_IN"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "scale DOUT1 series resistor"
-  },
-  "R35": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "100",
-   "pins": {
-    "1": "SCALE_DOUT2",
-    "2": "SCALE_DOUT2_IN"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "scale DOUT2 series resistor"
-  },
   "R36": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
-    "1": "SCALE_SCK1",
+    "1": "SCALE_SCK",
     "2": "GND"
    },
    "pin_names": {
@@ -1052,7 +892,7 @@
    "notes": "SCK pull-down: HX711 stays powered while the C6 boots"
   },
   "R22": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
     "1": "+3V3",
@@ -1069,7 +909,7 @@
    "notes": "V3_SNS divider top"
   },
   "R23": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
     "1": "V3_SNS",
@@ -1086,7 +926,7 @@
    "notes": "V3_SNS divider bottom"
   },
   "C10": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "100nF X7R",
    "pins": {
     "1": "V3_SNS",
@@ -1103,7 +943,7 @@
    "notes": "ADC reservoir"
   },
   "R24": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "20k",
    "pins": {
     "1": "+5V",
@@ -1120,7 +960,7 @@
    "notes": "V5_SNS divider top"
   },
   "R25": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "footprint": "Resistor_SMD:R_0402_1005Metric",
    "value": "10k",
    "pins": {
     "1": "V5_SNS",
@@ -1137,7 +977,7 @@
    "notes": "V5_SNS divider bottom"
   },
   "C11": {
-   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "footprint": "Capacitor_SMD:C_0402_1005Metric",
    "value": "100nF X7R",
    "pins": {
     "1": "V5_SNS",

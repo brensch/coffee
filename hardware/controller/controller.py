@@ -59,8 +59,8 @@ def part(template, ref, value="", mpn="", notes="", populate="Y", footprint=None
 
 
 # --------------------------------------------------------------- templates
-FP_R, FP_R_1206, FP_R_2512 = "Resistor_SMD:R_0603_1608Metric", "Resistor_SMD:R_1206_3216Metric", "Resistor_SMD:R_2512_6332Metric"
-FP_C, FP_C_1206 = "Capacitor_SMD:C_0603_1608Metric", "Capacitor_SMD:C_1206_3216Metric"
+FP_R, FP_R_1206, FP_R_2512 = "Resistor_SMD:R_0402_1005Metric", "Resistor_SMD:R_1206_3216Metric", "Resistor_SMD:R_2512_6332Metric"
+FP_C, FP_C_1206 = "Capacitor_SMD:C_0402_1005Metric", "Capacitor_SMD:C_1206_3216Metric"
 TWO = [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)]
 R = tmpl("R", "R", FP_R, TWO, "Resistor")
 C = tmpl("C", "C", FP_C, TWO, "Capacitor")
@@ -102,6 +102,9 @@ ESP32C6 = tmpl("ESP32-C6-MINI-1U", "U", "Espressif:ESP32-C6-MINI-1U",
                [(n, _uniq(n, nm), T.PWRIN if nm in ("GND", "3V3") else (T.NOCONNECT if nm == "NC" else T.BIDIR))
                 for n, nm in _c6.items()],
                "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated")
+PROGHDR = tmpl("Prog", "J", "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Left",
+               [(1, "VBUS", T.PASSIVE), (2, "D-", T.PASSIVE), (3, "D+", T.PASSIVE), (4, "GND", T.PASSIVE)],
+               "Programming pads on the underside (nothing fitted): tack a USB lead on for the first flash")
 USBC = tmpl("USB_C_Receptacle_USB2.0", "J", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
             [("A1", "GND_A1", T.PASSIVE), ("A4", "VBUS_A4", T.PASSIVE), ("A5", "CC1", T.PASSIVE),
              ("A6", "DP1", T.PASSIVE), ("A7", "DN1", T.PASSIVE), ("A9", "VBUS_A9", T.PASSIVE), ("A12", "GND_A12", T.PASSIVE),
@@ -124,10 +127,7 @@ j_pwr[1, 2, 3] += v5_in, gnd, gnd
 q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
 q_rp["D"] += v5_in
 q_rp["S"] += v5
-rg = Net("RP_GATE")
-q_rp["G"] += rg
-r = part(R, "R26", "10k", notes="P-FET gate to GND")
-r[1, 2] += rg, gnd
+q_rp["G"] += gnd      # gate straight to GND: Vgs = -5 V, inside the AO3401A's +-12 V (v23 dropped the 10k R26)
 
 # ================================================================ CONTROLLER
 u_mcu = part(ESP32C6, "U4", "ESP32-C6-MINI-1U-H4", mpn="ESP32-C6-MINI-1U-H4",
@@ -153,15 +153,14 @@ r = part(R, "R11", "10k", notes="GPIO8 high: required for download mode from the
 r[1, 2] += v3, strap8
 boot = Net("IO9_BOOT")
 u_mcu["IO9"] += boot   # internal pull-up: normal boot
-tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (USB shell) while plugging USB in")
+tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (J4.4) while plugging the USB lead in")
 tp[1] += boot
-st, st_a = Net("STATUS"), Net("STATUS_A")
+# v23: no on-board status LED (the board sits out of sight; the front-panel LEDs show the state).
+# The firmware still drives GPIO23 as a heartbeat: it comes out on a bare pad for a probe or a clip-on LED.
+st = Net("STATUS")
 u_mcu["IO23"] += st
-r = part(R, "R12", "1k", notes="red LED Vf ~2.0 V: ~1.3 mA from 3.3 V")
-r[1, 2] += st, st_a
-led = part(LED, "D1", "red", notes="Heartbeat / ready / fault. Light-pipe it to the front of the machine (optional)")
-led["A"] += st_a
-led["K"] += gnd
+tp = part(TESTPAD, "TP2", "STATUS", notes="Heartbeat output (3.3 V push-pull): probe, or an LED + 1k to GND while debugging")
+tp[1] += st
 
 # Power: J1 -> Q4 -> +5V; USB VBUS joins through D2 (bench power, no back-feed into the PC).
 d2 = part(SCHOTTKY, "D2", "B5819W", mpn="B5819W SL", notes="USB bench power")
@@ -175,30 +174,26 @@ for ref, val, net in (("C6", "22uF 25V X5R", v5), ("C7", "22uF 25V X5R", v3)):
     c = part(C, ref, val, footprint="Capacitor_SMD:C_0805_2012Metric", mpn="Samsung CL21A226MAQNNNE", notes="Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)")
     c[1, 2] += net, gnd
 
-j_usb = part(USBC, "J4", "USB-C", mpn="HRO TYPE-C-31-M-12", notes="Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power")
-for p in ("VBUS_A4", "VBUS_A9", "VBUS_B4", "VBUS_B9"):
-    j_usb[p] += vbus
-for p in ("GND_A1", "GND_A12", "GND_B1", "GND_B12", "SHIELD"):
-    j_usb[p] += gnd
+# v23: no USB-C socket. The C6's own USB (GPIO12/13) comes out on 4 plain plated holes; the first flash
+# is a USB lead with a 4-pin header pushed in, and later updates go over Wi-Fi. VBUS still joins +5V
+# through D2, so the USB lead alone powers the board on the bench.
+j_usb = part(PROGHDR, "J4", "Prog USB", populate="N", notes="1=VBUS 2=D- 3=D+ 4=GND (USB lead colours: red, white, green, black)")
+j_usb["VBUS"] += vbus
+j_usb["GND"] += gnd
 dp, dn = Net("USB_D+"), Net("USB_D-")
-j_usb["DP1", "DP2"] += dp
-j_usb["DN1", "DN2"] += dn
-for ref, cc in (("R13", "CC1"), ("R14", "CC2")):
-    ccn = Net(cc)
-    j_usb[cc] += ccn
-    r = part(R, ref, "5.1k", notes="USB-C sink identification")
-    r[1, 2] += ccn, gnd
+j_usb["D+"] += dp
+j_usb["D-"] += dn
 u_mcu["IO12"] += dn
 u_mcu["IO13"] += dp
 
 # Outputs: GPIO -> AO3400A gate directly, 3.3k gate pull-down. The FET sinks the module's input:
 # connector 1 = +5V, 2 = switched low (OUT), 3 = GND. Off by hardware during reset, boot and flashing
 # (3.3k pull-down: under 0.5 V at the gate even against a 20k internal pull-up; sim/REPORT.md).
-# Every module has its own input LED, so the board has none per output. J8 (valve) drives a relay
-# coil and gets the 1N4148W flyback; the SSR inputs (J2, J3) aren't inductive.
+# Every module has its own input LED, so the board has none per output. All three outputs drive SSR
+# boards (no coil), so there's no flyback diode (v23 dropped D5; a relay module brings its own).
 # GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
 for name, gpio, jref, qref, rpd, dfb in (("HEATER", "IO20", "J2", "Q1", "R4", None), ("PUMP", "IO19", "J3", "Q2", "R5", None),
-                                         ("VALVE", "IO18", "J8", "Q3", "R6", "D5")):
+                                         ("VALVE", "IO18", "J8", "Q3", "R6", None)):
     cmd, out = Net(f"{name}_CMD"), Net(f"{name}_OUT")
     u_mcu[gpio] += cmd
     r = part(R, rpd, "3.3k", notes="Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)")
@@ -250,13 +245,15 @@ u_mcu["IO0"] += p_adc   # ADC1_CH0
 # switch no longer switches mains: the controller is always on, and the switch means "on / standby".
 j_fp = part(JST7, "J7", "Front panel", mpn="JST SM07B-GHS-TB",
             notes="1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)")
-# 4.7k pull-up at the connector: ~0.7 mA wetting current keeps old switch contacts clean. 1k series
-# into the GPIO: a 5 V plug in the wrong socket only pushes ~1.7 mA into the pin's clamp diode.
+# 1k series from the connector, then a 4.7k pull-up on the GPIO side (v23: lets each switch's 1k sit alone
+# right at its pin and the pull-ups next to the module). Closed: 3.3 x 1k / 5.7k = 0.58 V at the GPIO,
+# under the C6's 0.83 V VIL; ~0.6 mA wetting current keeps old contacts clean. A 5 V plug in the wrong
+# socket pushes ~1.5 mA through the 1k into the pin's clamp diode.
 for i, (name, gpio, rpu, rs) in enumerate((("POWER", "IO14", "R28", "R29"), ("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
     wire, pin = Net(f"SW_{name}_IN"), Net(f"SW_{name}")
     j_fp[i + 1] += wire
     r = part(R, rpu, "4.7k", notes="switch pull-up / wetting current")
-    r[1, 2] += v3, wire
+    r[1, 2] += v3, pin
     r = part(R, rs, "1k", notes="GPIO series protection")
     r[1, 2] += wire, pin
     u_mcu[gpio] += pin
@@ -278,14 +275,15 @@ for i, (name, gpio, rl) in enumerate((("PWR", "IO21", "R30"), ("COFFEE", "IO22",
 j_sc = part(JST6, "J10", "Scale", mpn="JST SM06B-GHS-TB",
             notes="1=+5V 2=+3V3 3=GND 4=SCK 5=DOUT1 6=DOUT2 (dual HX711 board in the tray base)")
 j_sc[1, 2, 3] += v5, v3, gnd
-for pin_no, (name, gpio, rs) in zip((4, 5, 6), (("SCK", "RXD0", "R33"), ("DOUT1", "IO4", "R34"), ("DOUT2", "IO5", "R35"))):
-    wire, pin = Net(f"SCALE_{name}_IN"), Net(f"SCALE_{name}")
-    r = part(R, rs, "100", notes=f"scale {name} series resistor")
-    r[1, 2] += pin, wire
-    u_mcu[gpio] += pin
-    j_sc[pin_no] += wire
+# v23: no series resistors on the scale lines (GaggiMate and Gaggiuino have none). J10 sits over the
+# module's DOUT pins with no room between, and SCK runs under the module; the C6's pins have their own
+# ESD diodes, and the HX711s sit at the other end of a 30 cm lead at the same ground.
+for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (5, ("DOUT1", "IO4")), (6, ("DOUT2", "IO5"))):
+    d = Net(f"SCALE_{name}")
+    u_mcu[gpio] += d
+    j_sc[pin_no] += d
 r = part(R, "R36", "10k", notes="SCK pull-down: HX711 stays powered while the C6 boots")
-r[1, 2] += Net("SCALE_SCK"), gnd
+r[1, 2] += u_mcu["RXD0"], gnd      # the GPIO side of R33 (Net("SCALE_SCK") here made a second, unconnected net: v19-v22 bug)
 
 # Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
 # measures absolute volts. Measuring both rails lets the firmware divide them out, so an open
@@ -328,7 +326,8 @@ def design_checks():
     if MAINS_PINS:
         errors.append(f"MAINS: {sorted(MAINS_PINS)} on a low-voltage board")
     for p in builtins.default_circuit.parts:
-        if any(k in p.footprint for k in ("TO-220", "DIP", "THT", "TerminalBlock", "Vertical")):
+        if any(k in p.footprint for k in ("TO-220", "DIP", "THT", "TerminalBlock", "Vertical")) \
+                and BOM_EXTRA.get(p.ref, {}).get("populate", "Y") == "Y":    # bare holes (J4 programming) are fine
             errors.append(f"SMD: {p.ref} ({p.footprint}) is through-hole")
     # 2. Firmware pin map (firmware/esp32/src/main.rs).
     for pin, want in FIRMWARE_PINS.items():

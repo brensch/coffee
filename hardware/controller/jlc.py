@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 API = "https://jlcpcb.com/api/overseas-pcb-order/v1/shoppingCart/smtGood/selectSmtComponentList"
 
 PKG = {  # KiCad footprint fragment -> JLC package string fragment
-    "R_0603": "0603", "C_0603": "0603", "LED_0603": "0603", "C_0805": "0805",
+    "R_0402": "0402", "C_0402": "0402", "R_0603": "0603", "C_0603": "0603", "LED_0603": "0603", "C_0805": "0805",
     "R_1206": "1206", "C_1206": "1206", "R_2512": "2512",
     "CP_Elec_6.3x7.7": "6.3", "D_SMA": "SMA", "D_SOD-323": "SOD-323",
     "SOT-23-6": "SOT-23-6", "SOT-23": "SOT-23", "SOT-223": "SOT-223",
@@ -79,7 +79,9 @@ BODY_CENTRE = ("U4",)   # footprint origin is not the body centre
 ROT_FIX = {}   # rotations come from jlc_cpl.py (solved against JLC's footprints)
 FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name carries the "SL" suffix)
          "SOT-223-3_TabPin2|TLV1117LV33DCYR": "C15578",   # TI's own part (C48937499 shares the name: 12 V, not TI)
-         "C_0603_1608Metric|22nF X7R": "C21122"}   # Samsung CL10B223KB8NNNC, basic (the matcher picked an extended one)
+         "C_0603_1608Metric|22nF X7R": "C21122",
+         "C_0402_1005Metric|100nF X7R": "C1525",    # Samsung CL05B104KO5NNNC, basic (matcher picked an extended one)
+         "C_0402_1005Metric|22nF X7R": "C1532"}     # Samsung CL05B223KO5NNNC, basic   # Samsung CL10B223KB8NNNC, basic (the matcher picked an extended one)
 
 
 def lookup(row):

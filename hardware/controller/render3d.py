@@ -54,9 +54,10 @@ for ext in (".kicad_pro", ".kicad_prl"):
         os.remove(p)
 # stand-ins for parts without models: (ref, kind, size)
 extra = []
+_fitted = {r: v.get("populate", "Y") == "Y" for r, v in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build", "parts-120v.json")))["parts"].items()}
 for fp in b.GetFootprints():
     ref = fp.GetReference()
-    if ref not in missing:
+    if ref not in missing or not _fitted.get(ref, True):    # bare pads (J4 programming) get no stand-in
         continue
     pads = list(fp.Pads())   # stand-ins sit on the pad centroid, whatever the rotation
     x = sum(pcbnew.ToMM(p.GetPosition().x) for p in pads) / len(pads)

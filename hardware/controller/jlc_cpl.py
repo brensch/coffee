@@ -33,7 +33,10 @@ TOLERANCE = {"Q4": 0.35}   # AO3401A C15127: JLC's SOT-23 land has its pads at +
 # the cached record of the same-package diode C81598. Verified 2026-11-04 from JLC's own footprint and
 # symbol drawings (easyeda /svgs via jlcpcb.com): both put pad 1 on the same side, and pin 1 is the
 # cathode in both (C8598 '-', C81598 'K').
-PROXY = {"C8598": "C81598"}
+PROXY = {"C8598": "C81598",
+         # v23 (EasyEDA refused again): unpolarised 0402 capacitors solved from cached 0402 capacitor
+         # records of the same package (C60474 / C107017 are the matcher's first picks, same land).
+         "C1525": "C60474", "C1532": "C107017"}
 
 
 # Parts whose JLC pin numbers differ from the board footprint's: JLC pad -> board pad. Checked against

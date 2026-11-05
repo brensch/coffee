@@ -183,7 +183,7 @@ def silkscreen(board, mains_v, footprints=None):
         cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
         x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
         d = {"L": x0, "R": W - x1, "T": y0, "B": H - y1}
-        edge = min(d, key=d.get)
+        edge = min(d, key=lambda e: (round(d[e], 1), e not in "TB"))   # a corner connector: its long edge
         inward = {"L": (1, 0), "R": (-1, 0), "T": (0, 1), "B": (0, -1)}[edge]
         pads = {p.GetNumber(): (pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y)) for p in fp.Pads() if p.GetNumber().isdigit()}
         if not words:                      # USB: just the name, centred on the part
@@ -280,7 +280,11 @@ def build(spec, mains_v):
         # silkscreen: only the parts you wire to or hand-solder keep their labels (small SMD refs would
         # sit on pads and on each other; the assembly drawing and BOM carry them)
         fp.Reference().SetVisible(False)   # connectors carry their wiring labels instead (bottom silkscreen)
-        if ref == "J4":
+        if ref in _plan.get("fp_silk_off", []):   # plan: an unfitted footprint (bare pads) needs no outline
+            for g in list(fp.GraphicalItems()):
+                if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS):
+                    fp.Remove(g)
+        if ref == "J4" and "USB_C" in str(fp.GetFPID().GetLibItemName()):
             # USB-C (HRO TYPE-C-31-M-12), to HRO's recommended layout (drawing rev A, 2020-12-08): locating
             # holes 0.60 mm for the 0.50 mm posts (KiCad's hole positions match the drawing; JLC's EasyEDA
             # model draws its posts 0.18 mm elsewhere, but the physical part follows HRO), front shell slots
