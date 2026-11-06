@@ -1,0 +1,252 @@
+    0.000 INFO  fastroute 0.1.14
+    0.000 INFO  live viewer: http://127.0.0.1:44495
+    0.001 INFO  parsed 'build/v34-mp30/coffee-controller-120v.dsn' in 1.1 ms: 2 layers, 87 components, 59 nets, 0 wires
+    0.008 INFO  net class 'M1': no neck-down
+    0.008 INFO  net class 'M2': no neck-down
+    0.008 INFO  net class 'M3': no neck-down
+    0.008 INFO  net class 'FINE': no neck-down
+    0.009 WARN  Board has 24 pre-existing clearance violation(s) in the loaded design (24 unfixable).
+    0.009 INFO  built board in 7.6 ms: 1256 items (301 pins, 4 vias, 0 traces)
+    0.010 INFO  threads: autorouting passes run on router.autorouter.max_threads threads (1 = sequential); the optimizer uses router.optimizer.max_threads
+    0.010 INFO  optimizer mode: Parallel { threads: 15 }, board time limits: WallClock, stage wall clock limits: enabled
+    0.010 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    1.400 INFO  Fanout pass #1 completed in 1.39 seconds with 214 SMD pins fanouted, 4 not routed, 0 insert errors, +81 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    1.569 INFO  Fanout pass #2 completed in 0.17 seconds with 30 SMD pins fanouted, 3 not routed, 0 insert errors, +14 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    1.673 INFO  Fanout pass #3 completed in 0.10 seconds with 14 SMD pins fanouted, 2 not routed, 0 insert errors, +4 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    1.733 INFO  Fanout pass #4 completed in 0.06 seconds with 8 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    1.779 INFO  Fanout pass #5 completed in 0.05 seconds with 11 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    1.814 INFO  Fanout pass #6 completed in 0.04 seconds with 9 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=600).
+    1.814 INFO  Fanout stopped after 6 passes: the last pass only re-fanned 9 pins of the previous pass.
+    1.814 INFO  Fanout stage completed: 6 passes, completed in 1.80 seconds.
+    1.820 INFO  checkpoint: best board so far (77 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    1.821 INFO  Auto-routing stage started with baseline score 513.69 for 77 unrouted items.
+    2.844 INFO  Auto-routing pass #1 was completed in 1.02 seconds with score 878.47 (19 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 81, failed 5, ripped 28).
+    2.845 INFO  checkpoint: best board so far (19 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    3.547 INFO  Auto-routing pass #2 was completed in 0.70 seconds with score 897.34 (16 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 17, failed 6, ripped 16).
+    3.548 INFO  checkpoint: best board so far (16 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    4.186 INFO  Auto-routing pass #3 was completed in 0.64 seconds with score 935.07 (10 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 17, failed 2, ripped 16).
+    4.187 INFO  checkpoint: best board so far (10 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    4.849 INFO  Auto-routing pass #4 was completed in 0.66 seconds with score 941.36 (9 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 11, failed 3, ripped 7).
+    4.851 INFO  checkpoint: best board so far (9 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    5.025 INFO  Auto-routing pass #5 was completed in 0.17 seconds with score 935.07 (10 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 8, failed 5, ripped 13).
+    5.330 INFO  Auto-routing pass #6 was completed in 0.31 seconds with score 960.23 (6 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 9, failed 2, ripped 9).
+    5.331 INFO  checkpoint: best board so far (6 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    5.500 INFO  Auto-routing pass #7 was completed in 0.17 seconds with score 972.81 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 6, failed 2, ripped 8).
+    5.500 INFO  checkpoint: best board so far (4 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    6.044 INFO  Auto-routing pass #8 was completed in 0.54 seconds with score 972.81 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 3, ripped 8).
+    6.198 INFO  Auto-routing pass #9 was completed in 0.15 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 2, ripped 5).
+    6.199 INFO  checkpoint: best board so far (2 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    6.242 INFO  Auto-routing pass #10 was completed in 0.04 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 5).
+    6.465 INFO  Auto-routing pass #11 was completed in 0.22 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 5).
+    6.496 INFO  Auto-routing pass #12 was completed in 0.03 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 4).
+    6.497 INFO  checkpoint: best board so far (1 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+    6.510 INFO  Auto-routing pass #13 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.525 INFO  Auto-routing pass #14 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.540 INFO  Auto-routing pass #15 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.552 INFO  Auto-routing pass #16 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.564 INFO  Auto-routing pass #17 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.577 INFO  Auto-routing pass #18 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.589 INFO  Auto-routing pass #19 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.601 INFO  Auto-routing pass #20 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.613 INFO  Auto-routing pass #21 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.626 INFO  Auto-routing pass #22 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.638 INFO  Auto-routing pass #23 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.650 INFO  Auto-routing pass #24 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.666 INFO  Auto-routing pass #25 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.679 INFO  Auto-routing pass #26 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.691 INFO  Auto-routing pass #27 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.703 INFO  Auto-routing pass #28 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.715 INFO  Auto-routing pass #29 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.727 INFO  Auto-routing pass #30 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.739 INFO  Auto-routing pass #31 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.751 INFO  Auto-routing pass #32 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.763 INFO  Auto-routing pass #33 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.788 INFO  Auto-routing pass #34 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.800 INFO  Auto-routing pass #35 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.811 INFO  Auto-routing pass #36 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.823 INFO  Auto-routing pass #37 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.834 INFO  Auto-routing pass #38 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.845 INFO  Auto-routing pass #39 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.856 INFO  Auto-routing pass #40 was completed in 0.01 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 4).
+    6.857 INFO  The router's best score (991.68) has not improved by more than 0.5 points since pass #30. Stopping the auto-router after 40 passes (1 item still unconnected).
+    6.857 INFO  Auto-routing stage completed: started with 191 unrouted nets, completed in 5.04 seconds, final score: 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+    6.866 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    6.866 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    6.866 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    8.276 INFO  Fanout pass #1 completed in 1.41 seconds with 214 SMD pins fanouted, 4 not routed, 0 insert errors, +81 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    8.282 INFO  Fanout pass #1 completed in 1.42 seconds with 214 SMD pins fanouted, 4 not routed, 0 insert errors, +81 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    8.288 INFO  Fanout pass #1 completed in 1.42 seconds with 214 SMD pins fanouted, 4 not routed, 0 insert errors, +81 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    8.430 INFO  Fanout pass #2 completed in 0.15 seconds with 30 SMD pins fanouted, 3 not routed, 0 insert errors, +14 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    8.432 INFO  Fanout pass #2 completed in 0.15 seconds with 30 SMD pins fanouted, 3 not routed, 0 insert errors, +14 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    8.442 INFO  Fanout pass #2 completed in 0.15 seconds with 30 SMD pins fanouted, 3 not routed, 0 insert errors, +14 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    8.518 INFO  Fanout pass #3 completed in 0.09 seconds with 14 SMD pins fanouted, 2 not routed, 0 insert errors, +4 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    8.518 INFO  Fanout pass #3 completed in 0.09 seconds with 14 SMD pins fanouted, 2 not routed, 0 insert errors, +4 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    8.529 INFO  Fanout pass #3 completed in 0.09 seconds with 14 SMD pins fanouted, 2 not routed, 0 insert errors, +4 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    8.559 INFO  Fanout pass #4 completed in 0.04 seconds with 8 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    8.569 INFO  Fanout pass #4 completed in 0.05 seconds with 8 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    8.581 INFO  Fanout pass #4 completed in 0.05 seconds with 8 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    8.607 INFO  Fanout pass #5 completed in 0.05 seconds with 11 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    8.623 INFO  Fanout pass #5 completed in 0.05 seconds with 11 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    8.626 INFO  Fanout pass #5 completed in 0.04 seconds with 11 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    8.643 INFO  Fanout pass #6 completed in 0.04 seconds with 9 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=600).
+    8.643 INFO  Fanout stopped after 6 passes: the last pass only re-fanned 9 pins of the previous pass.
+    8.643 INFO  Fanout stage completed: 6 passes, completed in 1.78 seconds.
+    8.648 INFO  Auto-routing stage started with baseline score 513.69 for 77 unrouted items.
+    8.671 INFO  Fanout pass #6 completed in 0.05 seconds with 9 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=600).
+    8.671 INFO  Fanout stopped after 6 passes: the last pass only re-fanned 9 pins of the previous pass.
+    8.671 INFO  Fanout stage completed: 6 passes, completed in 1.80 seconds.
+    8.673 INFO  Fanout pass #6 completed in 0.05 seconds with 9 SMD pins fanouted, 2 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=600).
+    8.673 INFO  Fanout stopped after 6 passes: the last pass only re-fanned 9 pins of the previous pass.
+    8.673 INFO  Fanout stage completed: 6 passes, completed in 1.81 seconds.
+    8.678 INFO  Auto-routing stage started with baseline score 513.69 for 77 unrouted items.
+    8.679 INFO  Auto-routing stage started with baseline score 513.69 for 77 unrouted items.
+    9.670 INFO  Auto-routing pass #1 was completed in 0.99 seconds with score 878.47 (19 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 88, failed 3, ripped 33).
+    9.925 INFO  Auto-routing pass #1 was completed in 1.28 seconds with score 853.31 (23 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 87, failed 5, ripped 37).
+    9.981 INFO  Auto-routing pass #1 was completed in 1.30 seconds with score 840.73 (25 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 88, failed 4, ripped 37).
+   10.576 INFO  Auto-routing pass #2 was completed in 0.91 seconds with score 935.07 (10 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 21, failed 0, ripped 10).
+   10.871 INFO  Auto-routing pass #2 was completed in 0.95 seconds with score 834.45 (26 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 22, failed 3, ripped 12).
+   10.882 INFO  Auto-routing pass #3 was completed in 0.31 seconds with score 966.52 (5 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 10, failed 0, ripped 8).
+   10.979 INFO  Auto-routing pass #2 was completed in 1.00 seconds with score 884.76 (18 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 25, failed 5, ripped 15).
+   11.077 INFO  Auto-routing pass #4 was completed in 0.20 seconds with score 979.10 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 5, failed 0, ripped 3).
+   11.161 INFO  Auto-routing pass #5 was completed in 0.08 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 0, ripped 3).
+   11.241 INFO  Auto-routing pass #6 was completed in 0.08 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 1).
+   11.277 INFO  Auto-routing pass #3 was completed in 0.41 seconds with score 909.92 (14 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 26, failed 2, ripped 15).
+   11.295 INFO  Auto-routing pass #7 was completed in 0.05 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+   11.369 INFO  Auto-routing pass #8 was completed in 0.07 seconds with score 997.97 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
+   11.371 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+   11.372 INFO  Auto-routing pass #9 was completed in 0.00 seconds with score 997.97 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
+   11.394 INFO  Auto-routing stage completed: started with 191 unrouted nets, completed in 2.72 seconds, final score: 997.97 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   11.672 INFO  Auto-routing pass #4 was completed in 0.40 seconds with score 928.79 (11 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 14, failed 3, ripped 8).
+   11.901 INFO  Auto-routing pass #3 was completed in 0.92 seconds with score 916.21 (13 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 18, failed 6, ripped 8).
+   12.242 INFO  Auto-routing pass #5 was completed in 0.57 seconds with score 953.94 (7 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 10, failed 3, ripped 7).
+   12.421 INFO  Auto-routing pass #4 was completed in 0.52 seconds with score 947.65 (8 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 12, failed 2, ripped 7).
+   12.590 INFO  Auto-routing pass #6 was completed in 0.35 seconds with score 966.52 (5 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 6, failed 3, ripped 6).
+   12.693 INFO  Auto-routing pass #5 was completed in 0.27 seconds with score 947.65 (8 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 7, failed 2, ripped 5).
+   12.805 INFO  Auto-routing pass #7 was completed in 0.21 seconds with score 979.10 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 4, failed 2, ripped 3).
+   12.863 INFO  Auto-routing pass #8 was completed in 0.06 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 2).
+   12.889 INFO  Auto-routing pass #9 was completed in 0.03 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   12.910 INFO  Auto-routing pass #6 was completed in 0.22 seconds with score 979.10 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 7, failed 1, ripped 0).
+   12.914 INFO  Auto-routing pass #10 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   12.937 INFO  Auto-routing pass #11 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 3).
+   12.956 INFO  Auto-routing pass #12 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   12.977 INFO  Auto-routing pass #13 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 3).
+   12.998 INFO  Auto-routing pass #14 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 2).
+   13.015 INFO  Auto-routing pass #15 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 1).
+   13.031 INFO  Auto-routing pass #16 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.049 INFO  Auto-routing pass #17 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.061 INFO  Auto-routing pass #7 was completed in 0.15 seconds with score 979.10 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 1, ripped 1).
+   13.069 INFO  Auto-routing pass #18 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 3).
+   13.086 INFO  Auto-routing pass #19 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.104 INFO  Auto-routing pass #20 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.120 INFO  Auto-routing pass #21 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.138 INFO  Auto-routing pass #22 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.141 INFO  Auto-routing pass #8 was completed in 0.08 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 1, ripped 0).
+   13.144 INFO  Auto-routing pass #9 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.147 INFO  Auto-routing pass #10 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.150 INFO  Auto-routing pass #11 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.153 INFO  Auto-routing pass #12 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.156 INFO  Auto-routing pass #23 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 2).
+   13.156 INFO  Auto-routing pass #13 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.159 INFO  Auto-routing pass #14 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.162 INFO  Auto-routing pass #15 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.165 INFO  Auto-routing pass #16 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.168 INFO  Auto-routing pass #17 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.171 INFO  Auto-routing pass #18 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.173 INFO  Auto-routing pass #24 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 1).
+   13.174 INFO  Auto-routing pass #19 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.177 INFO  Auto-routing pass #20 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.180 INFO  Auto-routing pass #21 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.183 INFO  Auto-routing pass #22 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.186 INFO  Auto-routing pass #23 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.189 INFO  Auto-routing pass #24 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.190 INFO  Auto-routing pass #25 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.192 INFO  Auto-routing pass #25 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.195 INFO  Auto-routing pass #26 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.197 INFO  Auto-routing pass #27 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.200 INFO  Auto-routing pass #28 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.202 INFO  Auto-routing pass #26 was completed in 0.01 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.203 INFO  Auto-routing pass #29 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.206 INFO  Auto-routing pass #30 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.209 INFO  Auto-routing pass #31 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.212 INFO  Auto-routing pass #32 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.215 INFO  Auto-routing pass #33 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.218 INFO  Auto-routing pass #27 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 0).
+   13.235 INFO  Auto-routing pass #34 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.235 INFO  Auto-routing pass #28 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 1).
+   13.237 INFO  Auto-routing pass #35 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.239 INFO  Auto-routing pass #36 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.240 INFO  Auto-routing pass #37 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.242 INFO  Auto-routing pass #38 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.244 INFO  Auto-routing pass #39 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.246 INFO  Auto-routing pass #40 was completed in 0.00 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 1, ripped 0).
+   13.246 INFO  The router's best score (985.39) has not improved by more than 0.5 points since pass #30. Stopping the auto-router after 40 passes (2 items still unconnected).
+   13.246 INFO  Auto-routing stage completed: started with 191 unrouted nets, completed in 4.57 seconds, final score: 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   13.246 INFO  2 item(s) cannot be routed even on the board as loaded (blocked by pins, keepouts or fixed wiring); they were skipped after their second failure.
+   13.253 INFO  Auto-routing pass #29 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.271 INFO  Auto-routing pass #30 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.294 INFO  Auto-routing pass #31 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 1).
+   13.310 INFO  Auto-routing pass #32 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 2).
+   13.327 INFO  Auto-routing pass #33 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.346 INFO  Auto-routing pass #34 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.377 INFO  Auto-routing pass #35 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 2, ripped 1).
+   13.392 INFO  Auto-routing pass #36 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 2).
+   13.408 INFO  Auto-routing pass #37 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.424 INFO  Auto-routing pass #38 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 1).
+   13.440 INFO  Auto-routing pass #39 was completed in 0.02 seconds with score 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 0).
+   13.455 INFO  Auto-routing pass #40 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 2, ripped 1).
+   13.471 INFO  Auto-routing pass #41 was completed in 0.02 seconds with score 985.39 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 2, ripped 2).
+   13.471 INFO  The router's best score (991.68) has not improved by more than 0.5 points since pass #31. Stopping the auto-router after 41 passes (1 item still unconnected).
+   13.493 INFO  Auto-routing stage completed: started with 191 unrouted nets, completed in 4.85 seconds, final score: 991.68 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   13.502 INFO  Multi-start variant 1: 2 unrouted, 24 violations, router score 985.39.
+   13.505 INFO  Multi-start variant 2: 1 unrouted, 24 violations, router score 991.68.
+   13.505 INFO  Multi-start variant 3: 0 unrouted, 24 violations, router score 997.97.
+   13.505 INFO  Multi-start: variant 3 is better (0 unrouted, 24 violations; first run 1 unrouted, 24 violations).
+   13.516 INFO  Optimization stage started. Baseline router score: 997.97, optimizer score: 416.52, incomplete connections: 0, clearance violations: 24.
+   13.516 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
+   14.300 INFO  Stopping optimization pass #1 early after 12 consecutive items could not be improved.
+   14.940 INFO  Optimizer pass #1: applied 13 more improving candidate(s).
+   14.940 INFO  Optimizer pass #1 was completed in 1.42 seconds (114 of 278 candidates) with the score of 467.57 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   14.941 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+   14.941 INFO  Optimizer pass #1: optimizer score 416.52 -> 467.57 (IMPROVED, 12.2546%), router score: 997.97, incomplete connections: 0, clearance violations: 24.
+   17.131 INFO  Optimizer greedy phase stopped after 23 of 101 candidates (0.5 s, no further improvements).
+   17.131 INFO  Optimizer pass #2: applied 4 more improving candidate(s).
+   17.137 INFO  Optimizer pass #2 was completed in 2.20 seconds (279 of 279 candidates) with the score of 489.20 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   17.139 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+   17.139 INFO  Optimizer pass #2: optimizer score 467.57 -> 489.20 (IMPROVED, 4.6270%), router score: 997.97, incomplete connections: 0, clearance violations: 24.
+   19.765 INFO  Optimizer greedy phase stopped after 20 of 74 candidates (0.7 s, no further improvements).
+   19.765 INFO  Optimizer pass #3: applied 2 more improving candidate(s).
+   19.775 INFO  Optimizer pass #3 was completed in 2.64 seconds (284 of 284 candidates) with the score of 495.02 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   19.776 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v34-mp30/coffee-controller-120v.ses'
+   19.777 INFO  Optimizer pass #3: optimizer score 489.20 -> 495.02 (IMPROVED, 1.1885%), router score: 997.97, incomplete connections: 0, clearance violations: 24.
+   19.777 INFO  Stopping optimizer because the improvement in this pass (1.1885%) is below the threshold (2.50%).
+   19.777 INFO  Optimization stage completed: Baseline router score: 997.97, baseline optimizer score: 416.52, final router score: 997.97, final optimizer score: 495.02, completed in 6.26 seconds.
+   19.778 INFO  routing finished in 19.77 s
+   19.778 INFO  note: a board time limit fired (WallClock)
+   19.780 WARN  24 clearance violation(s) in the result:
+   19.780 WARN    F.Cu at (69.731, 17.331) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (69.731, 17.894) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (69.731, 19.306) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (69.731, 19.869) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (70.294, 17.331) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (71.706, 17.331) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (71.706, 19.306) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (70.294, 17.894) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (70.294, 19.306) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (71.706, 17.894) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (71.706, 19.869) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (70.294, 19.869) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (72.269, 17.331) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (72.269, 19.306) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (72.269, 17.894) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (72.269, 19.869) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   19.780 WARN    F.Cu at (21.440, 17.220) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   19.780 WARN    F.Cu at (21.440, 17.220) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   19.780 WARN    F.Cu at (21.440, 21.780) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   19.780 WARN    F.Cu at (21.440, 21.780) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   19.780 WARN    F.Cu at (21.440, 4.720) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   19.780 WARN    F.Cu at (21.440, 4.720) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   19.780 WARN    F.Cu at (21.440, 9.280) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   19.780 WARN    F.Cu at (21.440, 9.280) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   19.782 INFO  saved 'build/v34-mp30/coffee-controller-120v.ses' (72093 bytes)
+   19.795 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
+   19.795 INFO  report written to 'build/v34-mp30/coffee-controller-120v-fastroute.json'

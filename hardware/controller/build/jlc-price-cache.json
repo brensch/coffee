@@ -1236,5 +1236,69 @@
 "endNumber": -1,
 "productPrice": 0.0739
 }
+],
+"C133065": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.3569
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.2929
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.2656
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.2314
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.216
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.207
+}
+],
+"C189896": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.2037
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.1647
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.148
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.1271
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.1178
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.1122
+}
 ]
 }

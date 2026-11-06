@@ -433,7 +433,7 @@
     "16": "SW_STEAM",
     "17": "USB_D-",
     "18": "USB_D+",
-    "19": "SW_POWER",
+    "19": null,
     "20": null,
     "21": null,
     "22": "I2C_SDA",
@@ -1199,16 +1199,15 @@
    "notes": "ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses"
   },
   "J7": {
-   "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
+   "footprint": "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal",
    "value": "Front panel",
    "pins": {
-    "1": "SW_POWER_IN",
-    "2": "SW_BREW_IN",
-    "3": "SW_STEAM_IN",
-    "4": "GND",
-    "5": "LED_PWR",
-    "6": "LED_COFFEE",
-    "7": "LED_STEAM"
+    "1": "SW_BREW_IN",
+    "2": "SW_STEAM_IN",
+    "3": "GND",
+    "4": "LED_PWR",
+    "5": "LED_COFFEE",
+    "6": "LED_STEAM"
    },
    "pin_names": {
     "1": "1",
@@ -1216,48 +1215,13 @@
     "3": "3",
     "4": "4",
     "5": "5",
-    "6": "6",
-    "7": "7"
+    "6": "6"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_7_SMD",
-   "mpn": "JST SM07B-GHS-TB",
-   "notes": "1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)"
-  },
-  "R28": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "10k",
-   "pins": {
-    "1": "+3V3",
-    "2": "SW_POWER"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "switch pull-up / wetting current"
-  },
-  "R29": {
-   "footprint": "Resistor_SMD:R_0603_1608Metric",
-   "value": "1k",
-   "pins": {
-    "1": "SW_POWER_IN",
-    "2": "SW_POWER"
-   },
-   "pin_names": {
-    "1": "1",
-    "2": "2"
-   },
-   "mains": [],
-   "populate": "Y",
-   "desc": "Resistor",
-   "mpn": "",
-   "notes": "GPIO series protection"
+   "desc": "JST_GH_6_SMD",
+   "mpn": "JST SM06B-GHS-TB",
+   "notes": "1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)"
   },
   "R20": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -1583,31 +1547,27 @@
    "notes": "indicator: valve on"
   },
   "J10": {
-   "footprint": "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal",
+   "footprint": "Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal",
    "value": "Scale",
    "pins": {
-    "1": null,
-    "2": null,
-    "3": "SCALE_DOUT1",
-    "4": "SCALE_SCK",
-    "5": "GND",
-    "6": "SCALE_DOUT2",
-    "7": "+3V3"
+    "1": "SCALE_DOUT1",
+    "2": "SCALE_SCK",
+    "3": "GND",
+    "4": "SCALE_DOUT2",
+    "5": "+3V3"
    },
    "pin_names": {
     "1": "1",
     "2": "2",
     "3": "3",
     "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7"
+    "5": "5"
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_7_SMD",
-   "mpn": "JST SM07B-GHS-TB",
-   "notes": "3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)"
+   "desc": "JST_GH_5_SMD",
+   "mpn": "JST SM05B-GHS-TB",
+   "notes": "1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)"
   },
   "R36": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -1676,39 +1636,6 @@
    "desc": "Capacitor",
    "mpn": "",
    "notes": "ADC reservoir"
-  },
-  "H1": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
-  },
-  "H2": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
-  },
-  "H3": {
-   "footprint": "MountingHole:MountingHole_3.2mm_M3",
-   "value": "M3",
-   "pins": {},
-   "pin_names": {},
-   "mains": [],
-   "populate": "Y",
-   "desc": "M3 mounting hole (unplated)",
-   "mpn": "",
-   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
   }
  },
  "mains_nets": [

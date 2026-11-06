@@ -8,13 +8,12 @@ C15 C16,2,22nF X2,Murata GA355DR7GB223KW01L,Coffee:C_2220_Murata_GA355,Y,"Class 
 D1 D3 D4 D5 D6 D7 D8,7,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,"Status: boot log flicker, on while programming, then the firmware heartbeat | indicator: coffee lamp | indicator: heater on | indicator: power lamp | indicator: pump on | indicator: steam lamp | indicator: valve on"
 D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
 F1,1,2A T,Littelfuse 0443002.DR,Coffee:Fuse_Littelfuse_Nano2_443,Y,"Fuse, 2 A slow-blow, 250 VAC, 50 A breaking","MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush)"
-H1 H2 H3,3,M3,MountingHole,MountingHole:MountingHole_3.2mm_M3,Y,M3 mounting hole (unplated),M3 mounting hole into the printed tray (nylon screw in the mains zone)
 J2,1,Heater SSR,JST SM04B-GHS-TB,Connector_JST:JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,Y,JST_GH_4_SMD,1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size)
 J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
 J5,1,Thermocouple,JST SM02B-GHS-TB,Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal,Y,JST_GH_2_SMD,"1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it"
 J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
-J7,1,Front panel,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)
-J10,1,Scale,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,"3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)"
+J7,1,Front panel,JST SM06B-GHS-TB,Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal,Y,JST_GH_6_SMD,1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)
+J10,1,Scale,JST SM05B-GHS-TB,Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal,Y,JST_GH_5_SMD,1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)
 J12,1,N,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. N: neutral (feeds the IRM module only)
 J13,1,L,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab","MAINS. L: live, unswitched (pump, valve, IRM)"
 J14,1,P,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. P: switched live to the pump
@@ -24,9 +23,9 @@ Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 
 Q5,1,T435-600B,ST T435-600B-TR,Package_TO_SOT_SMD:TO-252-2,Y,"Triac 4 A 600 V, ST T4 series (DPAK)","MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)"
 Q6,1,T410-600B,ST T410-600B-TR,Package_TO_SOT_SMD:TO-252-2,Y,"Triac 4 A 600 V, ST T4 series (DPAK)","MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W"
 R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
-R10 R20 R21 R25 R28 R36,6,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | SCK pull-down: HX711 stays powered while the C6 boots | V5_SNS divider bottom | switch pull-up / wetting current
+R10 R20 R21 R25 R36,5,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | SCK pull-down: HX711 stays powered while the C6 boots | V5_SNS divider bottom | switch pull-up / wetting current
 R11 R46,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,I2C SCL pull-up; also GPIO9 high at reset = normal boot | I2C SDA pull-up; also GPIO8's strap pull-up (high at reset)
-R12 R18 R19 R29 R37 R38 R39 R40 R41 R42 R43 R44,12,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | TC+ input: noise filter with C12 (probe lead runs past the heater wiring) | TC- input series: matches R43 (symmetric filter) | indicator LED: coffee lamp | indicator LED: heater on | indicator LED: power lamp | indicator LED: pump on | indicator LED: steam lamp | indicator LED: valve on | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R12 R18 R19 R37 R38 R39 R40 R41 R42 R43 R44,11,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | TC+ input: noise filter with C12 (probe lead runs past the heater wiring) | TC- input series: matches R43 (symmetric filter) | indicator LED: coffee lamp | indicator LED: heater on | indicator LED: power lamp | indicator LED: pump on | indicator LED: steam lamp | indicator LED: valve on | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
 R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
 R16,1,47k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 100/147 (147k load: TE M3200 needs > 100k)
 R17,1,100k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,

@@ -63,7 +63,7 @@ def order(d):
                 total=FEES["pcb_5"] * N / 5 + fee + N * parts)
 
 
-for d, label in (("build/jlc-120v", "full assembly (JLC solders everything)"), ("build/jlc-120v-smd", "SMD by JLC, you solder 4 spades + IRM")):
+for d, label in (("build/jlc-120v", "full assembly (JLC solders all but bottom-side parts)"), ("build/jlc-120v-smd", "SMD by JLC, you solder 4 spades + IRM")):
     o = order(d)
     print(f"{label}:\n  {N} boards ~ ${o['total']:.0f}  (parts ${o['parts']:.2f}/board, {o['ext']} extended types, "
           f"{o['joints']} SMD + {o['tht']} THT joints/board, fees ${o['fee']:.0f})")
