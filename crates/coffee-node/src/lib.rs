@@ -554,7 +554,9 @@ mod tests {
         SensorFrame {
             cycle: i,
             t_us: (i as u64 * 50_000 + 1) / 3, // 60 Hz crystal grid
-            ntc_mv: sensors::ntc_mv_for_c(&cfg.ntc, temp).round() as u16,
+            // a thermocouple conversion with the board at 35 C (every tick: fine for these tests)
+            tc_uv: Some(sensors::thermocouple_uv_for_c(&cfg.thermocouple, temp, 35.0).round() as i32),
+            cj_cc: Some(3_500),
             pressure_mv: sensors::pressure_to_mv(&cfg.pressure_sensor, 0.0, 0.0).round() as u16,
             scale_mg: 0,
             inputs,

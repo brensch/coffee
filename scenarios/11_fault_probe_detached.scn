@@ -2,7 +2,7 @@ name "probe falls out of its hole: heater-ineffective detection"
 machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 18min
 
-when engine.state == ready for 20s as warm: set ntc.fault = detached
+when engine.state == ready for 20s as warm: set probe.fault = detached
 
 # The probe now cools towards chassis air, so a naive PID would cook the boiler.
 expect eventually engine.faults has heater_ineffective from warm by warm+150s

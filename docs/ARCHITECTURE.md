@@ -13,19 +13,28 @@
 ## Timing contract
 
 - The engine is ticked **once per mains cycle** (60 Hz in the US, `EngineConfig::mains_hz`), timed by the ESP32-C6's crystal. There is no zero-cross detector. The control period is `dt = 1 / mains_hz`.
-- **Zero-crossing switching happens in hardware.** The heater and the pump are driven by zero-cross SSRs, which turn on only at a zero crossing; the valve (switched a couple of times per shot) by a relay. An output raised anywhere in a cycle takes effect at the next crossing, and an output dropped stops at the next current zero. So a load asserted for one crystal window conducts for exactly one full mains cycle, whatever the window's phase against the grid.
+- **Zero-crossing switching happens in hardware.** The heater is driven by an external zero-cross SSR, and the pump and the 3-way valve by on-board triacs behind zero-cross opto-triac drivers (MOC3083); each turns on only at a zero crossing. An output raised anywhere in a cycle takes effect at the next crossing, and an output dropped stops at the next current zero. So a load asserted for one crystal window conducts for exactly one full mains cycle, whatever the window's phase against the grid.
 - **Switching latency:** the frame for cycle *k* (sensors averaged over that cycle) is ticked at the boundary, and the firmware applies the decision at once, for cycle *k+1*. Lockstep emulation models exactly that, so `sim.actuator_delay_cycles` is 0 (it adds *extra* delay for experiments).
 - **Heater:** burst firing. The heater duty goes through a sigma-delta modulator into whole-cycle on/off decisions.
 - **Pump:** the vibratory pump strokes only on the positive half wave (it has an internal diode), and a one-period window always holds exactly one positive-going crossing. So "pump on for one cycle" is **one stroke**. Pump duty is the fraction of cycles with a stroke. The flow estimate is the stroke fraction × the pump curve at the measured pressure, and pumped volume adds `curve(P) / mains_hz` per stroke.
 - **Off-nominal grid:** if the grid is not exactly at `mains_hz`, the crystal window slips against it by one crossing per beat period (1/|Δf|; 20 s at ±0.05 Hz). The window where that happens gives 0 or 2 strokes, so the stroke count drifts by at most one per beat period (<0.2 %; `coffee_board::grid` tests). Running the pump continuously delivers exactly the grid's positive half waves.
 
-## Frames carry calibrated millivolts
+## Frames carry raw sensor values
 
-- `SensorFrame.ntc_mv`: the NTC divider node (100k B3950 to GND, 8.2k 0.1 % from 3.3 V). It is the ADC1 reading averaged over 32 evenly spaced samples in the cycle, curve-calibrated from eFuse.
-- `SensorFrame.pressure_mv`: the transducer after its 10k/20k divider, averaged the same way. A uniform average over exactly one mains period removes the pump's pressure ripple.
+- `SensorFrame.tc_uv`: the K-type thermocouple's EMF in microvolts, from the MCP3421 (18 bit, PGA 8, 2 µV per LSB) on I2C. The ADC converts continuously at 3.75 SPS, so this is `Some` only on the tick a fresh conversion lands (about every 16th tick at 60 Hz) and `None` in between or while the chip isn't answering.
+- `SensorFrame.cj_cc`: the cold junction in centi-°C, from the TMP117 beside the probe's socket, read with each conversion.
+- `SensorFrame.pressure_mv`: the transducer after its 47k/100k divider, ADC1 averaged over 32 evenly spaced samples in the cycle, curve-calibrated from eFuse and rescaled to the nominal 5 V rail. A uniform average over exactly one mains period removes the pump's pressure ripple.
 - Switches arrive debounced (stable for 3 cycles) in `inputs`.
 
-The NTC and pressure models, fault detection (open is the node at the rail, a short is the node at ground, and a disconnected transducer reads below 200 mV) and calibration all live in `coffee-core::sensors`. They run identically on silicon and in emulation. The pure firmware logic (cycle clock, oversampling, debounce, status LED, grid model) is in `coffee-board`, which is unit-tested on the host.
+The NIST ITS-90 type-K functions are in `coffee_io::typek`, shared by the engine (cold-junction compensation) and the emulator (making the EMF the board would see). The temperature and pressure models, fault detection and calibration live in `coffee-core::sensors` and the engine:
+
+- the probe is open when the EMF is over 15 mV (the board's 10 MΩ bias drives an open input to ~90 mV);
+- the probe is reversed when the EMF is under −1.5 mV;
+- `TC_ADC` is raised when no conversion has arrived for 1 s;
+- `COLD_JUNCTION` is raised when no in-range TMP117 reading has arrived for 2 s;
+- the transducer is disconnected when it reads below 200 mV.
+
+Any of the temperature faults turns the heater off. The engine filters the temperature and its rate on conversions, not ticks. All of this runs identically on silicon and in emulation. The pure firmware logic is in `coffee-board`, which is unit-tested on the host. It covers the cycle clock, oversampling, debounce, the status LED, the grid model, and the MCP3421/TMP117 byte decoding (`coffee_board::tc`).
 
 ## One product, two shells
 

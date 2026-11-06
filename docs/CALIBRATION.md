@@ -20,35 +20,42 @@ scale, a blind basket and a stopwatch.
 The engine converts the two ADC channels itself, so these go in the engine
 config (`PUT /api/config`, or the config file), not the model.
 
-### NTC: two points, room temperature and boiling water
+### Temperature: thermocouple, two points (room temperature and boiling water)
 
-The Molex 218537-3919 50k thermistor is decoded with Steinhart–Hart coefficients fitted to
-Molex's R–T table (`ntc.steinhart_hart`, the default; within ~1 °C of the table from 25 to 200 °C), then a linear correction
-`T = ntc.cal_gain × T_model + ntc.cal_offset_c`. That correction absorbs the
-part's tolerance, the reference resistor, and how well the probe is coupled to
-the boiler.
+The K-type probe's EMF (MCP3421) and the cold junction (TMP117 beside the probe's socket) are
+converted with the NIST ITS-90 type-K functions (`coffee_io::typek`), after dividing out the input
+network's gain (`thermocouple.input_gain`, 0.993: the 2 × 1k filter against the ADC's input).
+Then a linear correction `T = thermocouple.cal_gain × T_tc + thermocouple.cal_offset_c`. That
+correction absorbs the probe's alloy tolerance (standard K: ±2.2 °C or 0.75 %), the
+TMP117's offset (±0.1 °C), and how well the probe is coupled to the boiler.
 
 Both points are taken **on the bench, board on USB, before the probe is fitted** (INSTALL §3):
 no mains, no heater, nothing live, and the probe is in your hand.
-1. **Room point.** Probe and a reference thermometer side by side at room temperature for
+1. **Room point.** Probe, board and a reference thermometer side by side at room temperature for
    10 minutes. Note the thermometer's reading `R1` and the engine's raw `temp_c` `M1` (with gain 1
-   and offset 0).
-2. **Boiling point.** Hold the probe's ring tab in a pot at a rolling boil for 2 minutes (keep
-   the splice out of the water). Read `M2`. The true
-   temperature is the boiling point at your altitude, not 100 °C:
+   and offset 0). With probe and board at the same temperature the EMF is ~0, so this point is
+   mostly the TMP117 itself: `M1` within ~0.3 °C of `R1` is normal.
+2. **Boiling point.** Hold the probe's tip in a pot at a rolling boil for 2 minutes (keep the
+   board and the lead's plug away from the steam). Read `M2`. The true temperature is the
+   boiling point at your altitude, not 100 °C:
    `R2 ≈ 100 − 0.0033 × altitude_m` °C. That is about 1 °C per 300 m, so
    Denver (1600 m) boils at about 94.7 °C. On a day of unusual weather, use the
    local station pressure: `R2 = 100 + 0.0277 × (p_hPa − 1013.25)`.
 3. `cal_gain = (R2 − R1) / (M2 − M1)` and `cal_offset_c = R1 − cal_gain × M1`.
-   Typical values are within 1 ± 0.02 and ±1.5 °C. Anything far outside that
-   points to a wrong `r_ref_ohm`, or to a different probe than the Molex 218537-3919.
-4. Then fit the probe (INSTALL §4): ring tab with thermal paste under its M4 screw, hand-tight
-   plus a nip. The boiler-wall offset that remains
+   Typical values are within 1 ± 0.02 and ±1.5 °C. Anything far outside that points to a
+   probe that isn't K-type, or wires extended with copper somewhere (a second, unmeasured
+   junction: the probe's own wires must reach the board's socket).
+4. Then fit the probe (INSTALL §4): screwed into the brew-thermostat seat, a little thermal paste
+   on the thread, hand-tight plus a nip. The boiler-wall offset that remains
    is what the water observer handles. Validate it with log test 5.
 
 The boiling point is close to the 93 °C brew range, so the calibration is most
 accurate where it matters. The steam setpoint (140 °C) is an extrapolation;
 expect ±1–2 °C there.
+
+Fault thresholds (engine config, range-checked): `open_uv` (15 mV: an open probe reads ~90 mV
+through the board's 10 MΩ bias), `reversed_uv` (−1.5 mV: wires swapped), `stale_s` (1 s without a
+conversion: TC_ADC), `cj_stale_s` and `cj_min_c`/`cj_max_c` (the TMP117: COLD_JUNCTION).
 
 ### Pressure: zero and span
 
@@ -58,7 +65,7 @@ The transducer reads `bar = span_gain × (nominal − zero_offset_bar)`.
   run a brief flush and let the valve vent. Read `pressure_bar` with
   `zero_offset_bar = 0` and enter that as `zero_offset_bar`.
 - **Power-on self-zero.** Each boot, the engine averages the first 0.5 s. It
-  adopts that average as the zero only if the boiler is cold (NTC < 50 °C)
+  adopts that average as the zero only if the boiler is cold (probe < 50 °C)
   *and* the reading is within 0.3 bar of the install zero. A hot boiler holds
   2–4 bar behind the closed valve, and a large offset means a stuck valve or a
   bad sensor, not drift. Otherwise the install zero stays.
@@ -71,7 +78,7 @@ The transducer reads `bar = span_gain × (nominal − zero_offset_bar)`.
 
 | # | Test | Duration | Fits | Also check |
 |---|---|---|---|---|
-| 1 | **Cold heat-up, idle.** Machine cold since the night before, portafilter locked in. | 30 min | `thermal.boiler_mass_kg, loss_boiler_w_k, h_boiler_water_w_k, portafilter_*`, `thermistor.tau_s` | Power meter: average watts at idle (should match `loss_*` × ΔT). |
+| 1 | **Cold heat-up, idle.** Machine cold since the night before, portafilter locked in. | 30 min | `thermal.boiler_mass_kg, loss_boiler_w_k, h_boiler_water_w_k, portafilter_*`, `thermocouple.tau_s`, `thermocouple.offset_c` | Power meter: average watts at idle (should match `loss_*` × ΔT). |
 | 2 | **Idle pressure.** Same log: watch pressure while heating and afterwards. | (in 1) | `hydraulics.seep_ml_s_per_bar`, `compliance_ml_per_bar` | Does it climb to 2–4 bar and bleed off? |
 | 3 | **Free flow.** No portafilter, pump at 100% into a jug for 10 s. Weigh it. | 10 s ×3 | `pump.wear` (curve scale at ~0 bar) | Expect roughly 10 ml/s (the Ulka's free-flow rate; fit it from your own jug). |
 | 4 | **Blind basket.** Pump 100% for 15 s. | 15 s | `hydraulics.opv_crack_bar, opv_k_ml_s_per_bar, compliance_ml_per_bar` | Steady pressure = the OPV setting. |

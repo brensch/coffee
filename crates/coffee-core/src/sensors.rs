@@ -1,77 +1,48 @@
-//! Sensor decoding: ADC millivolts at the MCU pin -> engineering units.
+//! Sensor decoding: what the board measures -> engineering units.
 //!
-//! Both channels are read by the ESP32-C6's ADC1 (eFuse curve calibration,
-//! oversampled over one mains cycle), so the inputs here are already calibrated
-//! millivolts. The models below turn them into deg C and bar and recognise wiring
-//! faults from out-of-range node voltages.
+//! Temperature: the K-type thermocouple's EMF (MCP3421, microvolts) and the cold junction
+//! (TMP117 at the probe's socket), converted with the NIST ITS-90 reference functions
+//! ([`coffee_io::typek`]). Pressure: the transducer as calibrated ADC1 millivolts, oversampled
+//! over one mains cycle. Both models also recognise wiring faults from impossible readings.
 
-use crate::config::{NtcConfig, PressureSensorConfig};
-use libm::{expf, logf};
-
-const KELVIN: f32 = 273.15;
+use crate::config::{PressureSensorConfig, ThermocoupleConfig};
+use coffee_io::typek;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum NtcReading {
+pub enum TcReading {
     Celsius(f32),
-    /// Node at the 3.3 V rail: thermistor or wire open.
+    /// EMF far above anything the boiler makes: probe or wire open.
     Open,
-    /// Node at ground: thermistor or wire shorted.
-    Short,
+    /// EMF well negative: probe wires swapped.
+    Reversed,
 }
 
-/// Thermistor resistance from the node voltage (NTC to GND, `r_ref` to 3.3 V).
-pub fn ntc_ohms(cfg: &NtcConfig, mv: f32) -> f32 {
-    let top = (cfg.v_ref_mv - mv).max(1e-3);
-    cfg.r_ref_ohm * mv.max(0.0) / top
+/// Calibrated hot-junction temperature for a measured EMF and cold-junction temperature
+/// (no fault checks): undo the input network's gain, add back the cold junction's own EMF,
+/// invert the type-K reference function, then apply the two-point calibration.
+pub fn thermocouple_c(cfg: &ThermocoupleConfig, emf_uv: f32, cj_c: f32) -> f32 {
+    let true_mv = emf_uv as f64 / 1000.0 / cfg.input_gain as f64;
+    let t = typek::hot_junction_c(true_mv, cj_c as f64) as f32;
+    cfg.cal_gain * t + cfg.cal_offset_c
 }
 
-/// Model temperature (before calibration) for a thermistor resistance.
-pub fn ntc_model_c(cfg: &NtcConfig, ohms: f32) -> f32 {
-    let ln_r = logf(ohms.max(1e-3));
-    let inv_t = match cfg.steinhart_hart {
-        Some([a, b, c]) => a + b * ln_r + c * ln_r * ln_r * ln_r,
-        None => 1.0 / (25.0 + KELVIN) + (ln_r - logf(cfg.r25_ohm)) / cfg.beta,
-    };
-    1.0 / inv_t - KELVIN
-}
-
-/// Node voltage -> calibrated temperature, or the wiring fault it indicates.
-pub fn ntc(cfg: &NtcConfig, mv: u16) -> NtcReading {
-    let mv = mv as f32;
-    if mv >= cfg.open_mv {
-        return NtcReading::Open;
+/// Measured EMF and cold junction -> calibrated temperature, or the wiring fault it indicates.
+pub fn thermocouple(cfg: &ThermocoupleConfig, emf_uv: i32, cj_c: f32) -> TcReading {
+    let e = emf_uv as f32;
+    if e >= cfg.open_uv {
+        return TcReading::Open;
     }
-    if mv <= cfg.short_mv {
-        return NtcReading::Short;
+    if e <= cfg.reversed_uv {
+        return TcReading::Reversed;
     }
-    let t = cfg.cal_gain * ntc_model_c(cfg, ntc_ohms(cfg, mv)) + cfg.cal_offset_c;
-    if t < cfg.min_c {
-        return NtcReading::Open;   // colder than a boiler can be: an open probe read low
-    }
-    NtcReading::Celsius(t)
+    TcReading::Celsius(thermocouple_c(cfg, e, cj_c))
 }
 
-/// Inverse of [`ntc`] for a calibrated temperature (tests, tooling). Inverts the
-/// calibration, then the model (closed form for beta, bisection for S-H).
-pub fn ntc_mv_for_c(cfg: &NtcConfig, c: f32) -> f32 {
-    let model_c = (c - cfg.cal_offset_c) / cfg.cal_gain;
-    let ohms = match cfg.steinhart_hart {
-        None => cfg.r25_ohm * expf(cfg.beta * (1.0 / (model_c + KELVIN) - 1.0 / (25.0 + KELVIN))),
-        Some(_) => {
-            // Model temperature falls monotonically with resistance.
-            let (mut lo, mut hi) = (1.0f32, 1.0e8f32);
-            for _ in 0..80 {
-                let mid = libm::sqrtf(lo * hi);
-                if ntc_model_c(cfg, mid) > model_c {
-                    lo = mid;
-                } else {
-                    hi = mid;
-                }
-            }
-            libm::sqrtf(lo * hi)
-        }
-    };
-    cfg.v_ref_mv * ohms / (cfg.r_ref_ohm + ohms)
+/// Inverse of [`thermocouple_c`] (emulator, tests, tooling): the EMF the ADC measures for a
+/// calibrated temperature `c` with the cold junction at `cj_c`.
+pub fn thermocouple_uv_for_c(cfg: &ThermocoupleConfig, c: f32, cj_c: f32) -> f32 {
+    let t = ((c - cfg.cal_offset_c) / cfg.cal_gain) as f64;
+    ((typek::emf_mv(t) - typek::emf_mv(cj_c as f64)) * 1000.0 * cfg.input_gain as f64) as f32
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -107,105 +78,72 @@ pub fn pressure_to_mv(cfg: &PressureSensorConfig, bar: f32, zero_offset_bar: f32
 mod tests {
     use super::*;
 
-    fn celsius(r: NtcReading) -> f32 {
+    fn celsius(r: TcReading) -> f32 {
         match r {
-            NtcReading::Celsius(c) => c,
+            TcReading::Celsius(c) => c,
             other => panic!("expected a temperature, got {other:?}"),
         }
     }
 
     #[test]
-    fn ntc_design_points() {
-        let c = NtcConfig::default();
-        // Molex 218537-3919 (50k) with the 4.7k reference, from Molex's R-T table:
-        // 25 C 50.000k -> 3016 mV, 93 C ~3.9k -> 1496 mV, 140 C 1.029k -> 593 mV.
-        assert!((ntc_mv_for_c(&c, 25.0) - 3016.0).abs() < 5.0);
-        assert!((ntc_mv_for_c(&c, 93.0) - 1496.0).abs() < 8.0);
-        assert!((ntc_mv_for_c(&c, 140.0) - 593.0).abs() < 5.0);
-        // Steam (145 C) still well above the short threshold.
-        assert!(ntc_mv_for_c(&c, 145.0) > 4.0 * c.short_mv);
-        // A cold kitchen (10 C) does not look open...
-        assert!(ntc_mv_for_c(&c, 10.0) < c.open_mv);
-        // ...but an open probe does even if the ADC reads 40 mV low at the top of its range
-        // (ESP32-C6 datasheet: +-40 mV at 12 dB attenuation).
-        assert!(3300.0 - 40.0 >= c.open_mv + 50.0);
+    fn thermocouple_design_points() {
+        let c = ThermocoupleConfig::default();
+        // Brew temperature with the board at 40 C: ~2.15 mV across the probe, ~41 uV/C, so the
+        // MCP3421's 2 uV LSB is ~0.05 C.
+        let uv = thermocouple_uv_for_c(&c, 93.0, 40.0);
+        assert!((uv - 2_160.0).abs() < 25.0, "{uv}");
+        assert!((celsius(thermocouple(&c, uv.round() as i32, 40.0)) - 93.0).abs() < 0.06);
+        // The hottest the boiler can get (thermal fuse, 184 C) against a cold board stays far
+        // below the open threshold; the open probe's ~90 mV is far above it.
+        assert!(thermocouple_uv_for_c(&c, 184.0, 0.0) < 0.6 * c.open_uv);
+        assert!(90_000.0 > 3.0 * c.open_uv);
+        // A cold boiler with a warm board (the case after a long steam session): EMF slightly
+        // negative, never near the reversed threshold. A reversed probe at brew temperature is.
+        assert!(thermocouple_uv_for_c(&c, 20.0, 45.0) > 0.75 * c.reversed_uv);
+        assert!(-thermocouple_uv_for_c(&c, 93.0, 40.0) < c.reversed_uv);
     }
 
     #[test]
-    fn ntc_round_trip_beta_and_calibration() {
-        let mut c = NtcConfig::default();
-        for t in [10.0f32, 25.0, 60.0, 93.0, 120.0, 145.0, 160.0] {
-            let mv = ntc_mv_for_c(&c, t);
-            let back = celsius(ntc(&c, mv.round() as u16));
-            // 1 mV of quantisation is < 0.1 C anywhere in the working range.
-            assert!((back - t).abs() < 0.12, "{t} -> {mv} -> {back}");
+    fn thermocouple_round_trip_and_calibration() {
+        let mut c = ThermocoupleConfig::default();
+        for cj in [10.0f32, 25.0, 45.0, 70.0] {
+            // boiler from 20 C under the board (cold boiler, warm board) up to steam
+            for t in [10.0f32, 25.0, 60.0, 93.0, 120.0, 145.0, 170.0].into_iter().filter(|&t| t >= cj - 20.0) {
+                let uv = thermocouple_uv_for_c(&c, t, cj);
+                let back = celsius(thermocouple(&c, uv.round() as i32, cj));
+                assert!((back - t).abs() < 0.08, "{t} @ cj {cj} -> {uv} -> {back}");
+            }
         }
         c.cal_gain = 1.012;
         c.cal_offset_c = -1.4;
         for t in [20.0f32, 93.0, 140.0] {
-            let back = celsius(ntc(&c, ntc_mv_for_c(&c, t).round() as u16));
-            assert!((back - t).abs() < 0.12, "{t} -> {back}");
+            let back = celsius(thermocouple(&c, thermocouple_uv_for_c(&c, t, 35.0).round() as i32, 35.0));
+            assert!((back - t).abs() < 0.06, "{t} -> {back}");
         }
     }
 
     #[test]
-    fn ntc_steinhart_hart_matches_beta() {
-        // S-H fitted to the beta curve at 25/90/150 C must agree in between.
-        let beta = NtcConfig::default();
-        let pts = [25.0f32, 90.0, 150.0].map(|t| {
-            let r = ntc_ohms(&beta, ntc_mv_for_c(&beta, t));
-            (logf(r) as f64, 1.0 / (t as f64 + KELVIN as f64))
-        });
-        // Solve the 3x3 system for A, B, C (Cramer's rule, f64).
-        let m = pts.map(|(l, _)| [1.0, l, l * l * l]);
-        let y = pts.map(|(_, y)| y);
-        let det = |m: [[f64; 3]; 3]| {
-            m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
-                - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
-                + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
-        };
-        let d = det(m);
-        let coef: [f32; 3] = core::array::from_fn(|k| {
-            let mut mk = m;
-            for i in 0..3 {
-                mk[i][k] = y[i];
-            }
-            (det(mk) / d) as f32
-        });
-        let sh = NtcConfig {
-            steinhart_hart: Some(coef),
-            ..NtcConfig::default()
-        };
-        for t in [40.0f32, 95.0, 130.0] {
-            let mv = ntc_mv_for_c(&beta, t);
-            let a = celsius(ntc(&beta, mv as u16));
-            let b = celsius(ntc(&sh, mv as u16));
-            assert!((a - b).abs() < 0.3, "{t}: beta {a} vs S-H {b}");
-            assert!((ntc_mv_for_c(&sh, t) - mv).abs() < 10.0);
-        }
-    }
-
-    #[test]
-    fn ntc_faults() {
-        let c = NtcConfig::default();
-        assert_eq!(ntc(&c, 3300), NtcReading::Open);
-        assert_eq!(ntc(&c, 3290), NtcReading::Open);
-        assert_eq!(ntc(&c, 0), NtcReading::Short);
-        assert_eq!(ntc(&c, 40), NtcReading::Short);
-        assert!(matches!(ntc(&c, 1650), NtcReading::Celsius(_)));
+    fn thermocouple_faults() {
+        let c = ThermocoupleConfig::default();
+        assert_eq!(thermocouple(&c, 90_000, 30.0), TcReading::Open);
+        assert_eq!(thermocouple(&c, 15_000, 30.0), TcReading::Open);
+        assert_eq!(thermocouple(&c, -2_100, 30.0), TcReading::Reversed);
+        // a shorted probe reads 0 uV: the board's own temperature, a valid-looking reading that
+        // only the heater-ineffective check can catch
+        assert!((celsius(thermocouple(&c, 0, 38.0)) - 38.0).abs() < 0.08);
     }
 
     #[test]
     fn pressure_decoding() {
         let c = PressureSensorConfig::default();
-        // 0.5 V -> 0 bar, 4.5 V -> 16 bar (1.6 MPa), through the 100/147 divider.
+        // 0.5 V -> 0 bar, 4.5 V -> 12 bar (1.2 MPa), through the 100/147 divider.
         assert!((pressure_to_mv(&c, 0.0, 0.0) - 340.1).abs() < 0.1);
-        assert!((pressure_to_mv(&c, 16.0, 0.0) - 3061.2).abs() < 0.1);
+        assert!((pressure_to_mv(&c, 12.0, 0.0) - 3061.2).abs() < 0.1);
         let PressureReading::Bar(b) = pressure(&c, 3061, 0.0) else {
             panic!()
         };
-        assert!((b - 16.0).abs() < 0.01);
-        // 1 mV at the pin is ~6.3 mbar.
+        assert!((b - 12.0).abs() < 0.01);
+        // 1 mV at the pin is ~4.4 mbar.
         for bar in [0.0f32, 2.5, 9.0, 12.0] {
             let mv = pressure_to_mv(&c, bar, 0.0).round() as u16;
             let PressureReading::Bar(b) = pressure(&c, mv, 0.0) else {

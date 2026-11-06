@@ -2,13 +2,14 @@
 //!
 //! Everything the engine knows about the outside world arrives in a [`SensorFrame`],
 //! and everything it does to the world leaves in an [`ActuatorFrame`]. Sensor values
-//! are carried as calibrated ADC millivolts at the MCU pin (the ESP32-C6 ADC1 with
-//! eFuse curve calibration), not engineering units, so the NTC and pressure models in
-//! the engine are exercised identically whether the frame came from real silicon or
-//! from the emulator.
+//! are carried as the raw quantities the board measures, not engineering units: the
+//! thermocouple EMF from the MCP3421 (microvolts), the cold-junction temperature from the
+//! TMP117, and the pressure transducer as calibrated ADC1 millivolts at the MCU pin. The
+//! type-K conversion, cold-junction compensation and pressure models in the engine are
+//! then exercised identically whether the frame came from real silicon or the emulator.
 //!
 //! Timing contract: the engine is ticked once per **mains cycle** (1/60 s or 1/50 s),
-//! timed by the MCU crystal. There is no zero-cross detector: the MOC3063 opto-triacs
+//! timed by the MCU crystal. There is no zero-cross detector: the zero-cross opto-triacs
 //! only fire a triac at a zero crossing, so an output raised at any point of a cycle
 //! takes effect at the next crossing and an output dropped stops at the next current
 //! zero. Firmware applies the decision for cycle `k` at the start of cycle `k + 1`.
@@ -21,6 +22,7 @@
 
 #![no_std]
 
+pub mod typek;
 pub mod wire;
 
 /// Bit flags for [`SensorFrame::inputs`].
@@ -46,8 +48,14 @@ pub struct SensorFrame {
     pub cycle: u32,
     /// Crystal time of this tick, microseconds: `t0 + round(cycle * period)`.
     pub t_us: u64,
-    /// NTC divider node, millivolts (oversampled average over the cycle).
-    pub ntc_mv: u16,
+    /// Thermocouple EMF across the MCP3421's inputs, microvolts (hot junction against the
+    /// cold junction at the board's socket). `Some` only on the tick a fresh conversion lands:
+    /// the ADC makes 3.75 conversions a second (18 bit), so about every 16th tick at 60 Hz.
+    /// `None` on the ticks between, and while the ADC isn't answering.
+    pub tc_uv: Option<i32>,
+    /// Cold junction (TMP117 beside the thermocouple socket), centi-degrees C. `Some` on the tick
+    /// a fresh reading lands; `None` otherwise, and while the sensor isn't answering.
+    pub cj_cc: Option<i16>,
     /// Pressure transducer after the 10k/20k divider, millivolts.
     pub pressure_mv: u16,
     /// Scale reading in milligrams. Only meaningful when [`input::SCALE_OK`] is set.
@@ -157,10 +165,12 @@ pub fn panel_leds(state: EngineState, faults: u16, temp_c: f32, setpoint_c: f32,
 
 /// Fault codes. Stored as a bitmask so several can be active at once.
 pub mod fault {
-    /// NTC node near the 3.3 V rail: thermistor or its wiring open.
-    pub const NTC_OPEN: u16 = 1 << 0;
-    /// NTC node near ground: thermistor or its wiring shorted.
-    pub const NTC_SHORT: u16 = 1 << 1;
+    /// Thermocouple EMF far over anything the boiler can make: probe or its wiring open (the
+    /// board's 10 MOhm bias drives an open input to ~90 mV).
+    pub const PROBE_OPEN: u16 = 1 << 0;
+    /// Thermocouple EMF well negative: the probe reads far colder than the board, so its two
+    /// wires are swapped in the plug.
+    pub const PROBE_REVERSED: u16 = 1 << 1;
     pub const OVER_TEMP: u16 = 1 << 2;
     pub const TEMP_IMPLAUSIBLE: u16 = 1 << 3;
     pub const PRESSURE_SENSOR: u16 = 1 << 4;
@@ -168,10 +178,17 @@ pub mod fault {
     pub const HEATER_INEFFECTIVE: u16 = 1 << 6;
     pub const NO_WATER: u16 = 1 << 7;
     pub const TEMP_RUNAWAY: u16 = 1 << 8;
+    /// No thermocouple conversion arriving: the MCP3421 isn't answering on I2C.
+    pub const TC_ADC: u16 = 1 << 9;
+    /// Cold-junction sensor (TMP117) missing, or reading outside what a board inside the
+    /// machine can be: without it the thermocouple can't be converted.
+    pub const COLD_JUNCTION: u16 = 1 << 10;
+    /// Every fault that leaves the engine without a trustworthy boiler temperature.
+    pub const TEMP_SENSOR: u16 = PROBE_OPEN | PROBE_REVERSED | TC_ADC | COLD_JUNCTION;
 
-    pub const NAMES: [(u16, &str); 9] = [
-        (NTC_OPEN, "ntc_open"),
-        (NTC_SHORT, "ntc_short"),
+    pub const NAMES: [(u16, &str); 11] = [
+        (PROBE_OPEN, "probe_open"),
+        (PROBE_REVERSED, "probe_reversed"),
         (OVER_TEMP, "over_temp"),
         (TEMP_IMPLAUSIBLE, "temp_implausible"),
         (PRESSURE_SENSOR, "pressure_sensor"),
@@ -179,6 +196,8 @@ pub mod fault {
         (HEATER_INEFFECTIVE, "heater_ineffective"),
         (NO_WATER, "no_water"),
         (TEMP_RUNAWAY, "temp_runaway"),
+        (TC_ADC, "tc_adc"),
+        (COLD_JUNCTION, "cold_junction"),
     ];
 
     pub fn from_name(s: &str) -> Option<u16> {

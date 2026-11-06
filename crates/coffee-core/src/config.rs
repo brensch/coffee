@@ -37,7 +37,7 @@ pub struct EngineConfig {
     /// Pressure loop: output is a *flow command* in ml/s, linearised through the pump
     /// model into a stroke duty.
     pub pressure_pid: PidGains,
-    pub ntc: NtcConfig,
+    pub thermocouple: ThermocoupleConfig,
     pub pressure_sensor: PressureSensorConfig,
     pub pump: PumpConfig,
     pub safety: SafetyConfig,
@@ -116,63 +116,59 @@ impl Default for PidGains {
     }
 }
 
-/// Boiler NTC: thermistor from the ADC node to GND, precision reference resistor
-/// from 3.3 V to the node. The engine sees the node voltage in millivolts.
+/// Boiler thermocouple: an ungrounded K-type, M4 screw-in probe in the brew-thermostat seat, its own
+/// wires crimped into the board's GH socket (J5). MCP3421 (PGA 8, 18 bit, 2 uV/LSB, 3.75 SPS) reads
+/// the EMF; a TMP117 at the socket reads the cold junction. The engine sees both raw.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub struct NtcConfig {
-    /// Reference (top) resistor, ohms. 4.7k 1 %: close to the probe's 3.9k at 93 C, the most mV per degree there.
-    pub r_ref_ohm: f32,
-    /// Divider supply as seen by the ADC, millivolts.
-    pub v_ref_mv: f32,
-    /// Beta model: resistance at 25 C and B constant. Default: Molex 218537-3919, 50k +-1 %, B25/95 = 4109
-    /// fitted to Molex's R-T table (sales drawing sheet 2): 0 error at 25 and 95 C, +2.0 C at 140 C.
-    pub r25_ohm: f32,
-    pub beta: f32,
-    /// Optional Steinhart-Hart coefficients `[A, B, C]` (1/T = A + B ln R + C ln^3 R,
-    /// T in kelvin). When set they replace the beta model. Default: fitted to the Molex 218537-3919 table at
-    /// 25, 100 and 140 C; within ~1 C of the table from 25 to 200 C (0.6 C at 80 C).
-    pub steinhart_hart: Option<[f32; 3]>,
-    /// Two-point calibration applied after the model: `T = gain * T_model + offset`.
+pub struct ThermocoupleConfig {
+    /// Measured EMF / true EMF from the input network: the 1k + 1k filter resistors against the
+    /// MCP3421's differential input impedance (2.25 MOhm / PGA, typical: 281k at PGA 8) => 0.993.
+    pub input_gain: f32,
+    /// Two-point calibration applied after the type-K conversion: `T = gain * T_tc + offset`.
     /// See docs/CALIBRATION.md (room temperature + boiling water).
     pub cal_gain: f32,
     pub cal_offset_c: f32,
-    /// Node above this => open thermistor / broken wire (the node is pulled to the 3.3 V rail).
-    /// An open probe reads the rail; the ESP32-C6 ADC is only specified to +-40 mV near the top of
-    /// its 12 dB range (datasheet Table 5-6), so the threshold sits 100 mV below the rail. That also
-    /// flags a boiler colder than ~2 C (6 C is 3178 mV for the 50k Molex probe with 4.7k): a fault, heater
-    /// off, which is the safe way to be wrong. A machine indoors never starts that cold.
-    pub open_mv: f32,
-    /// A reading colder than this is treated as a fault too (heater off): a second net under
-    /// `open_mv` for an open probe the ADC reads low. A boiler indoors never starts this cold.
-    pub min_c: f32,
-    /// Node below this => shorted thermistor / wire to GND. 100 mV is ~230 C,
-    /// far above anything the boiler can reach.
-    pub short_mv: f32,
+    /// EMF above this => probe or wire open. Open, the board's 10 MOhm bias drives the input to
+    /// ~90 mV; a K-type at the boiler's worst (the 184 C thermal fuse) makes ~7.5 mV against the board.
+    pub open_uv: f32,
+    /// EMF below this => probe wires swapped in the plug (a reversed probe reads its rise above
+    /// the board as a fall). -1.5 mV is ~37 C colder than the board: a cold boiler under a board
+    /// still warm from the last session gets to ~-1 mV (20 C against 45 C), nothing gets further.
+    /// A reversed probe crosses it once the boiler is ~37 C over the board, well before brew heat.
+    pub reversed_uv: f32,
+    /// No fresh conversion for this long => TC_ADC (the ADC converts every ~0.27 s).
+    pub stale_s: f32,
+    /// Cold-junction reading older than this => COLD_JUNCTION.
+    pub cj_stale_s: f32,
+    /// Cold-junction readings outside this range => COLD_JUNCTION: the board sits inside the
+    /// machine, between a cold kitchen and a hot case.
+    pub cj_min_c: f32,
+    pub cj_max_c: f32,
     /// Measurement filter time constant (s).
     pub filter_tau_s: f32,
-    /// Probe time constant against the boiler body (s): control compensates this lag. Molex rates
-    /// the 218537-3919 at 15 s in water; refine it from a heat-up log (`coffee-emu fit`).
+    /// Probe time constant against the boiler body (s): control compensates this lag. An M4
+    /// screw-in junction threaded into the boiler responds in a few seconds; refine it from a
+    /// heat-up log (`coffee-emu fit`).
     pub probe_lag_s: f32,
     /// A fault reading must persist this long before a sensor fault is raised.
     pub fault_debounce_s: f32,
 }
 
-impl Default for NtcConfig {
+impl Default for ThermocoupleConfig {
     fn default() -> Self {
         Self {
-            r_ref_ohm: 4700.0,
-            v_ref_mv: 3300.0,
-            r25_ohm: 50_000.0,
-            beta: 4109.0,   // Molex 218537-3919 (docs/BUY.md), B25/95 from its R-T table
-            steinhart_hart: Some([8.965973e-4, 2.145003e-4, 1.078228e-7]),
+            input_gain: 0.993,
             cal_gain: 1.0,
             cal_offset_c: 0.0,
-            open_mv: 3200.0,
-            min_c: 3.0,
-            short_mv: 100.0,
+            open_uv: 15_000.0,
+            reversed_uv: -1_500.0,
+            stale_s: 1.0,
+            cj_stale_s: 2.0,
+            cj_min_c: -10.0,
+            cj_max_c: 90.0,
             filter_tau_s: 0.3,
-            probe_lag_s: 15.0,
+            probe_lag_s: 2.5,
             fault_debounce_s: 0.5,
         }
     }
@@ -182,7 +178,7 @@ impl Default for NtcConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct PressureSensorConfig {
-    /// Transducer full scale (bar). 1.6 MPa part => 16 bar.
+    /// Transducer full scale (bar). Gaggiuino's 0-1.2 MPa part => 12 bar.
     pub range_bar: f32,
     /// Output at 0 bar and at full scale, at the transducer (millivolts).
     pub v_zero_mv: f32,
@@ -209,7 +205,7 @@ pub struct PressureSensorConfig {
 impl Default for PressureSensorConfig {
     fn default() -> Self {
         Self {
-            range_bar: 16.0, // GaggiMate 0-1.6 MPa sensor (BUY.md 10b)
+            range_bar: 12.0, // Gaggiuino's 0-1.2 MPa transducer (BUY.md 7)
             v_zero_mv: 500.0,
             v_full_mv: 4500.0,
             divider: 100.0 / 147.0,
@@ -315,7 +311,9 @@ impl Default for SafetyConfig {
     fn default() -> Self {
         Self {
             max_temp_c: 165.0,
-            max_pressure_bar: 13.0,
+            // under the 12 bar full scale (a reading pinned at full scale is still a trip) and over
+            // the 120 V machine's 9 bar OPV plus its ~1.5 bar of overshoot on a blind basket
+            max_pressure_bar: 11.0,
             over_pressure_s: 0.3,
             max_temp_step_c: 12.0,
             max_rejected_s: 1.5,
@@ -370,7 +368,7 @@ impl Default for EngineConfig {
                 i_zone: f32::MAX,
                 i_max: 15.0,
             },
-            ntc: NtcConfig::default(),
+            thermocouple: ThermocoupleConfig::default(),
             pressure_sensor: PressureSensorConfig::default(),
             pump: PumpConfig::default(),
             safety: SafetyConfig::default(),
@@ -407,36 +405,20 @@ impl EngineConfig {
             [g.kp, g.ki, g.kd, g.d_tau_s, g.i_max].iter().all(|v| r(*v, 0.0, 1e4)) && g.i_zone >= 0.0 // i_zone may be f32::MAX (always on)
         }
         let s = &self.safety;
-        let n = &self.ntc;
+        let n = &self.thermocouple;
         let t = &self.temp_pid;
         let p = &self.pressure_sensor;
-        // A Steinhart-Hart model replaces the beta model: it must agree with it (the probe's own
-        // r25/beta, which are range-checked) within 5 C over the working range.
-        let sh_ok = match n.steinhart_hart {
-            None => true,
-            Some(k) => {
-                let beta = NtcConfig { steinhart_hart: None, ..n.clone() };
-                k.iter().all(|v| v.is_finite())
-                    && [25.0f32, 93.0, 140.0].iter().all(|&c| {
-                        let ohms = crate::sensors::ntc_ohms(&beta, crate::sensors::ntc_mv_for_c(&beta, c));
-                        r(crate::sensors::ntc_model_c(n, ohms) - crate::sensors::ntc_model_c(&beta, ohms), -5.0, 5.0)
-                    })
-            }
-        };
-        // The whole reading chain (model, divider and calibration together) must stay within 5 C
-        // of the fitted probe on this board: Molex 218537-3919 under a 4.7k reference. Each field
-        // range-checked alone still allowed combinations that read 93 C at a real 174 C, which
-        // would push OVER_TEMP past the thermal fuse.
-        let probe_ok = {
-            let real = NtcConfig { v_ref_mv: n.v_ref_mv, ..NtcConfig::default() };
-            [25.0f32, 93.0, 140.0, 165.0].iter().all(|&c| {
-                let mv = crate::sensors::ntc_mv_for_c(&real, c);
-                let read = n.cal_gain * crate::sensors::ntc_model_c(n, crate::sensors::ntc_ohms(n, mv)) + n.cal_offset_c;
-                r(read - c, -5.0, 5.0)
-            })
-        };
+        // The whole reading chain (input gain and calibration together) must stay within 5 C of the
+        // uncalibrated type-K reading over the working range: each field range-checked alone still
+        // allows combinations far enough off to push OVER_TEMP past the thermal fuse.
+        let probe_ok = [25.0f32, 93.0, 140.0, 165.0].iter().all(|&c| {
+            let cj = 40.0;
+            let emf_uv = ((coffee_io::typek::emf_mv(c as f64) - coffee_io::typek::emf_mv(cj)) * 993.0) as f32;
+            let read = crate::sensors::thermocouple_c(n, emf_uv, cj as f32);
+            r(read - c, -5.0, 5.0)
+        });
         let checks: &[(bool, &'static str)] = &[
-            (probe_ok, "ntc settings read more than 5 C off the board's probe (Molex 218537-3919, 4.7k)"),
+            (probe_ok, "thermocouple settings read more than 5 C off the uncalibrated type-K reading"),
             (self.mains_hz == 60.0, "mains_hz must be 60 (US 120 V / 60 Hz only)"),
             (r(self.brew_temp_c, 60.0, 105.0), "brew_temp_c out of 60..105"),
             // the stock steam thermostat opens at about 145 C: a higher setpoint is never reached
@@ -447,6 +429,8 @@ impl EngineConfig {
             // above the steam thermostat (~145 C), below the thermal fuse (184 C)
             (r(s.max_temp_c, 100.0, 175.0), "safety.max_temp_c out of 100..175"),
             (r(s.max_pressure_bar, 1.0, 15.0), "safety.max_pressure_bar out of 1..15"),
+            // a trip at or over full scale could never fire: the reading clips there
+            (s.max_pressure_bar < p.range_bar, "safety.max_pressure_bar must be under pressure_sensor.range_bar"),
             (r(s.over_pressure_s, 0.0, 5.0), "safety.over_pressure_s out of 0..5"),
             (r(s.heater_ineffective_s, 30.0, 300.0), "safety.heater_ineffective_s out of 30..300"),
             (r(s.heater_check_c_max_j_k, 800.0, 10000.0), "safety.heater_check_c_max_j_k out of 800..10000"),
@@ -455,15 +439,13 @@ impl EngineConfig {
             (r(s.max_temp_step_c, 0.5, 30.0) && r(s.max_rejected_s, 0.1, 10.0), "safety glitch filter out of range"),
             (r(s.max_brew_s, 5.0, 300.0), "safety.max_brew_s out of 5..300"),
             (r(s.no_water_s, 1.0, 30.0) && r(s.no_water_bar, 0.0, 2.0), "safety no-water check out of range"),
-            (r(n.open_mv, 3000.0, 3250.0) && r(n.short_mv, 20.0, 300.0), "ntc fault thresholds out of range"),
-            (r(n.min_c, -5.0, 15.0), "ntc.min_c out of -5..15"),
-            (r(n.fault_debounce_s, 0.05, 2.0), "ntc.fault_debounce_s out of 0.05..2"),
-            (r(n.filter_tau_s, 0.0, 3.0), "ntc.filter_tau_s out of 0..3"),
-            (r(n.probe_lag_s, 0.0, 60.0), "ntc.probe_lag_s out of 0..60"),
-            (r(n.cal_gain, 0.8, 1.2) && r(n.cal_offset_c, -15.0, 15.0), "ntc calibration out of range"),
-            (r(n.beta, 3000.0, 5000.0) && r(n.r25_ohm, 10e3, 1e6), "ntc model out of range"),
-            (sh_ok, "ntc.steinhart_hart disagrees with the beta model by > 5 C"),
-            (r(n.r_ref_ohm, 1e3, 1e5) && r(n.v_ref_mv, 3000.0, 3600.0), "ntc divider out of range"),
+            (r(n.open_uv, 9_000.0, 50_000.0) && r(n.reversed_uv, -3_000.0, -300.0), "thermocouple fault thresholds out of range"),
+            (r(n.stale_s, 0.5, 3.0) && r(n.cj_stale_s, 0.5, 5.0), "thermocouple stale timeouts out of 0.5..3 / 0.5..5 s"),
+            (r(n.cj_min_c, -20.0, 10.0) && r(n.cj_max_c, 60.0, 100.0), "thermocouple cold-junction limits out of range"),
+            (r(n.fault_debounce_s, 0.05, 2.0), "thermocouple.fault_debounce_s out of 0.05..2"),
+            (r(n.filter_tau_s, 0.0, 3.0), "thermocouple.filter_tau_s out of 0..3"),
+            (r(n.probe_lag_s, 0.0, 60.0), "thermocouple.probe_lag_s out of 0..60"),
+            (r(n.cal_gain, 0.8, 1.2) && r(n.cal_offset_c, -15.0, 15.0) && r(n.input_gain, 0.9, 1.05), "thermocouple calibration out of range"),
             // out_min must stay 0: anything else forces heat whatever the reading says.
             (t.out_min == 0.0 && r(t.out_max, 0.3, 1.0), "temp_pid: out_min must be 0, out_max 0.3..1"),
             (gains(t) && gains(&self.pressure_pid), "pid gains must be finite, 0..1e4"),
@@ -516,10 +498,10 @@ mod check_tests {
     #[test]
     fn check_rejects_unsafe_fields() {
         let mut c = EngineConfig::default();
-        c.ntc.fault_debounce_s = 1e6;
+        c.thermocouple.fault_debounce_s = 1e6;
         assert!(c.check().is_err());
         let mut c = EngineConfig::default();
-        c.ntc.steinhart_hart = Some([1e-3, 2e-4, 1e-7]); // a curve far off the probe's
+        c.thermocouple.open_uv = 1e6; // an open probe would never be seen
         assert!(c.check().is_err());
         let mut c = EngineConfig::default();
         c.temp_pid.kp = f32::NAN;
@@ -541,21 +523,20 @@ mod check_tests {
         let mut c = EngineConfig::default();
         c.temp_pid.out_min = 1.0;
         assert!(c.check().is_err());
-        // review round 6: each NTC field in range, together reading 93 C at a real ~174 C
+        // review round 6: each field in range, together reading far low (OVER_TEMP past the fuse)
         let mut c = EngineConfig::default();
-        c.ntc.r25_ohm = 30e3;
-        c.ntc.beta = 5000.0;
-        c.ntc.r_ref_ohm = 6000.0;
-        c.ntc.cal_gain = 0.8;
-        c.ntc.steinhart_hart = None;
+        c.thermocouple.input_gain = 1.05;
+        c.thermocouple.cal_gain = 0.8;
+        c.thermocouple.cal_offset_c = -10.0;
         assert!(c.check().is_err());
+        // the over-pressure trip must sit under the transducer's full scale
         let mut c = EngineConfig::default();
-        c.ntc.r_ref_ohm = 1e5;
+        c.safety.max_pressure_bar = 12.0;
         assert!(c.check().is_err());
         // a real two-point calibration (a degree or two) is still accepted
         let mut c = EngineConfig::default();
-        c.ntc.cal_gain = 1.02;
-        c.ntc.cal_offset_c = -1.5;
+        c.thermocouple.cal_gain = 1.02;
+        c.thermocouple.cal_offset_c = -1.5;
         c.check().unwrap();
     }
 }

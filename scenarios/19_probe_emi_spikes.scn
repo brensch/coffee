@@ -1,9 +1,9 @@
-name "EMI bursts on the NTC reading are rejected"
+name "EMI bursts on the thermocouple reading are rejected"
 machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 16min
-model thermistor.noise_mv = 3
+model thermocouple.noise_uv = 6
 
-when engine.state == ready for 20s as warm: set ntc.spikes = 0.03
+when engine.state == ready for 20s as warm: set probe.spikes = 0.03
 
 expect never engine.state == fault
 expect always engine.temp > 91 and engine.temp < 95 from warm+30s

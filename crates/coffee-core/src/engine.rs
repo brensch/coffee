@@ -4,7 +4,7 @@ use crate::config::EngineConfig;
 use crate::control::{Lpf, Pid, SigmaDelta};
 use crate::profile::{Observed, Profile, Target};
 use crate::pump;
-use crate::sensors::{self, NtcReading, PressureReading};
+use crate::sensors::{self, PressureReading, TcReading};
 use coffee_io::{ActuatorFrame, EngineState, EngineStatus, SensorFrame, fault, input};
 
 /// Water specific heat, J/(g K).
@@ -16,7 +16,10 @@ const LATCHING: u16 = fault::OVER_TEMP
     | fault::TEMP_RUNAWAY
     | fault::HEATER_INEFFECTIVE
     | fault::TEMP_IMPLAUSIBLE
-    | fault::NO_WATER;
+    | fault::NO_WATER
+    // a swapped plug never fixes itself, and a reversed reading goes "good" again as the boiler
+    // cools back towards the board, which would heat it again: latch until cleared
+    | fault::PROBE_REVERSED;
 
 /// Requests from the UI / API (front-panel switches arrive in the sensor frame).
 #[derive(Clone, Debug)]
@@ -88,7 +91,16 @@ pub struct Engine {
     temp: Lpf,
     temp_rate: Lpf,
     temp_prev: Option<f32>,
-    ntc_bad_since: Option<f64>,
+    /// Time of the last thermocouple conversion the engine used (the ADC converts at 3.75 SPS,
+    /// so the temperature filter and rate run on conversions, not ticks).
+    tc_last_t: Option<f64>,
+    /// Last in-range cold-junction reading, deg C, and when it arrived.
+    cj: Option<(f32, f64)>,
+    probe_bad_since: Option<f64>,
+    /// The last three valid conversions (newest last), for the median-of-3.
+    tc_recent: [Option<f32>; 3],
+    /// Time between the last two conversions (s): the median's delay, compensated like the probe lag.
+    tc_period: f32,
     rejected_since: Option<f64>,
 
     // pressure
@@ -173,7 +185,11 @@ impl Engine {
             temp: Lpf::default(),
             temp_rate: Lpf::default(),
             temp_prev: None,
-            ntc_bad_since: None,
+            tc_last_t: None,
+            cj: None,
+            probe_bad_since: None,
+            tc_recent: [None; 3],
+            tc_period: 0.0,
             rejected_since: None,
             pressure_ctl: Lpf::default(),
             pressure_disp: Lpf::default(),
@@ -373,7 +389,7 @@ impl Engine {
         self.t = s.t_us as f64 * 1e-6;
         self.boot_t.get_or_insert(self.t);
 
-        self.update_temperature(s.ntc_mv, dt);
+        self.update_temperature(s);
         let p = self.update_pressure(s.pressure_mv, dt);
         self.update_weight(s, dt);
         self.update_flow(p, dt);
@@ -456,28 +472,72 @@ impl Engine {
         }
     }
 
-    fn update_temperature(&mut self, mv: u16, dt: f32) {
+    /// Thermocouple and cold junction -> filtered boiler temperature, plus the four ways the
+    /// reading can be lost (open, reversed, no conversions, no cold junction). Runs on every tick
+    /// for the staleness checks; the filter and rate advance only on a fresh conversion.
+    fn update_temperature(&mut self, s: &SensorFrame) {
         let now = self.t;
-        let t = match sensors::ntc(&self.cfg.ntc, mv) {
-            NtcReading::Celsius(t) => t,
+        let c = self.cfg.thermocouple.clone();
+        let since_boot = now - self.boot_t.unwrap_or(now);
+        // Cold junction: only in-range readings count, so a garbled I2C read is dropped and a
+        // sensor that keeps reading nonsense goes stale like a missing one.
+        if let Some(cc) = s.cj_cc {
+            let cj = cc as f32 / 100.0;
+            if (c.cj_min_c..=c.cj_max_c).contains(&cj) {
+                self.cj = Some((cj, now));
+            }
+        }
+        let cj_age = self.cj.map_or(since_boot, |(_, at)| now - at);
+        let cj_lost = cj_age > c.cj_stale_s as f64;
+        let tc_age = self.tc_last_t.map_or(since_boot, |at| now - at);
+        let adc_lost = s.tc_uv.is_none() && tc_age > c.stale_s as f64;
+        self.set_fault(fault::COLD_JUNCTION, cj_lost);
+        self.set_fault(fault::TC_ADC, adc_lost);
+        if cj_lost || adc_lost {
+            self.temp.reset();
+            self.temp_prev = None;
+            self.tc_recent = [None; 3];
+            if adc_lost {
+                self.tc_last_t = None;
+            }
+        }
+        let (Some(uv), Some((cj, _))) = (s.tc_uv, self.cj) else {
+            return;
+        };
+        if cj_lost {
+            return;
+        }
+        let dt = self.tc_last_t.map_or(0.0, |at| (now - at) as f32);
+        self.tc_last_t = Some(now);
+        let t = match sensors::thermocouple(&c, uv, cj) {
+            TcReading::Celsius(t) => t,
             bad => {
-                let since = *self.ntc_bad_since.get_or_insert(now);
-                if now - since >= self.cfg.ntc.fault_debounce_s as f64 {
-                    let bit = if bad == NtcReading::Open {
-                        fault::NTC_OPEN
-                    } else {
-                        fault::NTC_SHORT
-                    };
+                let since = *self.probe_bad_since.get_or_insert(now);
+                if now - since >= c.fault_debounce_s as f64 {
+                    let bit = if bad == TcReading::Open { fault::PROBE_OPEN } else { fault::PROBE_REVERSED };
                     self.set_fault(bit, true);
                     self.temp.reset();
                     self.temp_prev = None;
+                    self.tc_recent = [None; 3];
                 }
                 return;
             }
         };
-        self.ntc_bad_since = None;
-        self.set_fault(fault::NTC_OPEN, false);
-        self.set_fault(fault::NTC_SHORT, false);
+        self.probe_bad_since = None;
+        self.set_fault(fault::PROBE_OPEN, false);
+        self.set_fault(fault::PROBE_REVERSED, false);
+        // Median of the last three conversions: a single corrupted conversion is gone whatever its
+        // size. Each one averages 267 ms, so one EMI burst that lands in it biases a whole quarter
+        // second, and the heater duty (clipped at 0) turns symmetric errors into net heat. Costs
+        // one conversion of delay, against the probe's own ~2.5 s lag.
+        self.tc_recent = [self.tc_recent[1], self.tc_recent[2], Some(t)];
+        if dt > 0.0 && dt < 1.0 {
+            self.tc_period = dt;
+        }
+        let t = match self.tc_recent {
+            [Some(a), Some(b), Some(c)] => a.max(b).min(a.min(b).max(c)),
+            _ => t,
+        };
         if let Some(f) = self.temp.value {
             if (t - f).abs() > self.cfg.safety.max_temp_step_c {
                 let since = *self.rejected_since.get_or_insert(now);
@@ -494,7 +554,7 @@ impl Engine {
                 self.rejected_since = None;
             }
         }
-        let v = self.temp.update(t, dt, self.cfg.ntc.filter_tau_s);
+        let v = self.temp.update(t, dt, self.cfg.thermocouple.filter_tau_s);
         if let Some(prev) = self.temp_prev {
             if dt > 0.0 {
                 let r = (v - prev) / dt;
@@ -511,12 +571,13 @@ impl Engine {
     /// temperature moves. Safety checks use the plain reading.
     fn body_temp(&self) -> f32 {
         // clamped: at most 5 C of lead, so a burst of noise can't swing the control much
-        let lead = self.cfg.ntc.probe_lag_s * self.temp_rate.get();
+        // the median-of-3 delays the reading by one more conversion: part of the lag too
+        let lead = (self.cfg.thermocouple.probe_lag_s + self.tc_period) * self.temp_rate.get();
         self.temp.get() + if lead.is_finite() { lead.clamp(-5.0, 5.0) } else { 0.0 }
     }
 
     fn temp_valid(&self) -> bool {
-        self.temp.value.is_some() && self.faults & (fault::NTC_OPEN | fault::NTC_SHORT) == 0
+        self.temp.value.is_some() && self.faults & fault::TEMP_SENSOR == 0
     }
 
     /// Power-on pressure self-zero. Transducers drift a few tens of mbar with
@@ -1162,7 +1223,10 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sensors::{ntc_mv_for_c, pressure_to_mv};
+    use crate::sensors::{pressure_to_mv, thermocouple_uv_for_c};
+
+    /// The board's temperature in these tests (cold junction).
+    const CJ_C: f32 = 35.0;
 
     fn frame(cfg: &EngineConfig, k: u32, temp_c: f32, nominal_bar: f32, inputs: u8) -> SensorFrame {
         // `nominal_bar` is what the uncalibrated transfer function would read.
@@ -1170,7 +1234,9 @@ mod tests {
         SensorFrame {
             cycle: k,
             t_us: (k as u64 * per_ns + 500) / 1000,
-            ntc_mv: ntc_mv_for_c(&cfg.ntc, temp_c).round() as u16,
+            // the MCP3421 converts at 3.75 SPS: a fresh reading every 16th tick at 60 Hz
+            tc_uv: (k % 16 == 0).then(|| thermocouple_uv_for_c(&cfg.thermocouple, temp_c, CJ_C).round() as i32),
+            cj_cc: (k % 16 == 0).then_some((CJ_C * 100.0) as i16),
             pressure_mv: pressure_to_mv(&cfg.pressure_sensor, nominal_bar, 0.0).round() as u16,
             scale_mg: 0,
             inputs,
@@ -1394,42 +1460,106 @@ mod tests {
         assert_eq!(e.pressure_zero(), 0.0);
     }
 
+    /// Ticks `e` from cycle `*k` for `secs`, with `f` editing each frame.
+    fn run(e: &mut Engine, cfg: &EngineConfig, k: &mut u32, secs: f32, temp: f32, f: impl Fn(&mut SensorFrame)) {
+        for _ in 0..(secs * cfg.mains_hz) as u32 {
+            let mut fr = frame(cfg, *k, temp, 0.0, 0);
+            f(&mut fr);
+            e.tick(&fr);
+            *k += 1;
+        }
+    }
+
     #[test]
-    fn ntc_faults_raise_after_debounce() {
+    fn probe_faults_raise_after_debounce() {
+        let cfg = EngineConfig::default();
+        let open = |fr: &mut SensorFrame| fr.tc_uv = fr.tc_uv.map(|_| 90_000);
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        run(&mut e, &cfg, &mut k, 1.0, 93.0, |_| {});
+        assert!(e.temp_valid());
+        // Under the 0.5 s debounce: no fault yet.
+        run(&mut e, &cfg, &mut k, 0.3, 93.0, open);
+        assert_eq!(e.faults() & fault::PROBE_OPEN, 0);
+        run(&mut e, &cfg, &mut k, 0.6, 93.0, open);
+        assert_ne!(e.faults() & fault::PROBE_OPEN, 0);
+        assert_eq!(e.state(), EngineState::Fault);
+        // fixed: clears on the next good conversion
+        run(&mut e, &cfg, &mut k, 0.5, 93.0, |_| {});
+        assert_eq!(e.faults() & fault::TEMP_SENSOR, 0);
+
+        // Reversed: the probe's rise above the board reads as a fall.
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        run(&mut e, &cfg, &mut k, 2.0, 93.0, |fr| fr.tc_uv = fr.tc_uv.map(|v| -v));
+        assert_eq!(e.faults() & fault::TEMP_SENSOR, fault::PROBE_REVERSED);
+    }
+
+    #[test]
+    fn single_conversion_spikes_never_reach_the_reading() {
         let cfg = EngineConfig::default();
         let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
         let mut k = 0;
-        for _ in 0..60 {
-            e.tick(&frame(&cfg, k, 93.0, 0.0, 0));
-            k += 1;
+        run(&mut e, &cfg, &mut k, 3.0, 93.0, |_| {});
+        let before = e.temp.get();
+        // every 4th conversion 10 C off (alternating sign): under the 12 C step filter
+        for i in 0..40 {
+            let spike = if i % 4 == 0 { if i % 8 == 0 { 10.0 } else { -10.0 } } else { 0.0 };
+            run(&mut e, &cfg, &mut k, 16.0 / cfg.mains_hz, 93.0 + spike, |_| {});
+            assert!((e.temp.get() - before).abs() < 0.05, "conversion {i}: {}", e.temp.get());
         }
-        let mut f = frame(&cfg, k, 93.0, 0.0, 0);
-        f.ntc_mv = 3300;
-        // Under the 0.5 s debounce: no fault yet.
-        for _ in 0..20 {
-            f.cycle = k;
-            f.t_us = frame(&cfg, k, 93.0, 0.0, 0).t_us;
-            assert_eq!(e.tick(&f).status.faults & fault::NTC_OPEN, 0);
-            k += 1;
-        }
-        for _ in 0..20 {
-            f.cycle = k;
-            f.t_us = frame(&cfg, k, 93.0, 0.0, 0).t_us;
-            e.tick(&f);
-            k += 1;
-        }
-        assert_ne!(e.faults() & fault::NTC_OPEN, 0);
-        assert_eq!(e.state(), EngineState::Fault);
-        // Shorted: the other bit.
-        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
-        for k in 0..60 {
-            let mut f = frame(&cfg, k, 93.0, 0.0, 0);
-            f.ntc_mv = 3;
-            e.tick(&f);
-        }
-        assert_eq!(
-            e.faults() & (fault::NTC_SHORT | fault::NTC_OPEN),
-            fault::NTC_SHORT
-        );
     }
+
+    #[test]
+    fn lost_adc_or_cold_junction_faults_and_recovers() {
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        run(&mut e, &cfg, &mut k, 2.0, 93.0, |_| {});
+        assert_eq!(e.faults(), 0);
+        // MCP3421 stops answering: within ~1 s the temperature is invalid, heater off.
+        run(&mut e, &cfg, &mut k, 0.8, 93.0, |fr| fr.tc_uv = None);
+        assert_eq!(e.faults() & fault::TC_ADC, 0, "the ADC's own 0.27 s period is not a fault");
+        run(&mut e, &cfg, &mut k, 0.5, 93.0, |fr| fr.tc_uv = None);
+        assert_ne!(e.faults() & fault::TC_ADC, 0);
+        assert!(!e.temp_valid());
+        let a = e.tick(&frame(&cfg, k, 93.0, 0.0, 0));
+        k += 1;
+        assert!(!a.heater);
+        run(&mut e, &cfg, &mut k, 0.6, 93.0, |_| {});
+        assert_eq!(e.faults() & fault::TC_ADC, 0);
+        assert!(e.temp_valid());
+        // TMP117 missing...
+        run(&mut e, &cfg, &mut k, 2.5, 93.0, |fr| fr.cj_cc = None);
+        assert_ne!(e.faults() & fault::COLD_JUNCTION, 0);
+        assert!(!e.temp_valid());
+        run(&mut e, &cfg, &mut k, 0.6, 93.0, |_| {});
+        assert_eq!(e.faults() & fault::COLD_JUNCTION, 0);
+        // ...or reading nonsense (120 C: no board inside the machine gets there)
+        run(&mut e, &cfg, &mut k, 2.5, 93.0, |fr| fr.cj_cc = fr.cj_cc.map(|_| 12_000));
+        assert_ne!(e.faults() & fault::COLD_JUNCTION, 0);
+    }
+
+    #[test]
+    fn shorted_probe_reads_the_board_and_heater_check_catches_it() {
+        // Leads shorted at the plug: 0 uV, i.e. the probe "is" at the board's 35 C forever. The
+        // PID runs flat out and the energy balance must flag it.
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        let hz = cfg.mains_hz as u32;
+        for _ in 0..(300 * hz) {
+            let mut fr = frame(&cfg, k, 0.0, 0.0, 0);
+            fr.tc_uv = fr.tc_uv.map(|_| 0);
+            e.tick(&fr);
+            k += 1;
+            if e.faults() & fault::HEATER_INEFFECTIVE != 0 {
+                break;
+            }
+        }
+        assert_ne!(e.faults() & fault::HEATER_INEFFECTIVE, 0, "not caught after {} s", k / hz);
+        // the check arms 90 s after the last water flow (boot counts as flow), then needs one window
+        assert!(k / hz <= 90 + cfg.safety.heater_ineffective_s as u32 + 5, "caught after {} s", k / hz);
+    }
+
 }

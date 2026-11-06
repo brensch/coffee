@@ -1,10 +1,12 @@
-name "NTC leads short together while ready"
+name "thermocouple plugged in reversed: caught before brew heat"
 machine "../models/gaggia_classic_pro_e24_120v.toml"
-duration 12min
+duration 10min
 
-when engine.state == ready for 20s as warm: set ntc.fault = short
+# Swapped wires from power-on: the probe's rise above the board reads as a fall, so the PID
+# heats harder. The EMF passes -1.5 mV (~37 C under the board) long before the boiler is hot.
+at 0s: set probe.fault = reversed
 
-expect eventually engine.faults has ntc_short from warm by warm+1s
-expect always heater.power == 0 from warm+1s
-expect always engine.state == fault from warm+1s
-expect always boiler.temp < 110
+expect eventually engine.faults has probe_reversed by 120s
+expect always heater.power == 0 from 125s
+expect always engine.state == fault from 125s
+expect always boiler.temp < 100

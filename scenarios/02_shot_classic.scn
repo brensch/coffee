@@ -18,6 +18,8 @@ expect at done+5s: cup.mass > 35g and cup.mass < 37.5g
 # tuning; they are only as true as thermal.* until fitted to real logs.
 expect always boiler.water_temp > 88.5 or puck.flow < 0.2 from warm+12s until done
 expect always brew.water_temp > 86 or puck.flow < 0.2 from warm+12s until done
-expect always boiler.water_temp < 95.5 from done until done+120s
+# v32: 95.7 (was 95.5): the thermocouple's median-of-3 (against single-conversion EMI) delays the
+# reading by one 0.27 s conversion, worth ~0.04 C of post-shot overshoot (peak 95.54 C).
+expect always boiler.water_temp < 95.7 from done until done+120s
 expect always hydraulics.pressure < 9.6 from warm+18s until done-1s
 expect never engine.state == fault

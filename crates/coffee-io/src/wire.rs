@@ -7,7 +7,7 @@
 
 use crate::{ActuatorFrame, EngineState, EngineStatus, SensorFrame};
 
-pub const PROTOCOL_VERSION: u16 = 2;
+pub const PROTOCOL_VERSION: u16 = 3;   // v3: thermocouple EMF + cold junction replace the NTC node
 pub const MAX_FRAME: usize = 3 + 96;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -31,6 +31,9 @@ pub enum WireError {
     UnknownKind(u8),
     BadLength,
 }
+
+const TC_NONE: i32 = i32::MIN;
+const CJ_NONE: i16 = i16::MIN;
 
 const K_HELLO: u8 = 1;
 const K_SENSORS: u8 = 2;
@@ -113,7 +116,9 @@ pub fn encode(msg: &Message, out: &mut [u8]) -> usize {
         Message::Sensors(s) => {
             w.u32(s.cycle);
             w.u64(s.t_us);
-            w.u16(s.ntc_mv);
+            // `None` travels as the type's minimum: no real reading gets there (-2.1 V, -327 C).
+            w.i32(s.tc_uv.unwrap_or(TC_NONE));
+            w.u16(s.cj_cc.unwrap_or(CJ_NONE) as u16);
             w.u16(s.pressure_mv);
             w.i32(s.scale_mg);
             w.u8(s.inputs);
@@ -181,7 +186,8 @@ pub fn decode(buf: &[u8]) -> Result<(Message, usize), WireError> {
         K_SENSORS => Message::Sensors(SensorFrame {
             cycle: r.u32()?,
             t_us: r.u64()?,
-            ntc_mv: r.u16()?,
+            tc_uv: Some(r.i32()?).filter(|&v| v != TC_NONE),
+            cj_cc: Some(r.u16()? as i16).filter(|&v| v != CJ_NONE),
             pressure_mv: r.u16()?,
             scale_mg: r.i32()?,
             inputs: r.u8()?,
@@ -246,10 +252,17 @@ mod tests {
             Message::Sensors(SensorFrame {
                 cycle: 7,
                 t_us: 123_456_789,
-                ntc_mv: 1650,
+                tc_uv: Some(-2_140),
+                cj_cc: None,
                 pressure_mv: 3001,
                 scale_mg: 36_100,
                 inputs: 0b1001,
+            }),
+            Message::Sensors(SensorFrame {
+                cycle: 8,
+                tc_uv: None,
+                cj_cc: Some(-1_234),
+                ..Default::default()
             }),
             Message::Actuators(ActuatorFrame {
                 cycle: 7,

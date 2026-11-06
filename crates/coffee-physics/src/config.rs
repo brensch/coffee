@@ -17,7 +17,7 @@ pub struct ModelConfig {
     pub puck: Puck,
     pub cup: Cup,
     pub scale: Scale,
-    pub thermistor: Thermistor,
+    pub thermocouple: Thermocouple,
     pub pressure_sensor: PressureSensor,
     pub reservoir: Reservoir,
     pub sim: Sim,
@@ -258,35 +258,39 @@ impl Default for Scale {
     }
 }
 
-/// Boiler NTC as wired on the controller: thermistor from the ADC node to GND,
-/// `r_ref_ohm` from the 3.3 V rail to the node, read by the C6's ADC1 and
-/// oversampled over each mains cycle.
+/// Boiler thermocouple as wired on the controller: an ungrounded K-type M4 screw-in probe, its own
+/// wires to the board's socket, the MCP3421 (PGA 8, 18 bit, 2 uV/LSB, 3.75 SPS) reading the EMF and a
+/// TMP117 beside the socket reading the cold junction.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
-pub struct Thermistor {
-    /// Probe lag relative to the boiler body (ring-tab probe under an M4 screw).
+pub struct Thermocouple {
+    /// Probe lag relative to the boiler body (M4 screw-in junction in the thermostat seat).
     pub tau_s: f64,
-    /// The real part's curve (beta model). The engine's `ntc` config holds what
-    /// it *believes*; a mismatch is what the two-point calibration removes.
-    pub r25_ohm: f64,
-    pub beta: f64,
-    pub r_ref_ohm: f64,
-    pub v_ref_mv: f64,
+    /// Measured / true EMF: the 2 x 1k filter against the ADC's ~281k input at PGA 8. The engine's
+    /// `thermocouple.input_gain` holds what it *believes*.
+    pub input_gain: f64,
     /// Systematic error (probe placement / thermal contact), deg C.
     pub offset_c: f64,
-    /// Noise on the per-cycle oversampled average, mV RMS.
-    pub noise_mv: f64,
+    /// Noise on each conversion, uV RMS (the 1 uF / 2k filter and the ADC's sinc filter at 3.75 SPS
+    /// leave a few uV of pickup from the heater wiring).
+    pub noise_uv: f64,
+    /// Mains cycles per conversion: 60 Hz / 3.75 SPS = 16.
+    pub conv_cycles: u32,
+    /// The board (cold junction) settles at ambient + this fraction of the boiler's rise above
+    /// ambient, with time constant `board_tau_s` (it sits in the case beside the boiler).
+    pub board_rise_frac: f64,
+    pub board_tau_s: f64,
 }
-impl Default for Thermistor {
+impl Default for Thermocouple {
     fn default() -> Self {
         Self {
-            tau_s: 15.0,    // Molex 218537-3919: 15 s time constant in water (sales drawing note 4)
-            r25_ohm: 50_000.0,
-            beta: 4109.0,   // Molex 218537-3919, B25/95 from its R-T table
-            r_ref_ohm: 4700.0,
-            v_ref_mv: 3300.0,
+            tau_s: 2.5,
+            input_gain: 0.993,
             offset_c: 0.0,
-            noise_mv: 1.5,
+            noise_uv: 3.0,
+            conv_cycles: 16,
+            board_rise_frac: 0.2,
+            board_tau_s: 600.0,
         }
     }
 }
@@ -308,7 +312,7 @@ pub struct PressureSensor {
 impl Default for PressureSensor {
     fn default() -> Self {
         Self {
-            range_bar: 16.0, // GaggiMate 0-1.6 MPa sensor (BUY.md 10b)
+            range_bar: 12.0, // Gaggiuino's 0-1.2 MPa transducer (BUY.md 7)
             v_zero_mv: 500.0,
             v_full_mv: 4500.0,
             divider: 100.0 / 147.0,
@@ -372,7 +376,7 @@ impl Default for ModelConfig {
             puck: Default::default(),
             cup: Default::default(),
             scale: Default::default(),
-            thermistor: Default::default(),
+            thermocouple: Default::default(),
             pressure_sensor: Default::default(),
             reservoir: Default::default(),
             sim: Default::default(),

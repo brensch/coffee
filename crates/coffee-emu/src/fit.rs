@@ -6,7 +6,7 @@
 //! commanded; replay feeds the actuators to the model and compares sensors.
 
 use anyhow::{Context, Result, bail};
-use coffee_io::input;
+use coffee_io::{SensorFrame, input, typek};
 use coffee_physics::{Actuators, Machine, ModelConfig};
 use std::path::Path;
 
@@ -20,31 +20,40 @@ pub struct Row {
     pub scale: Option<f64>,
 }
 
-/// Converts sensor millivolts to deg C / bar with a *fixed* sensor model (the
+/// Converts raw sensor values to deg C / bar with a *fixed* sensor model (the
 /// base model's), applied to the log and to the simulation alike. Fitting
-/// `thermistor.*` or `pressure_sensor.*` then moves only the simulated side.
+/// `thermocouple.*` or `pressure_sensor.*` then moves only the simulated side.
 #[derive(Clone, Debug)]
 pub struct Decoder {
-    th: coffee_physics::config::Thermistor,
+    tc: coffee_physics::config::Thermocouple,
     ps: coffee_physics::config::PressureSensor,
+}
+
+/// The last thermocouple conversion and cold-junction reading seen in a frame stream: the ADC
+/// converts every ~16th tick, and the decoded temperature holds between conversions.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct TcHold {
+    tc_uv: Option<i32>,
+    cj_cc: Option<i16>,
 }
 
 impl Decoder {
     pub fn new(cfg: &ModelConfig) -> Self {
         Self {
-            th: cfg.thermistor.clone(),
+            tc: cfg.thermocouple.clone(),
             ps: cfg.pressure_sensor.clone(),
         }
     }
-    /// None for open/short readings.
-    pub fn temp_c(&self, mv: u16) -> Option<f64> {
-        let v = mv as f64;
-        if !(100.0..3270.0).contains(&v) {
+    /// Probe temperature, holding the last conversion. None before the first conversion and for
+    /// open/reversed probes.
+    pub fn temp_c(&self, hold: &mut TcHold, s: &SensorFrame) -> Option<f64> {
+        hold.tc_uv = s.tc_uv.or(hold.tc_uv);
+        hold.cj_cc = s.cj_cc.or(hold.cj_cc);
+        let (uv, cc) = (hold.tc_uv?, hold.cj_cc?);
+        if !(-1_500..15_000).contains(&uv) {
             return None;
         }
-        let r = self.th.r_ref_ohm * v / (self.th.v_ref_mv - v);
-        let inv_t = 1.0 / 298.15 + (r / self.th.r25_ohm).ln() / self.th.beta;
-        Some(1.0 / inv_t - 273.15)
+        Some(typek::hot_junction_c(uv as f64 / 1000.0 / self.tc.input_gain, cc as f64 / 100.0))
     }
     /// None when disconnected.
     pub fn bar(&self, mv: u16) -> Option<f64> {
@@ -56,8 +65,9 @@ impl Decoder {
 }
 
 /// Read a `.clog` (from `coffee-engine --log` or `coffee-emu capture`). Sensor
-/// millivolts are converted with `dec`.
+/// values are converted with `dec`.
 pub fn load_log(path: &Path, dec: &Decoder) -> Result<Vec<Row>> {
+    let mut hold = TcHold::default();
     let data = std::fs::read(path).with_context(|| format!("reading {}", path.display()))?;
     let frames = coffee_node::tlog::read(&data);
     if frames.is_empty() {
@@ -74,7 +84,7 @@ pub fn load_log(path: &Path, dec: &Decoder) -> Result<Vec<Row>> {
                 valve: o.valve,
             },
             inputs: s.inputs,
-            tc: dec.temp_c(s.ntc_mv),
+            tc: dec.temp_c(&mut hold, s),
             p: dec.bar(s.pressure_mv),
             scale: (s.inputs & input::SCALE_OK != 0).then(|| s.scale_mg as f64 / 1000.0),
         })
@@ -92,8 +102,9 @@ pub fn simulate(cfg: &ModelConfig, dec: &Decoder, rows: &[Row], seed: u64) -> Si
     let mut cfg = cfg.clone();
     if let Some(t0) = rows.iter().find_map(|r| r.tc) {
         // The log reads the probe, which carries the placement offset.
-        cfg.sim.initial_temp_c = t0 - cfg.thermistor.offset_c;
+        cfg.sim.initial_temp_c = t0 - cfg.thermocouple.offset_c;
     }
+    let mut hold = TcHold::default();
     let mut m = Machine::new(cfg.clone(), seed);
     let mut out = Simulated::default();
     for r in rows {
@@ -101,7 +112,7 @@ pub fn simulate(cfg: &ModelConfig, dec: &Decoder, rows: &[Row], seed: u64) -> Si
         m.switch_steam = r.inputs & input::STEAM != 0;
         m.switch_water = r.inputs & input::WATER != 0;
         let s = m.sensor_frame();
-        out.tc.push(dec.temp_c(s.ntc_mv));
+        out.tc.push(dec.temp_c(&mut hold, &s));
         out.p.push(dec.bar(s.pressure_mv));
         out.scale
             .push((s.inputs & input::SCALE_OK != 0).then(|| s.scale_mg as f64 / 1000.0));
@@ -367,14 +378,14 @@ mod tests {
         assert!((mass - 1.6).abs() < 0.15, "fitted mass {mass}");
     }
 
-    /// A thermistor whose curve differs from the datasheet, and a slower probe,
-    /// show up in the NTC channel and are recoverable from a heat-up log.
+    /// A front end whose gain is off (the ADC's input impedance varies part to part) and a
+    /// probe that lags more than assumed show up in the thermocouple channel and are
+    /// recoverable from a heat-up log.
     #[test]
-    fn recovers_thermistor_parameters() {
+    fn recovers_thermocouple_parameters() {
         let mut truth = ModelConfig::default();
-        let beta0 = truth.thermistor.beta;      // the default probe's B
-        truth.thermistor.beta = beta0 - 70.0;
-        truth.thermistor.tau_s = 5.0;
+        truth.thermocouple.input_gain = 0.96;
+        truth.thermocouple.tau_s = 6.0;
         let dt = 1.0 / truth.mains.frequency_hz;
         let mut rows: Vec<Row> = (0..(150.0 / dt) as usize)
             .map(|i| Row {
@@ -396,8 +407,8 @@ mod tests {
             r.tc = tc;
         }
         let mut guess = truth.clone();
-        guess.thermistor.beta = beta0;
-        guess.thermistor.tau_s = 2.0;
+        guess.thermocouple.input_gain = 0.993;
+        guess.thermocouple.tau_s = 2.5;
         let w = Weights {
             temp: 1.0,
             pressure: 0.0,
@@ -406,16 +417,16 @@ mod tests {
         let r = fit(
             &guess,
             &rows,
-            &["thermistor.beta".into(), "thermistor.tau_s".into()],
+            &["thermocouple.input_gain".into(), "thermocouple.tau_s".into()],
             w,
             60,
             3,
             false,
         )
         .unwrap();
-        let beta = r.cfg.thermistor.beta;
-        let tau = r.cfg.thermistor.tau_s;
-        assert!((beta - (beta0 - 70.0)).abs() < 15.0, "beta {beta}");
-        assert!((tau - 5.0).abs() < 1.0, "tau {tau}");
+        let gain = r.cfg.thermocouple.input_gain;
+        let tau = r.cfg.thermocouple.tau_s;
+        assert!((gain - 0.96).abs() < 0.008, "gain {gain}");
+        assert!((tau - 6.0).abs() < 1.5, "tau {tau}");
     }
 }

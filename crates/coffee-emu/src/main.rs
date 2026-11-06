@@ -358,19 +358,21 @@ fn main() -> Result<()> {
                 let mut f = std::io::BufWriter::new(std::fs::File::create(&out)?);
                 writeln!(
                     f,
-                    "t_s,cycle,heater,pump,valve,inputs,ntc_mv,pressure_mv,scale_mg"
+                    "t_s,cycle,heater,pump,valve,inputs,tc_uv,cj_cc,pressure_mv,scale_mg"
                 )?;
                 for (s, o) in &frames {
                     writeln!(
                         f,
-                        "{:.4},{},{},{},{},{},{},{},{}",
+                        "{:.4},{},{},{},{},{},{},{},{},{}",
                         (s.t_us - first.0.t_us) as f64 * 1e-6,
                         s.cycle,
                         o.heater as u8,
                         o.pump as u8,
                         o.valve as u8,
                         s.inputs,
-                        s.ntc_mv,
+                        // empty between conversions (the ADC converts every ~16th tick)
+                        s.tc_uv.map(|v| v.to_string()).unwrap_or_default(),
+                        s.cj_cc.map(|v| v.to_string()).unwrap_or_default(),
                         s.pressure_mv,
                         s.scale_mg
                     )?;

@@ -31,28 +31,28 @@
 //! (lockstep wire protocol) and actuator frames go back; the machine pins stay
 //! off and there is no Wi-Fi (`bridge.rs`).
 //!
-//! # Pin map (controller v15, low voltage only)
+//! # Pin map (controller v32: mains section on the board)
 //!
 //! | Signal          | GPIO  | Notes                                                 |
 //! |-----------------|-------|-------------------------------------------------------|
-//! | Pressure        | 0     | ADC1_CH0, transducer through 10k/20k (x2/3)           |
-//! | Boiler NTC      | 1     | ADC1_CH1 via 1k, 50k Molex NTC to GND, 4.7k 1 % to 3.3 V |
-//! | 3.3 V sense     | 2     | ADC1_CH2, 10k/10k (x1/2): NTC reading made ratiometric |
+//! | Pressure        | 0     | ADC1_CH0, transducer (J6) through 47k/100k (x0.68)     |
 //! | 5 V sense       | 3     | ADC1_CH3, 20k/10k (x1/3): pressure made ratiometric    |
-//! | Valve           | 18    | push-pull, HIGH = on: AO3400A sinks the relay module (J8) |
-//! | Pump            | 19    | push-pull, HIGH = on: AO3400A sinks the zero-cross SSR (J3) |
-//! | Heater          | 20    | push-pull, HIGH = on: AO3400A sinks the zero-cross SSR (J2) |
-//! | Brew switch     | 6     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
-//! | Steam switch    | 7     | dry contact to GND, 4.7k pull-up + 1k series, low = closed |
-//! | Status LED      | 23    | heartbeat heating, solid ready, fast blink fault      |
+//! | I2C SDA / SCL   | 8 / 9 | MCP3421 0x68 (thermocouple, J5), TMP117 0x48 (cold junction); 4.7k pull-ups |
+//! | Valve           | 18    | push-pull, HIGH = on: AO3400A sinks the MOC3083 LED, triac Q6 |
+//! | Pump            | 19    | push-pull, HIGH = on: AO3400A sinks the MOC3083 LED, triac Q5 |
+//! | Heater          | 20    | push-pull, HIGH = on: AO3400A sinks the heater SSR input (J2) |
+//! | Brew switch     | 6     | dry contact to GND (J7.2), 10k pull-up + 1k series, low = closed |
+//! | Steam switch    | 7     | dry contact to GND (J7.3), 10k pull-up + 1k series, low = closed |
 //! | Power switch    | 14    | dry contact to GND (J7.1); open = standby             |
-//! | Panel LEDs      | 21/22/16 | power / coffee / steam lamps (J7.5-7), 330R, high = on |
-//! | Scale SCK       | 17    | dual HX711 clock (J10.4), 100R, 10k pull-down          |
-//! | Scale DOUT1/2   | 4/5   | HX711 data (J10.5/6); straps only SDIO edges         |
+//! | Status LED      | 16    | U0TXD (also flickers with the ROM boot log)           |
+//! | Panel LEDs      | 21/22/23 | power / coffee / steam lamps (J7.5-7), 330R, high = on |
+//! | Scale SCK       | 17    | U0RXD: dual HX711 clock (J10)                         |
+//! | Scale DOUT1/2   | 4/5   | HX711 data (J10); straps only SDIO edges              |
 //! | USB D- / D+     | 12/13 | native USB Serial/JTAG (flashing, console, log)       |
 //!
-//! Strapping pins 8 and 9: GPIO8 has its external pull-up, GPIO9 is the BOOT pad. GPIO4/5
-//! (MTMS/MTDI) strap only the SDIO clock edges, so they read the scale. GPIO15 is unused.
+//! Strapping pins 8 and 9 carry only the I2C bus: both idle high (pull-ups), the state the
+//! ROM wants for a normal boot, and GPIO9 is also the BOOT pad. GPIO4/5 (MTMS/MTDI) strap only
+//! the SDIO clock edges, so they read the scale. GPIO1, 2 and 15 are unused.
 
 #![no_std]
 #![no_main]
@@ -140,9 +140,10 @@ mod machine {
                     rtc: p.RTC_TIMER,
                     adc1: p.ADC1,
                     pressure: p.GPIO0,
-                    ntc: p.GPIO1,
-                    v3_sense: p.GPIO2,
                     v5_sense: p.GPIO3,
+                    i2c: p.I2C0,
+                    sda: p.GPIO8,
+                    scl: p.GPIO9,
                     valve: p.GPIO18,
                     pump: p.GPIO19,
                     heater: p.GPIO20,

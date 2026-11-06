@@ -1,0 +1,12 @@
+name "thermocouple ADC stops answering: heater off within a second or so"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 12min
+
+when engine.state == ready for 20s as warm: set probe.fault = adc_dead
+at warm+60s: set probe.fault = ok
+
+expect eventually engine.faults has tc_adc from warm by warm+1.5s
+expect always heater.power == 0 from warm+1.5s until warm+60s
+expect always engine.state == fault from warm+1.5s until warm+60s
+expect eventually engine.state == heating or engine.state == ready from warm+61s by warm+63s
+expect always boiler.temp < 110

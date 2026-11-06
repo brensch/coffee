@@ -26,7 +26,7 @@
 use crate::config::ModelConfig;
 use crate::water::{self, CP, H_FG};
 use anyhow::{Result, bail};
-use coffee_io::{SensorFrame, input};
+use coffee_io::{SensorFrame, input, typek};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use std::collections::VecDeque;
@@ -59,16 +59,23 @@ impl Value {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum NtcMode {
+pub enum ProbeMode {
     Ok,
-    /// Thermistor or wire open: the reference resistor pulls the node to 3.3 V.
+    /// Probe or wire open: the board's 10 MOhm bias drives the ADC input to ~90 mV.
     Open,
-    /// Thermistor or wire shorted: node at ground.
+    /// Probe's two wires swapped in the plug: the EMF changes sign.
+    Reversed,
+    /// Probe leads shorted together at the plug: no EMF, so it reads the board's temperature.
     Short,
     /// Probe fell out of its hole: it now measures chassis air.
     Detached,
-    /// Reading frozen (e.g. a cracked bead reading a fixed resistance).
+    /// Reading frozen at the probe temperature when the fault was set (a probe caught in an
+    /// air pocket or a cracked junction): the cold junction still tracks the board.
     Stuck,
+    /// MCP3421 not answering: no conversions arrive.
+    AdcDead,
+    /// TMP117 not answering: no cold-junction readings arrive.
+    CjDead,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -95,26 +102,27 @@ pub struct Actuators {
 
 #[derive(Clone, Debug)]
 pub struct Faults {
-    pub ntc: NtcMode,
+    pub probe: ProbeMode,
     pub pressure: PsMode,
     pub heater_triac: TriacMode,
     pub element_open: bool,
     pub pump_airlock: bool,
-    /// Probability per cycle of an EMI spike on the NTC reading, and its size (mV, either sign).
-    pub ntc_spike_prob: f64,
-    pub ntc_spike_mv: f64,
+    /// Probability per conversion of an EMI spike on the thermocouple reading, and its size
+    /// (uV, either sign; ~41 uV per C at brew temperature).
+    pub probe_spike_prob: f64,
+    pub probe_spike_uv: f64,
 }
 
 impl Default for Faults {
     fn default() -> Self {
         Self {
-            ntc: NtcMode::Ok,
+            probe: ProbeMode::Ok,
             pressure: PsMode::Ok,
             heater_triac: TriacMode::Ok,
             element_open: false,
             pump_airlock: false,
-            ntc_spike_prob: 0.0,
-            ntc_spike_mv: 400.0,
+            probe_spike_prob: 0.0,
+            probe_spike_uv: 800.0,
         }
     }
 }
@@ -182,7 +190,12 @@ pub struct Machine {
     act_queue: VecDeque<Actuators>,
 
     // sensor state
-    ntc_mv: u16,
+    /// Thermocouple EMF of the last conversion (uV).
+    tc_uv: i32,
+    /// The probe temperature a `Stuck` probe is frozen at.
+    stuck_c: Option<f64>,
+    /// Board (cold-junction) temperature, deg C.
+    pub t_board: f64,
     ps_filtered: f64,
     /// The ADC oversamples across the whole cycle: running sums for the averages.
     ps_sum: (f64, u32),
@@ -241,7 +254,9 @@ impl Machine {
             puck_resistance: f64::NAN,
             energy_in_j: 0.0,
             act_queue: VecDeque::new(),
-            ntc_mv: 0,
+            tc_uv: 0,
+            stuck_c: None,
+            t_board: t0,
             ps_filtered: 0.0,
             ps_sum: (0.0, 0),
             probe_sum: (0.0, 0),
@@ -251,7 +266,6 @@ impl Machine {
             scale_mg: 0,
             cfg,
         };
-        m.ntc_mv = m.make_ntc_mv();
         m.pressure_mv = m.make_pressure_mv();
         m
     }
@@ -621,11 +635,15 @@ impl Machine {
             self.tray_ml += q_wand * dt;
 
             // Probe lag.
-            let (target, tau_p) = match self.faults.ntc {
-                NtcMode::Detached => (th.chassis_air_c, 20.0),
-                _ => (self.t_body, self.cfg.thermistor.tau_s),
+            let (target, tau_p) = match self.faults.probe {
+                ProbeMode::Detached => (th.chassis_air_c, 20.0),
+                _ => (self.t_body, self.cfg.thermocouple.tau_s),
             };
             self.t_probe += (target - self.t_probe) * (dt / tau_p.max(1e-3)).min(1.0);
+            // The board warms with the case around the boiler.
+            let tc = &self.cfg.thermocouple;
+            let board = th.ambient_c + tc.board_rise_frac * (self.t_body - th.ambient_c);
+            self.t_board += (board - self.t_board) * (dt / tc.board_tau_s.max(1e-3)).min(1.0);
 
             // Pressure transducer lag.
             let tau_s = self.cfg.pressure_sensor.tau_s.max(1e-5);
@@ -660,38 +678,59 @@ impl Machine {
 
     // ---------------------------------------------------------------- sensors
 
-    /// NTC divider node for a probe temperature, from the part's real curve.
-    pub fn ntc_node_mv(&self, probe_c: f64) -> f64 {
-        let c = &self.cfg.thermistor;
-        let t_k = probe_c + c.offset_c + 273.15;
-        let r = c.r25_ohm * (c.beta * (1.0 / t_k - 1.0 / 298.15)).exp();
-        c.v_ref_mv * r / (c.r_ref_ohm + r)
+    /// The EMF the ADC sees for a probe temperature against the board's, from the NIST curve.
+    pub fn tc_emf_uv(&self, probe_c: f64) -> f64 {
+        let c = &self.cfg.thermocouple;
+        (typek::emf_mv(probe_c + c.offset_c) - typek::emf_mv(self.t_board)) * 1000.0 * c.input_gain
     }
 
-    /// Per-cycle oversampled ADC reading of the NTC node, 1 mV resolution.
-    fn make_ntc_mv(&mut self) -> u16 {
-        let vref = self.cfg.thermistor.v_ref_mv;
-        let mv = match self.faults.ntc {
-            NtcMode::Stuck => return self.ntc_mv,
-            NtcMode::Open => vref,
-            NtcMode::Short => self.gauss(1.0).abs(),
-            NtcMode::Ok | NtcMode::Detached => {
-                let probe = match core::mem::take(&mut self.probe_sum) {
-                    (s, n) if n > 0 => s / n as f64,
-                    _ => self.t_probe,
-                };
-                let mut v = self.ntc_node_mv(probe) + self.gauss(self.cfg.thermistor.noise_mv);
-                if self.faults.ntc_spike_prob > 0.0
-                    && self.rng.r#gen::<f64>() < self.faults.ntc_spike_prob
-                {
-                    // A burst of interference corrupting the cycle's average.
-                    let a = self.faults.ntc_spike_mv;
+    /// One MCP3421 conversion, if one completes at the end of this cycle (every `conv_cycles`):
+    /// the sinc filter averages the probe over the conversion, 2 uV resolution.
+    fn make_tc_uv(&mut self) -> Option<i32> {
+        let n = self.cfg.thermocouple.conv_cycles.max(1);
+        if !self.cycle.is_multiple_of(n) {
+            return None;
+        }
+        let probe = match core::mem::take(&mut self.probe_sum) {
+            (s, k) if k > 0 => s / k as f64,
+            _ => self.t_probe,
+        };
+        let noise = self.gauss(self.cfg.thermocouple.noise_uv);
+        if self.faults.probe != ProbeMode::Stuck {
+            self.stuck_c = None;
+        }
+        let uv = match self.faults.probe {
+            ProbeMode::AdcDead => return None,
+            ProbeMode::Stuck => {
+                let c = *self.stuck_c.get_or_insert(probe);
+                self.tc_emf_uv(c) + noise
+            }
+            ProbeMode::Open => 90_000.0 + noise,
+            ProbeMode::Short => noise,
+            ProbeMode::Reversed => -self.tc_emf_uv(probe) + noise,
+            ProbeMode::Ok | ProbeMode::Detached | ProbeMode::CjDead => {
+                let mut v = self.tc_emf_uv(probe) + noise;
+                if self.faults.probe_spike_prob > 0.0 && self.rng.r#gen::<f64>() < self.faults.probe_spike_prob {
+                    // a burst of interference corrupting the conversion
+                    let a = self.faults.probe_spike_uv;
                     v += if self.rng.r#gen::<bool>() { a } else { -a };
                 }
                 v
             }
         };
-        mv.round().clamp(0.0, vref) as u16
+        // 18-bit code at PGA 8: 15.625 uV / 8 per LSB, +-256 mV full scale
+        let code = (uv / 1.953125).round().clamp(-131_072.0, 131_071.0);
+        self.tc_uv = (code * 1.953125).round() as i32;
+        Some(self.tc_uv)
+    }
+
+    /// TMP117 reading of the board, with each conversion (centi-C; 7.8125 mC resolution).
+    fn make_cj_cc(&mut self, fresh: bool) -> Option<i16> {
+        if !fresh || self.faults.probe == ProbeMode::CjDead {
+            return None;
+        }
+        let lsb = (self.t_board / 0.0078125).round() * 0.0078125;
+        Some((lsb * 100.0).round() as i16)
     }
 
     /// Per-cycle oversampled ADC reading of the pressure divider, 1 mV resolution.
@@ -743,10 +782,12 @@ impl Machine {
 
     /// The sensors as seen over the cycle just simulated.
     pub fn sensor_frame(&mut self) -> SensorFrame {
-        self.ntc_mv = self.make_ntc_mv();
+        let tc_uv = self.make_tc_uv();
+        // the firmware reads the TMP117 with each conversion slot, whether or not the ADC answered
+        let slot = self.cycle.is_multiple_of(self.cfg.thermocouple.conv_cycles.max(1));
+        let cj_cc = self.make_cj_cc(slot);
         self.pressure_mv = self.make_pressure_mv();
         self.ps_sum = (0.0, 0);
-        self.probe_sum = (0.0, 0);
         self.update_scale();
         let mut inputs = 0;
         if !self.switch_power {
@@ -767,7 +808,8 @@ impl Machine {
         SensorFrame {
             cycle: self.cycle,
             t_us: (self.t * 1e6).round() as u64,
-            ntc_mv: self.ntc_mv,
+            tc_uv,
+            cj_cc,
             pressure_mv: self.pressure_mv,
             scale_mg: self.scale_mg,
             inputs,
@@ -784,7 +826,8 @@ impl Machine {
         ("portafilter.temp", "C"),
         ("brew.water_temp", "C"),
         ("probe.temp", "C"),
-        ("ntc.mv", "mV"),
+        ("tc.uv", "uV"),
+        ("board.temp", "C"),
         ("pressure_sensor.mv", "mV"),
         ("hydraulics.pressure", "bar"),
         ("pump.flow", "ml/s"),
@@ -828,7 +871,8 @@ impl Machine {
             "portafilter.temp" => self.t_pf,
             "brew.water_temp" => self.brew_water_c,
             "probe.temp" => self.t_probe,
-            "ntc.mv" => self.ntc_mv as f64,
+            "tc.uv" => self.tc_uv as f64,
+            "board.temp" => self.t_board,
             "pressure_sensor.mv" => self.pressure_mv as f64,
             "hydraulics.pressure" => self.p,
             "pump.flow" => self.q_pump,
@@ -884,9 +928,9 @@ impl Machine {
         ("puck.channel", "R multiplier, 0.5"),
         ("reservoir.ml", "ml"),
         ("cup.mass", "g"),
-        ("ntc.fault", "ok|open|short|detached|stuck"),
-        ("ntc.spikes", "prob/cycle, 0.02"),
-        ("ntc.spike_mv", "spike size, mV (default 400)"),
+        ("probe.fault", "ok|open|reversed|short|detached|stuck|adc_dead|cj_dead"),
+        ("probe.spikes", "prob/conversion, 0.03"),
+        ("probe.spike_uv", "spike size, uV (default 800, ~20 C)"),
         ("pressure_sensor.fault", "ok|disconnected|stuck"),
         ("heater_triac.fault", "ok|stuck_on|stuck_off"),
         ("heater.element", "ok|open"),
@@ -914,16 +958,19 @@ impl Machine {
                 self.cup_g = v.as_num()?;
                 self.drip_store_g = 0.0;
             }
-            "ntc.spikes" => self.faults.ntc_spike_prob = v.as_num()?.clamp(0.0, 1.0),
-            "ntc.spike_mv" => self.faults.ntc_spike_mv = v.as_num()?.clamp(0.0, 3300.0),
-            "ntc.fault" => {
-                self.faults.ntc = match v.as_word().as_str() {
-                    "ok" | "none" => NtcMode::Ok,
-                    "open" => NtcMode::Open,
-                    "short" => NtcMode::Short,
-                    "detached" => NtcMode::Detached,
-                    "stuck" => NtcMode::Stuck,
-                    w => bail!("unknown ntc.fault `{w}`"),
+            "probe.spikes" => self.faults.probe_spike_prob = v.as_num()?.clamp(0.0, 1.0),
+            "probe.spike_uv" => self.faults.probe_spike_uv = v.as_num()?.clamp(0.0, 100_000.0),
+            "probe.fault" => {
+                self.faults.probe = match v.as_word().as_str() {
+                    "ok" | "none" => ProbeMode::Ok,
+                    "open" => ProbeMode::Open,
+                    "reversed" => ProbeMode::Reversed,
+                    "short" => ProbeMode::Short,
+                    "detached" => ProbeMode::Detached,
+                    "stuck" => ProbeMode::Stuck,
+                    "adc_dead" => ProbeMode::AdcDead,
+                    "cj_dead" => ProbeMode::CjDead,
+                    w => bail!("unknown probe.fault `{w}`"),
                 };
             }
             "pressure_sensor.fault" => {

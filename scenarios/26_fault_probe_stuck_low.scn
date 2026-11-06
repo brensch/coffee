@@ -5,7 +5,7 @@ duration 12min
 # The reading sticks at ~89 C during warm-up (setpoint 93). A plain PID then keeps adding heat the
 # reading never shows, and the boiler climbs to the steam thermostat in brew mode. The heat delivered
 # minus the most the boiler can lose must show up as a rise; it doesn't, so HEATER_INEFFECTIVE.
-when engine.temp > 89 for 0s as frozen: set ntc.fault = stuck
+when engine.temp > 89 for 0s as frozen: set probe.fault = stuck
 
 expect eventually engine.faults has heater_ineffective from frozen by frozen+330s
 expect always boiler.temp < 160

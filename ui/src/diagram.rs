@@ -59,7 +59,7 @@ pub fn from_telemetry(s: Store) -> Signal<DiagramData> {
                 pump_level: t.pump_duty.clamp(0.0, 1.0) as f64,
                 heater_caption: format!("heater {:.0}%", t.heater_duty * 100.0),
                 probe_c: f(t.temp_c),
-                probe_fault: t.faults.iter().any(|x| x.starts_with("ntc")),
+                probe_fault: t.faults.iter().any(|x| x.starts_with("probe") || x == "tc_adc" || x == "cold_junction"),
                 valve_open: t.valve,
                 puck_flow: (t.valve && t.flow_ml_s > 0.2).then_some(t.flow_ml_s as f64),
                 cup_g: f(t.weight_g),

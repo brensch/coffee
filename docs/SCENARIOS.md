@@ -15,7 +15,7 @@ model puck.grind = 1.1                       # override a model parameter
 trace boiler.temp, engine.temp, hydraulics.pressure
 
 when engine.state == ready for 10s as warm: brew on
-at warm+20s: set ntc.fault = detached; mark "probe off"
+at warm+20s: set probe.fault = detached; mark "probe off"
 at warm+40s: brew off
 at warm+60s: ramp mains.voltage_v to 200 over 5s
 
@@ -46,7 +46,8 @@ expect never engine.state == fault until warm+19s
   portafilter.temp             C
   brew.water_temp              C
   probe.temp                   C
-  ntc.mv                       mV (cycle-averaged ADC reading)
+  tc.uv                        uV (last thermocouple conversion, every 16 cycles)
+  board.temp                   C (the board: the cold junction)
   pressure_sensor.mv           mV
   hydraulics.pressure          bar
   pump.flow                    ml/s
@@ -99,8 +100,9 @@ expect never engine.state == fault until warm+19s
   puck.channel                 R multiplier, 0.5
   reservoir.ml                 ml
   cup.mass                     g
-  ntc.fault                    ok|open|short|detached|stuck
-  ntc.spikes                   prob/cycle, 0.02
+  probe.fault                  ok|open|reversed|short|detached|stuck|adc_dead|cj_dead
+  probe.spikes                 prob/conversion, 0.03
+  probe.spike_uv               spike size, uV (default 800, ~20 C)
   pressure_sensor.fault        ok|disconnected|stuck
   heater_triac.fault           ok|stuck_on|stuck_off
   heater.element               ok|open
@@ -116,8 +118,8 @@ Every model parameter path (`coffee-emu signals` lists them) can be used with `m
 - `01_warmup.scn`: cold start reaches ready and holds temperature
 - `02_shot_classic.scn`: classic 9 bar shot from a warm machine
 - `03_back_to_back.scn`: back-to-back shots 45 s apart hold temperature and yield
-- `10_fault_ntc_open.scn`: NTC wire breaks while ready
-- `11_fault_ntc_detached.scn`: probe falls out of its hole: heater-ineffective detection
+- `10_fault_probe_open.scn`: thermocouple wire breaks while ready
+- `11_fault_probe_detached.scn`: probe falls out of its hole: heater-ineffective detection
 - `12_fault_heater_triac_shorted.scn`: heater triac fails shorted: software flags runaway, hardware cutout holds
 - `13_fault_no_water.scn`: empty reservoir: pump runs dry, engine stops the shot
 - `14_fault_pressure_sensor.scn`: pressure transducer unplugged mid-shot
@@ -125,10 +127,15 @@ Every model parameter path (`coffee-emu signals` lists them) can be used with `m
 - `16_brownout.scn`: mains sags to 102 V (-15%) during warm-up
 - `17_grind_too_fine.scn`: grind far too fine: shot chokes and the max time stops it
 - `18_channeling.scn`: puck channels mid-shot: flow limit catches it
-- `19_ntc_emi_spikes.scn`: EMI bursts on the NTC reading are rejected
+- `19_probe_emi_spikes.scn`: EMI bursts on the thermocouple reading are rejected
 - `20_steam.scn`: steam mode builds saturation pressure, then brew-ready again
 - `21_scale_drops_out.scn`: scale disconnects mid-shot: profile max time ends the shot
 - `22_blind_basket.scn`: blind basket backflush: profile holds 9 bar, nothing reaches the cup
 - `23_tare_holds_after_shot.scn`: cup already holds flush water: shot weight stays tared after the shot
-- `24_fault_ntc_short.scn`: NTC leads short together while ready
+- `24_fault_probe_reversed.scn`: thermocouple plugged in reversed: caught before brew heat
 - `25_pressure_self_zero.scn`: transducer zero drift is removed by the power-on self-zero
+- `26_fault_probe_stuck_low.scn`: probe reading freezes a few degrees under setpoint: energy-balance heater check
+- `27_probe_subthreshold_spikes.scn`: EMI spikes too small to reject must not bias the boiler hot
+- `28_fault_probe_short.scn`: thermocouple leads shorted at the plug from power-on: heater-ineffective catches it
+- `29_fault_tc_adc_dead.scn`: thermocouple ADC stops answering: heater off within a second or so
+- `30_fault_cold_junction_dead.scn`: cold-junction sensor stops answering: no compensation, so no heat

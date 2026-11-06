@@ -1,0 +1,15 @@
+name "thermocouple leads shorted at the plug from power-on: heater-ineffective catches it"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 10min
+
+# Shorted at the plug, the EMF is 0: the "probe" reads the board's own temperature, a believable
+# room-temperature number from the first conversion, so no step or range check can see it. The PID
+# runs the heater flat out; the energy balance (armed 90 s after boot, one 120 s window) sees heat
+# going in and no rise. (A short appearing mid-run is a 60 C step down: TEMP_IMPLAUSIBLE in ~1.5 s.)
+at 0s: set probe.fault = short
+
+expect eventually engine.faults has heater_ineffective by 215s
+expect always heater.power == 0 from 216s
+# the stock steam thermostat (145 C) bounds the boiler meanwhile; the fuse never blows
+expect always boiler.temp < 172
+expect never fuse.blown == 1

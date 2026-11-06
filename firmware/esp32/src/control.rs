@@ -3,16 +3,17 @@
 //! (the sample points and the tick).
 //!
 //! Ticks come from the crystal, once per nominal mains cycle
-//! (`EngineConfig::mains_hz`). During each cycle both analog channels are sampled
+//! (`EngineConfig::mains_hz`). During each cycle the pressure channel is sampled
 //! `SAMPLES` times, evenly spread over the cycle (averaging out the pump's ripple
-//! exactly), with ADC1 curve calibration (eFuse) giving millivolts. Both rails are
-//! sampled too (3.3 V through 1/2, 5 V through 1/3), and the thermistor and
-//! pressure readings are rescaled to the nominal rails: the NTC divider is
-//! ratiometric to 3.3 V and the transducer to 5 V, so this removes rail and ADC
-//! gain error and makes an open thermistor read exactly full scale. At the tick
-//! that ends cycle `k` the averages and the debounced switches form a
-//! `SensorFrame`, the node is ticked, and its `ActuatorFrame` is applied at once,
-//! for cycle `k + 1`: each zero-cross SSR switches at its next zero crossing.
+//! exactly), with ADC1 curve calibration (eFuse) giving millivolts; the 5 V rail is
+//! sampled too (through 1/3) and the reading rescaled to the nominal rail, since the
+//! transducer is ratiometric to 5 V. The thermocouple is on I2C (GPIO8 SDA, GPIO9 SCL):
+//! the MCP3421 converts continuously at 3.75 SPS and is polled at every tick; when it
+//! has a fresh conversion, the TMP117 (cold junction) is read too, and both go in that
+//! tick's frame. At the tick that ends cycle `k` the readings and the debounced
+//! switches form a `SensorFrame`, the node is ticked, and its `ActuatorFrame` is
+//! applied at once, for cycle `k + 1`: each zero-cross opto-triac or SSR switches at
+//! its next zero crossing.
 //!
 //! Safety:
 //! - outputs are driven low at start;
@@ -27,6 +28,7 @@ use crate::link::{self, BUDGET_US, LINK, MAX_PER_CYCLE, TELEMETRY};
 use crate::store::{BUSY, NodeT, OTA_ARMED};
 use crate::usb;
 use coffee_api::ServerMsg;
+use coffee_board::tc::{self, Mcp3421};
 use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
 use coffee_io::{EngineState, SensorFrame, input};
 use coffee_node::tlog::{LogWriter, Outputs};
@@ -34,12 +36,13 @@ use core::sync::atomic::Ordering;
 use embassy_time::{Instant, Timer};
 use esp_hal::analog::adc::{Adc, AdcCalCurve, AdcConfig, Attenuation};
 use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig, Pull};
+use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 use esp_hal::peripherals::{self, ADC1};
 use esp_hal::rtc_cntl::{Rtc, RwdtStage};
-use esp_hal::time::Duration;
+use esp_hal::time::{Duration, Rate};
 
-/// ADC samples per channel per mains cycle (each one-shot conversion takes
-/// ~50 us on the C6, so 2 x 32 use ~3.2 ms of the 16.7 ms cycle).
+/// ADC samples per mains cycle (each one-shot conversion takes ~50 us on the
+/// C6, so 32 use ~1.6 ms of the 16.7 ms cycle).
 const SAMPLES: u32 = 32;
 /// Switch levels must hold this many cycles to count (50 ms at 60 Hz).
 const DEBOUNCE_CYCLES: u8 = 3;
@@ -50,9 +53,11 @@ pub struct Pins {
     pub rtc: peripherals::RTC_TIMER<'static>,
     pub adc1: ADC1<'static>,
     pub pressure: peripherals::GPIO0<'static>,
-    pub ntc: peripherals::GPIO1<'static>,
-    pub v3_sense: peripherals::GPIO2<'static>,
     pub v5_sense: peripherals::GPIO3<'static>,
+    /// Thermocouple ADC (MCP3421) and cold junction (TMP117), 4.7k pull-ups to 3.3 V.
+    pub i2c: peripherals::I2C0<'static>,
+    pub sda: peripherals::GPIO8<'static>,
+    pub scl: peripherals::GPIO9<'static>,
     pub valve: peripherals::GPIO18<'static>,
     pub pump: peripherals::GPIO19<'static>,
     pub heater: peripherals::GPIO20<'static>,
@@ -107,10 +112,17 @@ pub async fn run(p: Pins, mut node: NodeT) {
     // from eFuse to millivolts.
     let mut adc_cfg = AdcConfig::new();
     let mut ch_pressure = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.pressure, Attenuation::_11dB);
-    let mut ch_ntc = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.ntc, Attenuation::_11dB);
-    let mut ch_v3 = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.v3_sense, Attenuation::_11dB);
     let mut ch_v5 = adc_cfg.enable_pin_with_cal::<_, AdcCalCurve<ADC1>>(p.v5_sense, Attenuation::_11dB);
     let mut adc = Adc::new(p.adc1, adc_cfg);
+
+    // I2C at 100 kHz: a 4-byte MCP3421 poll is ~0.5 ms, well inside the tick's budget, and the
+    // slow edges suit the short bus beside the mains section. A stuck bus returns an error (the
+    // driver's timeout), which reads as "no conversion": the engine's TC_ADC fault after 1 s.
+    let mut i2c = I2c::new(p.i2c, I2cConfig::default().with_frequency(Rate::from_khz(100)))
+        .unwrap()
+        .with_sda(p.sda)
+        .with_scl(p.scl);
+    let mut thermo = Thermo::default();
 
     let mains_hz = node.engine.cfg.mains_hz;
     TELEMETRY.publish(node.telemetry().clone());
@@ -124,36 +136,27 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut brew = Debounce::new(DEBOUNCE_CYCLES);
     let mut steam = Debounce::new(DEBOUNCE_CYCLES);
     let mut power = Debounce::new(DEBOUNCE_CYCLES);
-    let (mut ntc_acc, mut p_acc) = (Oversample::default(), Oversample::default());
-    let (mut v3_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
+    let (mut p_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
     // Last raw (uncorrected) readings: the fallback when a cycle has no samples, so the rail
     // correction is applied once per reading and never compounds.
-    let (mut ntc_raw, mut p_raw) = (0u16, 0u16);
-    let (mut v3_mv, mut v5_mv) = (0u16, 0u16);
+    let (mut p_raw, mut v5_mv) = (0u16, 0u16);
     let mut k: u64 = 0;   // u64: a u32 cycle count wraps after ~828 days at 60 Hz
-    // Cycles in a row with no thermistor sample (ADC read errors): past STALE_CYCLES the reading is
-    // reported open, so a stuck ADC can't freeze the temperature near setpoint.
+    // Cycles in a row with no pressure sample (ADC read errors): past STALE_CYCLES the reading
+    // goes to 0 V, the transducer-disconnected fault.
     const STALE_CYCLES: u32 = 30;
-    let (mut ntc_stale, mut p_stale): (u32, u32) = (0, 0);
+    let mut p_stale: u32 = 0;
 
     loop {
         // ---- one mains cycle of sampling: [tick k, tick k+1) ----
-        let (mut ntc_fresh, mut p_fresh) = (false, false);
+        let mut p_fresh = false;
         for i in 0..SAMPLES {
             until(clock.sample_us(k, i, SAMPLES)).await;
             if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_pressure)) {
                 p_acc.push(mv);
                 p_fresh = true;
             }
-            if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_ntc)) {
-                ntc_acc.push(mv);
-                ntc_fresh = true;
-            }
-            // The rails move slowly: one sample of each per 4 slots is plenty.
+            // The rail moves slowly: one sample per 4 slots is plenty.
             if i % 4 == 0 {
-                if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_v3)) {
-                    v3_acc.push(mv);
-                }
                 if let Ok(mv) = nb::block!(adc.read_oneshot(&mut ch_v5)) {
                     v5_acc.push(mv);
                 }
@@ -164,24 +167,10 @@ pub async fn run(p: Pins, mut node: NodeT) {
         until(t).await;
 
         // ---- tick k: frame for the cycle that just ended ----
-        v3_mv = v3_acc.take(v3_mv);
         v5_mv = v5_acc.take(v5_mv);
-        // Open probe: judged on the raw reading as well as the rail-corrected one, so a rail sense
-        // that reads high can't scale an open probe (node at the rail) down below the threshold.
-        ntc_raw = ntc_acc.take(ntc_raw);
         p_raw = p_acc.take(p_raw);
-        ntc_stale = if ntc_fresh { 0 } else { ntc_stale.saturating_add(1) };
         p_stale = if p_fresh { 0 } else { p_stale.saturating_add(1) };
-        let open_mv = node.engine.cfg.ntc.open_mv as u16;
-        // The 3.3 V rail is an LDO (+-2 %): a sense reading more than 5 % off means the sense
-        // path is broken, and the thermistor can't be trusted either way, so report it open
-        // (fault, heater off) instead of using an uncorrected value.
-        let v3_ok = (3135..=3465).contains(&(v3_mv as u32 * 2));
-        let ntc_mv = if ntc_raw >= open_mv || ntc_stale > STALE_CYCLES || !v3_ok {
-            3300
-        } else {
-            ratiometric(ntc_raw, v3_mv, 2, 3300)
-        };
+        let (tc_uv, cj_cc) = thermo.poll(&mut i2c, k);
         // Pressure: no samples for STALE_CYCLES reads as 0 V, the transducer-disconnected fault.
         // (+5 V is 4.4-5.25 V between USB and the module, so its sense keeps ratiometric's 15 %.)
         let pressure_mv = if p_stale > STALE_CYCLES { 0 } else { ratiometric(p_raw, v5_mv, 3, 5000) };
@@ -213,7 +202,8 @@ pub async fn run(p: Pins, mut node: NodeT) {
         let s = SensorFrame {
             cycle: k as u32,
             t_us: t,
-            ntc_mv,
+            tc_uv,
+            cj_cc,
             pressure_mv,
             scale_mg,
             inputs,
@@ -258,5 +248,62 @@ pub async fn run(p: Pins, mut node: NodeT) {
             || now_us().saturating_sub(start) < BUDGET_US,
             |q: link::HttpReq| node.prepare_http(&q.method, &q.path, &q.body),
         );
+    }
+}
+
+/// The thermocouple chips' driver state: polled once per tick, never blocking beyond one
+/// short I2C transaction each.
+#[derive(Default)]
+struct Thermo {
+    /// The MCP3421 has our config (continuous, 18 bit, PGA 8) as far as we know.
+    adc_configured: bool,
+    /// The TMP117 answered with its device ID.
+    cj_present: bool,
+}
+
+impl Thermo {
+    /// Re-probe a chip that's missing or misconfigured this often (ticks): ~1 s.
+    const RETRY_TICKS: u64 = 64;
+
+    /// One tick's poll: the conversion (if a fresh one landed) and, with it, the cold junction.
+    /// Every error is a `None`: the engine times the faults (TC_ADC, COLD_JUNCTION), so a chip
+    /// that stops answering can never freeze the temperature.
+    fn poll(&mut self, i2c: &mut I2c<'_, esp_hal::Blocking>, k: u64) -> (Option<i32>, Option<i16>) {
+        if !self.adc_configured {
+            if k % Self::RETRY_TICKS != 0 {
+                return (None, None);
+            }
+            self.adc_configured = i2c.write(tc::MCP3421_ADDR, &[tc::MCP3421_CONFIG]).is_ok();
+            return (None, None);
+        }
+        let mut b = [0u8; 4];
+        let uv = match i2c.read(tc::MCP3421_ADDR, &mut b).map(|_| tc::mcp3421_decode(b)) {
+            Ok(Mcp3421::Fresh(uv)) => uv,
+            Ok(Mcp3421::Stale) => return (None, None),
+            Ok(Mcp3421::Misconfigured) | Err(_) => {
+                self.adc_configured = false;   // rewrite the config on the next retry slot
+                return (None, None);
+            }
+        };
+        (Some(uv), self.cold_junction(i2c))
+    }
+
+    fn cold_junction(&mut self, i2c: &mut I2c<'_, esp_hal::Blocking>) -> Option<i16> {
+        let mut b = [0u8; 2];
+        if !self.cj_present {
+            // At power-on the TMP117 runs continuous conversions by itself (1 s cycle, 8 averages):
+            // nothing to configure, only check it's really there.
+            self.cj_present = i2c.write_read(tc::TMP117_ADDR, &[tc::TMP117_REG_ID], &mut b).is_ok() && tc::tmp117_id_ok(b);
+            if !self.cj_present {
+                return None;
+            }
+        }
+        match i2c.write_read(tc::TMP117_ADDR, &[tc::TMP117_REG_TEMP], &mut b) {
+            Ok(()) => tc::tmp117_centi(b),
+            Err(_) => {
+                self.cj_present = false;
+                None
+            }
+        }
     }
 }
