@@ -70,6 +70,7 @@ for r, t in (("J12", "N"), ("J13", "L"), ("J14", "P"), ("J15", "3")):   # top-si
     q["label_pos"][f"M{t}"] = [P[r][0], P[r][1] - 2.6, 0, t]
 labels = dict(base["labels"]); labels["J7"] = ["FRONT", ["BREW", "STM", "GND", "LP", "LC", "LS"]]; labels["J10"] = ["SCALE", ["D1", "SCK", "GND", "D2", "3V3"]]
 q["labels"] = labels
+q["logo"] = [48.5, 52.0, 20.0]   # the bean, big, on the back (lower right: clear of the IRM and the spades)
 q["fp_silk_off"] = ["PS1"]   # its underside outline would cross the opto slots; the square pin-1 pad shows orientation
 json.dump(q, open(f"{HC}/plan_v35.json", "w"), indent=1)
 env = dict(os.environ, PLACE_JSON="plan_v35.json")

@@ -1,0 +1,6 @@
+fastroute: 58 s, exit 0, session written
+widened 53 sub-0.2 mm segments to 0.2 mm
+imported 819 segments, 82 vias (0 stubs removed)
+finished: 26 GND stitching vias, 112 vias total, unconnected 0
+wrote build/v36-mp90/coffee-controller-120v.kicad_pcb
+DRC: build/v36-mp90/coffee-controller-120v-drc.rpt
