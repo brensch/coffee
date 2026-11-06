@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""coffee controller board v7 (low voltage only): schematic as code (SKiDL).
+"""coffee controller board v33: schematic as code (SKiDL).
 
-No mains on this board. Certified modules mounted beside it in the machine do the mains work:
-- a 5 V AC-DC module feeds J1;
-- the heater and the pump are switched by zero-cross SSRs, the 3-way valve by a relay module;
-  the board sinks each module's input through a small MOSFET (J2 heater, J3 pump, J8 valve).
-- An ESP32-C6 (external-antenna module) reads the thermistor, the pressure transducer and the
-  front switches on its own ADC and GPIOs.
-Everything is SMD on one side, from JLCPCB's basic library where one exists. Notes and
+The small loads' mains are on this board (v32+), behind a 7 mm isolation band:
+- four 6.3 mm spades (N, L, P, 3), a 2 A fuse and a Mean Well IRM-10-5 that powers the board;
+- the pump and the 3-way valve, each switched by a zero-cross opto-triac (MOC3083) and a triac;
+- the heater (11 A) stays on an external zero-cross SSR, driven low-side from J2.
+An ESP32-C6 (external-antenna module) reads a K-type thermocouple (MCP3421 + TMP117 on I2C), the
+pressure transducer, the front switches and the scale.
+Everything is SMD on one side except the IRM and the spades, from JLCPCB's basic library where one exists. Notes and
 calculations: docs/CIRCUIT.md.
 
     python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -186,7 +186,7 @@ ps1["AC/N", "AC/L"] += ac_n, ac_lf
 ps1["-Vo", "+Vo"] += gnd, v5
 
 
-def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_note, r_gk=None):
+def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_note, r_gk=None, bleed=None):
     """Low-side FET -> opto LED (from +5V) -> MOC3083 zero-cross driver -> T435 triac; RC snubber across
     the triac (onsemi AN-3004 circuit; values: docs/evidence, sim/REPORT.md)."""
     a = Net(f"{name}_LED_A")
@@ -218,6 +218,15 @@ def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_
     c = part(CX2, c_sn, "22nF X2", mpn="Murata GA355DR7GB223KW01L", mains=True,
              notes="MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage")
     c[1, 2] += sn, out_net
+    if bleed:
+        # v33 (review M1): the pump's own series diode lets the snubber cap charge to the line peak and
+        # then blocks its discharge, so ~170 V DC sits across the triac and the zero-cross opto (fires
+        # only under its 20 V inhibit voltage) can never re-fire. 100k across the triac drains the cap in
+        # each reverse half (tau 2.2 ms): 0.9 V at the next positive zero crossing (sim/run.py).
+        # Vishay CRCW2512 HP: 500 V working (187 V peak at 132 V line), 1 W (87 mW while the pump is off).
+        r = part(R, bleed, "100k 500V", footprint=FP_R_2512, mpn="Vishay CRCW2512100KFKEG", mains=True,
+                 notes="MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)")
+        r[1, 2] += ac_lf, out_net
     return u, q
 
 
@@ -225,7 +234,8 @@ def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_
 # at turn-off with the snubber (sim/REPORT.md). ~0.3-0.5 W: DPAK on its AC_L_F copper, ~90-100 C junction
 # at 70 C ambient (Tj max 125 C).
 triac_channel("PUMP", "U8", "Q5", "R47", "R49", "R51", "C15", pump_sw, "T435-600B",
-              "Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)")
+              "Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)",
+              bleed="R54")
 # Valve: T410 (IH 15 mA). The coil is still carrying current when the triac drops out at IH, and dumps
 # it into the snubber: V ~ IH * sqrt(L/C). The T435's 35 mA gave 690 V (over its 600 V); the T410's 15 mA
 # gives 456 V at 132 V line (76 %), dV/dt 23 V/us (its rating 40). sim/REPORT.md.
@@ -496,7 +506,7 @@ def netname(pin):
     return n.name if n is not None and n is not NC and n.pins else None
 
 
-MAINS_REFS = {"J12", "J13", "J14", "J15", "F1", "PS1", "U8", "U9", "Q5", "Q6", "R49", "R50", "R51", "R52", "R53", "C15", "C16"}
+MAINS_REFS = {"J12", "J13", "J14", "J15", "F1", "PS1", "U8", "U9", "Q5", "Q6", "R49", "R50", "R51", "R52", "R53", "R54", "C15", "C16"}
 THT_OK = {"PS1", "J12", "J13", "J14", "J15"}   # the IRM module and the spade tabs: JLC THT or hand-soldered
 
 

@@ -47,7 +47,7 @@ coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```
 
-## Hardware: the v32 controller board
+## Hardware: the v33 controller board
 
 One 98 × 55.5 mm board, the Gaggiuino split done carefully. The pump, the 3-way valve and the board's own
 supply are switched on the board, behind a 7 mm milled isolation band (7.83 mm minimum, verified on the
@@ -64,7 +64,7 @@ copper). The 11 A heater stays on a factory SSR on the rear panel. It carries:
 
 | Item | What | Notes |
 |---|---|---|
-| Board | v32 controller, assembled by JLCPCB (full, or SMD-only plus 5 parts to solder) | `hardware/controller` generates everything: schematic, PCB, DRC, isolation check, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
+| Board | v33 controller, assembled by JLCPCB (full, or SMD-only plus 5 parts to solder) | `hardware/controller` generates everything: schematic, PCB, DRC, isolation check, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
 | Boiler temperature | K-type M4 screw-in thermocouple (Gaggiuino's) | NIST type-K conversion with cold-junction compensation in firmware. Two-point calibration. |
 | Pressure | Transducer 0–1.2 MPa, 5 V, 0.5–4.5 V, G1/4 (Gaggiuino's) + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
 | Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |

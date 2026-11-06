@@ -1,4 +1,4 @@
-# Buy list: off-board parts (board v32, US Gaggia Classic Pro, 120 V)
+# Buy list: off-board parts (board v33, US Gaggia Classic Pro, 120 V)
 
 **v32 puts the small mains loads on the board** (Gaggiuino's split): the board carries its own
 certified 5 V supply (Mean Well IRM-10-5) and switches the pump and the 3-way valve with on-board
@@ -8,7 +8,7 @@ software. Every lead is crimped by you (no pre-crimped leads, no splices near th
 
 Wiring: [WIRING.md](WIRING.md). Every candidate looked at, with datasheet quotes and links, is in
 [`docs/evidence/parts.jsonl`](evidence/parts.jsonl): flip a status there to change a choice. The
-board itself (all its parts, including the mains section) is the JLC order: `hardware/controller/build/coffee-v32-*`.
+board itself (all its parts, including the mains section) is the JLC order: `hardware/controller/build/coffee-v33-*`.
 
 AliExpress prices weren't readable from here: the "~" figures are typical, open the links.
 

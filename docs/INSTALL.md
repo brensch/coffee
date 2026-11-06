@@ -1,10 +1,10 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v32 controller board** (CIRCUIT.md), which switches the
+The plan from a clean PC to coffee, for the **v33 controller board** (CIRCUIT.md), which switches the
 pump and the 3-way valve itself and powers itself from mains, plus the external heater SSR (BUY.md,
 WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
 
-> ⚠️ **Mains voltage, on the board too.** v32's left half (the spades, fuse, IRM module, triacs and
+> ⚠️ **Mains voltage, on the board too.** The board's left half (the spades, fuse, IRM module, triacs and
 > snubbers) is at 120 V whenever the machine is plugged in, on both sides of the board. So are the heater
 > SSR and the machine's own wiring. Work only with the machine unplugged and, after it's been on, cooled.
 > The board lives in its printed tray, never loose and never against the steel. The stock steam
@@ -38,7 +38,7 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
    ```sh
    cd hardware/controller
    .venv/bin/python controller.py         # schematic + design checks + mis-plug check -> build/
-   python3 sim/run.py                     # circuit simulations (67 checks)
+   python3 sim/run.py                     # circuit simulations (71 checks)
    source ~/opt/kienv.sh
    PLACE_JSON=plan.json FASTROUTE=… python3 ext_route.py fastroute 120   # place, route, DRC, gerbers
    python3 isolation_check.py build/coffee-controller-120v.kicad_pcb     # mains-to-SELV >= 6 mm
@@ -46,13 +46,13 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
    python3 cost.py                        # price both
    ```
 2. **Files to upload** (in `build/`), one of two sets:
-   - **Full assembly (recommended):** `coffee-v32-gerbers.zip`, `coffee-v32-bom.csv`, `coffee-v32-cpl.csv`.
+   - **Full assembly (recommended):** `coffee-v33-gerbers.zip`, `coffee-v33-bom.csv`, `coffee-v33-cpl.csv`.
      JLC solders everything, the five through-hole parts included (the IRM and the four spades).
-   - **SMD only:** the same gerbers, plus `coffee-v32-smd-bom.csv` and `coffee-v32-smd-cpl.csv`. Then you
-     solder the parts in `coffee-v32-smd-hand-solder.csv` (the IRM-10-5 and four TE 63824-1 tabs, which
+   - **SMD only:** the same gerbers, plus `coffee-v33-smd-bom.csv` and `coffee-v33-smd-cpl.csv`. Then you
+     solder the parts in `coffee-v33-smd-hand-solder.csv` (the IRM-10-5 and four TE 63824-1 tabs, which
      you buy from LCSC). Each mains joint must be a full, shiny fillet. Trim the leads to 1.5 mm or less
      on the underside, then clean off the flux.
-   - About $180 vs $170 for 5 boards (CIRCUIT.md, "Ordering").
+   - About $184 vs $173 for 5 boards (CIRCUIT.md, "Ordering").
 3. **PCB options:**
    - 2 layers, 1.6 mm FR-4, 1 oz, HASL lead-free, green mask;
    - 98 × 55.5 mm;
@@ -65,7 +65,7 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
      - the opto-triacs are the right way round (pin 1 dot toward the SELV side);
      - the GH sockets open outward;
      - the module is placed correctly.
-   - 18 extended part types; the rest are basic.
+   - 19 extended part types; the rest are basic.
 5. **No conformal coating:** the isolation is designed as air gaps and slots, and a coating would only
    hide a bad joint.
 
@@ -161,6 +161,10 @@ Leave every lead plugged in, the heater SSR's included. The steam thermostat and
 still in series with the heater. Don't unplug J2 to "test the pump first": the firmware sees full
 heat with no temperature rise and, within about 2 minutes, latches a `HEATER_INEFFECTIVE` fault
 (clear it in the UI, or reboot).
+
+**Never plug a USB cable into the board while the machine is plugged in with the case open.** The
+isolation makes USB safe in itself, but your hands would be beside the live mains half. After the
+first flash, updates go over Wi-Fi; if you need USB again, unplug the machine first.
 
 **Close the case before any mains power-on**, every time: top cover on with its two earth wires
 reconnected (WIRING check 9), side panels on. The board's mains half and the heater SSR's screw

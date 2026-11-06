@@ -1,4 +1,6 @@
-# Controller board v32: mains for the small loads on board
+# Controller board v33: mains for the small loads on board
+
+v33 is v32 plus one part, R54, the pump bleeder that the independent review found missing ([REVIEW-v32.md](REVIEW-v32.md), M1).
 
 A 98 × 55.5 mm two-layer board in two halves:
 - **Mains half (left):**
@@ -18,7 +20,7 @@ protection that doesn't depend on any of this.
 Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md). Mis-plug safety: [SWAP-SAFETY.md](SWAP-SAFETY.md).
 
 Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations: `hardware/controller/sim/run.py`
-→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 67/67 pass. Every part was checked against its
+→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 71/71 pass. Every part was checked against its
 maker's datasheet (pin map, package, and each value the design relies on); the quotes and links are in
 [`evidence/parts.jsonl`](evidence/parts.jsonl).
 
@@ -50,6 +52,7 @@ from Gaggiuino's board:
 | Q5 | ST T435-600B (DPAK), pump | IGT/IH 35 mA, 400 V/µs, snubberless-class. Pump 0.45 A rms, half-wave (its own diode): 86.8 °C junction at 70 °C ambient on its copper (97 °C at a 1.4 A peak allowance) |
 | Q6 | ST T410-600B (DPAK), valve | IH 15 mA (see above). 40 V/µs: the snubber holds the turn-off to 23 V/µs. ~0.1 W, 75 °C junction |
 | R53 | 1 kΩ 1206, gate to MT1 | dV/dt immunity for the T410's sensitive 10 mA gate (AN-3004: 330 Ω–1 kΩ) |
+| R54 | 100 kΩ, Vishay CRCW2512 (500 V, 1 W), across the pump triac | **v33.** The pump's series diode lets C15 charge to the line peak and then blocks its discharge: ~170 V DC would sit across the triac, and the zero-cross MOC3083 only fires under its 20 V inhibit voltage, so the pump would never stroke again. R54 drains it in each reverse half (τ 2.2 ms): 1.2 V at the next positive zero crossing. 187 V peak (37 % of its rating), 87 mW while the pump is off. The valve needs none (no diode) |
 | R51/C15, R52/C16 | 100 Ω 1 W 2512 + 22 nF X2 (Murata GA355) | RC snubber across each triac. Pump turn-off 171–190 V, valve 429–456 V (limit 480 V = 80 % of 600 V); 2.5–2.9 kV without. Off-state leakage ~1 mA: under anything that holds the valve in (~50 mA) or moves the pump |
 
 **No MOV.** The IRM passes a 1 kV L–N surge (EN 61000-4-5) by itself, and the triacs and optos are
@@ -59,8 +62,9 @@ from Gaggiuino's board:
 - **Mains to SELV:** 7.83 mm minimum, edge to edge, on both layers. The limit is 6.0 mm: reinforced
   isolation at 120 V working, with margin. Through-hole pads count on both layers. Measured on the opto
   pins against the GND pour.
-- **The band:** x 40–47 mm, with no copper on either layer. A milled slot under each opto turns surface
-  creepage under the body into air clearance.
+- **The band:** x 40–47 mm, with no copper on either layer. A milled slot under each opto cuts the direct
+  surface path under its body. It doesn't extend past the pad rows, so the 8.03 mm row gap alone is
+  what meets the requirement.
 - **Between mains nets:** 2.0 mm (KiCad DRC rules in `coffee-controller-120v.kicad_dru`); 0.5 mm only
   between pads at the same potential.
 - **Bridging parts:** only their own certified internal barrier crosses the band. The IRM's DC pins are
@@ -135,25 +139,25 @@ GPIO → AO3400A, **3.3 kΩ gate pull-down** (holds each output off while the pi
   - the LED row S P C S H P V is along the bottom.
 - **Mis-plug safety:** every lead's size is unique except the two 7-pins, and `swap_check.py` proves those
   are harmless in each other's sockets.
-- **Routing:** fastroute 0.1.14, end to end: 0 unrouted, 86 routed vias, plus 79 GND stitching vias.
+- **Routing:** fastroute 0.1.14, end to end: 0 unrouted, 86 routed vias, plus 84 GND stitching vias.
 - **KiCad DRC:** clean with the mains rules; only the library-table notes remain.
 - **JLC checks:**
-  - `jlc_cpl.py`: all 82 placed parts land on JLC's own pads;
+  - `jlc_cpl.py`: all 83 placed parts land on JLC's own pads;
   - `jlc_pins.py`: 126 pin functions match JLC's symbols (triac A1/A2 = MT1/MT2, IRM ±V = ±Vo, opto pin 5 SUB = NC).
 
 ## Ordering: full assembly vs SMD only
 
-`build/coffee-v32-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM and the four
-spades (through-hole). `build/coffee-v32-smd-{bom,cpl}.csv` leaves those five parts out, and
-`coffee-v32-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
+`build/coffee-v33-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM and the four
+spades (through-hole). `build/coffee-v33-smd-{bom,cpl}.csv` leaves those five parts out, and
+`coffee-v33-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
 live tiered prices:
 
 | 5 boards | JLC | you | total |
 |---|---|---|---|
-| Full assembly | ~$180 | – | **~$180** |
-| SMD only | ~$142 | IRM + 4 tabs ~$27 | **~$170** + soldering 5 × 12 joints |
+| Full assembly | ~$184 | – | **~$184** |
+| SMD only | ~$146 | IRM + 4 tabs ~$27 | **~$173** + soldering 5 × 12 joints |
 
-The ~$10 difference is two extended-part fees plus JLC's THT setup. Full assembly is recommended: the
+The ~$11 difference is two extended-part fees plus JLC's THT setup. Full assembly is recommended: the
 IRM's pins carry mains, and a factory joint is worth $2 a board.
 
 ## What needs a human
@@ -163,6 +167,6 @@ IRM's pins carry mains, and a factory joint is worth $2 a board.
   - each output's board LED follows its command.
 - **First mains power-up through a GFCI.** The board sits in its tray with every receptacle on and
   insulated.
-- **Pump on the real pump:** count the strokes, and listen for hum while it's off. The snubber leaks about
-  1 mA.
+- **Pump on the real pump:** count the strokes (one per enabled mains cycle: R54's job), and listen for hum
+  while it's off. The snubber and R54 leak about 1–2 mA.
 - **Valve coil:** read its label. The design assumes 80–150 mA.

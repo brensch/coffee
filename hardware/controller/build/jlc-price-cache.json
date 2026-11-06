@@ -1172,5 +1172,37 @@
 "endNumber": -1,
 "productPrice": 0.3275
 }
+],
+"C2077706": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.1359
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.1061
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.0914
+},
+{
+"startNumber": 500,
+"endNumber": 1999,
+"productPrice": 0.0803
+},
+{
+"startNumber": 2000,
+"endNumber": 3999,
+"productPrice": 0.0713
+},
+{
+"startNumber": 4000,
+"endNumber": -1,
+"productPrice": 0.0668
+}
 ]
 }

@@ -89,7 +89,8 @@ FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name 
          "TO-252-2|T435-600B": "C145128",                         # ST T435-600B-TR (pump)
          "TO-252-2|T410-600B": "C2970064",                        # ST T410-600B-TR (valve)
          "C_2220_Murata_GA355|22nF X2": "C437417",                # Murata GA355DR7GB223KW01L, Class X2
-         "R_2512_6332Metric|100 1W": "C35218",                    # UNI-ROYAL 25121WF1000T4E
+         "R_2512_6332Metric|100 1W": "C35218",
+         "R_2512_6332Metric|100k 500V": "C2077706",               # v33: Vishay CRCW2512100KFKEG, 500 V (pump bleeder)                    # UNI-ROYAL 25121WF1000T4E
          "Fuse_Littelfuse_Nano2_443|2A T": "C187538",              # Littelfuse 0443002.DR
          "FASTON_TE_63824-1|N": "C575074", "FASTON_TE_63824-1|L": "C575074",   # TE 63824-1
          "FASTON_TE_63824-1|P": "C575074", "FASTON_TE_63824-1|3": "C575074",

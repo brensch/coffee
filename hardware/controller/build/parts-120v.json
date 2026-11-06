@@ -242,6 +242,26 @@
    "mpn": "Murata GA355DR7GB223KW01L",
    "notes": "MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage"
   },
+  "R54": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "100k 500V",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "PUMP_SW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "Vishay CRCW2512100KFKEG",
+   "notes": "MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)"
+  },
   "R48": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "value": "330",

@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/06/2026 04:17 AM")
+    (date "11/06/2026 04:35 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -1837,6 +1837,29 @@
         (tstamps "/"))
       (tstamps "bdf2c8e7-c99c-5e89-8554-640fd00d1b17"))
     (comp
+      (ref "R54")
+      (value "100k 500V")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_2512_6332Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_2512_6332Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R54")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "ca5e2d7a-f381-5ad5-98e1-96064931f3f8"))
+    (comp
       (ref "R6")
       (value "3.3k")
       (description "Resistor")
@@ -2179,6 +2202,10 @@
         (pintype "PASSIVE"))
       (node
         (ref "R52")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R54")
         (pin "1")
         (pintype "PASSIVE")))
     (net
@@ -2812,6 +2839,10 @@
       (node
         (ref "Q5")
         (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R54")
+        (pin "2")
         (pintype "PASSIVE")))
     (net
       (code 32)

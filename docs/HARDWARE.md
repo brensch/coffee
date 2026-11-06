@@ -11,7 +11,7 @@ Where to find what:
 
 ## Design rules
 
-1. **Mains only where it's cheap to make safe.** v32 carries the small loads' mains on the board: the pump
+1. **Mains only where it's cheap to make safe.** Since v32 the board carries the small loads' mains on the board: the pump
    (~0.45 A), the valve (~0.1 A) and its own certified Mean Well IRM-10-5 supply. Isolation is verified
    on the routed copper (≥ 6 mm to SELV, 7.83 mm achieved; `isolation_check.py`). The 11 A heater stays
    on a factory zero-cross SSR on the rear panel. A code check fails the build if any net joins a mains
@@ -23,8 +23,8 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled (`build/coffee-v32-{gerbers.zip,bom.csv,cpl.csv}`), or SMD-only
-  with five through-hole parts to solder yourself (`coffee-v32-smd-*`). Order settings: INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled (`build/coffee-v33-{gerbers.zip,bom.csv,cpl.csv}`), or SMD-only
+  with five through-hole parts to solder yourself (`coffee-v33-smd-*`). Order settings: INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md): the heater SSR, mains wire and receptacles, GH housings and
   contacts, the thermocouple, the pressure transducer, the antenna, and the tray.
 

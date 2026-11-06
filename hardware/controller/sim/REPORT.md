@@ -28,18 +28,22 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Output during reset (GPIO high-Z) | internal pull-up 20k vs 3.3k pull-down | 0.467 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
 | Output during reset: module input current | internal pull-up 20k | 3.81e-09 mA | < 0.1 mA (off) | ✅ |
 | Output during reset, 100k pull-down (rejected value) | internal pull-up 45k | 2.28 V | reference only: why the pull-down is 3.3k | ✅ |
-| Pump triac turn-off: peak voltage (reference) | 120 V, no snubber | 2.49e+03 V | info: why the snubber is fitted | ✅ |
+| Pump triac turn-off: peak voltage (reference) | 120 V, no snubber | 1.55e+03 V | info: why the snubber is fitted | ✅ |
 | Valve triac (T410) turn-off: peak voltage (reference) | 120 V, no snubber | 2.89e+03 V | info: why the snubber is fitted | ✅ |
-| Pump triac (T435) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 171 V | < 480 V (80 % of the T435's 600 V) | ✅ |
-| Pump triac turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 47.1 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Pump triac (T435) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 172 V | < 480 V (80 % of the T435's 600 V) | ✅ |
+| Pump triac turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 47 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
 | Valve triac (T410) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 429 V | < 480 V (80 % of the T410's 600 V) | ✅ |
 | Valve triac (T410) turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
-| Pump triac turn-off: peak voltage (reference) | 132 V, no snubber | 2.48e+03 V | info: why the snubber is fitted | ✅ |
+| Pump triac turn-off: peak voltage (reference) | 132 V, no snubber | 1.54e+03 V | info: why the snubber is fitted | ✅ |
 | Valve triac (T410) turn-off: peak voltage (reference) | 132 V, no snubber | 2.91e+03 V | info: why the snubber is fitted | ✅ |
-| Pump triac (T435) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 190 V | < 480 V (80 % of the T435's 600 V) | ✅ |
-| Pump triac turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 47.1 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Pump triac (T435) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 189 V | < 480 V (80 % of the T435's 600 V) | ✅ |
+| Pump triac turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 47 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
 | Valve triac (T410) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 456 V | < 480 V (80 % of the T410's 600 V) | ✅ |
 | Valve triac (T410) turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Pump zero-cross re-arm (reference) | 132 V, no bleeder (v32) | 185 V | info: the pump diode holds the snubber cap at the peak; review M1, why R54 | ✅ |
+| Pump zero-cross re-arm: triac voltage at the next positive zero crossings | 132 V, 100k bleeder (R54) | 1.2 V | < 10 V (MOC3083 fires only under VINH, 20 V max) | ✅ |
+| Pump bleeder dissipation (R54, 2512 1 W) | 132 V, half-wave while the pump is off | 87.1 mW | < 250 mW (25 % of 1 W) | ✅ |
+| Pump bleeder voltage (R54) | 132 V line peak (the triac's off-state voltage) | 187 V | < 400 V (80 % of the CRCW2512's 500 V) | ✅ |
 | Valve with a T435 instead (rejected) | 132 V, IH 35 mA, 100 R + 22 nF | 690 V | reference: over the 600 V rating, why the valve uses the T410 | ✅ |
 | Snubber off-state leakage | 22 nF at 120 V 60 Hz | 0.995 mA | < 2 mA (valve hold-in needs ~50 mA; pump coil ignores it) | ✅ |
 | Snubber discharge into the triac at turn-on | 170 V peak / 100 R | 1.7 A | < 31 A (T435 ITSM) and < 4 A di/dt-friendly | ✅ |
@@ -72,4 +76,4 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.53 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
-**67 / 67 checks pass.**
+**71 / 71 checks pass.**
