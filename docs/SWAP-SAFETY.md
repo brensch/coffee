@@ -70,21 +70,17 @@ unauthenticated OTA, and that SCK-low was the wrong standby state; all three are
 - **strong:** +5V, 3V3, GND, and an output drain, which is 0 V when that output is on;
 - **SCK:** a push-pull GPIO;
 - **medium:** lamp drives, which are a GPIO behind 330 Ω;
-- **weak:** switch inputs (1k + 10k pull-up), DOUT inputs (pull-up), the pressure divider, and the NTC
-  node (4.7k pull-up);
+- **weak:** switch inputs (1k + 10k pull-up), DOUT inputs (pull-up) and the pressure divider;
 - **empty.**
 
-DOUT, SCK, the switch inputs and the NTC node must never see more than 3.6 V from a medium or strong
-source.
+DOUT, SCK and the switch inputs must never see more than 3.6 V from a medium or strong source. (v32's
+thermocouple input is on the only 2-pin socket: no other lead reaches it.)
 
 **Leads** are modelled as wired in WIRING.md:
 - **Front:** three rockers to the common (each open or closed), and three LEDs with their resistor.
-- **SSR:** the heater SSR input and two SSR boards, all from the shared +5V wire. Worst case, the boards
-  and the heater input also conduct in reverse.
+- **SSR:** the heater SSR input across its two wires (+5V, OUT). Worst case, it also conducts in reverse.
 - **Scale:** an HX711 with protection diodes from every pin to its rail and ground.
 - **Transducer:** the same diode model as the scale.
-- **NTC:** a resistor.
-- **Supply:** a floating 5 V source. It drives nothing until one side is tied to the board.
 
 **States enumerated:**
 - every rocker combination;
@@ -93,12 +89,11 @@ source.
 - SCK high or low;
 - the board powered (from USB, or from the supply wherever it is) or unpowered.
 
-Current is followed through floating nodes (the front lead's common, the SSRs' chained +5V), across
-diodes and device inputs.
+Current is followed through floating nodes (the front lead's common), across diodes and device inputs.
 
-An SSR or SSR board counts as **on** when a medium or strong source (mA) puts **1.0 V or more** across it.
-They're only guaranteed off below about 1 V, so the undefined region up to their 3 V turn-on counts as on.
-Weak sources (pull-ups, ≤ 0.3 mA) can't turn on an SSR: the boards need 5 mA, the heater SSR a few mA.
+The SSR counts as **on** when a medium or strong source (mA) puts **1.0 V or more** across it. It's only
+guaranteed off below about 1 V, so the undefined region up to its 3 V turn-on counts as on. Weak sources
+(pull-ups, ≤ 0.3 mA) can't turn it on: it needs a few mA.
 
 The same weak sources can push up to ~0.6 mA through a protection diode (below). That's within what CMOS
 inputs tolerate, so the checker ignores it.
@@ -113,27 +108,15 @@ tick. Until then the outputs are held off by the gate pull-downs and the lamp, S
 low or high-Z. So when the front lead is
 not in J7, the board is in standby, as long as whatever is in J7 can't pull the power input low. The
 checker verifies that for every lead in J7, and analyses every lead-in-wrong-socket case with that
-standby state. When the front lead *is* in J7, the rocker can be on, so the other two 7-pin leads are
+standby state. When the front lead *is* in J7, the rocker can be on, so the other 7-pin lead (the scale) is
 analysed in every output state.
 
 Each lead-in-socket case depends only on that lead, that socket, and the firmware and power state. That
 state is enumerated or pinned as above, so a swap of two or three leads at once is covered by its
 single-lead cases.
 
-## The 7-pin group
+## The 7-pin pair (the only same-size sockets in v32)
 
-- **SSR lead in the front socket.** Its pin 1 is empty and faces the power input, so the board stays in
-  standby. The +5V wire and the heater return land on the brew and steam inputs, which can only source
-  ~0.3 mA from their pull-ups. The pump and valve returns land on lamp drives, low in standby. Nothing
-  can push mA through any SSR input.
-- **SSR lead in the scale socket.** The +5V wire lands on the empty J10.2, so the chain floats. The
-  heater return lands on DOUT1 and the pump return on DOUT2, both weak pulled-up inputs that can't sink
-  current. The valve return lands on 3V3. Even if the valve board conducted backwards, the chain only
-  reaches ~2.6 V with nowhere to sink, and no SSR has a path. J10's SCK and GND face the lead's empty
-  pins 4 and 5.
-- **Front lead in the SSR socket.** The board is in standby, so every output is off. The rockers join
-  J2.1 (empty), J2.2 (+5V) and J2.3 (heater drain, off) to the common on the empty J2.4: +5V meets only
-  an open drain. The LEDs face J2.5 (empty) and the two off drains.
 - **Front lead in the scale socket.** The board is in standby with SCK held high. The rockers can join
   J10.1, J10.2 (empty) and DOUT1 to the common on SCK. DOUT1 is an input that's already pulled high. The
   LEDs go from GND, DOUT2 and 3V3 to the common at 3.3 V: reverse-biased or at 0 V, so none conducts.
@@ -142,35 +125,18 @@ single-lead cases.
   board stays in standby with the lamps low. The HX711's GND, DOUT2 and supply land on the three lamp
   drives, SCK on the panel's GND, and DOUT1 on the steam input. Everything it touches is at 0 V or weakly
   pulled up. The steam input's pull-up leaks ~0.3 mA into DOUT1's clamp; the chip stays unpowered.
-- **Scale lead in the SSR socket.** Its empty pins 1–2 face J2.1 and the SSRs' +5V, so 5 V reaches
-  nothing. Its other pins land on the three drains and two empty pins: only sinks, no source, so the
-  HX711 is unpowered.
 
-## The 3-pin group
-
-- **Supply lead in the pressure socket.** Its +5V lands on the board's +5V and its GND on GND: the board
-  simply runs from it. D2 still keeps it out of a USB host.
-- **Supply lead in the thermistor socket.** Its +5V lands on the empty J5.2. Its GND touches only the NTC
-  node, so the floating supply drives nothing.
-- **Pressure lead in J1.** J1.2 is live whenever the board is powered: Q4 conducts both ways. The
-  transducer's supply and ground land on +5V and GND, and its output on the empty J1.1. It just runs,
-  into nothing.
-- **Pressure lead in the thermistor socket.** The transducer's output lands on GND, its supply on the
-  empty pin, and its ground on the NTC node. About 0.6 mA flows from R15 through the transducer's
-  ground-side diode, so the NTC node sits at ~0.6 V. That reads as about 140 °C, a plausible temperature,
-  not a fault. What keeps it safe is J6: it then holds no transducer (the supply lead, the thermistor or
-  nothing), so pressure reads ~0 V, the PRESSURE_SENSOR fault holds, and the heater stays off.
-- **Thermistor lead in J1 or the pressure socket.** It's a resistor. In J1 it goes from the empty pin to
-  GND, so nothing. In J6 it goes from SIG to GND: pressure reads ~0, a sensor fault.
+v30's cases with the SSR lead (J2, then 7-pin) and the 3-pin group (supply, pressure, thermistor) are in
+git history (`git show 989b5e3:docs/SWAP-SAFETY.md`). In v32 those leads have unique sizes.
 
 ## What the model doesn't cover
 
-- **Off-centre plugs.** A 3-pin plug can be forced off-centre into a 7-pin header. The latch won't
+- **Off-centre plugs.** A smaller GH plug can be forced off-centre into a larger header. The latch won't
   engage, so don't.
 - **Your own wiring.** The analysis assumes each lead is wired at the device end exactly as WIRING.md
   says, including the LEDs' own resistors and the scale on 3.3 V. A lead wired wrong at the device end
   isn't something any pinout can catch. Label both ends.
-- **Firmware.** Safety in two swapped cases (front lead in J2, scale lead in J7) relies on the standby
+- **Firmware.** Safety in the swapped 7-pin cases (front lead in J10, scale lead in J7) relies on the standby
   behaviour above. With standby forced off, those two are the only failures. It is covered by
   `standby_keeps_every_output_and_lamp_off` in `coffee-core`. The SCK gating and the OTA gate are in
   `firmware/esp32/src/control.rs` and `net.rs`.

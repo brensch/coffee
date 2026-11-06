@@ -378,7 +378,7 @@ c[1, 2] += v3, gnd
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
-j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)")
+j_p = part(JST3, "J6", "Pressure", mpn="JST SM03B-GHS-TB", notes="0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)")
 j_p[1, 2, 3] += p_sig, v5, gnd
 # 147 kOhm total: the TE M3200 datasheet asks for a load > 100 kOhm on its voltage output. Gain 100/147:
 # 4.5 V -> 3.06 V. (300k would leave too little charge in the reservoir for the ADC's sampling cap.)

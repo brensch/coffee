@@ -1125,7 +1125,7 @@
    "populate": "Y",
    "desc": "JST_GH_3_SMD",
    "mpn": "JST SM03B-GHS-TB",
-   "notes": "0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
+   "notes": "0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
   },
   "R16": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

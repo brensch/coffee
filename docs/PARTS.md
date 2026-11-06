@@ -1,36 +1,62 @@
-# Parts record: v30 low-voltage board
+# Parts record: v32 board (mains for the pump, valve and supply on board)
 
-Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-05). "basic" parts carry no setup fee; each "extended" part type adds about $3 to an assembly order. Not fitted: TP1 (BOOT, bare copper underneath). Independent review: [REVIEW-v23.md](REVIEW-v23.md). Off-board modules and cables: [BUY.md](BUY.md).
+Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The five through-hole parts (PS1, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v32-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad), H1-H3 (M3 holes). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
 
 | Refs | Value | Part | LCSC | JLC library | Stock | Notes |
 |---|---|---|---|---|---|---|
-| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 7569512 | 3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner |
-| C4 C8 C10 C11 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 36417613 | 3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner / ADC sampling reservoir / noise filter / ADC reservoir |
-| C5 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 11875198 | EN delay |
-| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3527055 | Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age) |
-| C9 | 22nF X7R | CL10B223KB8NNNC | C21122 | base | 849405 | ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses |
-| D1 D3 D4 D5 D6 D7 D8 | red | KT-0603R | C2286 | base | 6673950 | Status: boot log flicker, on while programming, then the firmware heartbeat / indicator: power lamp / indicator: coffee lamp / indicator: steam lamp / indicator: heater on / indicator: pump on / indicator: valve on |
-| D2 | B5819W | B5819W SL | C8598 | base | 793742 | USB bench power |
-| J1 | 5V in | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33031 | 1=- 2=+5V 3=GND, from the 5 V AC-DC module |
-| J2 | SSRs | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26134 | 2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 3=heater OUT 6=pump OUT 7=valve OUT; 1,4,5 unused |
-| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 151649 | Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power |
-| J5 | Thermistor | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33031 | Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused |
-| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 33031 | 0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board) |
-| J7 | Front panel | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26134 | 1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND) |
-| J10 | Scale | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26134 | 3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base) |
-| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 937806 | HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) / PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) / VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) |
-| Q4 | AO3401A | AO3401A | C15127 | base | 1608883 | Reverse-polarity protection |
-| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4845966 | Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim) |
-| R10 R11 R20 R21 R22 R23 R25 R28 R36 | 10k | 0603WAF1002T5E | C25804 | base | 43670172 | EN pull-up (Espressif RC delay) / GPIO8 high: required for download mode from the BOOT pad / switch pull-up / wetting current / V3_SNS divider top / V3_SNS divider bottom / V5_SNS divider bottom / SCK pull-down: HX711 stays powered while the C6 boots |
-| R12 R18 R19 R27 R29 R37 R38 R39 R40 R41 R42 | 1k | 0603WAF1001T5E | C21190 | base | 27934120 | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V / GPIO series protection / GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode / indicator LED: power lamp / indicator LED: coffee lamp / indicator LED: steam lamp / indicator LED: heater on / indicator LED: pump on / indicator LED: valve on |
-| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20533055 | USB-C sink identification |
-| R15 | 4.7k | 0603WAF4701T5E | C23162 | base | 13589276 | NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table) |
-| R16 | 47k | 0603WAF4702T5E | C25819 | base | 2564863 | Divider 100/147 (147k load: TE M3200 needs > 100k) |
-| R17 | 100k | 0603WAF1003T5E | C25803 | base | 16602151 |  |
-| R24 | 20k | 0603WAF2002T5E | C4184 | base | 5851045 | V5_SNS divider top |
-| R30 R31 R32 | 330 | 0603WAF3300T5E | C23138 | base | 2924989 | front-panel LED (pwr) current limit, ~4 mA / front-panel LED (coffee) current limit, ~4 mA / front-panel LED (steam) current limit, ~4 mA |
-| U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3825 | W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case |
-| U5 | TLV1117LV33DCYR | TLV1117LV33DCYR | C15578 | expand | 1915 | SOT-223 for heat: ~0.17 W average, +11 C |
+| C3 | 10uF 25V X5R | CL21A106KAYNNNE | C15850 | base | 14146231 | 3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner |
+| C4 C11 C13 C14 | 100nF X7R | CC0603KRX7R9BB104 | C14663 | base | 34755832 | 3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner / ADC reservoir / MCP3421 VDD bypass / TMP117 V+ bypass |
+| C5 C12 | 1uF X5R | CL10A105KB8NNNC | C15849 | base | 12766859 | EN delay / Differential filter across the ADC inputs: ~80 Hz with R43/R44 |
+| C6 C7 | 22uF 25V X5R | CL21A226MAQNNNE | C45783 | base | 3446348 | Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age) |
+| C9 | 22nF X7R | CL10B223KB8NNNC | C21122 | base | 817693 | ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses |
+| C15 C16 | 22nF X2 | GA355DR7GB223KW01L | C437417 | expand | 7975 | MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage |
+| D1 D3 D4 D5 D6 D7 D8 | red | KT-0603R | C2286 | base | 6666577 | Status: boot log flicker, on while programming, then the firmware heartbeat / indicator: power lamp / indicator: coffee lamp / indicator: steam lamp / indicator: heater on / indicator: pump on / indicator: valve on |
+| D2 | B5819W | B5819W SL | C8598 | base | 770329 | USB bench power |
+| F1 | 2A T | 0443002.DR | C187538 | expand | 1367 | MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush) |
+| J2 | Heater SSR | SM04B-GHS-TB(LF)(SN) | C189895 | expand | 17888 | 1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size) |
+| J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 323859 | Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power |
+| J5 | Thermocouple | SM02B-GHS-TB(LF)(SN) | C189893 | expand | 10364 | 1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it |
+| J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 28841 | 0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board) |
+| J7 | Front panel | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26107 | 1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND) |
+| J10 | Scale | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26107 | 3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base) |
+| J12 | N | 63824-1 | C575074 | expand | 12429 | MAINS. N: neutral (feeds the IRM module only) |
+| J13 | L | 63824-1 | C575074 | expand | 12429 | MAINS. L: live, unswitched (pump, valve, IRM) |
+| J14 | P | 63824-1 | C575074 | expand | 12429 | MAINS. P: switched live to the pump |
+| J15 | 3 | 63824-1 | C575074 | expand | 12429 | MAINS. 3: switched live to the 3-way valve |
+| PS1 | IRM-10-5 | IRM-10-5 | C2857903 | expand | 3993 | Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C |
+| Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 1079957 | HEATER output: sinks the external heater SSR input (7-15 mA) / PUMP output: sinks the opto-triac LED (~9 mA) / VALVE output: sinks the opto-triac LED (~9 mA) |
+| Q5 | T435-600B | T435-600B-TR | C145128 | expand | 1678 | MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient) |
+| Q6 | T410-600B | T410-600B-TR | C2970064 | expand | 1320 | MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W |
+| R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4821122 | Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim) |
+| R10 R20 R21 R25 R28 R36 | 10k | 0603WAF1002T5E | C25804 | base | 42745157 | EN pull-up (Espressif RC delay) / switch pull-up / wetting current / V5_SNS divider bottom / SCK pull-down: HX711 stays powered while the C6 boots |
+| R11 R46 | 4.7k | 0603WAF4701T5E | C23162 | base | 16108028 | I2C SDA pull-up; also GPIO8's strap pull-up (high at reset) / I2C SCL pull-up; also GPIO9 high at reset = normal boot |
+| R12 R18 R19 R29 R37 R38 R39 R40 R41 R42 R43 R44 | 1k | 0603WAF1001T5E | C21190 | base | 27530590 | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V / GPIO series protection / indicator LED: power lamp / indicator LED: coffee lamp / indicator LED: steam lamp / indicator LED: heater on / indicator LED: pump on / indicator LED: valve on / TC+ input: noise filter with C12 (probe lead runs past the heater wiring) / TC- input series: matches R43 (symmetric filter) |
+| R13 R14 | 5.1k | 0603WAF5101T5E | C23186 | base | 20428464 | USB-C sink identification |
+| R16 | 47k | 0603WAF4702T5E | C25819 | base | 3029233 | Divider 100/147 (147k load: TE M3200 needs > 100k) |
+| R17 | 100k | 0603WAF1003T5E | C25803 | base | 16281735 |  |
+| R24 | 20k | 0603WAF2002T5E | C4184 | base | 5726799 | V5_SNS divider top |
+| R30 R31 R32 R47 R48 | 330 | 0603WAF3300T5E | C23138 | base | 2893924 | front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA / front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA / front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA / PUMP opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA / VALVE opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA |
+| R45 | 10M | 0603WAF1005T5E | C7250 | base | 836722 | Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out |
+| R49 R50 | 330 | 1206W4F3300T5E | C17930 | expand | 204815 | MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak |
+| R51 R52 | 100 1W | 25121WF1000T4E | C35218 | expand | 38596 | MAINS: snubber R (inductive load) |
+| R53 | 1k | 1206W4F1001T5E | C4410 | base | 1573305 | MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k) |
+| U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3782 | W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case |
+| U5 | TLV1117LV33DCYR | TLV1117LV33DCYR | C15578 | expand | 1541 | SOT-223 for heat: ~0.17 W average, +11 C |
+| U6 | MCP3421A0T-E/CH | MCP3421A0T-E/CH | C29454 | expand | 8953 | Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C) |
+| U7 | TMP117AIDRVR | TMP117AIDRVR | C699536 | expand | 11609 | Cold junction: at J5's pads, I2C 0x48 (ADD0 to GND), +-0.2 C max to 100 C; thermal pad soldered to GND (TI allows floating or grounded) |
+| U8 U9 | MOC3083SR2M | MOC3083SR2M | C111561 | expand | 26297 | PUMP: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing / VALVE: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing |
+
+## Added in v32 (mains on board)
+- Mains: spade tabs J12-J15 (N, L, P, 3), fuse F1, Mean Well IRM-10-5 PS1, opto-triacs U8/U9, triacs Q5 (T435, pump) and Q6 (T410, valve), opto resistors R47-R50, gate resistor R53, snubbers R51/C15, R52/C16.
+- J2 (heater SSR) became a GH 4-pin, J5 (thermocouple) a GH 2-pin: unique sizes, no wrong lead fits.
+
+## Removed in v32
+- J1 (5 V in), Q4 (reverse-polarity P-FET): the supply is on the board.
+- R22/R23/C10 (3.3 V sense): the thermocouple ADC doesn't use the 3.3 V rail as a reference.
+- v31's WAGO 2060 thermocouple terminal: the probe's own wires are crimped into a GH plug.
+
+## Changed in v31 (thermocouple)
+- NTC divider (R15, R27, C8) replaced by the MCP3421 + TMP117 front end (U6, U7, R43-R45, C12-C14).
 
 ## Changed in v30 (mis-plug safety, after the v29 review)
 - Re-pinned: J1 –/+5V/GND, J5 GND/–/NTC, J2 heater on pin 3, J10 –/–/DOUT1/SCK/GND/DOUT2/3V3 (SWAP-SAFETY.md).

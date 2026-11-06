@@ -1,160 +1,168 @@
-# Controller board v30: low voltage only
+# Controller board v32: mains for the small loads on board
 
-A 64.3 × 20 mm two-layer board with six JST GH connectors in one row along its top edge, one per
-place in the machine (three 3-pin, three 7-pin), so every cable leaves one side: it stands upright in the machine's back-right corner (where GaggiMate
-mounts its controller) with the cables going up into the loom. The ESP32 module sits in the middle,
-straight against the connector row (pinless side down), and the board ends just below it; a seven-LED indicator panel sits in the right-hand area. The
-USB-C is at the left end. No mounting holes: heat-resistant velcro on the flat back holds it. Every part is on the top side, so JLCPCB's one-sided assembly fits all of it and there is nothing
-to solder. It carries
-**no mains**:
-- **The board's job:** read the sensors and drive three 5 V outputs.
-- **Mains switching:** certified modules mounted beside it in the machine do that:
-  - a zero-cross SSR for the heater (in place of the brew thermostat);
-  - a 1-channel G3MB-202P SSR board for the vibration pump;
-  - a 1-channel 5 V SSR board (Omron G3MB-202P) for the 3-way valve, with a snubber;
-  - a certified 5 V AC-DC module that powers the board.
+A 98 × 55.5 mm two-layer board in two halves:
+- **Mains half (left):**
+  - four 6.3 mm spade tabs, N L P 3 (Gaggiuino's order);
+  - a 2 A slow-blow fuse;
+  - a Mean Well **IRM-10-5** isolated 5 V supply;
+  - two zero-cross opto-triac channels that switch the **vibration pump** and the **3-way valve**.
+- **SELV half (right):**
+  - the ESP32-C6 module and the thermocouple and pressure front ends;
+  - five JST GH sockets along the top edge, plus USB-C.
+- **Between the halves:** a 7 mm copper-free band with milled slots. Only the two opto-triacs and the IRM module cross it.
 
-Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md).
+The **heater (1370 W, 11.4 A) stays off the board**, on its external SSR driven from J2. The stock steam
+thermostat (145 °C) and thermal fuse (184 °C) stay in series with it. They are the over-temperature
+protection that doesn't depend on any of this.
 
-Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations:
-`hardware/controller/sim/run.py` → [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 61/61 pass.
+Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md). Mis-plug safety: [SWAP-SAFETY.md](SWAP-SAFETY.md).
 
-Every part on the board was checked against its manufacturer's datasheet (pin map, package and every
-value the design relies on); the off-board parts are checked in BUY.md.
+Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations: `hardware/controller/sim/run.py`
+→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 67/67 pass. Every part was checked against its
+maker's datasheet (pin map, package, and each value the design relies on); the quotes and links are in
+[`evidence/parts.jsonl`](evidence/parts.jsonl).
 
-## Why the mains came off the board
+## Why some mains came back onto the board
 
-The v6–v14 boards switched the heater (12 A), pump and valve with on-board opto-triacs and triacs.
-The board is the one thing that can't be tested before paying for it, and every mains risk lived on it:
-- creepage and isolation design;
-- 12 A copper, and the triac-pin clearance problem that no Specctra autorouter can express;
-- the snubber/pump-diode interaction behind the one real-world failure report found for that circuit.
+v15–v31 carried no mains: certified SSR boards switched the pump and valve, and a separate 5 V module
+powered the board. That cost two SSR boards, a module, a hand-made valve snubber and six extra mains
+leads, all screwed together loose inside the case. Gaggiuino's boards show that the small loads can sit
+on the controller safely if the isolation is designed properly. v32 does that, with three differences
+from Gaggiuino's board:
+- **The heater stays external.** At 11 A it needs heavy copper and a heatsink, and a failure there is the
+  dangerous one. A factory SSR on the rear panel handles it.
+- **The snubbers use rated parts.** The capacitors are Class X2 (Murata GA355, 250 VAC); Gaggiuino uses an
+  unrated MLCC there. The resistors are 1 W 2512s.
+- **The valve gets a low-holding-current triac** (T410, IH 15 mA). When the triac drops out, the coil is
+  still carrying current, and it dumps that into the snubber: V ≈ IH·√(L/C). A T435 on the valve gives
+  690 V at 132 V line, over its 600 V rating. The T410 gives 456 V.
 
-Moving every mains function to factory-tested, replaceable modules makes the board:
-- testable on USB at a desk;
-- routable end to end by fastroute;
-- about half the price.
+## Mains section
 
-The old boards are kept in `hardware/controller/versions/` (v1–v14).
-
-## Blocks
-
-### Power in
 | Part | Value | Why |
 |---|---|---|
-| J1 | JST GH 3-pin (1 –, 2 +5 V, 3 GND) | from the 5 V AC-DC module. v30: pin 1 empty, so a pressure lead here is never powered with its signal on GND (Q4 makes J1.2 live whenever the board is powered). The supply lead in any other 3-pin socket is harmless (docs/SWAP-SAFETY.md). v24–v28 used a 2-pin socket for the same reason; before that, with a 3-pin J1, swapping the supply lead and an output lead back-fed +5 V through Q4 and held that load on (review S1) |
-| Q4 | AO3401A P-MOSFET, gate straight to GND (Vgs −5 V, inside its ±12 V) | reverse-polarity protection: a swapped lead leaves it off (datasheet leakage ≤ 1 µA; 5 nA simulated). Drop ≤ 15 mV at 250 mA (60 mΩ max) vs ~0.35 V for a diode, so the transducer keeps a full 5 V |
-| D2 | B5819W Schottky | USB VBUS → +5 V for bench power. With both connected, the module (5.0 V) powers the board and D2 keeps it out of the PC. With USB alone, Q4 conducts backwards and ~4.6 V sits on J1 / the module's output: harmless (it only charges the unpowered module's output capacitor) |
-| C6, C7 | 22 µF X5R 0805 | +5 V and +3.3 V bulk, ceramic (nothing to dry out at 60–70 °C) |
-| U5 | TI TLV1117LV33 (SOT-223) | 3.3 V, 1 A, stable with ≥ 1 µF ceramic at any ESR (TI SBVS160C). **Chosen for heat:** from 5 V it drops 1.7 V; at the C6's ~100 mA average with Wi-Fi listening that is ~0.17 W. Its RθJA of 62.9 °C/W makes that +11 °C. The SOT-23-5 ME6211 used up to v17 is rated 300 mW, which implies ~333 °C/W, or +57 °C: past its 125 °C junction limit at 70 °C ambient. Input 5.5 V max recommended (6 V absolute); the board's +5 V is ≤ 5.25 V |
-| C3, C4 | 10 µF + 100 nF | C3 at the LDO output (TI asks for ≥ 1 µF), C4 (0402) at the module's top-left corner. There's no room beside the 3V3 pin itself: J10 sits right over it, and J10's own 3V3 pin feeds the same rail there (the module has 10 µF + 2 × 100 nF inside) |
+| J12–J15 | TE 63824-1 6.3 mm PCB tabs: **N, L, P (pump), 3 (valve)** | Gaggiuino's order. Fully insulated receptacles on 18 AWG. N feeds only the IRM: the pump and valve neutrals stay on the machine's own neutral wiring |
+| F1 | Littelfuse 0443002.DR, 2 A slow-blow Nano2, 250 VAC, 50 A breaking | in the live feed, ahead of everything on the board (IRM, both triacs). Load 0.67 A continuous vs 1.45 A after re-rating at 70 °C; its I²t of 18 A²s rides out the IRM's inrush |
+| PS1 | Mean Well IRM-10-5, 5 V 2 A | certified (UL/IEC 62368-1), 4.2 kVac isolation. Its AC and DC pins sit 38.5 mm apart, so it bridges the band by itself. Peak load 0.45 A (Wi-Fi + both opto LEDs + heater SSR input) vs 1.0 A allowed at 70 °C (Mean Well's 50 % derating) |
+| U8, U9 | onsemi MOC3083SR2M zero-cross opto-triac | 800 V, 4170 Vrms. The wide-lead SMD package has an 8.03 mm row gap, plus a slot under the body. It fires only within 20 V of a zero crossing, so there's no inrush or EMI from switching mid-cycle |
+| R47, R48 | 330 Ω, from +5 V | opto LED current 9.8–11.1 mA at every corner, vs the 5 mA IFT max (2×) and the 50 mA rating. Low-side switched by the AO3400A on the command GPIO |
+| R49, R50 | 330 Ω 1206 | opto pin 6 to MT2: holds the opto's turn-on surge under its 1 A peak (onsemi AN-3004) |
+| Q5 | ST T435-600B (DPAK), pump | IGT/IH 35 mA, 400 V/µs, snubberless-class. Pump 0.45 A rms, half-wave (its own diode): 86.8 °C junction at 70 °C ambient on its copper (97 °C at a 1.4 A peak allowance) |
+| Q6 | ST T410-600B (DPAK), valve | IH 15 mA (see above). 40 V/µs: the snubber holds the turn-off to 23 V/µs. ~0.1 W, 75 °C junction |
+| R53 | 1 kΩ 1206, gate to MT1 | dV/dt immunity for the T410's sensitive 10 mA gate (AN-3004: 330 Ω–1 kΩ) |
+| R51/C15, R52/C16 | 100 Ω 1 W 2512 + 22 nF X2 (Murata GA355) | RC snubber across each triac. Pump turn-off 171–190 V, valve 429–456 V (limit 480 V = 80 % of 600 V); 2.5–2.9 kV without. Off-state leakage ~1 mA: under anything that holds the valve in (~50 mA) or moves the pump |
+
+**No MOV.** The IRM passes a 1 kV L–N surge (EN 61000-4-5) by itself, and the triacs and optos are
+600/800 V parts. A worn MOV fails as a short, which the fuse would then have to clear.
+
+**Isolation (verified on the routed board, `isolation_check.py`):**
+- **Mains to SELV:** 7.83 mm minimum, edge to edge, on both layers. The limit is 6.0 mm: reinforced
+  isolation at 120 V working, with margin. Through-hole pads count on both layers. Measured on the opto
+  pins against the GND pour.
+- **The band:** x 40–47 mm, with no copper on either layer. A milled slot under each opto turns surface
+  creepage under the body into air clearance.
+- **Between mains nets:** 2.0 mm (KiCad DRC rules in `coffee-controller-120v.kicad_dru`); 0.5 mm only
+  between pads at the same potential.
+- **Bridging parts:** only their own certified internal barrier crosses the band. The IRM's DC pins are
+  35.5 mm from its AC pins; each opto's rows are 7.75 mm apart (pad to pad).
+- **Pours:** the triac tabs (MT2 = AC_L_F) sit on a top-layer AC_L_F copper pour that spreads their heat.
+  The GND pour and its stitching vias are confined to the SELV half.
+
+**Thermals:** in a 60–70 °C case, every mains part is inside its rating, with the margins above. The IRM
+is the tallest part (21.5 mm) and runs at under half its derated load.
+
+## SELV section
+
+### Power
+| Part | Value | Why |
+|---|---|---|
+| D2 | B5819W Schottky | USB VBUS → +5 V for bench work without mains. With mains present, the IRM (5.0 V) powers the board and D2 keeps it out of the PC |
+| U5 | TI TLV1117LV33 (SOT-223) | 3.3 V, ceramic-stable. 1.7 V drop at ~100 mA = 0.17 W, +11 °C. 3.29 V minimum under 500 mA Wi-Fi bursts (simulated) |
+| C3, C4, C6, C7 | 10 µF, 100 nF, 22 µF ×2 | LDO output, module pin, and bulk on both rails. All ceramic: nothing to dry out at 70 °C |
+| R24/R25, C11 → GPIO3 | 5 V / 3 | +5 V sense: the pressure transducer is ratiometric to +5 V, and the firmware scales it out |
+
+v31's external 5 V input (J1), its reverse-polarity FET (Q4) and the 3.3 V sense (R22/R23/C10) are gone.
+The supply is on the board now, and the thermocouple ADC doesn't depend on the 3.3 V rail.
 
 ### Controller
 | Part | Value | Why |
 |---|---|---|
-| U4 | ESP32-C6-MINI-1U-H4 | Wi-Fi 6 / BLE, external antenna on **W.FL / MHF III** (the steel case blocks a PCB antenna), ≤ 2.33 dBi |
-| R10, C5 | 10k / 1 µF | EN reset delay (Espressif) |
-| R11 | 10k | GPIO8 high (needed for download mode from the BOOT pad) |
-| TP1 | bare pad on the **underside** | BOOT (GPIO9), recovery only: the C6 resets itself into download mode over USB |
-| D1, R12 | red LED, 1k on **GPIO16 (U0TXD)** | status, ~1.3 mA. On the UART TX pin on purpose (v24): the ROM prints its boot log there, so the LED flickers at every reset and glows while the chip waits in download mode (programming); then the firmware drives it as a heartbeat. The steam lamp moved to GPIO23 (it used to light at every boot on this pin: review M1). The LED's datasheet numbers pin ① = anode, the opposite of KiCad's pad 1; the CPL gate maps it, but glance at D1 in JLC's preview |
-| J4, R13, R14 | HRO TYPE-C-31-M-12, 5.1k CC to GND | USB 2.0 for flashing, logs and bench power; D± on GPIO12/13. Back at the left edge in v24 (v23 had bare pads). Drilled to HRO's recommended layout: locating holes Ø0.60 mm for the Ø0.50 mm posts, shell slots 0.6 × 1.7 and 0.6 × 1.4 mm; the shell legs get paste so reflow solders them. The shell overhangs the left edge by 0.96 mm |
+| U4 | ESP32-C6-MINI-1U-H4 | Wi-Fi 6 / BLE, external antenna on W.FL / MHF III (the steel case blocks a PCB antenna) |
+| R10, C5 | 10k / 1 µF | EN reset delay |
+| R11, R46 | 4.7k | I2C pull-ups on GPIO8/9. They double as the strap pull-ups (both pins must read high at reset) |
+| TP1 | pad on SCL | BOOT, recovery only (USB resets into download mode by itself) |
+| D1, R12 | status LED on GPIO16 (U0TXD) | flickers with the ROM boot log, then shows the heartbeat |
+| J4, R13, R14 | USB-C, 5.1k CC | flashing, logs, bench power |
 
-### Outputs (all three on J2, the 7-pin lead to the back panel)
-GPIO → AO3400A gate, **3.3 kΩ gate pull-down**. Each MOSFET switches its SSR input's return to ground (low-side): J2.2 carries +5 V to all three SSR inputs, daisy-chained through the SSR terminals at the back panel; J2.3 / J2.6 / J2.7 are the heater / pump / valve returns (pulled low = on); J2.1, J2.4 and J2.5 are empty, which is what keeps a wrong lead harmless in this socket (v30: the heater moved from pin 1 to 3).
-
-Notes per part:
-- **3.3 kΩ pull-down:** holds the gate under 0.47 V even against a 20 kΩ internal pull-up while the pin floats during reset, boot or flashing. A 100 kΩ pull-down would let a 45 kΩ pull-up switch the heater on at boot (2.3 V on the gate, simulated).
-- **No flyback diodes:** all three outputs drive SSR inputs, which aren't inductive (3.9–5.6 V spike with 1 µH of cable, simulated). v23 dropped the valve's 1N4148W; a relay module, if you ever use one, brings its own.
-- **No LED per output:** every module shows its input on its own LED.
-- **Margins, worst case** (GPIO at 2.64 V, the C6's guaranteed 0.8 × VDD output high; AO3400A at its maximum threshold; +5 V at 4.6 V from USB):
-  - the heater SSR sees 4.6 V, over 3.0 V;
-  - each SSR board sees ~4.6 V on VCC (a 5 V board; the G3MB-202P itself is a 5 V-input part). On USB alone, check at bring-up that the board LEDs and SSRs switch.
+### Outputs
+GPIO → AO3400A, **3.3 kΩ gate pull-down** (holds each output off while the pin floats at reset and boot):
+- **Heater (Q1):** low-side on J2.2 (HEATER_OUT). J2.1 is +5 V to the SSR's input +; J2.3–4 are empty.
+  J2 is the only 4-pin socket.
+- **Pump, valve (Q2, Q3):** each sinks its opto LED's current (above). No lead involved.
+- **D6–D8:** board LEDs showing H, P and V, each on its output's gate drive.
 
 ### Sensors
 | Input | Parts | Notes |
 |---|---|---|
-| Thermistor, J5 → R27 1k → GPIO1 (ADC1) | R15 4.7k to 3V3, C8 100 nF, R27 1k series | **Molex 218537-3919** 50 kΩ ±1 % ring-tab probe (−40…250 °C, 1500 VAC body isolation, PTFE leads; Molex sales drawing) under an M4 screw at the brew-thermostat seat. The firmware uses a Steinhart-Hart fit to Molex's R-T table (within ~1 °C of it from 25 to 200 °C; the table's own spread is ±3.6 % at 95 °C, ~±0.9 °C) and compensates the probe's lag for control (`ntc.probe_lag_s`, 15 s per Molex). 4.7k sits near the probe's 3.9 kΩ at 93 °C: 1.50 V there, 26 mV/°C. Self-heating 0.57 mW, ~0.6 °C in still air (1 mW/°C), less on the boiler; calibrated out. R27 carries no current in use (no error) and limits a 5 V plug pushed into J5 by mistake to ~1.2 mA into the pin. **Open probe:** the node reads the 3.3 V rail; the firmware calls ≥ 3200 mV a fault (heater off), 100 mV under the rail because the ADC is only specified to ±40 mV there. That also faults a boiler colder than ~2 °C. An open probe that reads under the threshold anyway, or a probe stuck at any value, is caught by HEATER_INEFFECTIVE: an energy balance of the heat delivered against the rise the reading shows (≈ 2 minutes) |
-| Pressure, J6 → GPIO0 (ADC1) | R16 47k / R17 100k divider, C9 22 nF | Any 0.5–4.5 V ratiometric 5 V transducer: GaggiMate's 0–1.6 MPa sensor by choice (BUY.md §10b), or TE's M3200 (whose datasheet asks for a load > 100 kΩ, hence the 147 kΩ divider). 4.5 V → 3.06 V; −3 dB at ~226 Hz keeps the pump's 60 Hz pulses. On USB power +5 V is ~4.5–4.6 V, so pressure readings there are only indicative |
-| Front panel, J7 (7-pin) → GPIO14/6/7 in, GPIO21/22/23 out | R29/R18/R19 1k series at the pins, R28/R20/R21 **10k** pull-ups on the GPIO side; R30–R32 330 Ω LED resistors (steam lamp on GPIO23 since v24) | the stock rocker switches as dry contacts. Closed: 3.3 V × 1k / (1k + 10k ∥ 45k internal) = 0.36 V at the GPIO, 0.46 V under the C6's 0.825 V low threshold (4.7k left only 0.2 V: review S2); ~0.36 mA wetting current; a 5 V plug in the wrong socket pushes ~1.5 mA through the 1k into a clamp diode |
-| Scale, J10 (7-pin: 3 DOUT1, 4 SCK, 5 GND, 6 DOUT2, 7 3V3; 1–2 empty; v30: 3.3 V only, VCC and VDD linked at the HX711 board) → GPIO17 (SCK) out, GPIO4/5 (DOUT) in | R36 10k SCK pull-down; the firmware turns on GPIO4/5's internal pull-ups, so a missing scale reads "not ready" instead of noise (review S5). No series resistors, as GaggiMate and Gaggiuino | dual HX711 next to the load cells, all on 3V3 (v30); only slow digital lines on the lead. v19–v22 had a bug: R36 sat on a separate net and pulled nothing down |
-| Rail sense → GPIO2/3 | R22/R23 (3V3/2), R24/R25 (5V/3), C10, C11 | the ADC measures absolute volts; measuring both rails lets the firmware divide them out (ratiometric) |
-
-**1 % resistors instead of 0.1 %.** Every resistor is a JLC basic part, which saves three extended-part fees. The cost in accuracy, before the calibration that removes it:
-- thermistor reference: about 0.3 °C at 93 °C;
-- pressure gain: about 0.06 bar at 9 bar.
+| **Thermocouple**, J5 (GH 2-pin: 1 TC+, 2 TC− = GND) | U6 MCP3421 (I2C 0x68, 18-bit, PGA 8: 2 µV/LSB, ~0.05 °C), U7 TMP117 cold junction (0x48, ±0.2 °C) at J5's pads, R43/R44 1k + C12 1 µF input filter, R45 10 MΩ open-probe bias | Gaggiuino's ungrounded M4 K-type probe in the brew-thermostat hole. Its own wires are crimped into the GH plug: any splice to copper elsewhere would be an unmeasured second junction. 170 °C reads 6.15 mV of the ±256 mV range. **Open probe:** the 10M against the ADC's ~281k input gives 90 mV, which the firmware calls a fault (anything over ~15 mV, ~370 °C). With the probe in, the bias costs 0.16 °C, constant, calibrated out. The 2k of input resistors against the ADC's input impedance is a fixed −0.7 % gain error, also corrected in firmware |
+| Pressure, J6 (GH 3-pin: SIG / +5V / GND) → GPIO0 | R16 47k / R17 100k, C9 22 nF | Gaggiuino's 0–1.2 MPa transducer (0.5–4.5 V ratiometric): 4.5 V → 3.06 V at the pin. The −3 dB corner is at 257 Hz, so the pump's 60 Hz stroke pulses pass at −0.3 dB: the firmware can see each stroke |
+| Front panel, J7 (7-pin) → GPIO14/6/7 in, GPIO21/22/23 out | 1k series + 10k pull-ups; 330 Ω LED resistors; D3–D5 mirror the three lamps on the board | stock rockers as dry contacts; the three neon lamps replaced by 5 V LEDs |
+| Scale, J10 (7-pin) → GPIO17 SCK, GPIO4/5 DOUT | R36 10k SCK pull-down | dual HX711 on 3.3 V |
 
 ### Pin map (ESP32-C6)
 | GPIO | Net | | GPIO | Net |
 |---|---|---|---|---|
 | 0 | P_ADC (pressure) | | 12 / 13 | USB D− / D+ |
-| 1 | NTC | | 18 | VALVE_CMD |
-| 2 | V3_SNS | | 19 | PUMP_CMD |
-| 3 | V5_SNS | | 20 | HEATER_CMD |
-| 6 / 7 | SW_BREW / SW_STEAM | | 16 (TXD0) | STATUS LED (also shows the ROM boot log) |
-| 8 | pull-up (strap) | | 9 | BOOT pad (strap) |
-| 14 | SW_POWER (front panel) | | 21 / 22 / 23 | LED power / coffee / steam |
-| 17 (RXD0) | SCALE_SCK | | 4 / 5 | SCALE_DOUT1 / DOUT2 (straps only SDIO edges) |
+| 3 | V5_SNS | | 18 / 19 / 20 | VALVE / PUMP / HEATER command |
+| 6 / 7 / 14 | SW_BREW / SW_STEAM / SW_POWER | | 16 (TXD0) | status LED |
+| 8 / 9 | I2C SDA / SCL (straps, pulled up) | | 21 / 22 / 23 | LED power / coffee / steam |
+| 17 (RXD0) | SCALE_SCK | | 4 / 5 | SCALE_DOUT1 / DOUT2 |
 
-The analog inputs are on ADC1, which works alongside Wi-Fi. No output sits on a strapping pin (GPIO 4, 5, 8, 9, 15). `controller.py` checks this map against the firmware on every run.
+`controller.py` checks this map against `FIRMWARE_PINS` on every run.
 
 ## Layout
 
-**Board:** 64.3 × 20 mm (v29), 2 layers, 1 oz, every part on the top side, 0603 passives (all JLC basic). No mounting holes: heat-resistant velcro on the flat back.
+- **Board:** 98 × 55.5 mm, two layers, 1 oz, JLC standard rules. Three M3 holes, two in the mains half and
+  one in the SELV half (plan.json `H1`–`H3`). It mounts in a printed tray (BUY.md #19).
+- **Mains half:**
+  - the spades run down the left edge, so their receptacles push on sideways, clear of the board;
+  - the fuse sits by L;
+  - the IRM spans the bottom middle, across the band;
+  - the two triac channels are rows at the top: the triac on its copper, its snubber beside it, and the opto at the band.
+- **SELV half:**
+  - the GH row runs along the top edge: J2 heater SSR (4), J6 pressure (3), J7 front panel (7), J10 scale (7), with J5 thermocouple (2) on the right edge and U7 beside its pads;
+  - the module sits in the middle;
+  - the LED row S P C S H P V is along the bottom.
+- **Mis-plug safety:** every lead's size is unique except the two 7-pins, and `swap_check.py` proves those
+  are harmless in each other's sockets.
+- **Routing:** fastroute 0.1.14, end to end: 0 unrouted, 86 routed vias, plus 79 GND stitching vias.
+- **KiCad DRC:** clean with the mains rules; only the library-table notes remain.
+- **JLC checks:**
+  - `jlc_cpl.py`: all 82 placed parts land on JLC's own pads;
+  - `jlc_pins.py`: 126 pin functions match JLC's symbols (triac A1/A2 = MT1/MT2, IRM ±V = ±Vo, opto pin 5 SUB = NC).
 
-**Connectors (bundled by location since v29; v30 re-pinned for mis-plug safety):** one row along the top edge, openings outward (up when mounted), left to right: the SSRs (J2, 7-pin, to the back panel), the scale (J10, 7-pin, right over the module), the front panel (J7, 7-pin), pressure (J6, 3-pin: SIG / +5V / GND), the thermistor (J5, 3-pin: GND / – / NTC) and 5 V in (J1, 3-pin: – / +5V / GND). USB-C (J4) at the right short edge, under 5 V in. Same-size leads fit each other's sockets. The pinouts make every such swap harmless, and `swap_check.py` checks every lead in every same-size socket on every netlist build (controller.py fails if not). The model covers rocker positions, firmware states, USB/unpowered, and paths through a lead's shared wires ([SWAP-SAFETY.md](SWAP-SAFETY.md)). Two things it relies on: the front-panel LEDs carry their own resistors, and the firmware keeps everything off in standby.
+## Ordering: full assembly vs SMD only
 
-**Indicator panel (v27, moved right in v28):** seven red LEDs in a row in the right-hand area, each with its 1k below it, labelled on the top silkscreen S P C S H P V:
-- **S**: status (GPIO16 / U0TXD: boot log, programming, heartbeat);
-- **P C S**: the three front-panel lamps (power, coffee, steam), each on the same GPIO as its lamp through its own 1k (so the board shows exactly what the lamps get);
-- **H P V**: heater, pump, valve, each on its output's gate drive through 1k, lit exactly while the board turns that SSR on.
-All are KT-0603R (C2286, basic) with 1k (basic): ~1.3 mA each. Added cost ~$0.10 per assembled board (parts + joints), no setup fee.
+`build/coffee-v32-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM and the four
+spades (through-hole). `build/coffee-v32-smd-{bom,cpl}.csv` leaves those five parts out, and
+`coffee-v32-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
+live tiered prices:
 
-**Earlier versions:** v21 (40 × 24 mm, connectors hand-soldered underneath), v22 (44.5 × 29.4 mm), v23 (37.8 × 26.4 mm, no USB-C) and v24 (46.6 × 26.4 mm, connectors on both long edges) v25 (73.2 × 24, module at the end, 0402) and v26 (73.2 × 26, parts strip between the plugs and the module, M3 holes) and v27 (73.2 × 25, LEDs under the module) and v28 (73.2 × 19.6, eight connectors) and v29 (the first bundled pinout, which had three unsafe mis-plugs) are in `versions/` with their files still in `build/`. v21/v22 have the R36 bug above; v21–v23 have the review's S1/S2 issues.
+| 5 boards | JLC | you | total |
+|---|---|---|---|
+| Full assembly | ~$180 | – | **~$180** |
+| SMD only | ~$142 | IRM + 4 tabs ~$27 | **~$170** + soldering 5 × 12 joints |
 
-All six are JST GH (1.25 mm, positive latch, which suits a machine shaken by a vibration pump) and side entry, so the cables leave past the top edge.
+The ~$10 difference is two extended-part fees plus JLC's THT setup. Full assembly is recommended: the
+IRM's pins carry mains, and a factory joint is worth $2 a board.
 
-**Placement:** by hand, judged by eye between routing runs: `check_place.py` draws the ratsnest and courtyard overlaps; it moves nothing.
-
-**Routing:** end to end by **fastroute 0.1.14**. KiCad adds the ground pours on both layers afterwards, plus GND stitching vias wherever both layers are free. The current board has 0 unconnected and 93 routed vias, plus 10 GND stitching vias (a 4 mm grid). Every ground pad of the power parts and the module sits in one top-layer pour. All vias are tented: the Gerbers have no mask openings on them.
-
-**Rules:** JLCPCB standard capabilities only, the cheapest tier:
-- 0.2 mm tracks and gaps (0.15 mm DRC minimum; JLC's is 0.127 mm);
-- 0.3 mm drills and 0.6 mm vias;
-- 0.3 mm copper to the board edge;
-- 0.2 mm hole to copper.
-
-**KiCad DRC:** 0 violations, 0 unconnected, run on a fresh load of the saved board file. The report still lists library-table notes, because the footprints are embedded and no KiCad library table exists on the build machine.
-
-**Silkscreen:** labels are on the **bottom**, behind each connector: a word behind every pin and the connector's name, plus USB, BOOT, the title and the bean logo. J7 (front panel) is labelled FRONT.
-
-The top is too dense for text and keeps only the parts' own outlines and pin-1 marks.
-
-**JLC:** 25 BOM lines, all placed by JLC on the top side; 5 extended part types (the 3- and 7-pin GH connectors, the USB-C, the ESP32-C6 module, the LDO), the rest basic. None of the seven has a basic or preferred-extended equivalent in JLC's library (searched 2026-11-05: no latching wire-to-board connector, USB-C or ESP32 module is basic); only the LDO does (AMS1117-3.3, C6186), kept as the TI part for ceramic-capacitor stability and lower dropout. The 0402 100 nF and 22 nF are pinned to basic parts (C1525, C1532): the matcher picked extended ones. U5 is pinned to C15578, TI's own part: JLC also lists a different maker's 12 V part under the same name. Two gates check the files:
-- `jlc_cpl.py` solves every part's position and rotation against JLC's own footprints; all 64 placed parts land on their pads (the two new 0402 capacitors solved from same-package records: EasyEDA's API refused this machine).
-- `jlc_pins.py` then compares JLC's pin names with the schematic's for every polarised part: 102 pin functions, 0 mismatches (every LED's polarity included). This gate exists because the v15 position file had the status LED reversed.
-
-## Simulation (ngspice, `sim/run.py`)
-54 checks, all passing (updated to v24 after the review found the v23 models stale):
-- each output at its worst corners with each module type;
-- outputs off during reset against a weak internal pull-up;
-- SSR and SSR-board turn-off spikes (no flyback diodes);
-- reverse polarity;
-- the 3.3 V rail under 500 mA Wi-Fi bursts from 4.65–5.0 V (≥ 3.29 V), with the LDO's dropout at its datasheet maximum;
-- the pressure filter, the transducer's > 100 kΩ load, and ADC kick-back (an estimate: the C6 datasheet doesn't give the ADC's sampling capacitance);
-- thermistor range, sensitivity and self-heating;
-- the 1 % resistor error budget;
-- note: the module loads are behavioural (an SSR input as a current limit, the relay module as 131 Ω + 50 mH), so the on-state checks confirm the MOSFET's drop and the +5 V corner rather than model the modules' internals;
-- a 5 V plug in the thermistor socket (1.2 mA into GPIO1 through R27).
-
-The models are behavioural and fitted to datasheet values, so the point is the margins at the corners.
-
-## Status and what needs a human
-- **D2 orientation (verified):** its rotation came from the same-package 1N4148W record while EasyEDA's API refused this machine; JLC's own footprint and symbol drawings confirm pad 1 on the same side and pin 1 = cathode for both.
-- **Pump SSR on the real pump:** on the first install, count strokes and listen for hum while it's off. This is the one module behaviour not verified against the Ulka's half-wave diode load.
-- **Valve coil:** read its label to confirm the current (expected 80–150 mA, well inside the SSR board's 2 A; the snubber keeps a small load switching cleanly).
-- **Thermistor:** the firmware defaults are the Molex 218537-3919's (Steinhart-Hart from its table, B25/95 4109, 15 s lag). A different probe needs its own coefficients. The two-point calibration removes the rest.
-- **First article:** bench bring-up on USB (INSTALL.md §3) before anything touches the machine. Also check there:
-  - the raw 3V3 sense (`V3_SNS` × 2) reads within ±5 % of 3300 mV: outside that the firmware reports the thermistor open (safe, but the board won't heat);
-  - with J5 unplugged, the raw NTC reading is ≥ 3200 mV (the open-probe threshold);
-  - with a scope if you have one, +5 V when a USB cable is hot-plugged: the TLV1117LV's absolute maximum input is 6 V.
-- **Accepted risk:** nothing on the board clamps +5 V below the LDO's 6 V absolute maximum. A 5 V supply that fails high could kill the LDO and the C6; the outputs' gate pull-downs then hold the modules off, and the steam thermostat and thermal fuse stay in series with the heater.
+## What needs a human
+- **First article on USB** (INSTALL.md §3), with no mains connected. Check:
+  - the thermocouple reads room temperature within a degree of the TMP117;
+  - unplugging the probe raises the probe-open fault;
+  - each output's board LED follows its command.
+- **First mains power-up through a GFCI.** The board sits in its tray with every receptacle on and
+  insulated.
+- **Pump on the real pump:** count the strokes, and listen for hum while it's off. The snubber leaks about
+  1 mA.
+- **Valve coil:** read its label. The design assumes 80–150 mA.
