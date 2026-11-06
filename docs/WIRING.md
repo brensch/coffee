@@ -34,7 +34,7 @@ switch the heater, pump and valve (parts and links are in [BUY.md](BUY.md)). INS
 1. **Brew thermostat**
    - Unscrew it from the left side of the boiler.
    - Keep its two spade wires (white, black). They go to the heater SSR's load terminals, so the SSR takes the thermostat's place.
-   - The NTC probe goes into the thermostat's M4 hole (INSTALL.md §4).
+   - The M4 thermocouple screws into the thermostat's hole (INSTALL.md §4).
 2. **Steam thermostat and thermal fuse:** leave them, and their wiring, exactly as they are.
 3. **Live (L):** unplug **C.4 (brown)** from the brew switch. It becomes the live feed for everything we add. GaggiMate uses the same wire as its board's L.
    Confirm it **unplugged**, with the meter on Ω: the plug's **narrow blade (live)** to C.4 reads continuity with the power switch ON and open with it OFF. (After step 8 it reads continuity either way: the power switch no longer carries mains.)
@@ -107,14 +107,19 @@ Mechanical (as GaggiMate):
 
 ### Low-voltage side
 
-Six JST **GH** 1.25 mm side-entry headers, bundled by where the devices are: three **3-pin** (5 V in, pressure, thermistor) and three **7-pin** (the SSRs on the back panel, the front panel, the scale). Every cable is a pre-crimped JST GH lead, about 300 mm, with the far end stripped (BUY.md #9, #16). Same-size leads fit each other's sockets; the pinouts make every such swap harmless, checked on every build (docs/SWAP-SAFETY.md). That relies on wiring each lead exactly as below, including the LEDs' own resistors, so label both ends anyway.
+v31: five JST **GH** 1.25 mm side-entry headers, bundled by where the devices are: two **3-pin** (5 V in, pressure) and three **7-pin** (the SSRs on the back panel, the front panel, the scale). The thermocouple has no plug: its two bare wires push into a **WAGO push-in terminal** (J5). Every cable is a pre-crimped JST GH lead, about 300 mm, with the far end stripped (BUY.md #9, #16). Same-size leads fit each other's sockets; the pinouts make every such swap harmless, checked on every build (docs/SWAP-SAFETY.md). That relies on wiring each lead exactly as below, including the LEDs' own resistors, so label both ends anyway.
 
 #### Joining the GH leads
 
 GH leads are thin (28 AWG), so join them by soldering, not in screw clamps: twist each to a short
 18 AWG pigtail (about 80 mm), solder, heat-shrink, and cable-tie the joint so it can't flex.
-The pigtail then goes into the module's screw terminal or gets a spade. The supply's output,
-the thermistor and the transducer are soldered directly. Tug-test every joint.
+The pigtail then goes into the module's screw terminal or gets a spade. The supply's output
+and the transducer are soldered directly. Tug-test every joint.
+
+**Never splice the thermocouple.** Its two wires are thermocouple alloys all the way to J5: any joint to
+copper is a second junction whose temperature the board doesn't measure, and the reading shifts by
+however much warmer that joint is than the board. If the 0.5 m lead is short, use K-type extension wire
+and join alloy to the same alloy.
 
 | Board pin | Signal | Goes to | Notes |
 |---|---|---|---|
@@ -138,9 +143,8 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
 | J10.5 | GND | HX711 board GND | |
 | J10.6 | DOUT2 | HX711 #2 DOUT (right load cell) | |
 | J10.7 | +3.3 V | HX711 board **VCC and VDD, linked at the board** | v30: the scale runs from 3.3 V only (HX711 works from 2.6 V), so there's no 5 V on this socket. DOUT swings 0–3.3 V, safe for the ESP32-C6. The lead runs behind the water tank, away from the mains wiring |
-| J5.1 | GND | one thermistor lead | |
-| J5.2 | — | — | Unused |
-| J5.3 | NTC | the other thermistor lead (Molex 218537-3919) | No polarity. Solder + heat-shrink, the joint well away from the boiler |
+| J5.1 | TC+ | thermocouple **positive** (chromel: non-magnetic; yellow in ANSI, green in IEC) | Route the lead away from the heater and mains wiring; cable-tie it near J5 so the wires can't pull out |
+| J5.2 | TC− | thermocouple **negative** (alumel: the wire a magnet pulls; red in ANSI, white in IEC) | WAGO push-in terminal: strip 8–9 mm, twist the strands, push in (press the release button to take it out). Polarity matters: reversed, the reading falls as the boiler heats and the firmware faults it |
 | J6.1 | signal | transducer output wire | ~0.5 V at 0 bar. Identify its wires on the bench first (INSTALL §3) |
 | J6.2 | +5 V | transducer supply wire | |
 | J6.3 | GND | transducer ground wire | |
@@ -165,7 +169,7 @@ the thermistor and the transducer are soldered directly. Tug-test every joint.
    No continuity from any mains wire to the chassis.
 6. **Earth:** touch the meter leads together first and subtract that reading. Chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's metal base** to the earth pin < 0.5 Ω (through its M4 bolts: scrape paint under them if it reads high).
 7. **Switches:** J7.1–J7.4 closes with the power rocker on; J7.2–J7.4 with brew pressed; J7.3–J7.4 with steam pressed (J7.4 is GND).
-8. **Thermistor** (do this before INSTALL §4 fits it): **~50 kΩ** between its two leads at 25 °C (Molex 218537-3919: 50 kΩ ± 1 %; about 63 kΩ at 20 °C), and **open (> 20 MΩ, the meter's top range)** from either lead to the M4 screw body. If either lead shows continuity to the body, don't use it: the boiler is earthed, so that would ground the NTC input.
+8. **Thermocouple** (do this before INSTALL §4 fits it): a few ohms to a few tens of ohms between its two wires (it's one loop of thin alloy wire), and **open (> 20 MΩ, the meter's top range)** from either wire to the M4 screw body. If either wire shows continuity to the body, it's a *grounded* probe: don't use it (the listing says ungrounded; a grounded one puts the earthed boiler on the board's input). Find TC− with a magnet: alumel is magnetic.
 
 9. **After the case goes back together:** every earth wire you unplugged is back on. GaggiMate's install guide warns that the top cover (cup warmer) has **two** earth wires. Measure each panel, the top cover included, to the plug's earth pin: < 0.5 Ω.
 

@@ -32,7 +32,7 @@ NETCLASS = {"GND": "GND", "+5V": "S5", "+5V_IN": "S5IN", "+3V3": "S3",
             "LED_PWR": "LEDDRV", "LED_COFFEE": "LEDDRV", "LED_STEAM": "LEDDRV",
             "SW_POWER_IN": "SWIN", "SW_BREW_IN": "SWIN", "SW_STEAM_IN": "SWIN",
             "SCALE_SCK": "SCK", "SCALE_DOUT1": "DIN", "SCALE_DOUT2": "DIN",
-            "P_SIG": "PSIG", "NTC": "NTCN", None: "E"}
+            "P_SIG": "PSIG", None: "E"}
 STRONG, MED, WEAK, NONE = 3, 2, 1, 0
 
 def board_drive(cls, st, i):
@@ -47,7 +47,6 @@ def board_drive(cls, st, i):
     if cls == "SCK": return ((3.3 if st["sck"] or st["standby"] else 0.0), STRONG, True) if pw else None   # standby: held high
     if cls == "DIN": return (3.3, WEAK, True) if pw else None
     if cls == "PSIG": return (0.0, WEAK, False)         # 47k + 100k to GND: tolerates 5 V
-    if cls == "NTCN": return (3.3, WEAK, True) if pw else None   # 4.7k to 3V3, direct to the ADC pin
     return None
 
 # --- lead side --------------------------------------------------------------------------------------------
@@ -59,7 +58,6 @@ def board_drive(cls, st, i):
 #   BRD a b      pump/valve SSR board, VCC+IN tied (a) to GND (b): on from 2.5 V; reverse unknown (worst
 #                case: conducts, and >= 3 V reverse is itself a hazard)
 #   CHIP sup gnd ios outs   HX711 / transducer: protection diodes from every pin to its rail and ground
-#   RES a b      NTC (>= 1k)
 #   SRC g v      the 5 V module output: v = g + 5, floating until one side is tied
 ROLE_NET = {   # role in a lead -> the net of its home socket that role sits on
     "J2": {"X": "+5V", "h": "HEATER_OUT", "p": "PUMP_OUT", "v": "VALVE_OUT"},
@@ -68,7 +66,6 @@ ROLE_NET = {   # role in a lead -> the net of its home socket that role sits on
     "J10": {"G": "GND", "V": "+3V3", "SCK": "SCALE_SCK", "D1": "SCALE_DOUT1", "D2": "SCALE_DOUT2"},   # v30: VCC+VDD on 3V3
     "J1": {"g": "GND", "v": "+5V_IN"},
     "J6": {"S": "P_SIG", "V": "+5V", "G": "GND"},
-    "J5": {"n": "NTC", "G": "GND"},
 }
 LEADS = {
     "J2": [("HSSR", "X", "h"), ("BRD", "X", "p"), ("BRD", "X", "v")],
@@ -77,12 +74,13 @@ LEADS = {
     "J10": [("CHIP", ["V"], "G", ["SCK", "D1", "D2"], ["D1", "D2"])],
     "J1": [("SRC", "g", "v")],
     "J6": [("CHIP", ["V"], "G", ["S"], ["S"])],
-    "J5": [("RES", "n", "G")],
 }
-GROUPS = [["J1", "J5", "J6"], ["J2", "J7", "J10"]]
-LEAD_NAME = {"J1": "5V supply", "J2": "SSR", "J5": "thermistor", "J6": "pressure", "J7": "front panel", "J10": "scale"}
+# v31: J5 is a WAGO push-in terminal for the bare thermocouple wires, so
+# neither can take another lead (and the thermocouple has no plug to go elsewhere): only J1/J6 share a
+# size (3-pin) and J2/J7/J10 (7-pin).
+GROUPS = [["J1", "J6"], ["J2", "J7", "J10"]]
+LEAD_NAME = {"J1": "5V supply", "J2": "SSR", "J6": "pressure", "J7": "front panel", "J10": "scale"}
 SWIN_LOW = 2.5
-NTC_SHORT_V = 0.1   # firmware fault::NTC_SHORT threshold (short_mv, 100 mV default)
 BARE_LEDS = "--bare-leds" in sys.argv   # what-if: front LEDs fitted without their own resistor    # ESP32-C6 V_IH min = 0.75 * 3.3 V: a switch input pulled below this may read "on"
 
 def role_pins(home_pins, home):
@@ -182,7 +180,7 @@ def one_state(home, rp, classes, nets, els, st, sock):
         if S < MED: continue
         for c, net, d, i in ds:
             if c == "E": continue
-            if L > 3.6 and c in ("SCK", "DIN", "NTCN", "SWIN"):
+            if L > 3.6 and c in ("SCK", "DIN", "SWIN"):
                 hz.append(f"{L:g} V onto {net} (GPIO)")
             if L < -0.3 or L > 5.3:
                 hz.append(f"{L:g} V onto {net}")
@@ -259,19 +257,6 @@ def one_state(home, rp, classes, nets, els, st, sock):
             n = uf.f(f"p{i}")
             if n in lo and lo[n][0] < SWIN_LOW and lo[n][1] >= MED:
                 hz.append(f"{nets[i]} can read 'on' (pulled to {lo[n][0]:.1f} V)")
-    # functional: the thermistor input must read open (nothing there) or shorted (pulled hard low): both are
-    # faults that keep the heater off. A device that could hold it mid-range might read as a temperature.
-    if sock == "J5" and home != "J5":
-        hi, lo = bounds(None)
-        for i, c in enumerate(classes):
-            if c != "NTCN": continue
-            n = uf.f(f"p{i}")
-            touched = any(f == n or t == n for f, t, *_ in cond)
-            shorted = (n in lvl and lvl[n][1] >= MED and lvl[n][0] <= NTC_SHORT_V) or (n in lo and lo[n][1] >= MED and lo[n][0] <= NTC_SHORT_V)
-            # the pressure lead here means J6 has no transducer: PRESSURE_SENSOR faults and the heater
-            # stays off whatever the thermistor input reads
-            if touched and not shorted and home != "J6":
-                hz.append("thermistor input sees a device (may read a plausible temperature)")
     return hz
 
 def load_board():

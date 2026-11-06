@@ -26,8 +26,8 @@ price** and pick the variant named.
 | 6 | **6.35 mm spade connectors**, male + female | kit | <https://s.click.aliexpress.com/e/_EuLcsLO> | ~$4 |
 | 7 | **6.35 mm piggyback** connector (live split, Gaggia Classic) | 1–2 | <https://s.click.aliexpress.com/e/_EytfYJO> | ~$2 |
 | 8 | **Fork connectors** SV1.25-5S (heater SSR output) | 2 | <https://s.click.aliexpress.com/e/_EIAVCxe> | ~$2 |
-| 9 | **JST GH 1.25 mm 3-pin leads**, single-ended, 300 mm: 5 V in, pressure, thermistor | 1 pack of 10 (3 used) | <https://www.aliexpress.us/item/3256809108366050.html> (variant 3P, single head, 300 mm) | $1.14 + $5.80 ship |
-| 10 | **NTC probe**: Molex **218537-3919** 50 kΩ ring tab (the board is matched to it) | 1 | Heilind <https://www.heilind.com/npi/stocking-package/2040> | $9.76 |
+| 9 | **JST GH 1.25 mm 3-pin leads**, single-ended, 300 mm: 5 V in, pressure | 1 pack of 10 (2 used) | <https://www.aliexpress.us/item/3256809108366050.html> (variant 3P, single head, 300 mm) | $1.14 + $5.80 ship |
+| 10 | **Thermocouple**: ungrounded **K-type, M4 screw**, 0.5 m PTFE lead (Gaggiuino's: listing "CG K/PT100 Type M3 M4 Copper Screw Thermocouple", pick **K / M4 / 0.5 m**) | 1 (+1 spare) | <https://www.aliexpress.us/item/3256805310471537.html> | ~$1 |
 | 11 | **Pressure transducer** 0–1.6 MPa, 5 V, 0.5–4.5 V (GaggiMate's) | 1 | <https://s.click.aliexpress.com/e/_Evn1mNS> | ~$18 |
 | 12 | **Plumbing**: GaggiMate kit, or its AliExpress parts for the Classic Pro (PTFE tube 4/6 mm, PL06-01, PLF06-02, G1/8 tee, 1/4" gasket, PTFE tape) | 1 set | kit <https://shop.gaggimate.eu/collections/parts/products/gaggimate-plumbing-kit> (€26.84) or the parts list on the Lego page | ~$10–30 |
 | 13 | **Antenna**: Taoglas **CAB.A02** pigtail + **GW.15.2113** 2 dBi | 1 + 1 | Sager <https://www.sager.com/product/caba02-taoglas/7168042>, <https://www.sager.com/product/gw152113-taoglas/7168348> | $2.97 + $4.76 |
@@ -59,8 +59,10 @@ price** and pick the variant named.
 - **5–8 Wiring.** As GaggiMate: 18 AWG silicone for every mains run, 6.35 mm quick-connects to the
   machine's tabs, a piggyback on the live, forks on the heater SSR's screw terminals.
 - **9 GH leads.** Compatible clones; check the latch clicks into the board's SM03B-GHS-TB headers.
-- **10 NTC.** Kept because the board's 4.7 kΩ reference and the firmware defaults are matched to
-  this probe. It replaces GaggiMate's K-type thermocouple, which needs a MAX31855 board we don't use.
+- **10 Thermocouple.** v31 reads a K-type on the board (MCP3421 + TMP117 cold junction), like
+  Gaggiuino and GaggiMate. Unbranded, no datasheet: WIRING check 8 confirms it's ungrounded and finds
+  the negative wire. Its wire gauge isn't listed; J5 takes 24–18 AWG (0.2–0.75 mm²). The v30 board
+  read the Molex 218537-3919 NTC instead (evidence store, `ntc-probe`).
 - **11 Transducer.** GaggiMate's; no datasheet, so INSTALL §3 identifies its wires on the bench.
 - **13 Antenna.** Mount the SMA bulkhead in a plastic part, not through the steel case.
 

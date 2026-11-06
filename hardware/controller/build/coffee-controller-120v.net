@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/05/2026 01:45 AM")
+    (date "11/06/2026 01:29 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -88,6 +88,75 @@
         (names "/")
         (tstamps "/"))
       (tstamps "d4017ae0-ca40-581e-bf8a-e168323602ea"))
+    (comp
+      (ref "C12")
+      (value "1uF X5R")
+      (description "Capacitor")
+      (footprint "Capacitor_SMD:C_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Capacitor")
+        (field
+          (name "Footprint") "Capacitor_SMD:C_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "C12")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "C"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "2932345d-4f49-56ea-874e-6a87a258356f"))
+    (comp
+      (ref "C13")
+      (value "100nF X7R")
+      (description "Capacitor")
+      (footprint "Capacitor_SMD:C_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Capacitor")
+        (field
+          (name "Footprint") "Capacitor_SMD:C_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "C13")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "C"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "f1d7b8fb-84cd-50f9-836b-638468521141"))
+    (comp
+      (ref "C14")
+      (value "100nF X7R")
+      (description "Capacitor")
+      (footprint "Capacitor_SMD:C_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Capacitor")
+        (field
+          (name "Footprint") "Capacitor_SMD:C_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "C14")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "C"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "c946931e-80a5-5ed6-b53a-66445bf5e1a2"))
     (comp
       (ref "C3")
       (value "10uF 25V X5R")
@@ -203,29 +272,6 @@
         (names "/")
         (tstamps "/"))
       (tstamps "16338a68-8eed-55bf-a491-963475c6f7f3"))
-    (comp
-      (ref "C8")
-      (value "100nF X7R")
-      (description "Capacitor")
-      (footprint "Capacitor_SMD:C_0603_1608Metric")
-      (fields
-        (field
-          (name "Description") "Capacitor")
-        (field
-          (name "Footprint") "Capacitor_SMD:C_0603_1608Metric")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "C8")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "C"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "5745235a-c3ad-560a-9498-c294be8e78c3"))
     (comp
       (ref "C9")
       (value "22nF X7R")
@@ -527,14 +573,14 @@
       (tstamps "c449faf0-e5d1-5f09-ba34-b969c94251c8"))
     (comp
       (ref "J5")
-      (value "Thermistor")
-      (description "JST_GH_3_SMD")
-      (footprint "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+      (value "Thermocouple")
+      (description "WAGO 2060 SMD push-in terminal, 2 poles, 4 mm, 24-18 AWG")
+      (footprint "Coffee:WAGO_2060-452_998-404")
       (fields
         (field
-          (name "Description") "JST_GH_3_SMD")
+          (name "Description") "WAGO 2060 SMD push-in terminal, 2 poles, 4 mm, 24-18 AWG")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "Coffee:WAGO_2060-452_998-404")
         (field
           (name "Datasheet"))
         (field
@@ -543,7 +589,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_3_SMD"))
+        (part "WAGO_2060-452"))
       (sheetpath
         (names "/")
         (tstamps "/"))
@@ -711,7 +757,7 @@
       (tstamps "99b6d9e4-efbb-57f3-bc7c-dc7822d36beb"))
     (comp
       (ref "R11")
-      (value "10k")
+      (value "4.7k")
       (description "Resistor")
       (footprint "Resistor_SMD:R_0603_1608Metric")
       (fields
@@ -801,29 +847,6 @@
         (names "/")
         (tstamps "/"))
       (tstamps "fc87fb8d-6ec9-5f6a-ba62-fc9d37c462e7"))
-    (comp
-      (ref "R15")
-      (value "4.7k")
-      (description "Resistor")
-      (footprint "Resistor_SMD:R_0603_1608Metric")
-      (fields
-        (field
-          (name "Description") "Resistor")
-        (field
-          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "R15")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "R"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "17eaf0a6-9932-5348-b523-0122128974c2"))
     (comp
       (ref "R16")
       (value "47k")
@@ -1054,29 +1077,6 @@
         (names "/")
         (tstamps "/"))
       (tstamps "3bf9feaf-e237-51fc-902e-4d347ea8727d"))
-    (comp
-      (ref "R27")
-      (value "1k")
-      (description "Resistor")
-      (footprint "Resistor_SMD:R_0603_1608Metric")
-      (fields
-        (field
-          (name "Description") "Resistor")
-        (field
-          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
-        (field
-          (name "Datasheet"))
-        (field
-          (name "SKiDL Tag") "R27")
-        (field
-          (name "SKiDL Line") "controller.py:50"))
-      (libsource
-        (lib "NO_LIB")
-        (part "R"))
-      (sheetpath
-        (names "/")
-        (tstamps "/"))
-      (tstamps "7b63e68b-3b47-5fd3-988e-1f6c73de73f1"))
     (comp
       (ref "R28")
       (value "10k")
@@ -1377,6 +1377,98 @@
         (tstamps "/"))
       (tstamps "3ca913fa-03de-5e92-bfa0-c55208fc4c18"))
     (comp
+      (ref "R43")
+      (value "1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R43")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "0836c388-95b6-56b0-a18e-dc56ff27eb3e"))
+    (comp
+      (ref "R44")
+      (value "1k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R44")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "f2775a93-0bdc-5c67-ad5c-12fc02c817e1"))
+    (comp
+      (ref "R45")
+      (value "10M")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R45")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "84ee33b1-4197-5c39-a549-dcdec6c6a6ba"))
+    (comp
+      (ref "R46")
+      (value "4.7k")
+      (description "Resistor")
+      (footprint "Resistor_SMD:R_0603_1608Metric")
+      (fields
+        (field
+          (name "Description") "Resistor")
+        (field
+          (name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "R46")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "R"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "2f0f02a1-69e3-573e-85e4-f4b5a242bfc0"))
+    (comp
       (ref "R5")
       (value "3.3k")
       (description "Resistor")
@@ -1490,12 +1582,66 @@
       (sheetpath
         (names "/")
         (tstamps "/"))
-      (tstamps "6254ed11-c784-58f8-9988-ecfc74740e7c")))
+      (tstamps "6254ed11-c784-58f8-9988-ecfc74740e7c"))
+    (comp
+      (ref "U6")
+      (value "MCP3421A0T-E/CH")
+      (description "18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8")
+      (footprint "Package_TO_SOT_SMD:SOT-23-6")
+      (fields
+        (field
+          (name "Description") "18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8")
+        (field
+          (name "Footprint") "Package_TO_SOT_SMD:SOT-23-6")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "U6")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "MCP3421A0T-E/CH"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "aee7dbbb-30a2-5780-a35b-54386b8e659f"))
+    (comp
+      (ref "U7")
+      (value "TMP117AIDRVR")
+      (description "+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)")
+      (footprint "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm")
+      (fields
+        (field
+          (name "Description") "+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)")
+        (field
+          (name "Footprint") "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "U7")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "TMP117AIDRVR"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "ab236476-70f8-5542-a3ab-0bc4462af286")))
   (nets
     (net
       (code 1)
       (name "+3V3")
       (class "Default")
+      (node
+        (ref "C13")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "C14")
+        (pin "1")
+        (pintype "PASSIVE"))
       (node
         (ref "C3")
         (pin "1")
@@ -1521,10 +1667,6 @@
         (pin "1")
         (pintype "PASSIVE"))
       (node
-        (ref "R15")
-        (pin "1")
-        (pintype "PASSIVE"))
-      (node
         (ref "R20")
         (pin "1")
         (pintype "PASSIVE"))
@@ -1541,13 +1683,29 @@
         (pin "1")
         (pintype "PASSIVE"))
       (node
+        (ref "R45")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R46")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
         (ref "U4")
         (pin "3")
         (pintype "POWER-IN"))
       (node
         (ref "U5")
         (pin "2")
-        (pintype "POWER-OUT")))
+        (pintype "POWER-OUT"))
+      (node
+        (ref "U6")
+        (pin "5")
+        (pintype "POWER-IN"))
+      (node
+        (ref "U7")
+        (pin "5")
+        (pintype "POWER-IN")))
     (net
       (code 2)
       (name "+5V")
@@ -1645,6 +1803,14 @@
         (pin "2")
         (pintype "PASSIVE"))
       (node
+        (ref "C13")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "C14")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
         (ref "C3")
         (pin "2")
         (pintype "PASSIVE"))
@@ -1662,10 +1828,6 @@
         (pintype "PASSIVE"))
       (node
         (ref "C7")
-        (pin "2")
-        (pintype "PASSIVE"))
-      (node
-        (ref "C8")
         (pin "2")
         (pintype "PASSIVE"))
       (node
@@ -1730,7 +1892,7 @@
         (pintype "PASSIVE"))
       (node
         (ref "J5")
-        (pin "1")
+        (pin "2")
         (pintype "PASSIVE"))
       (node
         (ref "J6")
@@ -1783,6 +1945,10 @@
       (node
         (ref "R4")
         (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R44")
+        (pin "1")
         (pintype "PASSIVE"))
       (node
         (ref "R5")
@@ -1883,7 +2049,23 @@
       (node
         (ref "U5")
         (pin "1")
-        (pintype "POWER-IN")))
+        (pintype "POWER-IN"))
+      (node
+        (ref "U6")
+        (pin "2")
+        (pintype "POWER-IN"))
+      (node
+        (ref "U7")
+        (pin "2")
+        (pintype "POWER-IN"))
+      (node
+        (ref "U7")
+        (pin "4")
+        (pintype "INPUT"))
+      (node
+        (ref "U7")
+        (pin "7")
+        (pintype "PASSIVE")))
     (net
       (code 8)
       (name "HEATER_CMD")
@@ -1930,7 +2112,31 @@
         (pintype "PASSIVE")))
     (net
       (code 11)
-      (name "IO8_STRAP")
+      (name "I2C_SCL")
+      (class "Default")
+      (node
+        (ref "R46")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "TP1")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "U4")
+        (pin "23")
+        (pintype "BIDIRECTIONAL"))
+      (node
+        (ref "U6")
+        (pin "3")
+        (pintype "INPUT"))
+      (node
+        (ref "U7")
+        (pin "1")
+        (pintype "INPUT")))
+    (net
+      (code 12)
+      (name "I2C_SDA")
       (class "Default")
       (node
         (ref "R11")
@@ -1939,18 +2145,14 @@
       (node
         (ref "U4")
         (pin "22")
-        (pintype "BIDIRECTIONAL")))
-    (net
-      (code 12)
-      (name "IO9_BOOT")
-      (class "Default")
+        (pintype "BIDIRECTIONAL"))
       (node
-        (ref "TP1")
-        (pin "1")
-        (pintype "PASSIVE"))
+        (ref "U6")
+        (pin "4")
+        (pintype "BIDIRECTIONAL"))
       (node
-        (ref "U4")
-        (pin "23")
+        (ref "U7")
+        (pin "6")
         (pintype "BIDIRECTIONAL")))
     (net
       (code 13)
@@ -2074,38 +2276,6 @@
         (pintype "PASSIVE")))
     (net
       (code 22)
-      (name "NTC")
-      (class "Default")
-      (node
-        (ref "C8")
-        (pin "1")
-        (pintype "PASSIVE"))
-      (node
-        (ref "J5")
-        (pin "3")
-        (pintype "PASSIVE"))
-      (node
-        (ref "R15")
-        (pin "2")
-        (pintype "PASSIVE"))
-      (node
-        (ref "R27")
-        (pin "1")
-        (pintype "PASSIVE")))
-    (net
-      (code 23)
-      (name "NTC_ADC")
-      (class "Default")
-      (node
-        (ref "R27")
-        (pin "2")
-        (pintype "PASSIVE"))
-      (node
-        (ref "U4")
-        (pin "13")
-        (pintype "BIDIRECTIONAL")))
-    (net
-      (code 24)
       (name "PUMP_CMD")
       (class "Default")
       (node
@@ -2125,7 +2295,7 @@
         (pin "25")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 25)
+      (code 23)
       (name "PUMP_CMD_IND")
       (class "Default")
       (node
@@ -2137,7 +2307,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 26)
+      (code 24)
       (name "PUMP_OUT")
       (class "Default")
       (node
@@ -2149,7 +2319,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 27)
+      (code 25)
       (name "P_ADC")
       (class "Default")
       (node
@@ -2169,7 +2339,7 @@
         (pin "12")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 28)
+      (code 26)
       (name "P_SIG")
       (class "Default")
       (node
@@ -2181,7 +2351,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 29)
+      (code 27)
       (name "SCALE_DOUT1")
       (class "Default")
       (node
@@ -2193,7 +2363,7 @@
         (pin "9")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 30)
+      (code 28)
       (name "SCALE_DOUT2")
       (class "Default")
       (node
@@ -2205,7 +2375,7 @@
         (pin "10")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 31)
+      (code 29)
       (name "SCALE_SCK")
       (class "Default")
       (node
@@ -2221,7 +2391,7 @@
         (pin "30")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 32)
+      (code 30)
       (name "STATUS")
       (class "Default")
       (node
@@ -2233,7 +2403,7 @@
         (pin "31")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 33)
+      (code 31)
       (name "STATUS_A")
       (class "Default")
       (node
@@ -2245,7 +2415,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 34)
+      (code 32)
       (name "SW_BREW")
       (class "Default")
       (node
@@ -2261,7 +2431,7 @@
         (pin "15")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 35)
+      (code 33)
       (name "SW_BREW_IN")
       (class "Default")
       (node
@@ -2273,7 +2443,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 36)
+      (code 34)
       (name "SW_POWER")
       (class "Default")
       (node
@@ -2289,7 +2459,7 @@
         (pin "19")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 37)
+      (code 35)
       (name "SW_POWER_IN")
       (class "Default")
       (node
@@ -2301,7 +2471,7 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
-      (code 38)
+      (code 36)
       (name "SW_STEAM")
       (class "Default")
       (node
@@ -2317,7 +2487,7 @@
         (pin "16")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 39)
+      (code 37)
       (name "SW_STEAM_IN")
       (class "Default")
       (node
@@ -2329,7 +2499,55 @@
         (pin "1")
         (pintype "PASSIVE")))
     (net
+      (code 38)
+      (name "TC_INN")
+      (class "Default")
+      (node
+        (ref "C12")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R44")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "U6")
+        (pin "6")
+        (pintype "INPUT")))
+    (net
+      (code 39)
+      (name "TC_INP")
+      (class "Default")
+      (node
+        (ref "C12")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R43")
+        (pin "2")
+        (pintype "PASSIVE"))
+      (node
+        (ref "U6")
+        (pin "1")
+        (pintype "INPUT")))
+    (net
       (code 40)
+      (name "TC_P")
+      (class "Default")
+      (node
+        (ref "J5")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R43")
+        (pin "1")
+        (pintype "PASSIVE"))
+      (node
+        (ref "R45")
+        (pin "2")
+        (pintype "PASSIVE")))
+    (net
+      (code 41)
       (name "USB_D+")
       (class "Default")
       (node
@@ -2345,7 +2563,7 @@
         (pin "18")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 41)
+      (code 42)
       (name "USB_D-")
       (class "Default")
       (node
@@ -2361,7 +2579,7 @@
         (pin "17")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 42)
+      (code 43)
       (name "V3_SNS")
       (class "Default")
       (node
@@ -2381,7 +2599,7 @@
         (pin "5")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 43)
+      (code 44)
       (name "V5_SNS")
       (class "Default")
       (node
@@ -2401,7 +2619,7 @@
         (pin "6")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 44)
+      (code 45)
       (name "VALVE_CMD")
       (class "Default")
       (node
@@ -2421,7 +2639,7 @@
         (pin "24")
         (pintype "BIDIRECTIONAL")))
     (net
-      (code 45)
+      (code 46)
       (name "VALVE_CMD_IND")
       (class "Default")
       (node
@@ -2433,7 +2651,7 @@
         (pin "2")
         (pintype "PASSIVE")))
     (net
-      (code 46)
+      (code 47)
       (name "VALVE_OUT")
       (class "Default")
       (node
@@ -2445,7 +2663,7 @@
         (pin "3")
         (pintype "PASSIVE")))
     (net
-      (code 47)
+      (code 48)
       (name "VBUS")
       (class "Default")
       (node

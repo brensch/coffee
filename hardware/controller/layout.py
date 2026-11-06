@@ -62,12 +62,12 @@ def rect(x0, y0, x1, y1):
     return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
 
 
-def guard(board, layer, pts, name):
-    """No tracks or vias of any net (pours and pads allowed), on one layer."""
+def guard(board, layer, pts, name, vias_ok=False):
+    """No tracks (and unless vias_ok, no vias) of any net (pours and pads allowed), on one layer."""
     z = pcbnew.ZONE(board)
     z.SetIsRuleArea(True)
     z.SetDoNotAllowTracks(True)
-    z.SetDoNotAllowVias(True)
+    z.SetDoNotAllowVias(not vias_ok)
     z.SetDoNotAllowCopperPour(False)
     z.SetDoNotAllowPads(False)
     z.SetDoNotAllowFootprints(False)
@@ -338,6 +338,16 @@ def build(spec, mains_v):
     elayer = pcbnew.B_Cu if u4.IsFlipped() else pcbnew.F_Cu
     if not u4.IsFlipped():   # module on top: its own GND patch (the pours are added after routing)
         zone(board, nets["GND"], elayer, rect(ex0, ey0, ex1, ey1), clearance=0.2, priority=3, name="EPAD")
+    # v31: LDO heat copper (plan "ldo_copper"): its +3V3 vias go in before routing (locked, so the router
+    # works around them); the +3V3 patches on both layers are poured after routing, in add_pours().
+    # ...and its top-layer patch is kept free of other nets' tracks, so the router goes round it.
+    if "keepout_F" in _plan.get("ldo_copper", {}):
+        guard(board, pcbnew.F_Cu, rect(*_plan["ldo_copper"]["keepout_F"]), "LDO keepout", vias_ok=True)
+    for vx, vy in _plan.get("ldo_copper", {}).get("vias", []):
+        v = pcbnew.PCB_VIA(board)
+        v.SetPosition(V(mm(vx), mm(vy)))
+        v.SetWidth(mm(0.6)); v.SetDrill(mm(0.3)); v.SetNet(nets["+3V3"]); v.SetLocked(True)
+        board.Add(v)
     for vx in ((exs[0] + exs[1]) / 2, (exs[1] + exs[2]) / 2):
         for vy in ((eys[0] + eys[1]) / 2, (eys[1] + eys[2]) / 2):
             v = pcbnew.PCB_VIA(board)
@@ -402,6 +412,13 @@ def remove_stubs(board):
 
 def add_pours(board):
     gnd = board.GetNetsByName()["GND"]
+    lc = _plan.get("ldo_copper")
+    if lc:   # +3V3 patches around the LDO tab (its heat path), above the GND pour, pads tied solid
+        for key, layer in (("rect_F", pcbnew.F_Cu), ("rect_B", pcbnew.B_Cu)):
+            if key in lc:
+                z = zone(board, board.GetNetsByName()["+3V3"], layer, rect(*lc[key]), name="LDO_COPPER", clearance=0.25, priority=2)
+                z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+                z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)   # traces can cut it: drop the unconnected bits
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         z = zone(board, gnd, layer, rect(0.3, 0.3, W - 0.3, H - 0.3), name="GND")
         z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)

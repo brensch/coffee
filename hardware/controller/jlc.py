@@ -80,6 +80,9 @@ ROT_FIX = {}   # rotations come from jlc_cpl.py (solved against JLC's footprints
 FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name carries the "SL" suffix)
          "SOT-223-3_TabPin2|TLV1117LV33DCYR": "C15578",   # TI's own part (C48937499 shares the name: 12 V, not TI)
          "C_0603_1608Metric|22nF X7R": "C21122",
+         "WAGO_2060-452_998-404|Thermocouple": "C2765055",      # v31: WAGO 2060-452/998-404
+         "SOT-23-6|MCP3421A0T-E/CH": "C29454",                    # v31: Microchip, A0 (I2C 0x68)
+         "WSON-6-1EP|TMP117AIDRVR": "C699536",                    # v31: genuine TI (the search returns M117 clones first)
          "C_0402_1005Metric|100nF X7R": "C1525",    # Samsung CL05B104KO5NNNC, basic (matcher picked an extended one)
          "C_0402_1005Metric|22nF X7R": "C1532"}     # Samsung CL05B223KO5NNNC, basic   # Samsung CL10B223KB8NNNC, basic (the matcher picked an extended one)
 

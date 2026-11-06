@@ -1,6 +1,6 @@
 # Hardware
 
-Target: **Gaggia Classic Pro, US 120 V / 60 Hz** (aluminium boiler). For why this machine, see the README.
+Target: **Gaggia Classic Pro, US 120 V / 60 Hz** (E24, brass boiler). For why this machine, see the README.
 
 Where to find what:
 - the board (schematic as code, calculations, simulations): [CIRCUIT.md](CIRCUIT.md);

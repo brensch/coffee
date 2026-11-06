@@ -1,7 +1,7 @@
 Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
 C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
-C4 C8 C10 C11,4,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner | ADC reservoir | ADC sampling reservoir / noise filter"
-C5,1,1uF X5R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,EN delay
+C4 C10 C11 C13 C14,5,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner | ADC reservoir | MCP3421 VDD bypass | TMP117 V+ bypass"
+C5 C12,2,1uF X5R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,Differential filter across the ADC inputs: ~80 Hz with R43/R44 | EN delay
 C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
 C9,1,22nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses
 D1 D3 D4 D5 D6 D7 D8,7,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,"Status: boot log flicker, on while programming, then the firmware heartbeat | indicator: coffee lamp | indicator: heater on | indicator: power lamp | indicator: pump on | indicator: steam lamp | indicator: valve on"
@@ -9,21 +9,24 @@ D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
 J1,1,5V in,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"1=- 2=+5V 3=GND, from the 5 V AC-DC module"
 J2,1,SSRs,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,"2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 3=heater OUT 6=pump OUT 7=valve OUT; 1,4,5 unused"
 J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
-J5,1,Thermistor,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused"
+J5,1,Thermocouple,WAGO 2060-452/998-404,Coffee:WAGO_2060-452_998-404,Y,"WAGO 2060 SMD push-in terminal, 2 poles, 4 mm, 24-18 AWG","1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); strip 8-9 mm and push in. Cold junction measured by U7 beside it"
 J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"0.5-4.5 V ratiometric 5 V transducer (GaggiMate 0-1.6 MPa; BUY.md 10b). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
 J7,1,Front panel,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)
 J10,1,Scale,JST SM07B-GHS-TB,Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal,Y,JST_GH_7_SMD,"3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)"
 Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate","HEATER output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | PUMP output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA) | VALVE output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)"
 Q4,1,AO3401A,AO3401A,Package_TO_SOT_SMD:SOT-23,Y,"P-MOSFET 30 V 4 A, 60 mOhm at -4.5 V gate",Reverse-polarity protection
 R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
-R10 R11 R20 R21 R22 R23 R25 R28 R36,9,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | GPIO8 high: required for download mode from the BOOT pad | SCK pull-down: HX711 stays powered while the C6 boots | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom | switch pull-up / wetting current
-R12 R18 R19 R27 R29 R37 R38 R39 R40 R41 R42,11,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode | indicator LED: coffee lamp | indicator LED: heater on | indicator LED: power lamp | indicator LED: pump on | indicator LED: steam lamp | indicator LED: valve on | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R10 R20 R21 R22 R23 R25 R28 R36,8,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | SCK pull-down: HX711 stays powered while the C6 boots | V3_SNS divider bottom | V3_SNS divider top | V5_SNS divider bottom | switch pull-up / wetting current
+R11 R46,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,I2C SCL pull-up; also GPIO9 high at reset = normal boot | I2C SDA pull-up; also GPIO8's strap pull-up (high at reset)
+R12 R18 R19 R29 R37 R38 R39 R40 R41 R42 R43 R44,12,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | TC+ input: noise filter with C12 (probe lead runs past the heater wiring) | TC- input series: matches R43 (symmetric filter) | indicator LED: coffee lamp | indicator LED: heater on | indicator LED: power lamp | indicator LED: pump on | indicator LED: steam lamp | indicator LED: valve on | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
 R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
-R15,1,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)"
 R16,1,47k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 100/147 (147k load: TE M3200 needs > 100k)
 R17,1,100k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
 R24,1,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
 R30 R31 R32,3,330,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA
-TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in
+R45,1,10M,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out"
+TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in. On SCL: harmless to the bus
 U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
 U5,1,TLV1117LV33DCYR,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable","SOT-223 for heat: ~0.17 W average, +11 C"
+U6,1,MCP3421A0T-E/CH,MCP3421A0T-E/CH,Package_TO_SOT_SMD:SOT-23-6,Y,"18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8","Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C)"
+U7,1,TMP117AIDRVR,TI TMP117AIDRVR,Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm,Y,"+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)","Cold junction: at J5's pads, I2C 0x48 (ADD0 to GND), +-0.2 C max to 100 C; thermal pad soldered to GND (TI allows floating or grounded)"

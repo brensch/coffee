@@ -77,6 +77,25 @@ def conn(n, name, fp):
     return tmpl(name, "J", fp, [(i, str(i), T.PASSIVE) for i in range(1, n + 1)], name)
 
 
+# Thermocouple front end (v31). MCP3421A0 (Microchip DS22003E, Table 3-1): 1 VIN+, 2 VSS, 3 SCL, 4 SDA,
+# 5 VDD, 6 VIN-; I2C address 0x68. TMP117AIDRVR (TI SNOSD82D, Table 5-1, WSON): 1 SCL, 2 GND, 3 ALERT,
+# 4 ADD0, 5 V+, 6 SDA; pad 7 is the thermal pad ("not connected to the device ground"; TI: unsoldered
+# for best accuracy, or if soldered "floating or grounded"). Assembly solders it, so it goes to GND.
+# ADD0 to GND = address 0x48.
+ADC_TC = tmpl("MCP3421A0T-E/CH", "U", "Package_TO_SOT_SMD:SOT-23-6",
+              [(1, "VIN+", T.INPUT), (2, "VSS", T.PWRIN), (3, "SCL", T.INPUT), (4, "SDA", T.BIDIR),
+               (5, "VDD", T.PWRIN), (6, "VIN-", T.INPUT)],
+              "18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8")
+TSENS = tmpl("TMP117AIDRVR", "U", "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm",
+             [(1, "SCL", T.INPUT), (2, "GND", T.PWRIN), (3, "ALERT", T.OPENCOLL), (4, "ADD0", T.INPUT),
+              (5, "V+", T.PWRIN), (6, "SDA", T.BIDIR), (7, "EP", T.PASSIVE)],
+             "+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)")
+# Push-in terminal for the bare thermocouple wires: the K-type alloys must reach the board itself, where
+# the TMP117 measures the cold junction (a splice to copper anywhere else would be an unmeasured junction).
+# Two pads per pole (front + rear tab), both numbered for that pole.
+WAGO2 = tmpl("WAGO_2060-452", "J", "Coffee:WAGO_2060-452_998-404", [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)],
+             "WAGO 2060 SMD push-in terminal, 2 poles, 4 mm, 24-18 AWG")
+
 # One connector type for every cable (one JLC extended-part fee): JST GH 3-pin (1.25 mm), SMD, side
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
@@ -152,14 +171,20 @@ r = part(R, "R10", "10k", notes="EN pull-up (Espressif RC delay)")
 r[1, 2] += v3, en
 c = part(C, "C5", "1uF X5R", notes="EN delay")
 c[1, 2] += en, gnd
-strap8 = Net("IO8_STRAP")
-u_mcu["IO8"] += strap8
-r = part(R, "R11", "10k", notes="GPIO8 high: required for download mode from the BOOT pad")
-r[1, 2] += v3, strap8
-boot = Net("IO9_BOOT")
-u_mcu["IO9"] += boot   # internal pull-up: normal boot
-tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in")
-tp[1] += boot
+# v31: GPIO8/9 are the I2C bus (thermocouple ADC + cold-junction sensor; a later board can bring it out). Both are
+# strapping pins that must read high at reset (GPIO9 high = normal boot; GPIO8 high is what download mode
+# needs), which is also an I2C bus's idle state: the bus pull-ups double as the strap pull-ups. Slaves only
+# drive the bus during a transfer, so they can't hold a strap low at reset.
+sda = Net("I2C_SDA")
+u_mcu["IO8"] += sda
+r = part(R, "R11", "4.7k", notes="I2C SDA pull-up; also GPIO8's strap pull-up (high at reset)")
+r[1, 2] += v3, sda
+scl = Net("I2C_SCL")
+u_mcu["IO9"] += scl
+r = part(R, "R46", "4.7k", notes="I2C SCL pull-up; also GPIO9 high at reset = normal boot")
+r[1, 2] += v3, scl
+tp = part(TESTPAD, "TP1", "BOOT", notes="Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in. On SCL: harmless to the bus")
+tp[1] += scl
 # Status LED on U0TXD (GPIO16), v24: the ROM prints its boot log there and holds it high while it
 # waits in download mode, so the LED flickers at every reset, glows while programming, then shows the
 # firmware's heartbeat. (On the steam lamp, the same pin lit "steam ready" at every boot: review M1.)
@@ -231,24 +256,50 @@ for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 3, "Q1", "R4", None)
         d["A"] += out
         d["K"] += v5
 
-# Thermistor: Molex 218537-3919 50k NTC ring-tab probe to GND, 4.7k reference to 3V3: ~1.5 V at 93 C
-# (the reference sits near the probe's ~3.9k there, for the most mV per degree).
-# R27 1k between the node and GPIO1: every cable uses the same GH 3-pin plug, and the 5 V lead in J5
-# would otherwise put the supply straight onto the pin's clamp diode (~1 mA through 1k). No current
-# flows in R27 in normal use, so it adds no measurement error.
-ntc, ntc_adc = Net("NTC"), Net("NTC_ADC")
-j_ntc = part(JST3, "J5", "Thermistor", mpn="JST SM03B-GHS-TB", notes="Molex 218537-3919 50k NTC ring-tab under an M4 screw at the brew-thermostat seat. 1=GND 3=NTC (no polarity), 2 unused")
-j_ntc[1, 3] += gnd, ntc
-j_ntc[2] += NC     # the supply lead's +5V (its pin 2) lands here on nothing; v30: NTC on pin 3, so a
-                   # pressure lead here ties it to the transducer's ground diode: ~0.6 V, a plausible ~140 C, but
-                   # J6 then has no transducer, so PRESSURE_SENSOR faults and the heater stays off
-r = part(R, "R15", "4.7k", notes="NTC reference: 3.02 V at 25 C, 1.50 V at 93 C, 0.59 V at 140 C (Molex 218537-3919 table)")
-r[1, 2] += v3, ntc
-c = part(C, "C8", "100nF X7R", notes="ADC sampling reservoir / noise filter")
-c[1, 2] += ntc, gnd
-r = part(R, "R27", "1k", notes="GPIO1 series protection: a 5 V plug in the wrong socket pushes ~1 mA into the clamp diode")
-r[1, 2] += ntc, ntc_adc
-u_mcu["IO1"] += ntc_adc   # ADC1_CH1
+# Thermocouple (v31): ungrounded K-type, M4 thread, screwed into the brew-thermostat hole (Gaggiuino's
+# probe). Its two wires push straight into J5 (WAGO 2060). TC- is the board's ground reference (the
+# probe's junction is insulated from the earthed boiler, so this is the only ground on it).
+# - R43/R44 1k in each ADC input + C12: the noise filter. The 0.5 m probe lead runs past the heater and
+#   pump wiring, and the SSRs switch 11 A beside it. (No lead can reach J5, so they aren't there for
+#   mis-plugs; they do also keep any surge on the probe wires inside the MCP3421's +-2 mA input limit.)
+#   Cost: the ADC's input impedance (2.25 MOhm / PGA, typ) loads them, a fixed ~0.7 % gain error at
+#   PGA 8 that the firmware corrects (~0.35 C at a 50 C tip-to-board rise).
+# - C12 1 uF across the inputs: ~80 Hz corner with 2 x 1k, ahead of the ADC's own sinc filter at 3.75 SPS.
+# - R45 10 MOhm from 3V3 to TC+ on the connector side: open probe -> the 10M works against the ADC's
+#   input impedance (~281k at PGA 8, plus R43/R44): ~90 mV across the inputs, settling in ~0.3 s with C12.
+#   No K-type makes 90 mV below ~2000 C, so the firmware calls anything over ~15 mV (~370 C) an open probe.
+#   With the probe in, its few ohms carry 0.33 uA: a few uV (~0.1 C), constant, calibrated out. (On the
+#   ADC side of R43 the same current would drop 0.33 mV: ~8 C.)
+# - TMP117 (U7) sits at J5's pads: it reads the cold junction (the alloy-to-copper joints in the terminal).
+tc_p = Net("TC_P")
+j_tc = part(WAGO2, "J5", "Thermocouple", mpn="WAGO 2060-452/998-404",
+            notes="1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); strip 8-9 mm and push in. Cold junction measured by U7 beside it")
+j_tc[1, 2] += tc_p, gnd   # pin 1 faces the ADC column; TC- is the reference, on GND at the terminal (a named TC_N net would rename GND)
+tc_inp, tc_inn = Net("TC_INP"), Net("TC_INN")
+r = part(R, "R43", "1k", notes="TC+ input: noise filter with C12 (probe lead runs past the heater wiring)")
+r[1, 2] += tc_p, tc_inp
+r = part(R, "R44", "1k", notes="TC- input series: matches R43 (symmetric filter)")
+r[1, 2] += gnd, tc_inn
+c = part(C, "C12", "1uF X5R", notes="Differential filter across the ADC inputs: ~80 Hz with R43/R44")
+c[1, 2] += tc_inp, tc_inn
+r = part(R, "R45", "10M", notes="Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out")
+r[1, 2] += v3, tc_p
+u_tc = part(ADC_TC, "U6", "MCP3421A0T-E/CH", mpn="MCP3421A0T-E/CH", notes="Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C)")
+u_tc["VIN+", "VIN-"] += tc_inp, tc_inn
+u_tc["VSS", "VDD"] += gnd, v3
+u_tc["SCL", "SDA"] += scl, sda
+c = part(C, "C13", "100nF X7R", notes="MCP3421 VDD bypass")
+c[1, 2] += v3, gnd
+u_cj = part(TSENS, "U7", "TMP117AIDRVR", mpn="TI TMP117AIDRVR",
+            notes="Cold junction: at J5's pads, I2C 0x48 (ADD0 to GND), +-0.2 C max to 100 C; thermal pad soldered to GND (TI allows floating or grounded)")
+u_cj["GND", "ADD0"] += gnd, gnd
+u_cj["V+"] += v3
+u_cj["SCL", "SDA"] += scl, sda
+u_cj["ALERT"] += NC
+u_cj["EP"] += gnd   # TI: a soldered thermal pad "must be left floating or grounded"; JLC solders it, and
+                    # grounding it joins the two GND pins under the part (they can't be routed round it)
+c = part(C, "C14", "100nF X7R", notes="TMP117 V+ bypass")
+c[1, 2] += v3, gnd
 
 # Pressure: 0.5-4.5 V ratiometric transducer on +5V, divided by 2/3 (4.5 V -> 3.0 V) into ADC1.
 p_sig, p_adc = Net("P_SIG"), Net("P_ADC")
@@ -342,6 +393,7 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
     u_mcu[gpio] += sns
 
 u_mcu["IO15"] += NC
+u_mcu["IO1"] += NC    # v31: the thermistor input is gone (thermocouple on I2C); spare ADC1 pin
 # No mounting holes (each costs ~50 mm2 of board): the printed holder grips the board's edges.
 
 
@@ -350,10 +402,11 @@ def nets():
     return builtins.default_circuit.nets
 
 
-FIRMWARE_PINS = {"IO0": "P_ADC", "IO1": "NTC_ADC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
+FIRMWARE_PINS = {"IO0": "P_ADC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
                  "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO14": "SW_POWER", "IO23": "LED_STEAM_IO", "IO12": "USB_D-", "IO13": "USB_D+",
                  "IO21": "LED_PWR_IO", "IO22": "LED_COFFEE_IO", "TXD0": "STATUS", "RXD0": "SCALE_SCK",
-                 "IO4": "SCALE_DOUT1", "IO5": "SCALE_DOUT2"}
+                 "IO4": "SCALE_DOUT1", "IO5": "SCALE_DOUT2",
+                 "IO8": "I2C_SDA", "IO9": "I2C_SCL"}
 STRAPS = ("IO4", "IO5", "IO8", "IO9", "IO15")   # ESP32-C6 strapping pins
 ADC1 = ("IO0", "IO1", "IO2", "IO3", "IO4", "IO5", "IO6")
 
@@ -377,11 +430,11 @@ def design_checks():
         if netname(pin) != want:
             errors.append(f"PINMAP: {pin} is on {netname(pin)}, firmware expects {want}")
     # 3. Analog inputs on ADC1 (ADC2 doesn't exist on the C6; ADC1 works alongside Wi-Fi).
-    for net in ("NTC_ADC", "P_ADC"):
+    for net in ("P_ADC",):
         pin = next((p for p in FIRMWARE_PINS if FIRMWARE_PINS[p] == net), None)
         if pin not in ADC1:
             errors.append(f"ADC: {net} must be on an ADC1 pin")
-    # 4. Straps: loads never on a strapping pin; only GPIO8 (pull-up) and GPIO9 (BOOT pad) connected.
+    # 4. Straps: loads never on a strapping pin; GPIO8/9 carry only the I2C bus (high at reset) and the BOOT pad.
     for pin in STRAPS:
         if netname(pin) and netname(pin).endswith("_CMD"):
             errors.append(f"BOOT-SAFE: {netname(pin)} is on strapping pin {pin}")
@@ -389,8 +442,9 @@ def design_checks():
     for pin, ok in (("IO4", "SCALE_DOUT1"), ("IO5", "SCALE_DOUT2"), ("IO15", None)):
         if netname(pin) != ok:
             errors.append(f"STRAP: {pin} must be {ok or 'unconnected'} (is {netname(pin)})")
-    if netname("IO8") != "IO8_STRAP" or not any(p.part.ref == "R11" for p in u_mcu["IO8"].net.pins):
-        errors.append("STRAP: GPIO8 needs its pull-up")
+    for pin, ref in (("IO8", "R11"), ("IO9", "R46")):   # v31: I2C pull-ups are the strap pull-ups
+        if not any(p.part.ref == ref for p in u_mcu[pin].net.pins):
+            errors.append(f"STRAP: {pin} needs its pull-up {ref}")
     if errors:
         print("\n".join(errors))
         sys.exit(1)

@@ -51,7 +51,10 @@ t0 = time.time()
 if tool == "fastroute":
     exe = os.environ["FASTROUTE"]
     cmd = [exe, "--diagnose", "-de", dsn, "-do", ses, f"--max-time={secs}", "--report=" + stem + "-fastroute.json",
-           "--no-neckdown-classes=" + ",".join(["kicad_default", "PWR", "FINE"] + [c for c, n in MAINS_CLASSES if n not in ("AC_L", "HTR_A", "HTR_B")])]
+           "--no-neckdown-classes=" + ",".join(["kicad_default"] + ([] if os.environ.get("NECKDOWN_PWR") else ["PWR"]) + ["FINE"]
+                                               + [c for c, n in MAINS_CLASSES if n not in ("AC_L", "HTR_A", "HTR_B")])]
+    # NECKDOWN_PWR (plan "route", v31): power may narrow (to the 0.2 mm floor) right at fine-pitch pins,
+    # e.g. the TMP117's 0.65 mm WSON, where a full 0.4 mm +3V3 track can't leave the pad.
     # live view on a free port (shown on the jobs page while the router runs)
     import socket
     _s = socket.socket(); _s.bind(("127.0.0.1", 0)); port = _s.getsockname()[1]; _s.close()
