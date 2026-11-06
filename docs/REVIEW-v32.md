@@ -79,8 +79,9 @@ The reviewer checked the following and found them fine:
 - **Footprints:** the FASTON (TE C-63824 holes 1.40 mm, 5.08 mm apart) and the IRM (Mean Well drawing).
 - **DRC and JLC limits.**
 
-Not verified: the Nano2 443 land pattern (Littelfuse's site refused the fetch; the footprint comes from
-the KiCad library's own drawing), and the DPAK/SMDIP rotations in JLC's preview. `jlc_cpl.py` solved
+Not verified by the reviewer: the Nano2 443 land pattern (Littelfuse's site refused the fetch). The
+footprint follows the datasheet's recommended pads, read from the LCSC-hosted 443 datasheet, and
+`jlc_cpl.py` confirms JLC's own footprint for C187538 lands on them, and the DPAK/SMDIP rotations in JLC's preview. `jlc_cpl.py` solved
 them against JLC's own footprints, but look at the preview when ordering.
 
 ## Re-review of the v33 fix
