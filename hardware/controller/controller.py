@@ -471,7 +471,10 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V5_SNS", v5, "IO3", "R24", "R25", 
 u_mcu["IO15"] += NC
 u_mcu["IO2"] += NC    # v32: spare (the 3V3 rail sense is gone)
 u_mcu["IO1"] += NC    # v31: the thermistor input is gone (thermocouple on I2C); spare ADC1 pin
-# No mounting holes (each costs ~50 mm2 of board): the printed holder grips the board's edges.
+# v32: three M3 holes (unplated) to screw the board into its printed tray (the tray, not the board, is
+# velcroed to the chassis). Each >= 3 mm from mains copper; nylon screws recommended near the mains zone.
+for ref in ("H1", "H2", "H3"):
+    part(HOLE, ref, "M3", notes="M3 mounting hole into the printed tray (nylon screw in the mains zone)")
 
 
 # ================================================================ checks + outputs

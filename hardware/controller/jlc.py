@@ -37,7 +37,7 @@ THT = ("TestPoint", "MountingHole")   # bare pads/holes: not assembled. Everythi
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "HRO TYPE-C-31-M-12": "TYPE-C-31-M-12",
-    "JST SM02B-GHS-TB": "SM02B-GHS-TB", "JST SM03B-GHS-TB": "SM03B-GHS-TB", "JST SM06B-GHS-TB": "SM06B-GHS-TB", "JST SM07B-GHS-TB": "SM07B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
+    "JST SM02B-GHS-TB": "SM02B-GHS-TB", "JST SM04B-GHS-TB": "SM04B-GHS-TB", "JST SM03B-GHS-TB": "SM03B-GHS-TB", "JST SM06B-GHS-TB": "SM06B-GHS-TB", "JST SM07B-GHS-TB": "SM07B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
     "AO3400A": "AO3400A", "AO3401A": "AO3401A", "1N4148W": "1N4148W", "B5819W SL": "B5819W SL",
     "Samsung CL21A226MAQNNNE": "CL21A226MAQNNNE",
 }
@@ -83,6 +83,16 @@ FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name 
          "WAGO_2060-452_998-404|Thermocouple": "C2765055",      # v31: WAGO 2060-452/998-404
          "SOT-23-6|MCP3421A0T-E/CH": "C29454",                    # v31: Microchip, A0 (I2C 0x68)
          "WSON-6-1EP|TMP117AIDRVR": "C699536",                    # v31: genuine TI (the search returns M117 clones first)
+         # v32 mains section: exact parts (docs/evidence), never a search's substitute
+         "IRM-10-xx_THT|IRM-10-5": "C2857903",                     # Mean Well IRM-10-5
+         "SMDIP-6_W9.53mm_Clearance8mm|MOC3083SR2M": "C111561",   # onsemi MOC3083SR2M
+         "TO-252-2|T435-600B": "C145128",                         # ST T435-600B-TR (pump)
+         "TO-252-2|T410-600B": "C2970064",                        # ST T410-600B-TR (valve)
+         "C_2220_Murata_GA355|22nF X2": "C437417",                # Murata GA355DR7GB223KW01L, Class X2
+         "R_2512_6332Metric|100 1W": "C35218",                    # UNI-ROYAL 25121WF1000T4E
+         "Fuse_Littelfuse_Nano2_443|2A T": "C187538",              # Littelfuse 0443002.DR
+         "FASTON_TE_63824-1|N": "C575074", "FASTON_TE_63824-1|L": "C575074",   # TE 63824-1
+         "FASTON_TE_63824-1|P": "C575074", "FASTON_TE_63824-1|3": "C575074",
          "C_0402_1005Metric|100nF X7R": "C1525",    # Samsung CL05B104KO5NNNC, basic (matcher picked an extended one)
          "C_0402_1005Metric|22nF X7R": "C1532"}     # Samsung CL05B223KO5NNNC, basic   # Samsung CL10B223KB8NNNC, basic (the matcher picked an extended one)
 
@@ -129,11 +139,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mains", type=int, default=120)
     ap.add_argument("--both-sides", action="store_true", help="JLC places the bottom-side parts too (Standard PCBA)")
+    ap.add_argument("--tht", choices=("jlc", "hand"), default="jlc",
+                    help="v32: 'jlc' = JLC also solders the through-hole parts (IRM module, spade tabs); 'hand' = they go on hand.csv")
     a = ap.parse_args()
     b = os.path.join(HERE, "build")
     rows = list(csv.DictReader(open(os.path.join(b, f"bom-{a.mains}v.csv"))))
     pos = {r["Ref"]: r for r in csv.DictReader(open(os.path.join(b, f"coffee-controller-{a.mains}v-fab", "positions.csv")))}
-    out = os.path.join(b, f"jlc-{a.mains}v" + ("-2side" if a.both_sides else ""))
+    out = os.path.join(b, f"jlc-{a.mains}v" + ("-2side" if a.both_sides else "") + ("-smd" if a.tht == "hand" else ""))
     os.makedirs(out, exist_ok=True)
     smd, hand, report = [], [], []
     for row in rows:
@@ -147,7 +159,8 @@ def main():
         model = c.get("componentModelEn", "") if c else ""
         # through-hole parts, and anything placed on the bottom (connectors you solder yourself:
         # Economic PCBA assembles the top side only), go on the hand-solder list
-        is_tht = any(t in row["Footprint"] for t in THT) or (not a.both_sides and all(
+        through = any(k in row["Footprint"] for k in ("_THT", "FASTON"))
+        is_tht = any(t in row["Footprint"] for t in THT) or (a.tht == "hand" and through) or (not a.both_sides and all(
             pos.get(r, {}).get("Side", "top").lower().startswith("bottom") for r in refs))
         line = dict(Comment=row["Value"], Designator=",".join(refs), Footprint=row["Footprint"].split(":")[-1], **{"LCSC Part #": code})
         (hand if is_tht else smd).append(line)

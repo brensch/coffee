@@ -26,7 +26,10 @@ CACHE = os.path.join(B, "easyeda-cache")
 
 # Parts whose land we changed on purpose (manufacturer's recommended pads differ from JLC's generic
 # footprint): the centre and angle are still solved exactly; only the pad-size tolerance is wider.
-TOLERANCE = {"Q4": 0.35}   # AO3401A C15127: JLC's SOT-23 land has its pads at +-1.15 mm vs KiCad's +-0.94 (same part, longer land); the angle fit is unique
+TOLERANCE = {"Q4": 0.35,   # AO3401A C15127: JLC's SOT-23 land has its pads at +-1.15 mm vs KiCad's +-0.94 (same part, longer land); the angle fit is unique
+             # v32: same parts, different land patterns, both centred on the body (the angle fit is unique):
+             "Q5": 0.45, "Q6": 0.45,   # ST DPAK: KiCad TO-252-2 vs JLC's TO-252-2 land, 0.37 mm on 6.4 x 5.8 / 2.2 x 1.2 mm pads
+             "C15": 0.40, "C16": 0.40}  # Murata GA355 X2 2220: Murata's recommended land (Coffee lib) vs JLC's generic C2220, 0.32 mm
 
 
 # EasyEDA's API refused this machine (CloudFront 403) when C8598 was added: its rotation is solved from
@@ -36,7 +39,10 @@ TOLERANCE = {"Q4": 0.35}   # AO3401A C15127: JLC's SOT-23 land has its pads at +
 PROXY = {"C8598": "C81598",
          # v23 (EasyEDA refused again): unpolarised 0402 capacitors solved from cached 0402 capacitor
          # records of the same package (C60474 / C107017 are the matcher's first picks, same land).
-         "C1525": "C60474", "C1532": "C107017"}
+         "C1525": "C60474", "C1532": "C107017",
+         # v32: EasyEDA has no record for the ST T410-600B-TR (C2970064, 404): the T435-600B-TR (C145128) is
+         # the same T4-series DPAK from the same ST datasheet (DocID7699: leads A1, A2 (cut), G; tab A2).
+         "C2970064": "C145128"}
 
 
 # Parts whose JLC pin numbers differ from the board footprint's: JLC pad -> board pad. Checked against

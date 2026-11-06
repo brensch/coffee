@@ -1656,6 +1656,39 @@
    "desc": "Capacitor",
    "mpn": "",
    "notes": "ADC reservoir"
+  },
+  "H1": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "pin_names": {},
+   "mains": [],
+   "populate": "Y",
+   "desc": "M3 mounting hole (unplated)",
+   "mpn": "",
+   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
+  },
+  "H2": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "pin_names": {},
+   "mains": [],
+   "populate": "Y",
+   "desc": "M3 mounting hole (unplated)",
+   "mpn": "",
+   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
+  },
+  "H3": {
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "value": "M3",
+   "pins": {},
+   "pin_names": {},
+   "mains": [],
+   "populate": "Y",
+   "desc": "M3 mounting hole (unplated)",
+   "mpn": "",
+   "notes": "M3 mounting hole into the printed tray (nylon screw in the mains zone)"
   }
  },
  "mains_nets": [

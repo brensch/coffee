@@ -1,77 +1,71 @@
-# Buy list: off-board parts (board v18, US Gaggia Classic Pro, 120 V)
+# Buy list: off-board parts (board v32, US Gaggia Classic Pro, 120 V)
 
-**Safety level: the same as GaggiMate's Lego build** (<https://docs.gaggimate.eu/docs/sourcing-lego>):
-the same class of modules, mounted the same way inside the machine (no DIN rail, no extra
-enclosure), and the stock **steam thermostat (145 °C) and thermal fuse (184 °C) stay in series
-with the heater** as the protection that doesn't depend on software. One upgrade over GaggiMate, by
-choice: a genuine heater SSR instead of an AliExpress "SSR-40DA".
+**v32 puts the small mains loads on the board** (Gaggiuino's split): the board carries its own
+certified 5 V supply (Mean Well IRM-10-5) and switches the pump and the 3-way valve with on-board
+triacs. The 11 A heater stays on its external SSR, and the stock **steam thermostat (145 °C) and
+thermal fuse (184 °C) stay in series with the heater** as the protection that doesn't depend on
+software. Every lead is crimped by you (no pre-crimped leads, no splices near the board).
 
-Wiring: [WIRING.md](WIRING.md). Every candidate looked at (including the datasheet-verified
-alternatives from earlier passes, with quotes and links) is in
-[`docs/evidence/parts.jsonl`](evidence/parts.jsonl): flip a status there to change a choice.
+Wiring: [WIRING.md](WIRING.md). Every candidate looked at, with datasheet quotes and links, is in
+[`docs/evidence/parts.jsonl`](evidence/parts.jsonl): flip a status there to change a choice. The
+board itself (all its parts, including the mains section) is the JLC order: `hardware/controller/build/coffee-v32-*`.
 
-AliExpress links are GaggiMate's own (from the Lego list). AliExpress showed this machine a robot
-check, so their prices weren't read: the "~" figures are typical, **open the links for the real
-price** and pick the variant named.
+AliExpress prices weren't readable from here: the "~" figures are typical, open the links.
 
 ## Shopping list
 
 | # | Part | Variant / qty | Where | Price |
 |---|---|---|---|---|
-| 1 | **Heater SSR**: Schneider **SSP1A125BDT** (genuine, 25 A, zero-cross, same hockey-puck size as GaggiMate's 40-DA) | 1 | <https://www.standardelectricsupply.com/2341717-Schneider-Electric-SSP1A125BDT> | $24.97 |
-| 2 | **Pump and valve SSRs**: 1-channel 5 V SSR board (Omron G3MB-202P, 2 A, zero-cross) | **2**, "1-Channel high 5V" | GaggiMate's link <https://s.click.aliexpress.com/e/_EviCKOc> | ~$2 each |
-| 3 | **AC snubber** for the valve SSR | 1 | <https://s.click.aliexpress.com/e/_EGhn5Gy> | ~$1 |
-| 4 | **5 V 2 A power supply** module | 1 | <https://s.click.aliexpress.com/e/_EweWqIc> | ~$4 |
-| 5 | **18 AWG silicone wire** (mains) | 2–3 m | <https://s.click.aliexpress.com/e/_EJ5sOfm> | ~$5 |
-| 6 | **6.35 mm spade connectors**, male + female | kit | <https://s.click.aliexpress.com/e/_EuLcsLO> | ~$4 |
-| 7 | **6.35 mm piggyback** connector (live split, Gaggia Classic) | 1–2 | <https://s.click.aliexpress.com/e/_EytfYJO> | ~$2 |
-| 8 | **Fork connectors** SV1.25-5S (heater SSR output) | 2 | <https://s.click.aliexpress.com/e/_EIAVCxe> | ~$2 |
-| 9 | **JST GH 1.25 mm 3-pin leads**, single-ended, 300 mm: 5 V in, pressure | 1 pack of 10 (2 used) | <https://www.aliexpress.us/item/3256809108366050.html> (variant 3P, single head, 300 mm) | $1.14 + $5.80 ship |
-| 10 | **Thermocouple**: ungrounded **K-type, M4 screw**, 0.5 m PTFE lead (Gaggiuino's: listing "CG K/PT100 Type M3 M4 Copper Screw Thermocouple", pick **K / M4 / 0.5 m**) | 1 (+1 spare) | <https://www.aliexpress.us/item/3256805310471537.html> | ~$1 |
-| 11 | **Pressure transducer** 0–1.6 MPa, 5 V, 0.5–4.5 V (GaggiMate's) | 1 | <https://s.click.aliexpress.com/e/_Evn1mNS> | ~$18 |
-| 12 | **Plumbing**: GaggiMate kit, or its AliExpress parts for the Classic Pro (PTFE tube 4/6 mm, PL06-01, PLF06-02, G1/8 tee, 1/4" gasket, PTFE tape) | 1 set | kit <https://shop.gaggimate.eu/collections/parts/products/gaggimate-plumbing-kit> (€26.84) or the parts list on the Lego page | ~$10–30 |
-| 13 | **Antenna**: Taoglas **CAB.A02** pigtail + **GW.15.2113** 2 dBi | 1 + 1 | Sager <https://www.sager.com/product/caba02-taoglas/7168042>, <https://www.sager.com/product/gw152113-taoglas/7168348> | $2.97 + $4.76 |
-| 14 | Heat-shrink assortment, electrical tape, cable ties | | any | |
-| 15 | **Front-panel LEDs**: red 5 mm **pre-wired LEDs with the resistor in the lead, rated 5 V** (a 150–470 Ω resistor; not the 12 V kind), to replace the three 120 V neon lamps. The board has 330 Ω as well; the LED's own resistor is what keeps a front-panel lead harmless in the wrong socket (SWAP-SAFETY.md) | 3 (+ spares) | any; Gaggiuino's printable "Neon Lamp Clip" holds one in the stock lamp position | ~$1 |
-| 16 | **JST GH 7-pin leads**, single-ended, 300 mm: the SSR bundle (back panel), the front panel, the scale | 3 (+1 spare) | same AliExpress GH store as #9 (variant 7P), or genuine JST GHR-07V-S housings with AGHGH28K305 jumpers | ~$3 |
-| 17 | **Scale load cells**: 750 g mini bar cells, as in Gaggiuino's scale | 2 (buy 3–4: quality varies) | Gaggiuino's parts list (AliExpress); datasheet-backed alternative: HT Sensor TAL220F-1kg | ~$6 |
-| 18 | **Scale amplifier**: **2 generic HX711 modules** (or Gaggiuino's dual "Vas" board, but that one is not verified on 3.3 V only), **powered from 3.3 V only**: link VCC and VDD on each module. The HX711 is rated from 2.6 V; on 3.3 V the bridge gets ~3.1 V, ~28 % less signal than on 5 V, far below a vibration pump's noise (docs/evidence: scale-adc/avia-hx711) | 1 board or 2 modules | PCBWay (Vas board) or AliExpress modules | ~$3–10 |
-| 19 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters, plus magnets per the model | 1 set | Printables model 285370 (print it yourself) | filament |
-| 21 | **Heat-resistant velcro** (hook-and-loop, high-temperature adhesive) to hold the board on the side panel | a strip ~60 × 20 mm | any; check the adhesive's temperature rating is well above 70 °C | ~$5 |
+| 1 | **Heater SSR**: Schneider **SSP1A125BDT** (genuine, 25 A, zero-cross, hockey-puck size) | 1 | <https://www.standardelectricsupply.com/2341717-Schneider-Electric-SSP1A125BDT> | $24.97 |
+| 2 | **18 AWG silicone wire** (mains: L, N, pump, valve to the board's spades; heater SSR) | 2–3 m | <https://s.click.aliexpress.com/e/_EJ5sOfm> | ~$5 |
+| 3 | **6.3 mm (0.250") female receptacles, fully insulated**, for 18 AWG: the board's four spades and the machine's tabs | ~20 | any reputable (TE/Molex/Panduit), or a kit | ~$5 |
+| 4 | **6.35 mm piggyback** (live split, Gaggia Classic) | 1–2 | <https://s.click.aliexpress.com/e/_EytfYJO> | ~$2 |
+| 5 | **Fork connectors** SV1.25-5S (heater SSR output) | 2 | <https://s.click.aliexpress.com/e/_EIAVCxe> | ~$2 |
+| 6 | **Thermocouple**: ungrounded **K-type, M4 screw**, 0.5 m PTFE lead (Gaggiuino's: "CG K/PT100 Type M3 M4 Copper Screw Thermocouple", pick **K / M4 / 0.5 m**) | 1 (+1 spare) | <https://www.aliexpress.us/item/3256805310471537.html> | ~$1 |
+| 7 | **Pressure transducer 0–1.2 MPa**, 5 V, 0.5–4.5 V, G1/4 (Gaggiuino's, XIDIBEI; pick the **1.2 MPa** variant) | 1 | <https://www.aliexpress.com/item/4000756631924.html> (US-stocked same part: Seeed 114991178) | ~$10–15 |
+| 8 | **Plumbing**: GaggiMate kit, or its AliExpress parts for the Classic Pro (PTFE tube 4/6 mm, PL06-01, PLF06-02, G1/8 tee, 1/4" gasket, PTFE tape) | 1 set | kit <https://shop.gaggimate.eu/collections/parts/products/gaggimate-plumbing-kit> (€26.84) | ~$10–30 |
+| 9 | **Antenna**: Taoglas **CAB.A02** pigtail + **GW.15.2113** 2 dBi | 1 + 1 | Sager <https://www.sager.com/product/caba02-taoglas/7168042>, <https://www.sager.com/product/gw152113-taoglas/7168348> | $2.97 + $4.76 |
+| 10 | **JST GH plug housings**: GHR-02V-S (thermocouple), GHR-03V-S (pressure), GHR-04V-S (heater SSR), GHR-07V-S (front panel, scale) | 1 + 1 + 1 + 2 (+ spares) | Digi-Key / Mouser (LCSC stock is thin for 2- and 3-pin) | ~$0.10 each |
+| 11 | **JST GH crimp contacts SSHL-002T-P0.2** (26–30 AWG, insulation OD 0.76–1.0 mm) | ~40 (you'll ruin a few) | LCSC C189897, Digi-Key | ~$0.02 each |
+| 12 | **26–28 AWG silicone wire**, several colours (front panel, scale, SSR input, pressure tail) | ~5 m | any | ~$5 |
+| 13 | **Crimpers**: Engineer **PA-09** (GH contacts) and a 6.3 mm receptacle crimper (ratchet, red/blue insulated, or IWISS SN-48B for open-barrel) | 1 + 1 | Amazon / AliExpress | ~$40 + ~$25 |
+| 14 | Heat-shrink assortment, cable ties | | any | |
+| 15 | **Front-panel LEDs**: red 5 mm **pre-wired LEDs with the resistor in the lead, rated 5 V** (150–470 Ω), replacing the three 120 V neon lamps. The board has 330 Ω as well; the LED's own resistor keeps a front-panel lead harmless in the wrong 7-pin socket (SWAP-SAFETY.md) | 3 (+ spares) | any; Gaggiuino's printable "Neon Lamp Clip" holds one in the stock lamp position | ~$1 |
+| 16 | **Scale load cells**: 750 g mini bar cells, as Gaggiuino's scale | 2 (buy 3–4) | Gaggiuino's parts list; datasheet-backed alternative HT Sensor TAL220F-1kg | ~$6 |
+| 17 | **Scale amplifier**: 2 generic HX711 modules, **powered from 3.3 V only** (link VCC and VDD) | 2 | AliExpress | ~$3 |
+| 18 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters | 1 set | Printables model 285370 | filament |
+| 19 | **Printed board tray** (PETG or ASA, **not PLA**: the case runs 60–70 °C) with M3 standoffs ≥ 4 mm, a solid floor under the mains zone, cutouts for the plugs; **M3 nylon screws** ×3 | 1 | print it yourself (positions: hardware/controller/plan.json, `H1`-`H3`) | filament + ~$2 |
+| 20 | **Heat-resistant velcro** to hold the **tray** (never the bare board) on the side panel | a strip | adhesive rated well above 70 °C | ~$5 |
 
-**Total ≈ $110–135** plus shipping, depending on the AliExpress prices and the plumbing route (≈ $15–20 of it is the scale and front panel, #15–19).
+**Total ≈ $150–175** including the two crimpers (~$65, reusable), plus shipping.
 
 ## Notes per part
 
-- **1 Heater SSR.** Mounted like GaggiMate's: flat on the inside of the rear panel at the
-  ventilation slots, held by two M4 bolts with nuts and washers through the slots (or cable ties),
-  factory thermal pad against the panel. No separate heatsink: the panel takes the heat.
-  Datasheet: <https://www.se.com/us/en/product/download-pdf/SSP1A125BDT> (24–300 VAC, 0.15–25 A,
-  3–32 VDC input, zero-cross, 1 mA leakage, UL 508). If it runs hot in use (INSTALL §6), the
-  Auber HS25ET heatsink ($13.49) is the verified add-on (evidence store).
-- **2 Pump/valve SSR boards.** The Omron G3MB-202P is 2 A, zero-cross, 100–240 VAC. Each board
-  takes 5 V on VCC/GND and a high-level IN; WIRING.md shows how the board's J2 drives it. The
-  pump (0.35–0.45 A) and valve are well inside 2 A.
-- **3 Snubber.** Across the valve SSR's output terminals: the valve's small inductive load
-  otherwise may not let the SSR switch off cleanly (GaggiMate lists it for this).
-- **4 Power supply.** GaggiMate's 5 V 2 A module, fed from the switched live and neutral. If the
-  variant has PCB pins, solder the wires and heat-shrink every pin.
-- **5–8 Wiring.** As GaggiMate: 18 AWG silicone for every mains run, 6.35 mm quick-connects to the
-  machine's tabs, a piggyback on the live, forks on the heater SSR's screw terminals.
-- **9 GH leads.** Compatible clones; check the latch clicks into the board's SM03B-GHS-TB headers.
-- **10 Thermocouple.** v31 reads a K-type on the board (MCP3421 + TMP117 cold junction), like
-  Gaggiuino and GaggiMate. Unbranded, no datasheet: WIRING check 8 confirms it's ungrounded and finds
-  the negative wire. Its wire gauge isn't listed; J5 takes 24–18 AWG (0.2–0.75 mm²). The v30 board
-  read the Molex 218537-3919 NTC instead (evidence store, `ntc-probe`).
-- **11 Transducer.** GaggiMate's; no datasheet, so INSTALL §3 identifies its wires on the bench.
-- **13 Antenna.** Mount the SMA bulkhead in a plastic part, not through the steel case.
+- **1 Heater SSR.** Bolted flat on the inside of the rear panel at the ventilation slots (two M4
+  bolts, or cable ties), factory thermal pad against the panel. Its input lead is a 4-pin GH to the
+  board's J2 (+5V, OUT). Datasheet: <https://www.se.com/us/en/product/download-pdf/SSP1A125BDT>.
+- **2–5 Mains wiring.** 18 AWG silicone for every mains run, fully insulated 6.3 mm receptacles on
+  the board's four spades (N, L, P, 3) and the machine's tabs. Push receptacles on with the board in
+  its tray: the tray's solid floor under the spades takes the push force (up to ~80 N).
+- **6 Thermocouple.** Crimp GH contacts straight onto its two wires (never splice it: any joint to
+  copper away from the board is an unmeasured second junction). Check its wire fits the contact
+  (26–30 AWG, insulation OD ≤ 1.0 mm); WIRING check 8 confirms it's ungrounded and finds TC−.
+- **7 Transducer.** Gaggiuino's 0–1.2 MPa part (−20…105 °C, 2.4 MPa max): ~33 % more volts per bar
+  than the old 1.6 MPa part. No maker datasheet, so INSTALL §3 identifies its wires on the bench
+  (red 5 V, black GND, signal green or yellow) and the firmware calibrates zero and span. Its cable
+  is thicker than GH takes: one heat-shrunk splice to a 26 AWG tail at the transducer end.
+- **9 Antenna.** Mount the SMA bulkhead in a plastic part, not through the steel case.
+- **10–13 Harness.** One lead per job, crimped both ends, labelled. WIRING.md has the table.
+- **15 Front panel.** The stock lamps are 120 V neons wired across the thermostats; with the board
+  in control they're replaced by LEDs the firmware drives.
+- **16–18 Scale.** Gaggiuino's built-in scale under the drip tray; only slow digital lines run to the
+  board (J10). Calibrate per CALIBRATION.md.
+- **19–20 Tray.** The board has 120 V on its mains zone, including the through-hole spade and IRM
+  pins on its underside: it must never touch the chassis. The tray is the insulation; the velcro
+  holds the tray.
 
-- **15 Front panel.** The stock lamps are 120 V neons wired across the thermostats; with the board in control they're replaced by LEDs the firmware drives (GaggiMate's owner suggests the same). WIRING.md step 9.
-- **17–19 Scale.** Gaggiuino's built-in scale: the cells sit in a printed base on the chassis floor, the stock tray (side fins trimmed) clips onto it with magnets and still lifts out. Only slow digital lines run to the board (J10). Expect ~0.1 g at rest, ±0.2–0.5 g while the pump runs. Calibrate per CALIBRATION.md.
+## Dropped since v31
 
-## Dropped since the previous list (records kept in docs/evidence)
-
-Phoenix DIN-rail relay and DIN rail, Crydom EZ240D5, RECOM supply, external fuse and holder, Auber
-heatsink (now optional), Tensility 14 AWG wire, TE FASTONs, WAGO, 3M heat-shrink, genuine JST
-leads. The previous, fully datasheet-verified list (≈ $211) is in git history
-(`git show 9c08f91:docs/BUY.md`).
+The two SSR boards (Omron G3MB-202P), the external valve snubber and the separate 5 V supply (all on
+the board now); pre-crimped GH leads (you crimp every lead); the GaggiMate 0–1.6 MPa transducer
+(alternative in the evidence store). The v30 list is in git history (`git show 989b5e3:docs/BUY.md`).

@@ -33,22 +33,35 @@ mm = pcbnew.ToMM
 
 
 def shapes():
-    """(net, layer, ref or None, SHAPE_POLY_SET) for every copper item."""
+    """(net, layer, ref or None, [SEG], inflate_mm, label, bbox) for every copper item: pads and zone fills as
+    their polygon outlines (inflate 0), tracks and vias as their centre segment inflated by half the width."""
     out = []
+    def poly_segs(ps):
+        segs = []
+        for i in range(ps.OutlineCount()):
+            o = ps.Outline(i)
+            segs += [o.CSegment(k) for k in range(o.SegmentCount())]
+        return segs
+    def bb_of(segs, r):
+        xs = [mm(v) for sg in segs for v in (sg.A.x, sg.B.x)]; ys = [mm(v) for sg in segs for v in (sg.A.y, sg.B.y)]
+        return min(xs) - r, min(ys) - r, max(xs) + r, max(ys) + r
     for fp in b.GetFootprints():
         for p in fp.Pads():
             for L in LAYERS:
                 if p.IsOnLayer(L):
                     ps = pcbnew.SHAPE_POLY_SET()
-                    p.TransformShapeToPolygon(ps, L, 0, pcbnew.FromMM(0.005), pcbnew.ERROR_INSIDE)
-                    out.append((p.GetNetname(), L, fp.GetReference(), ps, f"{fp.GetReference()}.{p.GetNumber()}"))
+                    p.TransformShapeToPolygon(ps, L, 0, pcbnew.FromMM(0.005))
+                    sg = poly_segs(ps)
+                    out.append((p.GetNetname(), L, fp.GetReference(), sg, 0.0, f"{fp.GetReference()}.{p.GetNumber()}", bb_of(sg, 0)))
     for t in b.GetTracks():
+        r = mm(t.GetWidth()) / 2
         for L in LAYERS:
             if t.IsOnLayer(L):
-                ps = pcbnew.SHAPE_POLY_SET()
-                t.TransformShapeToPolygon(ps, L, 0, pcbnew.FromMM(0.005), pcbnew.ERROR_INSIDE)
-                kind = "via" if t.Type() == pcbnew.PCB_VIA_T else "track"
-                out.append((t.GetNetname(), L, None, ps, f"{kind} {t.GetNetname()}"))
+                if t.Type() == pcbnew.PCB_VIA_T:
+                    c = t.GetPosition(); sg = [pcbnew.SEG(c, c)]; kind = "via"
+                else:
+                    sg = [pcbnew.SEG(t.GetStart(), t.GetEnd())]; kind = "track"
+                out.append((t.GetNetname(), L, None, sg, r, f"{kind} {t.GetNetname()}", bb_of(sg, r)))
     for z in b.Zones():
         if z.GetIsRuleArea():
             continue
@@ -56,13 +69,9 @@ def shapes():
             if z.IsOnLayer(L):
                 fill = z.GetFilledPolysList(L)
                 if fill.OutlineCount():
-                    out.append((z.GetNetname(), L, None, fill, f"zone {z.GetNetname()}"))
+                    sg = poly_segs(fill)
+                    out.append((z.GetNetname(), L, None, sg, 0.0, f"zone {z.GetNetname()}", bb_of(sg, 0)))
     return out
-
-
-def bbox(ps):
-    bb = ps.BBox()
-    return mm(bb.GetLeft()), mm(bb.GetTop()), mm(bb.GetRight()), mm(bb.GetBottom())
 
 
 def bgap(a, c):
@@ -70,33 +79,8 @@ def bgap(a, c):
     return (dx * dx + dy * dy) ** 0.5
 
 
-def seg_bb(sg):
-    a, e = sg.A, sg.B
-    return min(mm(a.x), mm(e.x)), min(mm(a.y), mm(e.y)), max(mm(a.x), mm(e.x)), max(mm(a.y), mm(e.y))
-
-
-def dist(pa, pc, reach):
-    """Smallest outline-to-outline distance between two polygon sets, or None if beyond `reach`."""
-    best = None
-    for i in range(pa.OutlineCount()):
-        a = pa.Outline(i)
-        ab = bbox(pa)
-        for j in range(pc.OutlineCount()):
-            c = pc.Outline(j)
-            cb = c.BBox(); cbb = (mm(cb.GetLeft()), mm(cb.GetTop()), mm(cb.GetRight()), mm(cb.GetBottom()))
-            if bgap(ab, cbb) > reach:
-                continue
-            csegs = [(c.CSegment(m), seg_bb(c.CSegment(m))) for m in range(c.SegmentCount())]
-            csegs = [x for x in csegs if bgap(ab, x[1]) <= reach]
-            for k in range(a.SegmentCount()):
-                sa = a.CSegment(k); sab = seg_bb(sa)
-                for sc, scb in csegs:
-                    if bgap(sab, scb) > reach:
-                        continue
-                    v = mm(sa.Distance(sc))
-                    if best is None or v < best:
-                        best = v
-    return best
+def segbb(sg):
+    return min(mm(sg.A.x), mm(sg.B.x)), min(mm(sg.A.y), mm(sg.B.y)), max(mm(sg.A.x), mm(sg.B.x)), max(mm(sg.A.y), mm(sg.B.y))
 
 
 items = shapes()
@@ -104,18 +88,24 @@ mains = [i for i in items if i[0] in MAINS]
 selv = [i for i in items if i[0] not in MAINS and i[0] != ""]
 REACH = LIMIT + 2.0
 worst = []
-for net_m, Lm, refm, pm, dm in mains:
-    bm = bbox(pm)
-    for net_s, Ls, refs, psel, ds in selv:
-        if Lm != Ls:
+for net_m, Lm, refm, sm, rm, dm, bm in mains:
+    smb = [(x, segbb(x)) for x in sm]
+    for net_s, Ls, refs, ss, rs, ds, bs in selv:
+        if Lm != Ls or bgap(bm, bs) > REACH + rm + rs:
             continue
         if refm and refm == refs and refm in BRIDGES:
             continue        # the bridging part's own pins: its certified internal isolation
-        if bgap(bm, bbox(psel)) > REACH:
-            continue
-        d = dist(pm, psel, REACH)
-        if d is not None:
-            worst.append((d, dm, ds, b.GetLayerName(Lm)))
+        best = None
+        ssb = [(x, segbb(x)) for x in ss if bgap(bm, segbb(x)) <= REACH + rm + rs]
+        for a, ab in smb:
+            for c, cb in ssb:
+                if bgap(ab, cb) > REACH + rm + rs:
+                    continue
+                v = mm(a.Distance(c)) - rm - rs
+                if best is None or v < best:
+                    best = v
+        if best is not None:
+            worst.append((best, dm, ds, b.GetLayerName(Lm)))
 worst.sort()
 seen = set()
 print(f"mains-to-SELV copper, limit {LIMIT} mm (bridging parts' own pins exempt: {', '.join(sorted(BRIDGES)) or 'none'})")

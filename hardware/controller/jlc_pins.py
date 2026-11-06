@@ -21,6 +21,9 @@ SYN = [  # names that mean the same function
     {"EN", "CE", "ENABLE"}, {"NC", "N/C", "DNC"},
     {"VBUS"}, {"CC1"}, {"CC2"}, {"DP1", "D+", "DP"}, {"DN1", "D-", "DN"}, {"DP2", "D+", "DP"}, {"DN2", "D-", "DN"},
     {"SHIELD", "SHELL", "EH", "MH", "SH", "GND"}, {"SBU1"}, {"SBU2"},
+    # v32 mains parts: triac main terminals (ST: A1/A2), the IRM module's outputs, the opto's pin 5
+    # (onsemi: substrate, do not connect; JLC's symbol: NC)
+    {"MT1", "A1", "T1"}, {"MT2", "A2", "T2"}, {"-VO", "-V", "V-", "-VOUT"}, {"+VO", "+V", "V+", "+VOUT"}, {"SUB", "NC"},
 ]
 
 
@@ -32,6 +35,8 @@ def norm(n):
 
 
 def same(a, b):
+    if norm(a) == norm(b):
+        return True
     if "/" in a:                              # a shared symbol pin, e.g. TI's "ADJ/GND" (GND on the fixed part)
         return any(same(x, b) for x in a.split("/"))
     a, b = norm(a), norm(b)
@@ -76,6 +81,8 @@ def main():
             if p["footprint"].split(":")[1].startswith(PASSIVE):
                 continue
             pins = jlc_pins(code)
+            if pins is None and code in PROXY:
+                pins = jlc_pins(PROXY[code])        # same package and pinout, documented in jlc_cpl.PROXY
             if pins is None:
                 skipped.append(f"{ref} ({code}): no JLC record cached")
                 continue

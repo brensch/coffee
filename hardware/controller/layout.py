@@ -427,6 +427,14 @@ def add_pours(board):
                 z = zone(board, board.GetNetsByName()["+3V3"], layer, rect(*lc[key]), name="LDO_COPPER", clearance=0.25, priority=2)
                 z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
                 z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)   # traces can cut it: drop the unconnected bits
+    # v32: heat-spreading pours for any net (plan "pours": [{net, layer F|B, rect, clearance}]), e.g. the
+    # triac tabs' AC_L_F copper; a mains pour gets the mains clearance (2.0 mm) unless the plan says more.
+    for pr_ in _plan.get("pours", []):
+        L = pcbnew.F_Cu if pr_["layer"] == "F" else pcbnew.B_Cu
+        z = zone(board, board.GetNetsByName()[pr_["net"]], L, rect(*pr_["rect"]), name=pr_.get("name", "POUR_" + pr_["net"]),
+                 clearance=pr_.get("clearance", 2.0), priority=2)
+        z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+        z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
     pr = _plan.get("gnd_rect", [0.3, 0.3, W - 0.3, H - 0.3])   # v32: the SELV side only
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
         z = zone(board, gnd, layer, rect(*pr), name="GND")
@@ -625,10 +633,12 @@ def stitch(board, pitch=2.0, d=0.6, drill=0.3, clr=0.3):
     gnd = board.GetNetsByName()["GND"]
     items = obstacles(board)
     n = 0
-    x = 1.2
-    while x < W - 1.2:
-        y = 1.5
-        while y < H - 1.2:
+    # v32: only inside the SELV ground-pour area (plan "gnd_rect"): never a GND via in the mains zone or band
+    gx0, gy0, gx1, gy1 = _plan.get("gnd_rect", [0.3, 0.3, W - 0.3, H - 0.3])
+    x = max(1.2, gx0 + 0.9)
+    while x < min(W - 1.2, gx1 - 0.9):
+        y = max(1.5, gy0 + 1.2)
+        while y < min(H - 1.2, gy1 - 0.9):
             if is_free(items, x, y, d / 2 + clr):
                 v = pcbnew.PCB_VIA(board)
                 v.SetPosition(V(mm(x), mm(y))); v.SetWidth(mm(d)); v.SetDrill(mm(drill)); v.SetNet(gnd)

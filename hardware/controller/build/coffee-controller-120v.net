@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/06/2026 03:15 AM")
+    (date "11/06/2026 03:23 AM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -525,6 +525,75 @@
         (names "/")
         (tstamps "/"))
       (tstamps "c8376089-30f9-5993-9f79-3ca96ebaa282"))
+    (comp
+      (ref "H1")
+      (value "M3")
+      (description "M3 mounting hole (unplated)")
+      (footprint "MountingHole:MountingHole_3.2mm_M3")
+      (fields
+        (field
+          (name "Description") "M3 mounting hole (unplated)")
+        (field
+          (name "Footprint") "MountingHole:MountingHole_3.2mm_M3")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "H1")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "MountingHole"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "4346372e-b487-58d7-bb7a-35d182fa1b2e"))
+    (comp
+      (ref "H2")
+      (value "M3")
+      (description "M3 mounting hole (unplated)")
+      (footprint "MountingHole:MountingHole_3.2mm_M3")
+      (fields
+        (field
+          (name "Description") "M3 mounting hole (unplated)")
+        (field
+          (name "Footprint") "MountingHole:MountingHole_3.2mm_M3")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "H2")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "MountingHole"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "0edb43ef-5ede-5ff4-8b77-07bb3d82b998"))
+    (comp
+      (ref "H3")
+      (value "M3")
+      (description "M3 mounting hole (unplated)")
+      (footprint "MountingHole:MountingHole_3.2mm_M3")
+      (fields
+        (field
+          (name "Description") "M3 mounting hole (unplated)")
+        (field
+          (name "Footprint") "MountingHole:MountingHole_3.2mm_M3")
+        (field
+          (name "Datasheet"))
+        (field
+          (name "SKiDL Tag") "H3")
+        (field
+          (name "SKiDL Line") "controller.py:50"))
+      (libsource
+        (lib "NO_LIB")
+        (part "MountingHole"))
+      (sheetpath
+        (names "/")
+        (tstamps "/"))
+      (tstamps "bd944ac4-6bb1-5a9e-8f09-1ff91f139dbd"))
     (comp
       (ref "J10")
       (value "Scale")

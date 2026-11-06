@@ -1,16 +1,22 @@
-# Mis-plug safety (v30 connectors)
+# Mis-plug safety (v32 connectors)
 
-The board has six connectors in two sizes, bundled by where the devices are in the machine. JST GH has
-one key, so any lead fits any socket of its size:
+v32 has five low-voltage JST GH sockets. GH has one key, so any lead fits any socket **of its size**; v32
+gives every lead a size of its own except the two 7-pin leads:
 
 | Size | Socket | Lead goes to | Pins 1 / 2 / 3 / 4 / 5 / 6 / 7 |
 |---|---|---|---|
-| 3-pin | **J1** 5 V in | the 5 V supply module | – / +5V / GND |
+| 2-pin | **J5** thermocouple | the K-type probe (its own wires, crimped) | TC+ / TC− (GND) |
 | 3-pin | **J6** pressure | the transducer | SIG / +5V / GND |
-| 3-pin | **J5** thermistor | the NTC probe | GND / – / NTC |
-| 7-pin | **J2** SSRs | heater SSR, pump and valve SSR boards (+5V daisy-chained) | – / +5V / heater OUT / – / – / pump OUT / valve OUT |
+| 4-pin | **J2** heater SSR | the heater SSR's DC input | +5V / heater OUT / – / – |
 | 7-pin | **J7** front | the three rockers and their LEDs | PWR / BREW / STM / GND / LED P / LED C / LED S |
 | 7-pin | **J10** scale | the dual HX711 board in the tray base (3.3 V only) | – / – / DOUT1 / SCK / GND / DOUT2 / 3V3 |
+
+Mains is on four 6.3 mm spade tabs (N, L, P, 3), which no GH plug fits. Why the sizes are unique: no
+pinout pair for the heater SSR and the pressure transducer on two 3-pin sockets is harmless both ways
+round (an exhaustive search over all 36 pairings in `swap_check.py`'s model: either the SSR lead in the
+pressure socket sees +5V to GND and switches the heater on, or the transducer in the SSR socket is
+back-fed through its protection diodes). So v32 moved the heater SSR to a 4-pin GH; the 5 V supply lead
+(v30's J1) is gone with the on-board supply.
 
 **Every lead in every same-size socket is harmless.** No mains load switches on. No supply is shorted. No
 GPIO is overdriven or shorted. No chip gets more than a pull-up's ~0.6 mA through its protection
@@ -18,7 +24,8 @@ diodes. The firmware can't be fooled into leaving standby. You find out you swap
 something breaks. This covers multi-lead swaps too (below).
 
 `hardware/controller/swap_check.py` checks this from the real netlist (`build/parts-120v.json`).
-`controller.py` runs it on every build and fails if any case is hazardous.
+`controller.py` runs it on every build and fails if any case is hazardous. In v32 the only same-size
+pair is J7/J10 (front panel and scale), unchanged from v30 and still harmless both ways.
 
 ## History
 

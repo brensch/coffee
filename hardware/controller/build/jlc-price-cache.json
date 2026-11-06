@@ -1,0 +1,1176 @@
+{
+"C15850": [
+{
+"startNumber": 1,
+"endNumber": 199,
+"productPrice": 0.0312
+},
+{
+"startNumber": 200,
+"endNumber": 599,
+"productPrice": 0.0233
+},
+{
+"startNumber": 600,
+"endNumber": 1999,
+"productPrice": 0.0199
+},
+{
+"startNumber": 2000,
+"endNumber": 9999,
+"productPrice": 0.0172
+},
+{
+"startNumber": 10000,
+"endNumber": 19999,
+"productPrice": 0.0161
+},
+{
+"startNumber": 20000,
+"endNumber": -1,
+"productPrice": 0.0154
+}
+],
+"C14663": [
+{
+"startNumber": 1,
+"endNumber": 499,
+"productPrice": 0.0101
+},
+{
+"startNumber": 500,
+"endNumber": 1499,
+"productPrice": 0.0079
+},
+{
+"startNumber": 1500,
+"endNumber": 3999,
+"productPrice": 0.0066
+},
+{
+"startNumber": 4000,
+"endNumber": 23999,
+"productPrice": 0.0059
+},
+{
+"startNumber": 24000,
+"endNumber": 47999,
+"productPrice": 0.0052
+},
+{
+"startNumber": 48000,
+"endNumber": -1,
+"productPrice": 0.0049
+}
+],
+"C15849": [
+{
+"startNumber": 1,
+"endNumber": 499,
+"productPrice": 0.011
+},
+{
+"startNumber": 500,
+"endNumber": 1499,
+"productPrice": 0.0085
+},
+{
+"startNumber": 1500,
+"endNumber": 3999,
+"productPrice": 0.0074
+},
+{
+"startNumber": 4000,
+"endNumber": 23999,
+"productPrice": 0.0065
+},
+{
+"startNumber": 24000,
+"endNumber": 47999,
+"productPrice": 0.0062
+},
+{
+"startNumber": 48000,
+"endNumber": -1,
+"productPrice": 0.006
+}
+],
+"C45783": [
+{
+"startNumber": 1,
+"endNumber": 199,
+"productPrice": 0.1836
+},
+{
+"startNumber": 200,
+"endNumber": 599,
+"productPrice": 0.1428
+},
+{
+"startNumber": 600,
+"endNumber": 1999,
+"productPrice": 0.1228
+},
+{
+"startNumber": 2000,
+"endNumber": 9999,
+"productPrice": 0.1051
+},
+{
+"startNumber": 10000,
+"endNumber": 19999,
+"productPrice": 0.1002
+},
+{
+"startNumber": 20000,
+"endNumber": -1,
+"productPrice": 0.0973
+}
+],
+"C21122": [
+{
+"startNumber": 1,
+"endNumber": 499,
+"productPrice": 0.0057
+},
+{
+"startNumber": 500,
+"endNumber": 1499,
+"productPrice": 0.0044
+},
+{
+"startNumber": 1500,
+"endNumber": 3999,
+"productPrice": 0.0038
+},
+{
+"startNumber": 4000,
+"endNumber": 23999,
+"productPrice": 0.0033
+},
+{
+"startNumber": 24000,
+"endNumber": 47999,
+"productPrice": 0.0031
+},
+{
+"startNumber": 48000,
+"endNumber": -1,
+"productPrice": 0.003
+}
+],
+"C437417": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.8972
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.7498
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.6778
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.6041
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.5616
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.5386
+}
+],
+"C2286": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0077
+},
+{
+"startNumber": 1000,
+"endNumber": 3999,
+"productPrice": 0.0059
+},
+{
+"startNumber": 4000,
+"endNumber": 7999,
+"productPrice": 0.0046
+},
+{
+"startNumber": 8000,
+"endNumber": 47999,
+"productPrice": 0.004
+},
+{
+"startNumber": 48000,
+"endNumber": 99999,
+"productPrice": 0.0037
+},
+{
+"startNumber": 100000,
+"endNumber": -1,
+"productPrice": 0.0036
+}
+],
+"C8598": [
+{
+"startNumber": 1,
+"endNumber": 199,
+"productPrice": 0.0262
+},
+{
+"startNumber": 200,
+"endNumber": 599,
+"productPrice": 0.0202
+},
+{
+"startNumber": 600,
+"endNumber": 2999,
+"productPrice": 0.0174
+},
+{
+"startNumber": 3000,
+"endNumber": 8999,
+"productPrice": 0.0154
+},
+{
+"startNumber": 9000,
+"endNumber": 20999,
+"productPrice": 0.0146
+},
+{
+"startNumber": 21000,
+"endNumber": -1,
+"productPrice": 0.014
+}
+],
+"C187538": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.8055
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.6532
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.5779
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.5026
+},
+{
+"startNumber": 500,
+"endNumber": 1499,
+"productPrice": 0.4568
+},
+{
+"startNumber": 1500,
+"endNumber": -1,
+"productPrice": 0.4339
+}
+],
+"C189895": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.6524
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.574
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.5404
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.4984
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.4748
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.4635
+}
+],
+"C165948": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.187
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.1477
+},
+{
+"startNumber": 150,
+"endNumber": 999,
+"productPrice": 0.1284
+},
+{
+"startNumber": 1000,
+"endNumber": 1999,
+"productPrice": 0.1042
+},
+{
+"startNumber": 2000,
+"endNumber": 4999,
+"productPrice": 0.0994
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.0966
+}
+],
+"C189893": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.369
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.2982
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.2679
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.2301
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.1996
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.1896
+}
+],
+"C514175": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.242
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.195
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.1748
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.1497
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.1385
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.1318
+}
+],
+"C495552": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.5878
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.4961
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.4552
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.406
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.3848
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.3373
+}
+],
+"C575074": [
+{
+"startNumber": 1,
+"endNumber": 199,
+"productPrice": 0.0549
+},
+{
+"startNumber": 200,
+"endNumber": 599,
+"productPrice": 0.0446
+},
+{
+"startNumber": 600,
+"endNumber": 1999,
+"productPrice": 0.0387
+},
+{
+"startNumber": 2000,
+"endNumber": 9999,
+"productPrice": 0.0352
+},
+{
+"startNumber": 10000,
+"endNumber": 19999,
+"productPrice": 0.0312
+},
+{
+"startNumber": 20000,
+"endNumber": -1,
+"productPrice": 0.0295
+}
+],
+"C2857903": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 5.2386
+},
+{
+"startNumber": 10,
+"endNumber": 44,
+"productPrice": 5.2386
+},
+{
+"startNumber": 45,
+"endNumber": 314,
+"productPrice": 5.2386
+},
+{
+"startNumber": 315,
+"endNumber": -1,
+"productPrice": 5.2386
+}
+],
+"C20917": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.0889
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.0718
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.0629
+},
+{
+"startNumber": 500,
+"endNumber": 2999,
+"productPrice": 0.0555
+},
+{
+"startNumber": 3000,
+"endNumber": 5999,
+"productPrice": 0.0531
+},
+{
+"startNumber": 6000,
+"endNumber": -1,
+"productPrice": 0.0513
+}
+],
+"C145128": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.5239
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.4257
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.3831
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.3307
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.2636
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.2489
+}
+],
+"C2970064": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.7105
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.5681
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.5059
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.4306
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.352
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.3307
+}
+],
+"C22978": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0022
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0017
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0014
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0012
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0011
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0011
+}
+],
+"C25804": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0024
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0019
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0017
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0015
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0015
+}
+],
+"C23162": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0028
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0022
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0019
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0015
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0015
+}
+],
+"C21190": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0017
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0014
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0012
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.001
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0009
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0009
+}
+],
+"C23186": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0015
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0012
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.001
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0008
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0007
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0007
+}
+],
+"C25819": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0012
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0011
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0009
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0008
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0008
+}
+],
+"C25803": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0029
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0023
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.002
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0015
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0015
+}
+],
+"C4184": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0021
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0014
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0013
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0012
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0012
+}
+],
+"C23138": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.002
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0016
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0013
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0011
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.001
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.001
+}
+],
+"C7250": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0024
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0018
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0015
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0012
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.001
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.001
+}
+],
+"C17930": [
+{
+"startNumber": 1,
+"endNumber": 999,
+"productPrice": 0.0048
+},
+{
+"startNumber": 1000,
+"endNumber": 4999,
+"productPrice": 0.0037
+},
+{
+"startNumber": 5000,
+"endNumber": 9999,
+"productPrice": 0.0031
+},
+{
+"startNumber": 10000,
+"endNumber": 49999,
+"productPrice": 0.0028
+},
+{
+"startNumber": 50000,
+"endNumber": 50199,
+"productPrice": 0.0025
+},
+{
+"startNumber": 50200,
+"endNumber": -1,
+"productPrice": 0.0025
+}
+],
+"C35218": [
+{
+"startNumber": 1,
+"endNumber": 199,
+"productPrice": 0.0438
+},
+{
+"startNumber": 200,
+"endNumber": 599,
+"productPrice": 0.0351
+},
+{
+"startNumber": 600,
+"endNumber": 3999,
+"productPrice": 0.0302
+},
+{
+"startNumber": 4000,
+"endNumber": 7999,
+"productPrice": 0.0272
+},
+{
+"startNumber": 8000,
+"endNumber": 19999,
+"productPrice": 0.0248
+},
+{
+"startNumber": 20000,
+"endNumber": -1,
+"productPrice": 0.0235
+}
+],
+"C4410": [
+{
+"startNumber": 1,
+"endNumber": 499,
+"productPrice": 0.0085
+},
+{
+"startNumber": 500,
+"endNumber": 1499,
+"productPrice": 0.0066
+},
+{
+"startNumber": 1500,
+"endNumber": 4999,
+"productPrice": 0.0057
+},
+{
+"startNumber": 5000,
+"endNumber": 24999,
+"productPrice": 0.0051
+},
+{
+"startNumber": 25000,
+"endNumber": 49999,
+"productPrice": 0.0048
+},
+{
+"startNumber": 50000,
+"endNumber": -1,
+"productPrice": 0.0046
+}
+],
+"C20627095": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 4.1925
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 3.7505
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 3.4886
+},
+{
+"startNumber": 100,
+"endNumber": 649,
+"productPrice": 3.2692
+},
+{
+"startNumber": 650,
+"endNumber": 1299,
+"productPrice": 3.1219
+},
+{
+"startNumber": 1300,
+"endNumber": -1,
+"productPrice": 3.0564
+}
+],
+"C15578": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.2998
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.2325
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.1996
+},
+{
+"startNumber": 500,
+"endNumber": 2499,
+"productPrice": 0.1703
+},
+{
+"startNumber": 2500,
+"endNumber": 4999,
+"productPrice": 0.1623
+},
+{
+"startNumber": 5000,
+"endNumber": -1,
+"productPrice": 0.1574
+}
+],
+"C29454": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 1.6371
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 1.4177
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 1.2639
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 1.2066
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 1.1411
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 1.1149
+}
+],
+"C699536": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 1.033
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.907
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.7891
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.6991
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.6631
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.645
+}
+],
+"C111561": [
+{
+"startNumber": 1,
+"endNumber": 9,
+"productPrice": 0.6058
+},
+{
+"startNumber": 10,
+"endNumber": 29,
+"productPrice": 0.4961
+},
+{
+"startNumber": 30,
+"endNumber": 99,
+"productPrice": 0.4404
+},
+{
+"startNumber": 100,
+"endNumber": 499,
+"productPrice": 0.3864
+},
+{
+"startNumber": 500,
+"endNumber": 999,
+"productPrice": 0.3455
+},
+{
+"startNumber": 1000,
+"endNumber": -1,
+"productPrice": 0.3275
+}
+]
+}
