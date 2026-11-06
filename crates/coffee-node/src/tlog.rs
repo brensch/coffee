@@ -1,7 +1,7 @@
-//! Compact per-cycle log of the hardware boundary (`.clog`, version 3).
+//! Compact per-cycle log of the hardware boundary (`.clog`, version 4).
 //!
 //! Only what crosses the boundary is stored: actuator bits, raw sensor values
-//! (thermocouple uV, cold junction, pressure mV), switches and timing. Everything the engine derives (temperature, state, duties,
+//! (thermocouple uV, cold junction, pressure mV and its in-cycle ripple), switches and timing. Everything the engine derives (temperature, state, duties,
 //! ...) is reproducible by replaying these frames through the deterministic
 //! engine, so it isn't logged.
 //!
@@ -10,11 +10,11 @@
 //!
 //! ```text
 //! chunk    := MAGIC(2) VERSION(1) len:u16 baseline ticks:u16 tick*
-//! baseline := cycle:u32 t0_us:u64 period_ns:u32 tc_uv:i32 cj_cc:i16 p_mv:u16 scale:i32 inputs:u8
+//! baseline := cycle:u32 t0_us:u64 period_ns:u32 tc_uv:i32 cj_cc:i16 p_mv:u16 p_pp:u16 scale:i32 inputs:u8
 //!             (the state "before" tick 0; t0_us is the time of cycle 0; tc/cj the last samples)
-//! tick     := flags:u8 [t Δ zz-varint] [temp] [p Δ zz-varint] [scale Δ zz-varint] [inputs u8]
-//! temp     := have:u8 (b0 tc, b1 cj) [tc Δ zz-varint] [cj Δ zz-varint]
-//! flags    := b0 heater | b1 pump | b2 valve | b3 t off-grid | b4 temperature sample(s)
+//! tick     := flags:u8 [t Δ zz-varint] [aux] [p Δ zz-varint] [scale Δ zz-varint] [inputs u8]
+//! aux      := have:u8 (b0 tc, b1 cj, b2 p_pp changed) [tc Δ] [cj Δ] [p_pp Δ] (zz-varints)
+//! flags    := b0 heater | b1 pump | b2 valve | b3 t off-grid | b4 aux follows
 //!             | b5 p changed | b6 scale changed | b7 inputs changed
 //! ```
 //!
@@ -34,8 +34,8 @@ use alloc::vec::Vec;
 use coffee_io::SensorFrame;
 
 pub const MAGIC: [u8; 2] = [0xC0, 0xF7];
-pub const VERSION: u8 = 3;
-const BASELINE_LEN: usize = 4 + 8 + 4 + 4 + 2 + 2 + 4 + 1;
+pub const VERSION: u8 = 4;
+const BASELINE_LEN: usize = 4 + 8 + 4 + 4 + 2 + 2 + 2 + 4 + 1;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Outputs {
@@ -51,6 +51,7 @@ struct State {
     tc: i32,
     cj: i16,
     p: u16,
+    pp: u16,
     scale: i32,
     inputs: u8,
 }
@@ -168,6 +169,7 @@ impl LogWriter {
                 tc: s.tc_uv.unwrap_or(0),
                 cj: s.cj_cc.unwrap_or(0),
                 p: s.pressure_mv,
+                pp: s.pressure_pp_mv,
                 scale: s.scale_mg,
                 inputs: s.inputs,
             };
@@ -187,9 +189,10 @@ impl LogWriter {
             self.clock.anchor(cycle, s.t_us);
         }
         let (mut tc, mut cj) = (p.tc, p.cj);
-        if s.tc_uv.is_some() || s.cj_cc.is_some() {
+        let pp_changed = s.pressure_pp_mv != p.pp;
+        if s.tc_uv.is_some() || s.cj_cc.is_some() || pp_changed {
             flags |= 1 << 4;
-            self.body.push(s.tc_uv.is_some() as u8 | (s.cj_cc.is_some() as u8) << 1);
+            self.body.push(s.tc_uv.is_some() as u8 | (s.cj_cc.is_some() as u8) << 1 | (pp_changed as u8) << 2);
             if let Some(v) = s.tc_uv {
                 put_varint(&mut self.body, zz(v as i64 - p.tc as i64));
                 tc = v;
@@ -197,6 +200,9 @@ impl LogWriter {
             if let Some(v) = s.cj_cc {
                 put_varint(&mut self.body, zz(v as i64 - p.cj as i64));
                 cj = v;
+            }
+            if pp_changed {
+                put_varint(&mut self.body, zz(s.pressure_pp_mv as i64 - p.pp as i64));
             }
         }
         if s.pressure_mv != p.p {
@@ -218,6 +224,7 @@ impl LogWriter {
             tc,
             cj,
             p: s.pressure_mv,
+            pp: s.pressure_pp_mv,
             scale: s.scale_mg,
             inputs: s.inputs,
         };
@@ -243,6 +250,7 @@ impl LogWriter {
         self.out.extend_from_slice(&b.tc.to_le_bytes());
         self.out.extend_from_slice(&b.cj.to_le_bytes());
         self.out.extend_from_slice(&b.p.to_le_bytes());
+        self.out.extend_from_slice(&b.pp.to_le_bytes());
         self.out.extend_from_slice(&b.scale.to_le_bytes());
         self.out.push(b.inputs);
         self.out.extend_from_slice(&self.ticks.to_le_bytes());
@@ -296,6 +304,7 @@ fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
         tc: i32::from_le_bytes(c.bytes()?),
         cj: i16::from_le_bytes(c.bytes()?),
         p: u16::from_le_bytes(c.bytes()?),
+        pp: u16::from_le_bytes(c.bytes()?),
         scale: i32::from_le_bytes(c.bytes()?),
         inputs: c.u8()?,
     };
@@ -324,6 +333,9 @@ fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
                 st.cj = (st.cj as i64 + unzz(c.varint()?)) as i16;
                 cj_cc = Some(st.cj);
             }
+            if have & 4 != 0 {
+                st.pp = (st.pp as i64 + unzz(c.varint()?)) as u16;
+            }
         }
         if f & (1 << 5) != 0 {
             st.p = (st.p as i64 + unzz(c.varint()?)) as u16;
@@ -343,6 +355,7 @@ fn decode_chunk(d: &[u8], out: &mut Vec<(SensorFrame, Outputs)>) -> Option<()> {
                 tc_uv,
                 cj_cc,
                 pressure_mv: st.p,
+                pressure_pp_mv: st.pp,
                 scale_mg: st.scale,
                 inputs: st.inputs,
             },
@@ -385,6 +398,8 @@ mod tests {
                 tc_uv: (i % 16 == 0).then_some(2_150 + (i / 10) as i32),
                 cj_cc: (i % 16 == 3).then_some(3_500 - (i / 50) as i16),
                 pressure_mv: 333 + ((i * 37) % 200) as u16,
+                // ripple: sample noise, and the pump's strokes for a stretch
+                pressure_pp_mv: (i * 13 % 9) as u16 + if (500..700).contains(&i) { 300 } else { 12 },
                 scale_mg: (i as i32 / 10) * 100,
                 inputs: if (300..400).contains(&i) { 1 } else { 0 },
             };
@@ -401,8 +416,8 @@ mod tests {
         let got = read(&bytes);
         assert_eq!(got.len(), frames.len());
         assert!(got == frames);
-        // ~2-3 bytes per tick for noisy pressure, nothing for on-grid timing.
-        assert!(bytes.len() < frames.len() * 4, "{} bytes", bytes.len());
+        // a few bytes per tick for noisy pressure and ripple, nothing for on-grid timing.
+        assert!(bytes.len() < frames.len() * 6, "{} bytes", bytes.len());
     }
 
     #[test]

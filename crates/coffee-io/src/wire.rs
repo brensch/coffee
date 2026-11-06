@@ -7,7 +7,7 @@
 
 use crate::{ActuatorFrame, EngineState, EngineStatus, SensorFrame};
 
-pub const PROTOCOL_VERSION: u16 = 3;   // v3: thermocouple EMF + cold junction replace the NTC node
+pub const PROTOCOL_VERSION: u16 = 4;   // v3: thermocouple + cold junction replace the NTC; v4: pressure ripple
 pub const MAX_FRAME: usize = 3 + 96;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -120,6 +120,7 @@ pub fn encode(msg: &Message, out: &mut [u8]) -> usize {
             w.i32(s.tc_uv.unwrap_or(TC_NONE));
             w.u16(s.cj_cc.unwrap_or(CJ_NONE) as u16);
             w.u16(s.pressure_mv);
+            w.u16(s.pressure_pp_mv);
             w.i32(s.scale_mg);
             w.u8(s.inputs);
             K_SENSORS
@@ -189,6 +190,7 @@ pub fn decode(buf: &[u8]) -> Result<(Message, usize), WireError> {
             tc_uv: Some(r.i32()?).filter(|&v| v != TC_NONE),
             cj_cc: Some(r.u16()? as i16).filter(|&v| v != CJ_NONE),
             pressure_mv: r.u16()?,
+            pressure_pp_mv: r.u16()?,
             scale_mg: r.i32()?,
             inputs: r.u8()?,
         }),
@@ -255,6 +257,7 @@ mod tests {
                 tc_uv: Some(-2_140),
                 cj_cc: None,
                 pressure_mv: 3001,
+                pressure_pp_mv: 412,
                 scale_mg: 36_100,
                 inputs: 0b1001,
             }),

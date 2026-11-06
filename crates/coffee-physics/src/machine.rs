@@ -105,6 +105,8 @@ pub struct Faults {
     pub probe: ProbeMode,
     pub pressure: PsMode,
     pub heater_triac: TriacMode,
+    /// The on-board pump triac: shorted (strokes every cycle whatever the engine says) or open.
+    pub pump_triac: TriacMode,
     pub element_open: bool,
     pub pump_airlock: bool,
     /// Probability per conversion of an EMI spike on the thermocouple reading, and its size
@@ -119,6 +121,7 @@ impl Default for Faults {
             probe: ProbeMode::Ok,
             pressure: PsMode::Ok,
             heater_triac: TriacMode::Ok,
+            pump_triac: TriacMode::Ok,
             element_open: false,
             pump_airlock: false,
             probe_spike_prob: 0.0,
@@ -199,6 +202,9 @@ pub struct Machine {
     ps_filtered: f64,
     /// The ADC oversamples across the whole cycle: running sums for the averages.
     ps_sum: (f64, u32),
+    /// Lowest and highest transducer reading over the cycle (bar), for the peak-to-peak.
+    ps_range: (f64, f64),
+    pressure_pp_mv: u16,
     probe_sum: (f64, u32),
     pressure_mv: u16,
     scale_hist: VecDeque<(f64, f64)>,
@@ -259,6 +265,8 @@ impl Machine {
             t_board: t0,
             ps_filtered: 0.0,
             ps_sum: (0.0, 0),
+            ps_range: (f64::INFINITY, f64::NEG_INFINITY),
+            pressure_pp_mv: 0,
             probe_sum: (0.0, 0),
             pressure_mv: 0,
             scale_hist: VecDeque::new(),
@@ -472,8 +480,13 @@ impl Machine {
         };
 
         // The pump's series diode: one stroke, on the positive half only.
+        let pump_on = match self.faults.pump_triac {
+            TriacMode::Ok => act.pump,
+            TriacMode::StuckOn => true,
+            TriacMode::StuckOff => false,
+        };
         let pump_live =
-            act.pump && positive && !self.faults.pump_airlock && self.reservoir_ml > 1.0;
+            pump_on && positive && !self.faults.pump_airlock && self.reservoir_ml > 1.0;
 
         for i in 0..n {
             let th = self.cfg.thermal.clone();
@@ -650,6 +663,7 @@ impl Machine {
             self.ps_filtered += (self.p - self.ps_filtered) * (dt / tau_s).min(1.0);
             self.ps_sum.0 += self.ps_filtered;
             self.ps_sum.1 += 1;
+            self.ps_range = (self.ps_range.0.min(self.ps_filtered), self.ps_range.1.max(self.ps_filtered));
             self.probe_sum.0 += self.t_probe;
             self.probe_sum.1 += 1;
 
@@ -754,6 +768,26 @@ impl Machine {
         mv.round().clamp(0.0, 3300.0) as u16
     }
 
+    /// Peak-to-peak of the cycle's 32 pressure samples at the pin (mV): the transducer's swing
+    /// over the cycle plus the ADC's own sample noise.
+    fn make_pressure_pp_mv(&mut self) -> u16 {
+        let c = self.cfg.pressure_sensor.clone();
+        let (lo, hi) = core::mem::replace(&mut self.ps_range, (f64::INFINITY, f64::NEG_INFINITY));
+        let swing_bar = match self.faults.pressure {
+            PsMode::Ok if hi >= lo => hi - lo,
+            PsMode::Stuck => return self.pressure_pp_mv,
+            _ => 0.0,
+        };
+        let mv_per_bar = (c.v_full_mv - c.v_zero_mv) / c.range_bar * c.divider;
+        let (mut nlo, mut nhi) = (f64::INFINITY, f64::NEG_INFINITY);
+        for _ in 0..32 {
+            let n = self.gauss(c.sample_noise_mv);
+            nlo = nlo.min(n);
+            nhi = nhi.max(n);
+        }
+        (swing_bar * mv_per_bar + (nhi - nlo)).round().clamp(0.0, 3300.0) as u16
+    }
+
     fn update_scale(&mut self) {
         let sc = self.cfg.scale.clone();
         self.scale_hist.push_back((self.t, self.cup_g));
@@ -787,6 +821,7 @@ impl Machine {
         let slot = self.cycle.is_multiple_of(self.cfg.thermocouple.conv_cycles.max(1));
         let cj_cc = self.make_cj_cc(slot);
         self.pressure_mv = self.make_pressure_mv();
+        self.pressure_pp_mv = self.make_pressure_pp_mv();
         self.ps_sum = (0.0, 0);
         self.update_scale();
         let mut inputs = 0;
@@ -811,6 +846,7 @@ impl Machine {
             tc_uv,
             cj_cc,
             pressure_mv: self.pressure_mv,
+            pressure_pp_mv: self.pressure_pp_mv,
             scale_mg: self.scale_mg,
             inputs,
         }
@@ -829,6 +865,7 @@ impl Machine {
         ("tc.uv", "uV"),
         ("board.temp", "C"),
         ("pressure_sensor.mv", "mV"),
+        ("pressure_sensor.pp_mv", "mV (peak-to-peak over the cycle)"),
         ("hydraulics.pressure", "bar"),
         ("pump.flow", "ml/s"),
         ("opv.flow", "ml/s"),
@@ -874,6 +911,7 @@ impl Machine {
             "tc.uv" => self.tc_uv as f64,
             "board.temp" => self.t_board,
             "pressure_sensor.mv" => self.pressure_mv as f64,
+            "pressure_sensor.pp_mv" => self.pressure_pp_mv as f64,
             "hydraulics.pressure" => self.p,
             "pump.flow" => self.q_pump,
             "opv.flow" => self.q_opv,
@@ -933,6 +971,7 @@ impl Machine {
         ("probe.spike_uv", "spike size, uV (default 800, ~20 C)"),
         ("pressure_sensor.fault", "ok|disconnected|stuck"),
         ("heater_triac.fault", "ok|stuck_on|stuck_off"),
+        ("pump_triac.fault", "ok|stuck_on|stuck_off"),
         ("heater.element", "ok|open"),
         ("pump.fault", "ok|airlock"),
         ("fuse.reset", "any (action)"),
@@ -987,6 +1026,14 @@ impl Machine {
                     "stuck_on" => TriacMode::StuckOn,
                     "stuck_off" => TriacMode::StuckOff,
                     w => bail!("unknown heater_triac.fault `{w}`"),
+                }
+            }
+            "pump_triac.fault" => {
+                self.faults.pump_triac = match v.as_word().as_str() {
+                    "ok" | "none" => TriacMode::Ok,
+                    "stuck_on" => TriacMode::StuckOn,
+                    "stuck_off" => TriacMode::StuckOff,
+                    w => bail!("unknown pump_triac.fault `{w}`"),
                 }
             }
             "heater.element" => {

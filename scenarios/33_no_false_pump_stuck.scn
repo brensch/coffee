@@ -1,0 +1,17 @@
+name "no stuck-pump false alarm: shots, a blind-basket backflush, steam and a cold start"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 20min
+
+when engine.state == ready for 30s as warm: brew on
+when engine.state == brew_done as done: mark "shot finished"
+at done+3s: brew off
+# a blind basket: the pump stops against 9 bar, the valve closes on a full boiler
+at done+60s: set puck.grind = 500; set puck.fresh = 1
+at done+90s: brew on
+at done+108s: brew off
+at done+200s: set switch.steam = on
+at done+420s: set wand.open = on
+at done+440s: set wand.open = off
+at done+500s: set switch.steam = off
+
+expect never engine.faults has pump_stuck_on

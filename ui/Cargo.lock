@@ -162,6 +162,9 @@ dependencies = [
 [[package]]
 name = "coffee-io"
 version = "0.1.0"
+dependencies = [
+ "libm",
+]
 
 [[package]]
 name = "coffee-ui"

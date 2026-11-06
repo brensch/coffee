@@ -288,6 +288,13 @@ pub struct SafetyConfig {
     pub no_water_bar: f32,
     /// Hard ceiling on a brew, regardless of profile.
     pub max_brew_s: f32,
+    /// PUMP_STUCK_ON, with no stroke commanded for over 1 s: the pressure rises at least this
+    /// much within 1 s (a stroking pump takes a sealed boiler to the OPV in ~1 s; heat moves it
+    /// ~0.05 bar/s at most)...
+    pub pump_stuck_rise_bar: f32,
+    /// ...or, valve closed, it holds above the OPV's crack point + 0.3 bar this long (only a pump's
+    /// ~3 ml/s can hold it there against the bleeding OPV; heat makes ~0.03 ml/s).
+    pub pump_stuck_hold_s: f32,
 }
 
 /// Drip-tray scale: two load cells, each on its own HX711 channel (gain 128). Weight =
@@ -324,6 +331,8 @@ impl Default for SafetyConfig {
             no_water_s: 6.0,
             no_water_bar: 0.15,
             max_brew_s: 120.0,
+            pump_stuck_rise_bar: 2.0,
+            pump_stuck_hold_s: 5.0,
         }
     }
 }
@@ -432,6 +441,7 @@ impl EngineConfig {
             // a trip at or over full scale could never fire: the reading clips there
             (s.max_pressure_bar < p.range_bar, "safety.max_pressure_bar must be under pressure_sensor.range_bar"),
             (r(s.over_pressure_s, 0.0, 5.0), "safety.over_pressure_s out of 0..5"),
+            (r(s.pump_stuck_rise_bar, 0.5, 5.0) && r(s.pump_stuck_hold_s, 1.0, 30.0), "safety.pump_stuck_* out of 0.5..5 bar / 1..30 s"),
             (r(s.heater_ineffective_s, 30.0, 300.0), "safety.heater_ineffective_s out of 30..300"),
             (r(s.heater_check_c_max_j_k, 800.0, 10000.0), "safety.heater_check_c_max_j_k out of 800..10000"),
             (r(s.heater_check_loss_max_w, 50.0, 300.0), "safety.heater_check_loss_max_w out of 50..300"),

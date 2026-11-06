@@ -93,12 +93,23 @@ impl CycleClock {
 pub struct Oversample {
     sum: u32,
     n: u32,
+    min: u16,
+    max: u16,
 }
 
 impl Oversample {
     pub fn push(&mut self, mv: u16) {
+        if self.n == 0 {
+            (self.min, self.max) = (mv, mv);
+        }
         self.sum += mv as u32;
         self.n += 1;
+        self.min = self.min.min(mv);
+        self.max = self.max.max(mv);
+    }
+    /// Peak-to-peak of this cycle's samples so far (0 with fewer than two). Call before `take`.
+    pub fn spread(&self) -> u16 {
+        self.max - self.min
     }
     /// Rounded mean, clamped to the 3.3 V rail; resets the accumulator. With no
     /// samples (an overrun) returns `fallback`.
@@ -250,10 +261,13 @@ mod tests {
     #[test]
     fn oversample_mean_and_clamp() {
         let mut o = Oversample::default();
+        assert_eq!(o.spread(), 0);
         for mv in [1000u16, 1001, 1001, 1002] {
             o.push(mv);
         }
+        assert_eq!(o.spread(), 2);
         assert_eq!(o.take(0), 1001);
+        assert_eq!(o.spread(), 0);
         assert_eq!(o.take(77), 77);
         o.push(3350);
         assert_eq!(o.take(0), 3300);

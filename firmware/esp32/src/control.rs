@@ -168,6 +168,8 @@ pub async fn run(p: Pins, mut node: NodeT) {
 
         // ---- tick k: frame for the cycle that just ended ----
         v5_mv = v5_acc.take(v5_mv);
+        // the pump's stroke ripple, before the average removes it (rail-scaled like the average)
+        let pressure_pp_mv = ratiometric(p_acc.spread(), v5_mv, 3, 5000);
         p_raw = p_acc.take(p_raw);
         p_stale = if p_fresh { 0 } else { p_stale.saturating_add(1) };
         let (tc_uv, cj_cc) = thermo.poll(&mut i2c, k);
@@ -205,6 +207,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
             tc_uv,
             cj_cc,
             pressure_mv,
+            pressure_pp_mv,
             scale_mg,
             inputs,
         };

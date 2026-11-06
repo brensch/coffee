@@ -19,7 +19,9 @@ const LATCHING: u16 = fault::OVER_TEMP
     | fault::NO_WATER
     // a swapped plug never fixes itself, and a reversed reading goes "good" again as the boiler
     // cools back towards the board, which would heat it again: latch until cleared
-    | fault::PROBE_REVERSED;
+    | fault::PROBE_REVERSED
+    // the triac stays shorted: the fault must stay until the machine has been unplugged
+    | fault::PUMP_STUCK_ON;
 
 /// Requests from the UI / API (front-panel switches arrive in the sensor frame).
 #[derive(Clone, Debug)]
@@ -120,6 +122,17 @@ pub struct Engine {
     stroke_frac: Lpf,
     /// The stroke decision now being executed by the hardware (last tick's output).
     pump_on: bool,
+    /// When the engine last commanded a stroke, and whether it holds the valve open.
+    last_stroke_t: f64,
+    valve_on: bool,
+    /// Slow pressure sampled every 0.25 s over the last second (oldest first), for the
+    /// stuck-pump rise check, and when the next sample is due.
+    p_ring: [Option<f32>; 5],
+    p_ring_next: f64,
+    stuck_high_since: Option<f64>,
+    /// Power-on self-test: cold and unpressurised, yet the transducer read far off its install
+    /// zero. Held as PRESSURE_SENSOR until faults are cleared.
+    zero_implausible: bool,
     flow_est: f32,
 
     // weight
@@ -130,7 +143,7 @@ pub struct Engine {
     // control
     temp_pid: Pid,
     pressure_pid: Pid,
-    heater_sd: SigmaDelta,
+    heater: heat::Heater,
     pump_sd: SigmaDelta,
     heater_duty: f32,
     heater_duty_avg: Lpf,
@@ -200,13 +213,19 @@ impl Engine {
             auto_zero: Some((0.0, 0)),
             stroke_frac: Lpf::default(),
             pump_on: false,
+            last_stroke_t: 0.0,   // boot counts as a stroke: the check arms after the first second
+            valve_on: false,
+            p_ring: [None; 5],
+            p_ring_next: 0.0,
+            stuck_high_since: None,
+            zero_implausible: false,
             flow_est: 0.0,
             weight: Lpf::default(),
             weight_rate: Lpf::default(),
             weight_prev: None,
             temp_pid: Pid::default(),
             pressure_pid: Pid::default(),
-            heater_sd: SigmaDelta::default(),
+            heater: heat::Heater::default(),
             pump_sd: SigmaDelta::default(),
             heater_duty: 0.0,
             heater_duty_avg: Lpf::default(),
@@ -304,6 +323,8 @@ impl Engine {
                 // evidence, or a client clearing faults on a timer would stop them ever latching.
                 self.faults &= !LATCHING;
                 self.no_water_since = None;
+                // the user has looked at it (e.g. a machine switched off hot and restarted once cooled)
+                self.zero_implausible = false;
             }
         }
         Ok(())
@@ -442,9 +463,13 @@ impl Engine {
         self.heater_duty = self.heater_duty.clamp(0.0, 1.0);
         self.pump_duty = self.pump_duty.clamp(0.0, 1.0);
         if self.faults != 0 || standby {
-            self.heater_duty = 0.0;
             self.pump_duty = 0.0;
         }
+        // The heater's only way out: a permit (no fault, not standby, a valid temperature) or no
+        // heat. Burst firing: whole cycles, by sigma-delta.
+        let permit = heat::permit(self.faults, standby, self.temp_valid());
+        let (heater, delivered) = self.heater.fire(permit, self.heater_duty);
+        self.heater_duty = delivered;
         // What the heater really does (after the fault override): the duty average and the
         // energy balance must not count heat that was requested but never delivered.
         self.heater_duty_avg.update(self.heater_duty, dt, 20.0);
@@ -456,9 +481,12 @@ impl Engine {
             && matches!(self.state, EngineState::Brewing)
             && self.brew.as_ref().is_some_and(|b| b.ended.is_none());
 
-        // Burst firing: whole cycles of heat; one stroke per pump cycle.
-        let heater = self.heater_sd.next(self.heater_duty);
+        // One stroke per pump cycle.
         self.pump_on = self.pump_sd.next(self.pump_duty);
+        if self.pump_on {
+            self.last_stroke_t = self.t;
+        }
+        self.valve_on = valve;
 
         let status = self.status(p);
         ActuatorFrame {
@@ -623,6 +651,13 @@ impl Engine {
         if cold && (mean - c.zero_offset_bar).abs() <= c.auto_zero_band_bar {
             self.self_zero = Some(mean);
         }
+        // Self-test: a cold boiler has nothing to hold pressure with (it contracted as it cooled),
+        // so a cold reading more than 1 bar off the install zero is a damaged transducer (a zero
+        // shift after an over-pressure is how cheap ones fail), and every pressure the brew loop
+        // and the over-pressure trip see would be off by as much.
+        if cold && (mean - c.zero_offset_bar).abs() > 1.0 {
+            self.zero_implausible = true;
+        }
     }
 
     fn update_pressure(&mut self, mv: u16, dt: f32) -> f32 {
@@ -630,7 +665,7 @@ impl Engine {
         match sensors::pressure(&self.cfg.pressure_sensor, mv, self.pressure_zero()) {
             PressureReading::Bar(b) => {
                 self.pressure_bad_since = None;
-                self.set_fault(fault::PRESSURE_SENSOR, false);
+                self.set_fault(fault::PRESSURE_SENSOR, self.zero_implausible);
                 let tau = self.cfg.pressure_sensor.filter_tau_s;
                 self.pressure_disp.update(b, dt, 0.15);
                 self.pressure_slow.update(b, dt, 0.12);
@@ -761,6 +796,8 @@ impl Engine {
             }
         }
 
+        self.pump_stuck_check(sc.clone());
+
         // Pump running hard, nothing coming back: empty tank / lost prime.
         // Any meaningful pump demand should produce *some* back-pressure: even a
         // flush with no portafilter builds ~0.3 bar across the shower screen.
@@ -773,6 +810,46 @@ impl Engine {
             }
         } else {
             self.no_water_since = None;
+        }
+    }
+
+    /// PUMP_STUCK_ON: water moving that the engine never asked for. The pump triac is on the board
+    /// now, and a shorted triac strokes the pump every positive half-cycle. With no stroke commanded
+    /// for over a second, two signatures that only a stroking pump makes:
+    /// - the pressure rises by `pump_stuck_rise_bar` within a second (a stroking pump takes the
+    ///   sealed boiler to the OPV in about one; heat moves it ~0.05 bar/s at most);
+    /// - with the valve closed, it holds above the OPV's crack point + 0.3 bar for
+    ///   `pump_stuck_hold_s` (the US OPV bleeds ~3 ml/s there; only a pump keeps up with that).
+    ///   This is the case of a triac that fails while already pumping, at the end of a shot.
+    fn pump_stuck_check(&mut self, sc: crate::config::SafetyConfig) {
+        let now = self.t;
+        let Some(p) = self.pressure_slow.value else { return };
+        if self.faults & fault::PRESSURE_SENSOR != 0 {
+            self.p_ring = [None; 5];
+            self.stuck_high_since = None;
+            return;
+        }
+        if now >= self.p_ring_next {
+            self.p_ring = [self.p_ring[1], self.p_ring[2], self.p_ring[3], self.p_ring[4], Some(p)];
+            self.p_ring_next = now + 0.25;
+        }
+        let quiet = now - self.last_stroke_t > 1.0;
+        if !quiet {
+            self.stuck_high_since = None;
+            return;
+        }
+        let rise = match self.p_ring[0] {
+            // only samples taken while quiet count: the line's own settling after the last stroke
+            Some(p0) if now - self.last_stroke_t > 2.0 => p - p0,
+            _ => 0.0,
+        };
+        let high = !self.valve_on && p > self.cfg.pump.opv_crack_bar + 0.3;
+        let held = if high { now - *self.stuck_high_since.get_or_insert(now) } else {
+            self.stuck_high_since = None;
+            0.0
+        };
+        if rise >= sc.pump_stuck_rise_bar || held >= sc.pump_stuck_hold_s as f64 {
+            self.set_fault(fault::PUMP_STUCK_ON, true);
         }
     }
 
@@ -1220,6 +1297,44 @@ impl Engine {
     }
 }
 
+/// The heater output, behind a token. The heater bit in an [`ActuatorFrame`] comes only from
+/// [`Heater::fire`], which needs a [`Permit`], and the only way to get a permit is [`permit`]:
+/// no fault active, not in standby, and a valid boiler temperature. `Permit` has a private field,
+/// so no code outside this module can make one: a new code path that forgets the safety checks
+/// fails to compile instead of heating.
+mod heat {
+    use crate::control::SigmaDelta;
+
+    /// Proof that the heater may run this cycle.
+    pub struct Permit(());
+
+    pub fn permit(faults: u16, standby: bool, temp_valid: bool) -> Option<Permit> {
+        (faults == 0 && !standby && temp_valid).then_some(Permit(()))
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub struct Heater {
+        sd: SigmaDelta,
+    }
+
+    impl Heater {
+        /// This cycle's heater bit and the duty actually delivered. Without a permit: off, and the
+        /// modulator restarts from zero, so no stored error can fire a cycle once heat is allowed.
+        pub fn fire(&mut self, permit: Option<Permit>, duty: f32) -> (bool, f32) {
+            match permit {
+                Some(Permit(())) => {
+                    let d = if duty.is_finite() { duty.clamp(0.0, 1.0) } else { 0.0 };
+                    (self.sd.next(d), d)
+                }
+                None => {
+                    self.sd.reset();
+                    (false, 0.0)
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1238,6 +1353,7 @@ mod tests {
             tc_uv: (k % 16 == 0).then(|| thermocouple_uv_for_c(&cfg.thermocouple, temp_c, CJ_C).round() as i32),
             cj_cc: (k % 16 == 0).then_some((CJ_C * 100.0) as i16),
             pressure_mv: pressure_to_mv(&cfg.pressure_sensor, nominal_bar, 0.0).round() as u16,
+            pressure_pp_mv: 15, // the ADC's sample noise: no strokes
             scale_mg: 0,
             inputs,
         }
@@ -1493,6 +1609,74 @@ mod tests {
         let mut k = 0;
         run(&mut e, &cfg, &mut k, 2.0, 93.0, |fr| fr.tc_uv = fr.tc_uv.map(|v| -v));
         assert_eq!(e.faults() & fault::TEMP_SENSOR, fault::PROBE_REVERSED);
+    }
+
+    #[test]
+    fn heater_fires_only_with_a_permit() {
+        let mut h = heat::Heater::default();
+        // any fault, standby, or no valid temperature: no permit, no heat, even at full demand
+        for (faults, standby, valid) in [(fault::OVER_PRESSURE, false, true), (0, true, true), (0, false, false)] {
+            for _ in 0..10 {
+                assert_eq!(h.fire(heat::permit(faults, standby, valid), 1.0), (false, 0.0));
+            }
+        }
+        let (on, d) = h.fire(heat::permit(0, false, true), 1.0);
+        assert!(on && d == 1.0);
+        assert_eq!(h.fire(heat::permit(0, false, true), f32::NAN), (false, 0.0));
+    }
+
+    #[test]
+    fn stuck_pump_from_pressure_rise_and_plateau() {
+        let cfg = EngineConfig::default();
+        let hz = cfg.mains_hz;
+        let tick = |e: &mut Engine, k: &mut u32, bar: f32| {
+            e.tick(&frame(&cfg, *k, 93.0, bar, 0));
+            *k += 1;
+        };
+        // a slow thermal climb from 2 to 8 bar over a minute: no fault
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for i in 0..(60.0 * hz) as u32 {
+            tick(&mut e, &mut k, 2.0 + 6.0 * i as f32 / (60.0 * hz));
+        }
+        assert_eq!(e.faults() & fault::PUMP_STUCK_ON, 0);
+        // 3 -> 9 bar in a second with no stroke commanded
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for _ in 0..(5.0 * hz) as u32 {
+            tick(&mut e, &mut k, 3.0);
+        }
+        for i in 0..(2.0 * hz) as u32 {
+            tick(&mut e, &mut k, (3.0 + 6.0 * i as f32 / hz).min(9.2));
+        }
+        assert_ne!(e.faults() & fault::PUMP_STUCK_ON, 0);
+        // already on the plateau (a triac that failed mid-shot): caught by the hold rule
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        let mut k = 0;
+        for _ in 0..(4.0 * hz) as u32 {
+            tick(&mut e, &mut k, 9.2);
+        }
+        assert_eq!(e.faults() & fault::PUMP_STUCK_ON, 0, "not before the hold time");
+        for _ in 0..(3.0 * hz) as u32 {
+            tick(&mut e, &mut k, 9.2);
+        }
+        assert_ne!(e.faults() & fault::PUMP_STUCK_ON, 0);
+    }
+
+    #[test]
+    fn cold_boot_pressure_far_off_zero_is_a_sensor_fault() {
+        let cfg = EngineConfig::default();
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for k in 0..120 {
+            e.tick(&frame(&cfg, k, 22.0, 1.6, 0));
+        }
+        assert_ne!(e.faults() & fault::PRESSURE_SENSOR, 0);
+        // a hot restart (boiler still holding pressure) is not judged
+        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
+        for k in 0..120 {
+            e.tick(&frame(&cfg, k, 90.0, 1.6, 0));
+        }
+        assert_eq!(e.faults() & fault::PRESSURE_SENSOR, 0);
     }
 
     #[test]

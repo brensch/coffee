@@ -558,6 +558,7 @@ mod tests {
             tc_uv: Some(sensors::thermocouple_uv_for_c(&cfg.thermocouple, temp, 35.0).round() as i32),
             cj_cc: Some(3_500),
             pressure_mv: sensors::pressure_to_mv(&cfg.pressure_sensor, 0.0, 0.0).round() as u16,
+            pressure_pp_mv: 15,
             scale_mg: 0,
             inputs,
         }

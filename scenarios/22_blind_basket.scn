@@ -10,3 +10,5 @@ expect always hydraulics.pressure < 11
 # fill + 5 s soak + 4 s ramp, then 9 bar
 expect eventually hydraulics.pressure > 8.5 from warm by warm+16s
 expect never cup.mass > 0.5
+# the pump stops against 9 bar and the valve closes on a full boiler: not a stuck pump
+expect never engine.faults has pump_stuck_on

@@ -1,0 +1,13 @@
+name "pump triac fails shorted during a shot: caught when the shot ends"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 12min
+
+# Shorted while the engine is pumping anyway: nothing to see until the shot ends. Then the
+# pressure stays on the OPV plateau instead of falling: only a stroking pump holds it there.
+when engine.state == ready for 30s as warm: brew on
+at warm+10s: set pump_triac.fault = stuck_on
+when engine.state == brew_done as done: mark "shot finished"
+at done+3s: brew off
+
+expect eventually engine.faults has pump_stuck_on from done by done+8s
+expect always heater.power == 0 from done+8s

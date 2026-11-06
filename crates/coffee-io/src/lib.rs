@@ -56,8 +56,11 @@ pub struct SensorFrame {
     /// Cold junction (TMP117 beside the thermocouple socket), centi-degrees C. `Some` on the tick
     /// a fresh reading lands; `None` otherwise, and while the sensor isn't answering.
     pub cj_cc: Option<i16>,
-    /// Pressure transducer after the 10k/20k divider, millivolts.
+    /// Pressure transducer after the 47k/100k divider, millivolts (oversampled average over the cycle).
     pub pressure_mv: u16,
+    /// Peak-to-peak of the cycle's pressure samples, millivolts: the vibratory pump's stroke ripple,
+    /// which the average removes. Flat with the pump off; large while it strokes.
+    pub pressure_pp_mv: u16,
     /// Scale reading in milligrams. Only meaningful when [`input::SCALE_OK`] is set.
     pub scale_mg: i32,
     /// Digital inputs, see [`input`].
@@ -183,10 +186,13 @@ pub mod fault {
     /// Cold-junction sensor (TMP117) missing, or reading outside what a board inside the
     /// machine can be: without it the thermocouple can't be converted.
     pub const COLD_JUNCTION: u16 = 1 << 10;
+    /// The pump is pushing water the engine never asked for: its triac (on the board) has failed
+    /// shorted. Software can't stop it; the heater and valve go off and the UI says to unplug.
+    pub const PUMP_STUCK_ON: u16 = 1 << 11;
     /// Every fault that leaves the engine without a trustworthy boiler temperature.
     pub const TEMP_SENSOR: u16 = PROBE_OPEN | PROBE_REVERSED | TC_ADC | COLD_JUNCTION;
 
-    pub const NAMES: [(u16, &str); 11] = [
+    pub const NAMES: [(u16, &str); 12] = [
         (PROBE_OPEN, "probe_open"),
         (PROBE_REVERSED, "probe_reversed"),
         (OVER_TEMP, "over_temp"),
@@ -198,6 +204,7 @@ pub mod fault {
         (TEMP_RUNAWAY, "temp_runaway"),
         (TC_ADC, "tc_adc"),
         (COLD_JUNCTION, "cold_junction"),
+        (PUMP_STUCK_ON, "pump_stuck_on"),
     ];
 
     pub fn from_name(s: &str) -> Option<u16> {

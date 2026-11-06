@@ -1,0 +1,9 @@
+name "power-on self-test: transducer reads 1.5 bar on a cold, empty boiler"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 2min
+# a transducer whose zero shifted after an over-pressure: every pressure it gives is 1.5 bar high
+model pressure_sensor.offset_bar = 1.5
+
+expect eventually engine.faults has pressure_sensor by 2s
+expect always heater.power == 0 from 2s
+expect always pump.on == 0

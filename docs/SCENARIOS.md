@@ -49,6 +49,7 @@ expect never engine.state == fault until warm+19s
   tc.uv                        uV (last thermocouple conversion, every 16 cycles)
   board.temp                   C (the board: the cold junction)
   pressure_sensor.mv           mV
+  pressure_sensor.pp_mv        mV (peak-to-peak over the cycle: the pump's stroke ripple)
   hydraulics.pressure          bar
   pump.flow                    ml/s
   opv.flow                     ml/s
@@ -105,6 +106,7 @@ expect never engine.state == fault until warm+19s
   probe.spike_uv               spike size, uV (default 800, ~20 C)
   pressure_sensor.fault        ok|disconnected|stuck
   heater_triac.fault           ok|stuck_on|stuck_off
+  pump_triac.fault             ok|stuck_on|stuck_off
   heater.element               ok|open
   pump.fault                   ok|airlock
   fuse.reset                   any (action)
@@ -139,3 +141,7 @@ Every model parameter path (`coffee-emu signals` lists them) can be used with `m
 - `28_fault_probe_short.scn`: thermocouple leads shorted at the plug from power-on: heater-ineffective catches it
 - `29_fault_tc_adc_dead.scn`: thermocouple ADC stops answering: heater off within a second or so
 - `30_fault_cold_junction_dead.scn`: cold-junction sensor stops answering: no compensation, so no heat
+- `31_fault_pump_triac_shorted.scn`: pump triac fails shorted while ready: caught from the pressure, heater off
+- `32_fault_pump_triac_shorted_mid_shot.scn`: pump triac fails shorted during a shot: caught when the shot ends
+- `33_no_false_pump_stuck.scn`: no stuck-pump false alarm: shots, a blind-basket backflush, steam and a cold start
+- `34_selftest_pressure_zero_shifted.scn`: power-on self-test: transducer reads 1.5 bar on a cold, empty boiler

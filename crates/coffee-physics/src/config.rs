@@ -305,6 +305,9 @@ pub struct PressureSensor {
     pub divider: f64,
     /// Noise on the per-cycle oversampled average, in bar.
     pub noise_bar: f64,
+    /// Noise on each single ADC sample, millivolts RMS at the pin (sets the peak-to-peak floor
+    /// with the pump off; ESP32-C6 ADC1 with curve calibration, est).
+    pub sample_noise_mv: f64,
     pub tau_s: f64,
     /// Zero drift of the real part (bar). The power-on self-zero removes it.
     pub offset_bar: f64,
@@ -317,6 +320,7 @@ impl Default for PressureSensor {
             v_full_mv: 4500.0,
             divider: 100.0 / 147.0,
             noise_bar: 0.02,
+            sample_noise_mv: 3.0,
             tau_s: 0.003,
             offset_bar: 0.0,
         }

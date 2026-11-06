@@ -197,7 +197,9 @@ pub fn BrewPage() -> impl IntoView {
             (!faults.is_empty()).then(|| view! {
                 <div class="banner">
                     <b>"Fault"</b>
-                    <div class="row">{faults.into_iter().map(|f| view! { <span class="chip bad">{f}</span> }).collect_view()}</div>
+                    <div class="row">{faults.iter().cloned().map(|f| view! { <span class="chip bad">{f}</span> }).collect_view()}</div>
+                    // what the user has to do, for the faults software can't fix
+                    {faults.iter().find_map(|f| fault_advice(f)).map(|a| view! { <div><b>{a}</b></div> })}
                     <span style="flex:1"></span>
                     <button class="btn small" on:click=move |_| api::command(Command::ClearFaults, "Faults cleared")>"Clear"</button>
                 </div>
@@ -493,4 +495,16 @@ fn LastShot() -> impl IntoView {
             </div>
         })}
     }
+}
+
+/// What to do about a fault that software can't clear on its own.
+fn fault_advice(f: &str) -> Option<&'static str> {
+    Some(match f {
+        "pump_stuck_on" => "The pump is running by itself (its switch on the board has failed). Unplug the machine now.",
+        "temp_runaway" => "The boiler is heating by itself (heater switch failed). Unplug the machine now.",
+        "probe_reversed" => "The thermocouple's two wires are swapped in its plug. Unplug the machine and swap them.",
+        "probe_open" => "The thermocouple is disconnected or broken: check its plug.",
+        "tc_adc" | "cold_junction" => "The board's temperature sensing isn't answering: unplug and replug the machine; if it persists, the board needs service.",
+        _ => return None,
+    })
 }

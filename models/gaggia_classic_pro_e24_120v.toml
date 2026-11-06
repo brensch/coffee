@@ -94,6 +94,7 @@ v_zero_mv = 500.0
 v_full_mv = 4500.0
 divider = 0.6802721
 noise_bar = 0.02
+sample_noise_mv = 3.0      # per ADC sample: the peak-to-peak floor with the pump off (est)
 tau_s = 0.003
 offset_bar = 0.0          # zero drift of the part; the power-on self-zero removes it
 

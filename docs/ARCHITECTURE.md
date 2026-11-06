@@ -24,6 +24,7 @@
 - `SensorFrame.tc_uv`: the K-type thermocouple's EMF in microvolts, from the MCP3421 (18 bit, PGA 8, 2 µV per LSB) on I2C. The ADC converts continuously at 3.75 SPS, so this is `Some` only on the tick a fresh conversion lands (about every 16th tick at 60 Hz) and `None` in between or while the chip isn't answering.
 - `SensorFrame.cj_cc`: the cold junction in centi-°C, from the TMP117 beside the probe's socket, read with each conversion.
 - `SensorFrame.pressure_mv`: the transducer after its 47k/100k divider, ADC1 averaged over 32 evenly spaced samples in the cycle, curve-calibrated from eFuse and rescaled to the nominal 5 V rail. A uniform average over exactly one mains period removes the pump's pressure ripple.
+- `SensorFrame.pressure_pp_mv`: the peak-to-peak of the same cycle's samples, i.e. the pump's stroke ripple that the average removes. It is logged for fitting against real machines; no check depends on it yet, because the emulator's hydraulics don't reproduce real ripple amplitudes.
 - Switches arrive debounced (stable for 3 cycles) in `inputs`.
 
 The NIST ITS-90 type-K functions are in `coffee_io::typek`, shared by the engine (cold-junction compensation) and the emulator (making the EMF the board would see). The temperature and pressure models, fault detection and calibration live in `coffee-core::sensors` and the engine:
@@ -34,7 +35,11 @@ The NIST ITS-90 type-K functions are in `coffee_io::typek`, shared by the engine
 - `COLD_JUNCTION` is raised when no in-range TMP117 reading has arrived for 2 s;
 - the transducer is disconnected when it reads below 200 mV.
 
-Any of the temperature faults turns the heater off. The engine filters the temperature and its rate on conversions, not ticks. All of this runs identically on silicon and in emulation. The pure firmware logic is in `coffee-board`, which is unit-tested on the host. It covers the cycle clock, oversampling, debounce, the status LED, the grid model, and the MCP3421/TMP117 byte decoding (`coffee_board::tc`).
+Any of the temperature faults turns the heater off. The heater bit itself can only come from `heat::Heater::fire`, which takes a `heat::Permit`. The only constructor of `Permit` checks for no active fault, not standby, and a valid temperature, and its private field means no other code can make one. A new code path that skips the safety checks therefore fails to compile instead of heating.
+
+Two more checks come from the board's own parts:
+- `PUMP_STUCK_ON` covers a shorted on-board pump triac. With no stroke commanded for over a second, the fault is raised if the pressure rises at least 2 bar within a second, or if it holds above the OPV crack + 0.3 bar for 5 s with the valve closed. The fault latches, keeps the heater and valve off, and the UI says to unplug.
+- The power-on self-test raises `PRESSURE_SENSOR` if the transducer reads more than 1 bar off its install zero while the boiler is cold. The engine filters the temperature and its rate on conversions, not ticks. All of this runs identically on silicon and in emulation. The pure firmware logic is in `coffee-board`, which is unit-tested on the host. It covers the cycle clock, oversampling, debounce, the status LED, the grid model, and the MCP3421/TMP117 byte decoding (`coffee_board::tc`).
 
 ## One product, two shells
 

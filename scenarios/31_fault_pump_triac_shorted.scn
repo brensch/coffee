@@ -1,0 +1,12 @@
+name "pump triac fails shorted while ready: caught from the pressure, heater off"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
+duration 10min
+
+# The on-board pump triac shorts: the pump strokes every cycle whatever the engine says. Software
+# can't stop it (unplug); it must notice within seconds, show it, and keep the heater and valve off.
+when engine.state == ready for 20s as warm: set pump_triac.fault = stuck_on
+
+expect eventually engine.faults has pump_stuck_on from warm by warm+3s
+expect always heater.power == 0 from warm+3s
+expect always valve.open == 0 from warm
+expect never fuse.blown == 1
