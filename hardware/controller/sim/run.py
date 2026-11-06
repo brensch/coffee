@@ -117,7 +117,7 @@ print i(Vin)
 # Restored from v14 (git 9632e10), with v32's values: ST T435-600B triacs (IH 35 mA max, 600 V), the
 # 100 R + 22 nF X2 snubber. The triac is a gated switch that keeps conducting while |I| > IH after the
 # gate is removed; the pump has its own series diode; coil values are estimates (see REPORT notes).
-PUMP_BLEED = "100k"   # v33: R54 (Vishay CRCW2512, 500 V) across the pump triac
+PUMP_BLEED = "51k"   # v33: R54 (Vishay CRCW2512, 500 V) across the pump triac
 
 
 def snubber(with_rc, vrms=120.0, L=1.2, R=220.0, csn="22n", ih=0.035, bleed=PUMP_BLEED):
@@ -156,18 +156,21 @@ run
     return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
 
 
-def rearm(bleed, vrms=132.0, L=1.2, R=220.0, csn="22n", ih=0.035):
+def rearm(bleed, vrms=132.0, L=1.2, R=220.0, csn="22n", ih=0.035, continuous=False):
     """v33 (review M1). After one stroke (gate removed at 16.7 ms), the pump's series diode leaves the
     snubber cap charged. Returns the highest triac voltage at the next three positive-going zero
-    crossings: the MOC3083 can only fire the triac there if it's under its 20 V inhibit voltage."""
+    crossings: the MOC3083 can only fire the triac there if it's under its 20 V inhibit voltage.
+    continuous=True: the pump running every cycle (gate at each positive zero crossing), the tight case:
+    the triac drops out late in the cycle and the cap has only ~5 ms to drain (re-review of v33)."""
     vpk = vrms * 2 ** 0.5
     bl = f"Rbl mt2 mt1 {bleed}" if bleed else ""
+    gate = "Vg g 0 PULSE(0 1 16.6667m 1u 1u 3m 16.6667m)" if continuous else "Vg g 0 PWL(0 1 16.6m 1 16.7m 0)"
     net = f"""* zero-cross re-arm with a half-wave pump
 .model DP D(IS=1e-12 N=1.5 RS=0.5 CJO=40p TT=2u)
 .model DT D(IS=1e-12 N=1.3 RS=0.02)
 .model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
 Vline mt2 0 SIN(0 {vpk} 60)
-Vg g 0 PWL(0 1 16.6m 1 16.7m 0)
+{gate}
 Vsense mt2 xs 0
 Bctl c 0 V = max(v(g), abs(i(Vsense)) > {ih} ? 1 : 0)
 S1 xs x c 0 SW
@@ -185,9 +188,9 @@ Rp q 0 {R}
 .control
 run
 let vt = v(mt2)-v(mt1)
-meas tran z1 FIND vt AT=50.0m
-meas tran z2 FIND vt AT=66.67m
-meas tran z3 FIND vt AT=100.0m
+meas tran z1 FIND vt AT=66.660m
+meas tran z2 FIND vt AT=83.327m
+meas tran z3 FIND vt AT=99.993m
 .endc
 .end
 """
@@ -351,15 +354,21 @@ def main():
                 check("Valve triac (T410) turn-off: dV/dt", lab, dv, "< 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us)", dv < 32, "V/us")
             else:
                 check("Valve triac (T410) turn-off: peak voltage (reference)", lab, peak, "info: why the snubber is fitted", True, "V")
-    for bl, lab in ((None, "no bleeder (v32)"), (PUMP_BLEED, "100k bleeder (R54)")):
-        v0 = rearm(bl)
-        if bl:
-            check("Pump zero-cross re-arm: triac voltage at the next positive zero crossings", f"132 V, {lab}", v0,
-                  "< 10 V (MOC3083 fires only under VINH, 20 V max)", v0 < 10, "V")
-        else:
-            check("Pump zero-cross re-arm (reference)", f"132 V, {lab}", v0,
-                  "info: the pump diode holds the snubber cap at the peak; review M1, why R54", True, "V")
-    p_bl = (132.0 ** 2 / 100e3) / 2 * 1e3
+    for vr in (120.0, 132.0):
+        for cont in (False, True):
+            mode = "running every cycle" if cont else "after one stroke"
+            for bl, lab in ((None, "no bleeder (v32)"), ("100k", "100k (first v33 value, rejected)"), (PUMP_BLEED, f"{PUMP_BLEED} bleeder (R54)")):
+                if bl is None and cont:
+                    continue
+                v0 = rearm(bl, vrms=vr, continuous=cont)
+                case = f"{vr:.0f} V, {mode}, {lab}"
+                if bl == PUMP_BLEED:
+                    check("Pump zero-cross re-arm: triac voltage just before each positive zero crossing", case, v0,
+                          "< 5 V (MOC3083 fires only under VINH: 12 V typ, 20 V max, no minimum)", v0 < 5, "V")
+                else:
+                    check("Pump zero-cross re-arm (reference)", case, v0,
+                          "info: review M1 (no bleeder) and its re-review (100k marginal when running)", True, "V")
+    p_bl = (132.0 ** 2 / 51e3) / 2 * 1e3
     check("Pump bleeder dissipation (R54, 2512 1 W)", "132 V, half-wave while the pump is off", p_bl,
           "< 250 mW (25 % of 1 W)", p_bl < 250, "mW")
     check("Pump bleeder voltage (R54)", "132 V line peak (the triac's off-state voltage)", 132 * 2 ** 0.5, "< 400 V (80 % of the CRCW2512's 500 V)", 132 * 2 ** 0.5 < 400, "V")

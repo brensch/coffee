@@ -38,7 +38,7 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
    ```sh
    cd hardware/controller
    .venv/bin/python controller.py         # schematic + design checks + mis-plug check -> build/
-   python3 sim/run.py                     # circuit simulations (71 checks)
+   python3 sim/run.py                     # circuit simulations (79 checks)
    source ~/opt/kienv.sh
    PLACE_JSON=plan.json FASTROUTE=… python3 ext_route.py fastroute 120   # place, route, DRC, gerbers
    python3 isolation_check.py build/coffee-controller-120v.kicad_pcb     # mains-to-SELV >= 6 mm

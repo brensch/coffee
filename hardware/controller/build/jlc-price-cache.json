@@ -1204,5 +1204,37 @@
 "endNumber": -1,
 "productPrice": 0.0668
 }
+],
+"C2078757": [
+{
+"startNumber": 1,
+"endNumber": 49,
+"productPrice": 0.1369
+},
+{
+"startNumber": 50,
+"endNumber": 149,
+"productPrice": 0.1097
+},
+{
+"startNumber": 150,
+"endNumber": 499,
+"productPrice": 0.0961
+},
+{
+"startNumber": 500,
+"endNumber": 1999,
+"productPrice": 0.086
+},
+{
+"startNumber": 2000,
+"endNumber": 3999,
+"productPrice": 0.078
+},
+{
+"startNumber": 4000,
+"endNumber": -1,
+"productPrice": 0.0739
+}
 ]
 }

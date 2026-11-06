@@ -20,7 +20,7 @@ protection that doesn't depend on any of this.
 Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md). Mis-plug safety: [SWAP-SAFETY.md](SWAP-SAFETY.md).
 
 Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations: `hardware/controller/sim/run.py`
-→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 71/71 pass. Every part was checked against its
+→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 79/79 pass. Every part was checked against its
 maker's datasheet (pin map, package, and each value the design relies on); the quotes and links are in
 [`evidence/parts.jsonl`](evidence/parts.jsonl).
 
@@ -52,7 +52,7 @@ from Gaggiuino's board:
 | Q5 | ST T435-600B (DPAK), pump | IGT/IH 35 mA, 400 V/µs, snubberless-class. Pump 0.45 A rms, half-wave (its own diode): 86.8 °C junction at 70 °C ambient on its copper (97 °C at a 1.4 A peak allowance) |
 | Q6 | ST T410-600B (DPAK), valve | IH 15 mA (see above). 40 V/µs: the snubber holds the turn-off to 23 V/µs. ~0.1 W, 75 °C junction |
 | R53 | 1 kΩ 1206, gate to MT1 | dV/dt immunity for the T410's sensitive 10 mA gate (AN-3004: 330 Ω–1 kΩ) |
-| R54 | 100 kΩ, Vishay CRCW2512 (500 V, 1 W), across the pump triac | **v33.** The pump's series diode lets C15 charge to the line peak and then blocks its discharge: ~170 V DC would sit across the triac, and the zero-cross MOC3083 only fires under its 20 V inhibit voltage, so the pump would never stroke again. R54 drains it in each reverse half (τ 2.2 ms): 1.2 V at the next positive zero crossing. 187 V peak (37 % of its rating), 87 mW while the pump is off. The valve needs none (no diode) |
+| R54 | 51 kΩ, Vishay CRCW251251K0JNEG (500 V, 1 W), across the pump triac | **v33.** The pump's series diode lets C15 charge to the line peak and then blocks its discharge: ~170 V DC would sit across the triac, and the zero-cross MOC3083 only fires under its inhibit voltage (12 V typ, 20 V max), so the pump would never stroke again. R54 drains it (τ 1.1 ms). Sized for the tight case, the pump running every cycle: the triac drops out late in the cycle, leaving ~5 ms before the next positive zero crossing. 51k gets it to 1.8 V there (5 V even with 2.5× the assumed coil inductance); 100k left 13 V. 187 V peak (37 % of its rating), 171 mW while the pump is off. The valve needs none (no diode) |
 | R51/C15, R52/C16 | 100 Ω 1 W 2512 + 22 nF X2 (Murata GA355) | RC snubber across each triac. Pump turn-off 171–190 V, valve 429–456 V (limit 480 V = 80 % of 600 V); 2.5–2.9 kV without. Off-state leakage ~1 mA: under anything that holds the valve in (~50 mA) or moves the pump |
 
 **No MOV.** The IRM passes a 1 kV L–N surge (EN 61000-4-5) by itself, and the triacs and optos are
@@ -168,5 +168,5 @@ IRM's pins carry mains, and a factory joint is worth $2 a board.
 - **First mains power-up through a GFCI.** The board sits in its tray with every receptacle on and
   insulated.
 - **Pump on the real pump:** count the strokes (one per enabled mains cycle: R54's job), and listen for hum
-  while it's off. The snubber and R54 leak about 1–2 mA.
+  while it's off. The snubber and R54 leak about 1 + 3 mA.
 - **Valve coil:** read its label. The design assumes 80–150 mA.

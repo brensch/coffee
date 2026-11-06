@@ -221,10 +221,12 @@ def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_
     if bleed:
         # v33 (review M1): the pump's own series diode lets the snubber cap charge to the line peak and
         # then blocks its discharge, so ~170 V DC sits across the triac and the zero-cross opto (fires
-        # only under its 20 V inhibit voltage) can never re-fire. 100k across the triac drains the cap in
-        # each reverse half (tau 2.2 ms): 0.9 V at the next positive zero crossing (sim/run.py).
-        # Vishay CRCW2512 HP: 500 V working (187 V peak at 132 V line), 1 W (87 mW while the pump is off).
-        r = part(R, bleed, "100k 500V", footprint=FP_R_2512, mpn="Vishay CRCW2512100KFKEG", mains=True,
+        # only under its 20 V inhibit voltage) can never re-fire. 51k across the triac drains it (tau 1.1 ms).
+        # Sized for the tight case, the pump running every cycle: the triac drops out late in the cycle and
+        # leaves ~5 ms before the next positive zero crossing; 51k gets the triac to 1.8 V there (100k left
+        # 13 V, over VINH's 12 V typical; re-review). Vishay CRCW2512: 500 V working (187 V peak at 132 V
+        # line), 1 W (171 mW while the pump is off).
+        r = part(R, bleed, "51k 500V", footprint=FP_R_2512, mpn="Vishay CRCW251251K0JNEG", mains=True,
                  notes="MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)")
         r[1, 2] += ac_lf, out_net
     return u, q

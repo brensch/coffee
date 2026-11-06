@@ -19,10 +19,17 @@ modified nothing. Its findings and what happened to each:
   conducts on both half-waves.
 - **The valve isn't affected.** It has no diode, so its triac voltage follows the line. The reviewer's
   zero-cross simulation shows it re-firing every half-cycle.
-- **Fix: R54**, 100 kΩ across the pump triac (AC_L_F to PUMP_SW). It drains the cap in each reverse half
-  (τ 2.2 ms): 1.2 V at the next positive zero crossing at 132 V line.
-  - The part is a Vishay CRCW2512100KFKEG: 500 V working (187 V peak, 37 %), 1 W (87 mW while the pump is off).
-  - sim/run.py now has a re-arm check: v32's circuit as the reference (185 V), v33's as the requirement (< 10 V).
+- **Fix: R54**, 51 kΩ across the pump triac (AC_L_F to PUMP_SW), τ 1.1 ms.
+  - The part is a Vishay CRCW251251K0JNEG: 500 V working (187 V peak, 37 %), 1 W (171 mW while the pump is off).
+  - **The value came from a second review round.** My first value, 100k, drained the cap after an
+    isolated stroke (1.2 V). The reviewer then checked the pump running every cycle, the tight case: the
+    triac drops out ~243° into the cycle with 137 V on the cap, and only ~5 ms are left before the next
+    positive zero crossing. 100k still left 13–14 V there, over the MOC3083's 12 V typical inhibit (and
+    the datasheet gives no minimum), so a typical part would skip strokes.
+  - **51k gives 1.8 V running every cycle,** and 5 V even with 2.5× the assumed coil inductance.
+    (47k, the reviewer's suggestion, has no 500 V 2512 in JLC stock.)
+  - **sim/run.py now has re-arm checks:** both after one stroke and running every cycle, at 120 and 132 V,
+    with v32's circuit and the rejected 100k as references. 79/79 pass.
 - **Alternatives rejected:**
   - **A random-phase driver (MOC3052)** would need no new part. But it fires at any phase, so strokes
     split at window edges, while the engine counts exactly one stroke per enabled mains cycle. It also
@@ -75,3 +82,18 @@ The reviewer checked the following and found them fine:
 Not verified: the Nano2 443 land pattern (Littelfuse's site refused the fetch; the footprint comes from
 the KiCad library's own drawing), and the DPAK/SMDIP rotations in JLC's preview. `jlc_cpl.py` solved
 them against JLC's own footprints, but look at the preview when ordering.
+
+## Re-review of the v33 fix
+
+The same reviewer checked R54 on the re-routed board:
+- **The value:** 100k was marginal with the pump running every cycle. Fixed (51k, above).
+- **Placement:** R54 is vertical at (8.5, 14.5): 4.6 mm from H3, 6.8 mm from the board edge, 5.0 mm from
+  the N tab. Isolation is still 7.83 mm.
+- **R54's own failure modes:**
+  - **Open:** back to M1. The pump doesn't run, which is obvious and safe.
+  - **Short:** the pump runs uncommanded, the same as a shorted triac. The firmware's uncommanded-stroke
+    check catches that. Thick film usually fails open, and R54 runs at 17 % of its power rating.
+- **Regressions:** none. The full re-route moved only R54 and kept 0 unconnected and a clean DRC. The
+  closest L–N approach on F.Cu is now 2.04 mm (v32: 3.42 mm), still over the 2.0 mm mains rule and fine
+  for functional insulation at 120 V. The new PUMP_SW track on B.Cu passes the N and L tab pads at
+  2.0 mm.

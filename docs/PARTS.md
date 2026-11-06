@@ -40,7 +40,7 @@ Everything JLC places on the board, as matched live against JLCPCB's library (`j
 | R49 R50 | 330 | 1206W4F3300T5E | C17930 | expand | 204965 | MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak |
 | R51 R52 | 100 1W | 25121WF1000T4E | C35218 | expand | 38578 | MAINS: snubber R (inductive load) |
 | R53 | 1k | 1206W4F1001T5E | C4410 | base | 1572607 | MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k) |
-| R54 | 100k 500V | CRCW2512100KFKEG | C2077706 | expand | 7367 | MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1) |
+| R54 | 51k 500V | CRCW251251K0JNEG | C2078757 | expand | 880 | MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1) |
 | U4 | ESP32-C6-MINI-1U-H4 | ESP32-C6-MINI-1U-H4 | C20627095 | expand | 3782 | W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case |
 | U5 | TLV1117LV33DCYR | TLV1117LV33DCYR | C15578 | expand | 1541 | SOT-223 for heat: ~0.17 W average, +11 C |
 | U6 | MCP3421A0T-E/CH | MCP3421A0T-E/CH | C29454 | expand | 8953 | Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C) |
@@ -48,7 +48,7 @@ Everything JLC places on the board, as matched live against JLCPCB's library (`j
 | U8 U9 | MOC3083SR2M | MOC3083SR2M | C111561 | expand | 26297 | PUMP: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing / VALVE: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing |
 
 ## Added in v33
-- R54, 100k 500 V (Vishay CRCW2512100KFKEG) across the pump triac: re-arms the zero-cross opto every cycle (REVIEW-v32.md, M1).
+- R54, 51k 500 V (Vishay CRCW251251K0JNEG) across the pump triac: re-arms the zero-cross opto every cycle (REVIEW-v32.md, M1).
 
 ## Added in v32 (mains on board)
 - Mains: spade tabs J12-J15 (N, L, P, 3), fuse F1, Mean Well IRM-10-5 PS1, opto-triacs U8/U9, triacs Q5 (T435, pump) and Q6 (T410, valve), opto resistors R47-R50, gate resistor R53, snubbers R51/C15, R52/C16.

@@ -596,7 +596,7 @@
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 2e232f4d-c24b-4948-9c31-45396bcda295)
     )
-    (fp_text value "100k 500V" (at 0 2.62 -90) (layer "F.Fab")
+    (fp_text value "51k 500V" (at 0 2.62 -90) (layer "F.Fab")
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp c1cb55b3-0b1d-41d6-8152-623cff7cb8ed)
     )

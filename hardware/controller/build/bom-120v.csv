@@ -36,7 +36,7 @@ R45,1,10M,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"Open-probe bias on the co
 R49 R50,2,330,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak
 R51 R52,2,100 1W,UNI-ROYAL 25121WF1000T4E,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: snubber R (inductive load)
 R53,1,1k,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k)
-R54,1,100k 500V,Vishay CRCW2512100KFKEG,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)
+R54,1,51k 500V,Vishay CRCW251251K0JNEG,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)
 TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in. On SCL: harmless to the bus
 U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
 U5,1,TLV1117LV33DCYR,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable","SOT-223 for heat: ~0.17 W average, +11 C"

@@ -244,7 +244,7 @@
   },
   "R54": {
    "footprint": "Resistor_SMD:R_2512_6332Metric",
-   "value": "100k 500V",
+   "value": "51k 500V",
    "pins": {
     "1": "AC_L_F",
     "2": "PUMP_SW"
@@ -259,7 +259,7 @@
    ],
    "populate": "Y",
    "desc": "Resistor",
-   "mpn": "Vishay CRCW2512100KFKEG",
+   "mpn": "Vishay CRCW251251K0JNEG",
    "notes": "MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)"
   },
   "R48": {
