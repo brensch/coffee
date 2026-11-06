@@ -29,7 +29,7 @@ use crate::store::{BUSY, NodeT, OTA_ARMED};
 use crate::usb;
 use coffee_api::ServerMsg;
 use coffee_board::tc::{self, Mcp3421};
-use coffee_board::{CycleClock, Debounce, Oversample, ratiometric, status_led};
+use coffee_board::{CycleClock, Debounce, OtaGate, Oversample, ratiometric, status_led};
 use coffee_io::{EngineState, SensorFrame, input};
 use coffee_node::tlog::{LogWriter, Outputs};
 use core::sync::atomic::Ordering;
@@ -65,7 +65,6 @@ pub struct Pins {
     pub steam: peripherals::GPIO7<'static>,
     /// Status LED (v24: on U0TXD, so it also flickers with the ROM boot log)
     pub led: peripherals::GPIO16<'static>,
-    pub power: peripherals::GPIO14<'static>,
     pub led_power: peripherals::GPIO21<'static>,
     pub led_coffee: peripherals::GPIO22<'static>,
     pub led_steam: peripherals::GPIO23<'static>,
@@ -91,7 +90,6 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let mut led = Output::new(p.led, Level::Low, OutputConfig::default());
     let brew_sw = Input::new(p.brew, InputConfig::default().with_pull(Pull::Up));
     let steam_sw = Input::new(p.steam, InputConfig::default().with_pull(Pull::Up));
-    let power_sw = Input::new(p.power, InputConfig::default().with_pull(Pull::Up));
     let mut panel = [
         Output::new(p.led_power, Level::Low, OutputConfig::default()),
         Output::new(p.led_coffee, Level::Low, OutputConfig::default()),
@@ -135,7 +133,7 @@ pub async fn run(p: Pins, mut node: NodeT) {
     let clock = CycleClock::new(now_us(), mains_hz);
     let mut brew = Debounce::new(DEBOUNCE_CYCLES);
     let mut steam = Debounce::new(DEBOUNCE_CYCLES);
-    let mut power = Debounce::new(DEBOUNCE_CYCLES);
+    let mut ota_gate = OtaGate::default();
     let (mut p_acc, mut v5_acc) = (Oversample::default(), Oversample::default());
     // Last raw (uncorrected) readings: the fallback when a cycle has no samples, so the rail
     // correction is applied once per reading and never compounds.
@@ -183,20 +181,8 @@ pub async fn run(p: Pins, mut node: NodeT) {
         if steam.update(steam_sw.is_low()) {
             inputs |= input::STEAM;
         }
-        // Power rocker open (pulled up) = standby; the controller itself stays powered.
-        if !power.update(power_sw.is_low()) {
-            inputs |= input::STANDBY;
-        }
-        OTA_ARMED.store(inputs & input::STANDBY != 0 && inputs & input::STEAM != 0, Ordering::Relaxed);
-        // In standby SCK is held high (the HX711s power down after 60 us): with the front lead out of
-        // J7 a mis-plugged lead may face SCK, and a static high is the state that stays harmless even
-        // with a bare LED there (docs/SWAP-SAFETY.md). The last reading is kept, not counted stale.
-        if inputs & input::STANDBY == 0 {
-            scale.wake();
-            scale.poll();
-        } else {
-            scale.sleep();
-        }
+        // v35: no power-rocker input (it switches the machine's mains, this board included).
+        scale.poll();
         let (scale_mg, scale_ok) = scale.read_mg(&node.engine.cfg.scale);
         if scale_ok {
             inputs |= input::SCALE_OK;
@@ -224,6 +210,9 @@ pub async fn run(p: Pins, mut node: NodeT) {
         }
         rtc.rwdt.feed();
         BUSY.store(a.status.state == EngineState::Brewing, Ordering::Relaxed);
+        // OTA physical presence (coffee_board::OtaGate): steam rocker on, then brew on, held 3 s with
+        // the pump and valve idle. A LAN client can't flip a rocker.
+        OTA_ARMED.store(ota_gate.update(t / 1000, s.inputs, a.status.state, a.pump, a.valve), Ordering::Relaxed);
 
         for e in node.drain_events() {
             if let ServerMsg::Telemetry(tm) = &e {

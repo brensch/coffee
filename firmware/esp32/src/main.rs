@@ -41,18 +41,18 @@
 //! | Valve           | 18    | push-pull, HIGH = on: AO3400A sinks the MOC3083 LED, triac Q6 |
 //! | Pump            | 19    | push-pull, HIGH = on: AO3400A sinks the MOC3083 LED, triac Q5 |
 //! | Heater          | 20    | push-pull, HIGH = on: AO3400A sinks the heater SSR input (J2) |
-//! | Brew switch     | 6     | dry contact to GND (J7.2), 10k pull-up + 1k series, low = closed |
-//! | Steam switch    | 7     | dry contact to GND (J7.3), 10k pull-up + 1k series, low = closed |
-//! | Power switch    | 14    | dry contact to GND (J7.1); open = standby             |
+//! | Brew switch     | 6     | dry contact to GND (J7.1), 10k pull-up + 1k series, low = closed |
+//! | Steam switch    | 7     | dry contact to GND (J7.2), 10k pull-up + 1k series, low = closed |
 //! | Status LED      | 16    | U0TXD (also flickers with the ROM boot log)           |
-//! | Panel LEDs      | 21/22/23 | power / coffee / steam lamps (J7.5-7), 330R, high = on |
+//! | Panel LEDs      | 21/22/23 | power / coffee / steam lamps (J7.4-6), 330R, high = on |
 //! | Scale SCK       | 17    | U0RXD: dual HX711 clock (J10)                         |
 //! | Scale DOUT1/2   | 4/5   | HX711 data (J10); straps only SDIO edges              |
 //! | USB D- / D+     | 12/13 | native USB Serial/JTAG (flashing, console, log)       |
 //!
 //! Strapping pins 8 and 9 carry only the I2C bus: both idle high (pull-ups), the state the
 //! ROM wants for a normal boot, and GPIO9 is also the BOOT pad. GPIO4/5 (MTMS/MTDI) strap only
-//! the SDIO clock edges, so they read the scale. GPIO1, 2 and 15 are unused.
+//! the SDIO clock edges, so they read the scale. GPIO1, 2, 14 and 15 are unused (v35: the power
+//! rocker switches the machine's mains, this board included, so it isn't an input any more).
 
 #![no_std]
 #![no_main]
@@ -150,7 +150,6 @@ mod machine {
                     brew: p.GPIO6,
                     steam: p.GPIO7,
                     led: p.GPIO16,
-                    power: p.GPIO14,
                     led_power: p.GPIO21,
                     led_coffee: p.GPIO22,
                     led_steam: p.GPIO23,

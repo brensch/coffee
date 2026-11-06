@@ -25,7 +25,7 @@
 - `SensorFrame.cj_cc`: the cold junction in centi-°C, from the TMP117 beside the probe's socket, read with each conversion.
 - `SensorFrame.pressure_mv`: the transducer after its 47k/100k divider, ADC1 averaged over 32 evenly spaced samples in the cycle, curve-calibrated from eFuse and rescaled to the nominal 5 V rail. A uniform average over exactly one mains period removes the pump's pressure ripple.
 - `SensorFrame.pressure_pp_mv`: the peak-to-peak of the same cycle's samples, i.e. the pump's stroke ripple that the average removes. It is logged for fitting against real machines; no check depends on it yet, because the emulator's hydraulics don't reproduce real ripple amplitudes.
-- Switches arrive debounced (stable for 3 cycles) in `inputs`.
+- Switches arrive debounced (stable for 3 cycles) in `inputs`: brew and steam only. There is no standby and no power-switch input (v35): the power rocker switches the machine's mains, the controller included, so whenever the engine runs the machine is on. The power lamp is lit whenever the controller runs and fast-blinks on any fault.
 
 The NIST ITS-90 type-K functions are in `coffee_io::typek`, shared by the engine (cold-junction compensation) and the emulator (making the EMF the board would see). The temperature and pressure models, fault detection and calibration live in `coffee-core::sensors` and the engine:
 
@@ -35,7 +35,7 @@ The NIST ITS-90 type-K functions are in `coffee_io::typek`, shared by the engine
 - `COLD_JUNCTION` is raised when no in-range TMP117 reading has arrived for 2 s;
 - the transducer is disconnected when it reads below 200 mV.
 
-Any of the temperature faults turns the heater off. The heater bit itself can only come from `heat::Heater::fire`, which takes a `heat::Permit`. The only constructor of `Permit` checks for no active fault, not standby, and a valid temperature, and its private field means no other code can make one. A new code path that skips the safety checks therefore fails to compile instead of heating.
+Any of the temperature faults turns the heater off. The heater bit itself can only come from `heat::Heater::fire`, which takes a `heat::Permit`. The only constructor of `Permit` checks for no active fault and a valid temperature, and its private field means no other code can make one. A new code path that skips the safety checks therefore fails to compile instead of heating.
 
 Two more checks come from the board's own parts:
 - `PUMP_STUCK_ON` covers a shorted on-board pump triac. With no stroke commanded for over a second, the fault is raised if the pressure rises at least 2 bar within a second, or if it holds above the OPV crack + 0.3 bar for 5 s with the valve closed. The fault latches, keeps the heater and valve off, and the UI says to unplug.

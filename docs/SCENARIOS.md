@@ -93,6 +93,7 @@ expect never engine.state == fault until warm+19s
   switch.brew                  on|off
   switch.steam                 on|off
   switch.water                 on|off
+  (no switch.power since v35: the power rocker switches the machine's mains, the controller included)
   wand.open                    on|off
   portafilter.attached         on|off
   puck.present                 on|off

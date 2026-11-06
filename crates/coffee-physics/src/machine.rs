@@ -141,8 +141,6 @@ pub struct Machine {
     pub t: f64,
     pub cycle: u32,
     pub act: Actuators,
-    /// Front-panel power rocker: off = the controller idles in standby (input::STANDBY).
-    pub switch_power: bool,
     pub switch_brew: bool,
     pub switch_steam: bool,
     pub switch_water: bool,
@@ -221,7 +219,6 @@ impl Machine {
             t: 0.0,
             cycle: 0,
             act: Actuators::default(),
-            switch_power: true,
             switch_brew: false,
             switch_steam: false,
             switch_water: false,
@@ -825,9 +822,6 @@ impl Machine {
         self.ps_sum = (0.0, 0);
         self.update_scale();
         let mut inputs = 0;
-        if !self.switch_power {
-            inputs |= input::STANDBY;
-        }
         if self.switch_brew {
             inputs |= input::BREW;
         }
@@ -886,7 +880,6 @@ impl Machine {
         ("thermostat.open", "bool"),
         ("fuse.blown", "bool"),
         ("mains.voltage", "V"),
-        ("switch.power", "bool"),
         ("switch.brew", "bool"),
         ("switch.steam", "bool"),
         ("switch.water", "bool"),
@@ -939,7 +932,6 @@ impl Machine {
             "thermostat.open" => b(self.thermostat_open),
             "fuse.blown" => b(self.fuse_blown),
             "mains.voltage" => self.cfg.mains.voltage_v,
-            "switch.power" => b(self.switch_power),
             "switch.brew" => b(self.switch_brew),
             "switch.steam" => b(self.switch_steam),
             "switch.water" => b(self.switch_water),
@@ -954,7 +946,6 @@ impl Machine {
     /// Runtime knobs and faults. Anything not listed here is treated as a model
     /// parameter path (see [`ModelConfig::set_path`]).
     pub const KNOBS: &'static [(&'static str, &'static str)] = &[
-        ("switch.power", "on|off"),
         ("switch.brew", "on|off"),
         ("switch.steam", "on|off"),
         ("switch.water", "on|off"),
@@ -980,7 +971,6 @@ impl Machine {
     pub fn set(&mut self, path: &str, v: &Value) -> Result<()> {
         let on = || v.as_num().map(|x| x != 0.0);
         match path {
-            "switch.power" => self.switch_power = on()?,
             "switch.brew" => self.switch_brew = on()?,
             "switch.steam" => self.switch_steam = on()?,
             "switch.water" => self.switch_water = on()?,

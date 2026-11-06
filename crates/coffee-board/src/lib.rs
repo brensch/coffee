@@ -185,12 +185,40 @@ pub fn ratiometric(raw: u16, sense_mv: u16, ratio: u32, nominal_mv: u32) -> u16 
 
 pub use coffee_io::panel_leds;
 
+/// OTA physical-presence gate (v35). An update is accepted only after someone at the machine has
+/// held the **steam rocker on and then the brew rocker on** for [`OtaGate::HOLD_MS`], with the pump
+/// and valve idle. In steam mode the engine ignores the brew rocker, so this combination does
+/// nothing in normal use and never runs the pump; rockers in the other order start a shot, which
+/// the pump/valve condition rejects. Nobody on the network can flip a rocker, so a LAN client can't
+/// replace the firmware. (Until v35 the gate was "power rocker off + steam on"; the power rocker is
+/// a mains switch now, so the board is unpowered when it's off.)
+#[derive(Clone, Copy, Debug, Default)]
+pub struct OtaGate {
+    since_ms: Option<u64>,
+}
+
+impl OtaGate {
+    pub const HOLD_MS: u64 = 3000;
+
+    /// Call once per tick, after the engine: `inputs` are this tick's debounced switches, `state`,
+    /// `pump` and `valve` what the engine just decided. Returns whether an upload is allowed now.
+    pub fn update(&mut self, t_ms: u64, inputs: u8, state: EngineState, pump: bool, valve: bool) -> bool {
+        use coffee_io::input::{BREW, STEAM};
+        let held = inputs & BREW != 0 && inputs & STEAM != 0 && state == EngineState::Steam && !pump && !valve;
+        if !held {
+            self.since_ms = None;
+            return false;
+        }
+        let since = *self.since_ms.get_or_insert(t_ms);
+        t_ms.saturating_sub(since) >= Self::HOLD_MS
+    }
+}
+
 pub fn status_led(state: EngineState, faults: u16, t_ms: u64) -> bool {
     match state {
         _ if faults != 0 => t_ms % 200 < 100,
         EngineState::Fault => t_ms % 200 < 100,
         EngineState::Boot | EngineState::Heating => t_ms % 1000 < 120,
-        EngineState::Standby => t_ms % 3000 < 60,
         _ => true,
     }
 }
@@ -366,9 +394,38 @@ mod tests {
     }
 
     #[test]
+    fn ota_gate_needs_steam_then_brew_held_with_the_pump_idle() {
+        use coffee_io::input::{BREW, STEAM};
+        let mut g = OtaGate::default();
+        // steam + brew in steam mode, pump and valve idle: armed only after the hold time
+        assert!(!g.update(0, BREW | STEAM, EngineState::Steam, false, false));
+        assert!(!g.update(2999, BREW | STEAM, EngineState::Steam, false, false));
+        assert!(g.update(3000, BREW | STEAM, EngineState::Steam, false, false));
+        // letting go of either rocker disarms at once, and the hold starts again
+        assert!(!g.update(3100, STEAM, EngineState::Steam, false, false));
+        assert!(!g.update(3200, BREW | STEAM, EngineState::Steam, false, false));
+        assert!(!g.update(6000, BREW | STEAM, EngineState::Steam, false, false));
+        assert!(g.update(6200, BREW | STEAM, EngineState::Steam, false, false));
+        // brew first (a shot is running: Brewing, pump on) never arms, whatever the steam rocker does
+        let mut g = OtaGate::default();
+        for t in (0..10_000).step_by(100) {
+            assert!(!g.update(t, BREW | STEAM, EngineState::Brewing, true, true));
+        }
+        // steam alone, brew alone, or the pump running in steam mode: never armed
+        let mut g = OtaGate::default();
+        for t in (0..10_000).step_by(100) {
+            assert!(!g.update(t, STEAM, EngineState::Steam, false, false));
+            assert!(!g.update(t, BREW, EngineState::Ready, false, false));
+            assert!(!g.update(t, BREW | STEAM, EngineState::Steam, true, false));
+        }
+    }
+
+    #[test]
     fn panel_leds_follow_state() {
         use super::panel_leds;
-        assert_eq!(panel_leds(EngineState::Standby, 0, 20.0, 93.0, 0), [false, false, false]);
+        assert_eq!(panel_leds(EngineState::Heating, 0, 20.0, 93.0, 0)[0], true); // power lamp: on whenever running
+        assert_eq!(panel_leds(EngineState::Ready, coffee_io::fault::OVER_TEMP, 93.0, 93.0, 150), [false, false, false]); // fault: fast blink (off phase)
+        assert_eq!(panel_leds(EngineState::Ready, coffee_io::fault::OVER_TEMP, 93.0, 93.0, 50), [true, false, false]); // fault: fast blink (on phase)
         assert_eq!(panel_leds(EngineState::Ready, 0, 93.0, 93.0, 700), [true, true, false]);
         assert_eq!(panel_leds(EngineState::Brewing, 0, 93.0, 93.0, 700), [true, true, false]);
         assert_eq!(panel_leds(EngineState::BrewDone, 0, 93.0, 93.0, 700), [true, false, false]); // shot done: coffee lamp out

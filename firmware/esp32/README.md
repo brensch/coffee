@@ -68,6 +68,15 @@ coffee --json status --host coffee.local              # same status, now over Wi
 
 Later updates need no cable: `coffee --json ota --host coffee.local`.
 
+**OTA needs someone at the machine.** The board accepts an image only while the **steam rocker is
+on and then the brew rocker is turned on, both held for 3 s**, with the pump and valve idle
+(`coffee_board::OtaGate`). In steam mode the engine ignores the brew rocker, so normal use never
+arms it, and nothing runs while it's armed; the other order (brew first) starts a shot, which keeps
+it disarmed. Nobody on the network can flip a rocker, so a LAN client can't replace the firmware.
+Set the rockers, then run `coffee ota`; afterwards turn both off. (Before v35 the gate was "power
+rocker off + steam on". The power rocker now switches the machine's mains, this board included, so
+with it off the board is simply unpowered.)
+
 Wi-Fi credentials, config, profiles and shots live in the `storage` partition. A USB flash or an
 OTA update rewrites only the app, so they survive. Only `espflash erase-flash` wipes them.
 
@@ -98,7 +107,7 @@ once if it gets no answer within half its timeout.
 | `GET /` and any non-API path | the web UI (gzip, embedded at build time from `ui/dist`; run `trunk build --release` in `ui/` before building the firmware) |
 | `GET /api/ws` | WebSocket: current telemetry, then every node event as JSON, the same as the PC engine |
 | `GET /api/device` | firmware status (as the console's `status`) |
-| `POST /api/ota` | body = app image from `espflash save-image --chip esp32c6`; refused (409) during a shot |
+| `POST /api/ota` | body = app image from `espflash save-image --chip esp32c6`; refused (409) during a shot, (403) unless the OTA gate is armed (above) |
 | other `/api/*` | `Node::handle_http`, the same API as the PC engine |
 
 ## How the network reaches the controller

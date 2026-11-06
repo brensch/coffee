@@ -277,9 +277,6 @@ impl Engine {
     pub fn command(&mut self, cmd: Command) -> Result<(), &'static str> {
         match cmd {
             Command::StartBrew => {
-                if self.state == EngineState::Standby {
-                    return Err("the machine is off: switch the power rocker on");
-                }
                 self.pending_start = true;
             }
             Command::Flush(secs) => {
@@ -421,23 +418,9 @@ impl Engine {
         self.prev_inputs = inputs;
 
         self.safety_checks(p);
-        // Power switch off: idle in Standby (the controller itself stays powered). Any shot is
-        // dropped; switching back on resumes heating.
-        let standby = inputs & input::STANDBY != 0;
-        if standby {
-            // A start requested while off is dropped, never latched: it must not fire the moment the
-            // rocker goes on (docs/SWAP-SAFETY.md review).
-            self.pending_start = false;
-            if self.state != EngineState::Standby {
-                self.brew = None;
-                self.state = EngineState::Standby;
-            }
-        } else {
-            if self.state == EngineState::Standby {
-                self.state = EngineState::Heating;
-            }
-            self.state_machine(inputs, rising, falling, p);
-        }
+        // v35: no standby. The power rocker switches the machine's mains, the controller included,
+        // so whenever this runs the machine is on.
+        self.state_machine(inputs, rising, falling, p);
         if let Some((until, _)) = self.settle {
             if self.t <= until {
                 let w = self.cup_weight();
@@ -462,12 +445,12 @@ impl Engine {
         }
         self.heater_duty = self.heater_duty.clamp(0.0, 1.0);
         self.pump_duty = self.pump_duty.clamp(0.0, 1.0);
-        if self.faults != 0 || standby {
+        if self.faults != 0 {
             self.pump_duty = 0.0;
         }
-        // The heater's only way out: a permit (no fault, not standby, a valid temperature) or no
-        // heat. Burst firing: whole cycles, by sigma-delta.
-        let permit = heat::permit(self.faults, standby, self.temp_valid());
+        // The heater's only way out: a permit (no fault, a valid temperature) or no heat. Burst
+        // firing: whole cycles, by sigma-delta.
+        let permit = heat::permit(self.faults, self.temp_valid());
         let (heater, delivered) = self.heater.fire(permit, self.heater_duty);
         self.heater_duty = delivered;
         // What the heater really does (after the fault override): the duty average and the
@@ -931,7 +914,7 @@ impl Engine {
         }
 
         match self.state {
-            EngineState::Boot | EngineState::Fault | EngineState::Standby => {
+            EngineState::Boot | EngineState::Fault => {
                 if self.temp_valid() {
                     self.state = EngineState::Heating;
                 }
@@ -1299,7 +1282,7 @@ impl Engine {
 
 /// The heater output, behind a token. The heater bit in an [`ActuatorFrame`] comes only from
 /// [`Heater::fire`], which needs a [`Permit`], and the only way to get a permit is [`permit`]:
-/// no fault active, not in standby, and a valid boiler temperature. `Permit` has a private field,
+/// no fault active and a valid boiler temperature. `Permit` has a private field,
 /// so no code outside this module can make one: a new code path that forgets the safety checks
 /// fails to compile instead of heating.
 mod heat {
@@ -1308,8 +1291,8 @@ mod heat {
     /// Proof that the heater may run this cycle.
     pub struct Permit(());
 
-    pub fn permit(faults: u16, standby: bool, temp_valid: bool) -> Option<Permit> {
-        (faults == 0 && !standby && temp_valid).then_some(Permit(()))
+    pub fn permit(faults: u16, temp_valid: bool) -> Option<Permit> {
+        (faults == 0 && temp_valid).then_some(Permit(()))
     }
 
     #[derive(Clone, Debug, Default)]
@@ -1459,36 +1442,6 @@ mod tests {
     }
 
     #[test]
-    fn standby_keeps_every_output_and_lamp_off() {
-        // docs/SWAP-SAFETY.md relies on this: with the power rocker off (or the front lead not in
-        // J7), nothing else, not the brew or steam inputs and not a cold boiler, drives an output.
-        let cfg = EngineConfig { ready_requires_heat_soak: false, ..Default::default() };
-        let mut e = Engine::new(cfg.clone(), Profile::classic_9bar());
-        let mut k = 0;
-        for inputs in [0, input::BREW, input::STEAM, input::BREW | input::STEAM] {
-            for t in [20.0, cfg.brew_temp_c - 30.0, cfg.brew_temp_c] {
-                for _ in 0..(cfg.mains_hz as u32 * 5) {
-                    let a = e.tick(&frame(&cfg, k, t, 0.0, inputs | input::STANDBY));
-                    k += 1;
-                    assert!(!a.heater && !a.pump && !a.valve, "output on in standby (inputs {inputs:#x}, {t} C)");
-                    assert_eq!(a.lamps, [false; 3], "lamp on in standby");
-                }
-            }
-        }
-        // a (forced) start sent while off is not remembered for when the rocker goes on
-        assert!(e.command(Command::StartBrew).is_err(), "start accepted while off");
-        for _ in 0..10 {
-            e.tick(&frame(&cfg, k, cfg.brew_temp_c, 0.0, input::STANDBY));
-            k += 1;
-        }
-        for _ in 0..(cfg.mains_hz as u32 * 2) {
-            let a = e.tick(&frame(&cfg, k, cfg.brew_temp_c, 0.0, 0));
-            k += 1;
-            assert!(!a.pump && !a.valve && a.status.state != EngineState::Brewing, "latched start fired");
-        }
-    }
-
-    #[test]
     fn brew_switch_waits_for_ready() {
         // Turned on while heating, the coffee switch arms the shot; it starts when the machine
         // reaches Ready, never before. Turned off while waiting, it cancels.
@@ -1614,15 +1567,15 @@ mod tests {
     #[test]
     fn heater_fires_only_with_a_permit() {
         let mut h = heat::Heater::default();
-        // any fault, standby, or no valid temperature: no permit, no heat, even at full demand
-        for (faults, standby, valid) in [(fault::OVER_PRESSURE, false, true), (0, true, true), (0, false, false)] {
+        // any fault, or no valid temperature: no permit, no heat, even at full demand
+        for (faults, valid) in [(fault::OVER_PRESSURE, true), (0, false)] {
             for _ in 0..10 {
-                assert_eq!(h.fire(heat::permit(faults, standby, valid), 1.0), (false, 0.0));
+                assert_eq!(h.fire(heat::permit(faults, valid), 1.0), (false, 0.0));
             }
         }
-        let (on, d) = h.fire(heat::permit(0, false, true), 1.0);
+        let (on, d) = h.fire(heat::permit(0, true), 1.0);
         assert!(on && d == 1.0);
-        assert_eq!(h.fire(heat::permit(0, false, true), f32::NAN), (false, 0.0));
+        assert_eq!(h.fire(heat::permit(0, true), f32::NAN), (false, 0.0));
     }
 
     #[test]

@@ -353,23 +353,25 @@ pub fn BrewPage() -> impl IntoView {
 /// Previous shots; clicking one opens it in History.
 /// The machine's front panel as it looks on the Gaggia: three latching rockers (power, coffee,
 /// steam), each with its lamp (now an LED the controller drives). The lamps show exactly what the
-/// board drives on its LED pins (telemetry `lamps`, sent on every edge). On the emulator the rockers
-/// are clickable: a click flips the emulated switch, which reaches the engine as the same debounced
-/// input the real rocker gives (coffee on = start a shot, off = stop it). On real hardware they only
-/// show the rockers' positions.
+/// board drives on its LED pins (telemetry `lamps`, sent on every edge). The power rocker switches
+/// the machine's mains, the controller included (v35), so whenever this page has data it is on; it
+/// isn't clickable. On the emulator the coffee and steam rockers are clickable: a click flips the
+/// emulated switch, which reaches the engine as the same debounced input the real rocker gives
+/// (coffee on = start a shot, off = stop it). On real hardware they only show the rockers' positions.
 #[component]
 fn FrontPanel() -> impl IntoView {
     let s = store();
     let panel = move || {
         let t = s.tel.get();
         let (sw, lamps) = match t.as_ref() {
-            Some(t) => ([t.power_switch, t.brew_switch, t.steam_switch], t.lamps),
+            Some(t) => ([true, t.brew_switch, t.steam_switch], t.lamps),
             None => ([false; 3], [false; 3]),
         };
         let lab = s.lab_connected.get();
-        [("Power", "switch.power"), ("Coffee", "switch.brew"), ("Steam", "switch.steam")].into_iter().enumerate().map(|(i, (name, path))| {
+        [("Power", ""), ("Coffee", "switch.brew"), ("Steam", "switch.steam")].into_iter().enumerate().map(|(i, (name, path))| {
             let on = sw[i];
             let lit = lamps[i];
+            let lab = lab && !path.is_empty();   // the power rocker is the board's own supply: not a switch here
             let class = match (on, lab) {
                 (true, true) => "fp-rocker on click",
                 (true, false) => "fp-rocker on",
@@ -377,6 +379,7 @@ fn FrontPanel() -> impl IntoView {
                 (false, false) => "fp-rocker",
             };
             let title = match (on, lab) {
+                (_, false) if path.is_empty() => "on (it switches the machine, this controller included)",
                 (_, false) => if on { "switch on (the rocker on the machine)" } else { "switch off (the rocker on the machine)" },
                 (true, true) => "on: click to switch off",
                 (false, true) => "off: click to switch on",
