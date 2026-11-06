@@ -61,14 +61,14 @@ def board_drive(cls, st, i):
 #   SRC g v      the 5 V module output: v = g + 5, floating until one side is tied
 ROLE_NET = {   # role in a lead -> the net of its home socket that role sits on
     "J2": {"X": "+5V", "h": "HEATER_OUT"},   # v32: the heater SSR only (pump/valve are on-board triacs)
-    "J7": {"swP": "SW_POWER_IN", "swB": "SW_BREW_IN", "swS": "SW_STEAM_IN", "K": "GND",
+    "J7": {"swB": "SW_BREW_IN", "swS": "SW_STEAM_IN", "K": "GND",
            "L1": "LED_PWR", "L2": "LED_COFFEE", "L3": "LED_STEAM"},
     "J10": {"G": "GND", "V": "+3V3", "SCK": "SCALE_SCK", "D1": "SCALE_DOUT1", "D2": "SCALE_DOUT2"},   # v30: VCC+VDD on 3V3
     "J6": {"S": "P_SIG", "V": "+5V", "G": "GND"},
 }
 LEADS = {
     "J2": [("HSSR", "X", "h")],
-    "J7": [("SW", "swP", "K"), ("SW", "swB", "K"), ("SW", "swS", "K"),
+    "J7": [("SW", "swB", "K"), ("SW", "swS", "K"),
            ("LEDR", "L1", "K"), ("LEDR", "L2", "K"), ("LEDR", "L3", "K")],
     "J10": [("CHIP", ["V"], "G", ["SCK", "D1", "D2"], ["D1", "D2"])],
     "J6": [("CHIP", ["V"], "G", ["S"], ["S"])],
@@ -76,8 +76,8 @@ LEADS = {
 # v32: sizes are unique except the two 7-pin sockets, J7 (front panel) and J10 (scale): J5 thermocouple
 # 2-pin, J6 pressure 3-pin, J2 heater SSR 4-pin (no 3-pin pinout pair for J2/J6 was harmless both ways). The 5 V input lead is gone
 # (on-board supply). Mains is on spade tabs, which no GH plug fits.
-GROUPS = [["J7", "J10"]]   # J2 (heater SSR) is the only 4-pin, J6 (pressure) the only 3-pin
-LEAD_NAME = {"J2": "heater SSR", "J6": "pressure", "J7": "front panel", "J10": "scale"}
+GROUPS = []   # v35: filled by load_board() from the netlist: sockets that share a pin count (none, by design)
+LEAD_NAME = {"J2": "heater SSR", "J5": "thermocouple", "J6": "pressure", "J7": "front panel", "J10": "scale"}
 SWIN_LOW = 2.5
 BARE_LEDS = "--bare-leds" in sys.argv   # what-if: front LEDs fitted without their own resistor    # ESP32-C6 V_IH min = 0.75 * 3.3 V: a switch input pulled below this may read "on"
 
@@ -110,7 +110,7 @@ def analyse(home, home_pins, sock, sock_pins):
     # The front lead out of its own socket means the power rocker isn't connected: the firmware stays in
     # standby (heater, pump, valve, lamps off, SCK held low), provided no lead in J7 can pull SW_POWER low
     # (checked below). Only the rocker wakes the engine.
-    standby = (home == "J7") != (sock == "J7")
+    standby = False   # v35: no power-rocker input (the rocker switches mains): the board is either off or running
     states = []
     for pw in (True, False):
         n7 = len(classes)
@@ -258,8 +258,15 @@ def one_state(home, rp, classes, nets, els, st, sock):
     return hz
 
 def load_board():
+    """Pinouts of every lead socket, and GROUPS = the sockets that share a pin count (a lead fits them all)."""
     P = json.load(open(os.path.join(HERE, "build", "parts-120v.json")))["parts"]
-    return {r: [P[r]["pins"][str(i)] for i in range(1, len(P[r]["pins"]) + 1)] for g in GROUPS for r in g}
+    socks = [r for r in LEAD_NAME if r in P]
+    by_n = {}
+    for r in socks:
+        by_n.setdefault(len(P[r]["pins"]), []).append(r)
+    GROUPS[:] = [g for g in by_n.values() if len(g) > 1]
+    print("lead sockets by size: " + ", ".join(f"{n}-pin {'/'.join(g)}" for n, g in sorted(by_n.items())))
+    return {r: [P[r]["pins"][str(i)] for i in range(1, len(P[r]["pins"]) + 1)] for r in socks}
 
 def check(pinouts, verbose=False):
     bad = 0
@@ -275,5 +282,8 @@ def check(pinouts, verbose=False):
 
 if __name__ == "__main__":
     bad = check(load_board(), "-v" in sys.argv)
-    print("ALL HARMLESS" if not bad else f"{bad} HAZARDOUS lead/socket combinations")
+    if not GROUPS:
+        print("ALL HARMLESS: every lead has its own size, so no lead fits another's socket")
+    else:
+        print("ALL HARMLESS" if not bad else f"{bad} HAZARDOUS lead/socket combinations")
     sys.exit(1 if bad else 0)

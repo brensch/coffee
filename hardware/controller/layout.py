@@ -328,11 +328,13 @@ def build(spec, mains_v):
         for i, r in enumerate((rect(0, 0, W, 0.3), rect(0, H - 0.3, W, H), rect(W - 0.3, 0, W, H), rect(0, 0, 0.3, H))):
             guard(board, layer, r, f"edge {i}")
 
-    # v32 isolation band (plan "mains.band" [x0, x1]): no copper on either layer, and milled slots
+    # v32 isolation band (plan "mains.band" [x0, x1], or [y0, y1] with "band_axis": "y"): no copper on either layer, and milled slots
     # (plan "mains.slots": [x0, y0, x1, y1] rectangles) under the parts that bridge it.
     if "band" in _M:
-        bx0, bx1 = _M["band"]
-        zone(board, None, pcbnew.F_Cu, rect(bx0, 0, bx1, H), keepout=True, name="ISOLATION BAND")   # no pads in it either: the optos and PSU pads sit either side
+        b0, b1 = _M["band"]
+        # v35: "band_axis" "y" = a horizontal band [y0, y1] across the full width (mains below, SELV above)
+        r = rect(0, b0, W, b1) if _M.get("band_axis", "x") == "y" else rect(b0, 0, b1, H)
+        zone(board, None, pcbnew.F_Cu, r, keepout=True, name="ISOLATION BAND")   # no pads in it either: the optos and PSU pads sit either side
     for sx0, sy0, sx1, sy1 in _M.get("slots", []):
         seg(board, pcbnew.Edge_Cuts, rect(sx0, sy0, sx1, sy1))
 

@@ -121,7 +121,10 @@ SPADE = tmpl("FASTON", "J", "Coffee:FASTON_TE_63824-1", [(1, "1", T.PASSIVE)], "
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
 # Front panel (3 switches + 3 LEDs + GND) and the drip-tray scale (dual HX711) need more pins.
-JST7 = conn(7, "JST_GH_7_SMD", "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
+# v35: every lead has its own size (2 thermocouple, 3 pressure, 4 heater SSR, 5 scale, 6 front panel), so no
+# lead fits another's socket: the 7-pin front panel and scale (the last same-size pair) became 6 and 5.
+JST6 = conn(6, "JST_GH_6_SMD", "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal")
+JST5 = conn(5, "JST_GH_5_SMD", "Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal")
 JST2 = conn(2, "JST_GH_2_SMD", "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
 # v32 heater SSR: a 4-pin GH only so that its size is unique. No 3-pin pinout pair for it and the pressure
 # socket is harmless both ways round (swap_check: either the SSR lead in J6 turns the heater on, or the
@@ -402,16 +405,16 @@ c = part(C, "C9", "22nF X7R", notes="ADC reservoir; ~226 Hz with the 32k divider
 c[1, 2] += p_adc, gnd
 u_mcu["IO0"] += p_adc   # ADC1_CH0
 
-# Front panel: the machine's three latching rockers (power, brew, steam) as dry contacts to GND, and
-# its three lamps replaced by LEDs the firmware drives (power, coffee-ready, steam-ready). The power
-# switch no longer switches mains: the controller is always on, and the switch means "on / standby".
-j_fp = part(JST7, "J7", "Front panel", mpn="JST SM07B-GHS-TB",
-            notes="1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND)")
+# Front panel: the brew and steam rockers as dry contacts to GND, and the three lamps replaced by LEDs the
+# firmware drives (power, coffee-ready, steam-ready). v35: the power rocker is stock again (it switches the
+# machine's mains, the board included: off is off), so it isn't an input any more.
+j_fp = part(JST6, "J7", "Front panel", mpn="JST SM06B-GHS-TB",
+            notes="1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)")
 # 1k series from the connector, then a 10k pull-up on the GPIO side (lets each switch's 1k sit alone at
 # its pin and the pull-ups next to the module). Closed: 3.3 x 1k / 11k = 0.30 V at the GPIO (0.33 V with
 # the internal pull-up too), 0.5 V under the C6's 0.825 V VIL (4.7k left only ~0.2 V: review S2);
 # ~0.3 mA wetting current. A 5 V plug in the wrong socket pushes ~1.5 mA through the 1k into the clamp.
-for i, (name, gpio, rpu, rs) in enumerate((("POWER", "IO14", "R28", "R29"), ("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
+for i, (name, gpio, rpu, rs) in enumerate((("BREW", "IO6", "R20", "R18"), ("STEAM", "IO7", "R21", "R19"))):
     wire, pin = Net(f"SW_{name}_IN"), Net(f"SW_{name}")
     j_fp[i + 1] += wire
     r = part(R, rpu, "10k", notes="switch pull-up / wetting current")
@@ -419,16 +422,15 @@ for i, (name, gpio, rpu, rs) in enumerate((("POWER", "IO14", "R28", "R29"), ("BR
     r = part(R, rs, "1k", notes="GPIO series protection")
     r[1, 2] += wire, pin
     u_mcu[gpio] += pin
-j_fp[4] += gnd
+j_fp[3] += gnd
 # LEDs: GPIO -> 330R -> lead -> pre-wired LED (its own 150-470R in the lead) -> GND: (3.3 - 2.0) /
-# (330 + 150..470) = ~1.6-2.7 mA, visible behind the lamp lens. The LED's own resistor keeps a
-# front-panel lead harmless in a wrong socket even without the firmware's standby (SWAP-SAFETY.md).
+# (330 + 150..470) = ~1.6-2.7 mA, visible behind the lamp lens.
 for i, (name, gpio, rl) in enumerate((("PWR", "IO21", "R30"), ("COFFEE", "IO22", "R31"), ("STEAM", "IO23", "R32"))):
     led = Net(f"LED_{name}")
     r = part(R, rl, "330", notes=f"front-panel LED ({name.lower()}) current limit (plus the LED's own in its lead): ~2 mA")
     r[1, 2] += Net(f"LED_{name}_IO"), led
     u_mcu[gpio] += r[1].net
-    j_fp[5 + i] += led
+    j_fp[4 + i] += led
 
 # v27 indicator panel: a red LED + 1k on each front-panel lamp GPIO (the same level the lamp gets) and on
 # each output's gate drive (lit exactly while the board turns that SSR on), in a row with the status LED.
@@ -448,18 +450,14 @@ for dref, rref, net, what in (("D3", "R37", "LED_PWR_IO", "power lamp"), ("D4", 
 # DOUT swings 0-3.3 V). No series resistors (see below); SCK pulled down so the HX711 stays awake
 # while the C6 boots (SCK held high > 60 us powers it down). GPIO4/5 are strapping pins only for
 # SDIO clock edges (C6 datasheet, "Strapping pins"), unused here, so they serve as the DOUT inputs.
-j_sc = part(JST7, "J10", "Scale", mpn="JST SM07B-GHS-TB",
-            notes="3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base)")
-# v30: the scale runs from 3V3 only (HX711 VSUP 2.6-5.5 V): no 5 V on this socket, so an SSR lead here
-# has nothing to switch on. Pins 1-2 empty: pin 1 faces the power rocker's input (J7.1) if this lead goes
-# in J7, pin 2 faces the SSRs' +5V (J2.2) if it goes in J2 (swap_check.py, docs/SWAP-SAFETY.md).
-j_sc[5, 7] += gnd, v3
-j_sc[1] += NC
-j_sc[2] += NC
+j_sc = part(JST5, "J10", "Scale", mpn="JST SM05B-GHS-TB",
+            notes="1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)")
+# v30: the scale runs from 3V3 only (HX711 VSUP 2.6-5.5 V). v35: a 5-pin of its own (no empty pins).
+j_sc[3, 5] += gnd, v3
 # v23: no series resistors on the scale lines (GaggiMate and Gaggiuino have none). J10 sits over the
 # module's DOUT pins with no room between, and SCK runs under the module; the C6's pins have their own
 # ESD diodes, and the HX711s sit at the other end of a 30 cm lead at the same ground.
-for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (3, ("DOUT1", "IO4")), (6, ("DOUT2", "IO5"))):
+for pin_no, (name, gpio) in ((2, ("SCK", "RXD0")), (1, ("DOUT1", "IO4")), (4, ("DOUT2", "IO5"))):
     d = Net(f"SCALE_{name}")
     u_mcu[gpio] += d
     j_sc[pin_no] += d
@@ -483,10 +481,9 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V5_SNS", v5, "IO3", "R24", "R25", 
 u_mcu["IO15"] += NC
 u_mcu["IO2"] += NC    # v32: spare (the 3V3 rail sense is gone)
 u_mcu["IO1"] += NC    # v31: the thermistor input is gone (thermocouple on I2C); spare ADC1 pin
-# v32: three M3 holes (unplated) to screw the board into its printed tray (the tray, not the board, is
-# velcroed to the chassis). Each >= 3 mm from mains copper; nylon screws recommended near the mains zone.
-for ref in ("H1", "H2", "H3"):
-    part(HOLE, ref, "M3", notes="M3 mounting hole into the printed tray (nylon screw in the mains zone)")
+u_mcu["IO14"] += NC   # v35: spare (the power rocker is a mains switch again, not an input)
+# v35: no mounting holes. The IRM sits on the underside and drops into a pocket in the printed housing,
+# which locates the board; the housing's floor under the mains half takes the receptacles' push force.
 
 
 # ================================================================ checks + outputs
@@ -495,7 +492,7 @@ def nets():
 
 
 FIRMWARE_PINS = {"IO0": "P_ADC", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
-                 "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO14": "SW_POWER", "IO23": "LED_STEAM_IO", "IO12": "USB_D-", "IO13": "USB_D+",
+                 "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO23": "LED_STEAM_IO", "IO12": "USB_D-", "IO13": "USB_D+",
                  "IO21": "LED_PWR_IO", "IO22": "LED_COFFEE_IO", "TXD0": "STATUS", "RXD0": "SCALE_SCK",
                  "IO4": "SCALE_DOUT1", "IO5": "SCALE_DOUT2",
                  "IO8": "I2C_SDA", "IO9": "I2C_SCL"}

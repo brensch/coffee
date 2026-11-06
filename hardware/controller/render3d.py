@@ -76,7 +76,7 @@ for fp in b.GetFootprints():
     kind = next(k for k in sorted(HEIGHT, key=len, reverse=True) if ref.startswith(k)) if any(ref.startswith(k) for k in HEIGHT) else None
     sz = HEIGHT.get(kind, 2.0)
     colour = "disc" if kind == "J" else "box"
-    extra.append(dict(ref=ref, kind=colour, x=cx, y=cy, sx=sx, sy=sy, sz=sz))
+    extra.append(dict(ref=ref, kind=colour, x=cx, y=cy, sx=sx, sy=sy, sz=sz, bottom=fp.IsFlipped()))   # v35: the IRM hangs underneath
 json.dump(extra, open(os.path.join(out, "standins.json"), "w"))
 py = os.path.expanduser("~/opt/cad-venv/bin/python")
 subprocess.run([py, "-c", r'''
@@ -93,7 +93,7 @@ for e in extra:
     else:
         m = trimesh.creation.cylinder(radius=e["r"], height=e["sz"]); colour = [40, 40, 40, 255]
     # KiCad STEP: x right, y up (board y flipped), z up from the board bottom; board top at z=1.6
-    m.apply_translation([e["x"], -e["y"], 1.6 + e["sz"] / 2])
+    m.apply_translation([e["x"], -e["y"], (-e["sz"] / 2) if e.get("bottom") else (1.6 + e["sz"] / 2)])
     m.visual.face_colors = colour
     scene.add_geometry(m, node_name=e["ref"])
 scene.export(glb)
