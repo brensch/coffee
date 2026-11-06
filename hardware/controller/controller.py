@@ -90,17 +90,43 @@ TSENS = tmpl("TMP117AIDRVR", "U", "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6m
              [(1, "SCL", T.INPUT), (2, "GND", T.PWRIN), (3, "ALERT", T.OPENCOLL), (4, "ADD0", T.INPUT),
               (5, "V+", T.PWRIN), (6, "SDA", T.BIDIR), (7, "EP", T.PASSIVE)],
              "+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)")
-# Push-in terminal for the bare thermocouple wires: the K-type alloys must reach the board itself, where
-# the TMP117 measures the cold junction (a splice to copper anywhere else would be an unmeasured junction).
-# Two pads per pole (front + rear tab), both numbered for that pole.
-WAGO2 = tmpl("WAGO_2060-452", "J", "Coffee:WAGO_2060-452_998-404", [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)],
-             "WAGO 2060 SMD push-in terminal, 2 poles, 4 mm, 24-18 AWG")
+# v32: the thermocouple's own wires are crimped into a GH 2-pin plug: the K-type alloys must reach the
+# board itself, where the TMP117 measures the cold junction (a splice to copper anywhere else would be an
+# unmeasured junction). The only 2-pin socket on the board, so no other lead fits it.
+JST2 = None   # GH 2-pin, defined after conn()
+
+# ---- v32 mains section templates (pinouts from the makers' datasheets; docs/evidence/parts.jsonl)
+# Mean Well IRM-10-5 (KiCad symbol IRM-10-3.3/-5 and footprint IRM-10-xx: 1 AC/N, 2 AC/L, 3 -Vo, 4 +Vo;
+# Mean Well drawing: AC and DC pin columns 38.5 mm apart, so it bridges the isolation band by itself).
+PSU = tmpl("IRM-10-5", "PS", "Converter_ACDC:Converter_ACDC_MeanWell_IRM-10-xx_THT",
+           [(1, "AC/N", T.PWRIN), (2, "AC/L", T.PWRIN), (3, "-Vo", T.PWROUT), (4, "+Vo", T.PWROUT)],
+           "Isolated AC-DC 5 V 2 A, 4.2 kVac, UL/IEC 62368-1, EN 61558; 50 % load at 70 C")
+# onsemi MOC3083SR2M (datasheet: 1 LED anode, 2 LED cathode, 3 NC, 4 main terminal, 5 substrate (do not
+# connect), 6 main terminal; zero-cross, 800 V, IFT 5 mA max; external creepage and clearance >= 7 mm).
+# KiCad's SMDIP-6_W9.53mm_Clearance8mm: 8.03 mm copper gap between the rows; plus a slot under the body.
+OPTO = tmpl("MOC3083SR2M", "U", "Package_DIP:SMDIP-6_W9.53mm_Clearance8mm",
+            [(1, "A", T.PASSIVE), (2, "K", T.PASSIVE), (3, "NC", T.NOCONNECT),
+             (4, "MT1", T.PASSIVE), (5, "SUB", T.NOCONNECT), (6, "MT2", T.PASSIVE)],
+            "Zero-cross opto-triac driver, 800 V, 4170 Vrms, IFT 5 mA max")
+# ST T435-600B (DPAK; ST drawing: leads A1, (A2 cut), G; tab = A2). KiCad TO-252-2: 1 = left lead,
+# 2 = tab, 3 = right lead -> 1 MT1 (A1), 2 MT2 (A2), 3 G.
+TRIAC = tmpl("Triac_DPAK", "Q", "Package_TO_SOT_SMD:TO-252-2",
+             [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)],
+             "Triac 4 A 600 V, ST T4 series (DPAK)")
+CX2 = tmpl("C_X2", "C", "Coffee:C_2220_Murata_GA355", TWO, "Class X2 safety capacitor, 250 VAC, 2220")
+FUSE = tmpl("Fuse", "F", "Coffee:Fuse_Littelfuse_Nano2_443", TWO, "Fuse, 2 A slow-blow, 250 VAC, 50 A breaking")
+SPADE = tmpl("FASTON", "J", "Coffee:FASTON_TE_63824-1", [(1, "1", T.PASSIVE)], "6.3 mm (0.250\") PCB quick-connect tab")
 
 # One connector type for every cable (one JLC extended-part fee): JST GH 3-pin (1.25 mm), SMD, side
 # entry, positive latch (the vibration pump shakes the machine). 8.2 x 6.4 mm vs 11.2 x 10.2 for PH.
 JST3 = conn(3, "JST_GH_3_SMD", "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal")
 # Front panel (3 switches + 3 LEDs + GND) and the drip-tray scale (dual HX711) need more pins.
 JST7 = conn(7, "JST_GH_7_SMD", "Connector_JST:JST_GH_SM07B-GHS-TB_1x07-1MP_P1.25mm_Horizontal")
+JST2 = conn(2, "JST_GH_2_SMD", "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
+# v32 heater SSR: a 4-pin GH only so that its size is unique. No 3-pin pinout pair for it and the pressure
+# socket is harmless both ways round (swap_check: either the SSR lead in J6 turns the heater on, or the
+# transducer in J2 is back-fed through its protection diodes), so the two can't share a size.
+JST4 = conn(4, "JST_GH_4_SMD", "Connector_JST:JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal")
 
 
 # TI TLV1117LV33DCYR (SBVS160C): 1 A, stable with >= 1 uF ceramic at any ESR, VIN <= 5.5 V (6 V abs),
@@ -136,22 +162,79 @@ gnd, v5, v3, vbus = Net("GND"), Net("+5V"), Net("+3V3"), Net("VBUS")
 for n in (gnd, v5, v3):
     n.drive = 100
 
-# ================================================================ POWER IN
-# 5 V from the external AC-DC module. Reverse-polarity protection by a P-MOSFET (drain to the
-# connector, source to the rail, gate to GND): ~0.3 V less drop than a diode, so the transducer
-# keeps its full 5 V. A swapped lead leaves the body diode reverse biased and the gate at 0 V: off.
-v5_in = Net("+5V_IN")
-# v29: connectors bundled by location: three 3-pin (5 V in, pressure, thermistor) and three 7-pin (the
-# SSRs on the back panel, the front panel, the scale). Every pinout is chosen so that any lead in any
-# wrong same-size socket is harmless (docs/SWAP-SAFETY.md). J1 is GND / +5V / GND: the supply lead in the
-# pressure or thermistor socket powers nothing, and neither of those leads can feed the board here.
-j_pwr = part(JST3, "J1", "5V in", mpn="JST SM03B-GHS-TB", notes="1=- 2=+5V 3=GND, from the 5 V AC-DC module")
-j_pwr[2, 3] += v5_in, gnd
-j_pwr[1] += NC     # v30: empty, so a pressure lead here is never powered with its signal on GND (SWAP-SAFETY.md)
-q_rp = part(PMOS, "Q4", "AO3401A", mpn="AO3401A", notes="Reverse-polarity protection")
-q_rp["D"] += v5_in
-q_rp["S"] += v5
-q_rp["G"] += gnd      # gate straight to GND: Vgs = -5 V, inside the AO3401A's +-12 V (v23 dropped the 10k R26)
+# ================================================================ MAINS (v32)
+# The board carries mains only for the small loads: the IRM-10-5 supply (~0.12 A), the pump (~0.45 A)
+# and the 3-way valve (~0.1 A). The heater (11.4 A) stays on its external SSR, driven by J2 like before.
+# Isolation: every mains part sits left of a copper-free band (layout plan "mains.band"); only the two
+# opto-triacs and the IRM module bridge it, each over a milled slot. Spade order as Gaggiuino: N, L, P, 3.
+ac_n, ac_l, ac_lf = Net("AC_N"), Net("AC_L"), Net("AC_L_F")
+pump_sw, valve_sw = Net("PUMP_SW"), Net("VALVE_SW")
+for _n in (ac_n, ac_l, ac_lf):
+    _n.drive = 100     # mains sources (ERC)
+for ref, net, what in (("J12", ac_n, "N: neutral (feeds the IRM module only)"), ("J13", ac_l, "L: live, unswitched (pump, valve, IRM)"),
+                       ("J14", pump_sw, "P: switched live to the pump"), ("J15", valve_sw, "3: switched live to the 3-way valve")):
+    j = part(SPADE, ref, what.split(":")[0], mpn="TE 63824-1", mains=True, notes=f"MAINS. {what}")
+    j[1] += net
+f1 = part(FUSE, "F1", "2A T", mpn="Littelfuse 0443002.DR", mains=True,
+          notes="MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush)")
+f1[1, 2] += ac_l, ac_lf
+# No MOV: the IRM passes 1 kV L-N surge (EN 61000-4-5) unaided, the triacs and optos are 600/800 V
+# parts, and a worn MOV is a short the fuse would then have to clear (v14's reasoning, still holds).
+ps1 = part(PSU, "PS1", "IRM-10-5", mpn="Mean Well IRM-10-5", mains=["1", "2"],
+           notes="Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C")
+ps1["AC/N", "AC/L"] += ac_n, ac_lf
+ps1["-Vo", "+Vo"] += gnd, v5
+
+
+def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_note, r_gk=None):
+    """Low-side FET -> opto LED (from +5V) -> MOC3083 zero-cross driver -> T435 triac; RC snubber across
+    the triac (onsemi AN-3004 circuit; values: docs/evidence, sim/REPORT.md)."""
+    a = Net(f"{name}_LED_A")
+    r = part(R, r_led, "330", notes=f"{name} opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA")
+    r[1, 2] += Net.get("+5V"), a
+    u = part(OPTO, n_u, "MOC3083SR2M", mpn="onsemi MOC3083SR2M", mains=["4", "5", "6"],
+             notes=f"{name}: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing")
+    u["A"] += a
+    u["K"] += Net(f"{name}_OUT")      # the low-side FET's drain (OUTPUTS below joins it by name)
+    u["NC"] += NC
+    u["SUB"] += NC      # onsemi: pin 5 is the substrate, do not connect
+    g, o6, sn = Net(f"{name}_G"), Net(f"{name}_O6"), Net(f"{name}_SNUB")
+    q = part(TRIAC, n_q, triac, mpn=f"ST {triac}-TR", mains=True, notes=f"MAINS: {name}. {triac_note}")
+    q["MT2"] += ac_lf
+    q["MT1"] += out_net
+    q["G"] += g
+    u["MT1"] += g
+    u["MT2"] += o6
+    r = part(R, r_6, "330", footprint=FP_R_1206, mains=True,
+             notes="MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak")
+    r[1, 2] += ac_lf, o6
+    if r_gk:
+        r = part(R, r_gk, "1k", footprint=FP_R_1206, mains=True,
+                 notes="MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k)")
+        r[1, 2] += g, out_net
+    r = part(R, r_sn, "100 1W", footprint=FP_R_2512, mpn="UNI-ROYAL 25121WF1000T4E", mains=True,
+             notes="MAINS: snubber R (inductive load)")
+    r[1, 2] += ac_lf, sn
+    c = part(CX2, c_sn, "22nF X2", mpn="Murata GA355DR7GB223KW01L", mains=True,
+             notes="MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage")
+    c[1, 2] += sn, out_net
+    return u, q
+
+
+# Pump: T435 (IGT/IH 35 mA, 400 V/us, snubberless). The pump's own diode ends each stroke softly: 171-190 V
+# at turn-off with the snubber (sim/REPORT.md). ~0.3-0.5 W: DPAK on its AC_L_F copper, ~90-100 C junction
+# at 70 C ambient (Tj max 125 C).
+triac_channel("PUMP", "U8", "Q5", "R47", "R49", "R51", "C15", pump_sw, "T435-600B",
+              "Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)")
+# Valve: T410 (IH 15 mA). The coil is still carrying current when the triac drops out at IH, and dumps
+# it into the snubber: V ~ IH * sqrt(L/C). The T435's 35 mA gave 690 V (over its 600 V); the T410's 15 mA
+# gives 456 V at 132 V line (76 %), dV/dt 23 V/us (its rating 40). sim/REPORT.md.
+triac_channel("VALVE", "U9", "Q6", "R48", "R50", "R52", "C16", valve_sw, "T410-600B",
+              "Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W", r_gk="R53")
+
+# ================================================================ POWER
+# v32: the 5 V rail comes from the on-board Mean Well IRM-10-5 (MAINS section above). No external 5 V
+# input any more, so no input connector and no reverse-polarity FET (v31's J1, Q4).
 
 # ================================================================ CONTROLLER
 u_mcu = part(ESP32C6, "U4", "ESP32-C6-MINI-1U-H4", mpn="ESP32-C6-MINI-1U-H4",
@@ -224,40 +307,32 @@ for ref, cc in (("R13", "CC1"), ("R14", "CC2")):
 u_mcu["IO12"] += dn
 u_mcu["IO13"] += dp
 
-# Outputs: GPIO -> AO3400A gate directly, 3.3k gate pull-down. The FET sinks the module's input:
-# connector 1 = +5V, 2 = switched low (OUT), 3 = GND. Off by hardware during reset, boot and flashing
-# (3.3k pull-down: under 0.5 V at the gate even against a 20k internal pull-up; sim/REPORT.md).
-# Every module has its own input LED, so the board has none per output. All three outputs drive SSR
-# boards (no coil), so there's no flyback diode (v23 dropped D5; a relay module brings its own).
-# GPIO order on the module edge (IO18, IO19, IO20) matches the connector order (valve, pump, heater).
-# v29: all three SSR inputs on one 7-pin lead to the back panel: 1 = heater OUT, 2 = +5V (shared by all
-# three SSR inputs, ~60 mA), 6 = pump OUT, 7 = valve OUT, 3-5 empty. The empty pin 4 and the single +5V
-# pin are what make a front-panel or scale lead harmless in this socket (docs/SWAP-SAFETY.md).
-# v30: heater OUT on pin 3 (was 1): pin 1 faces the power rocker's input if this lead goes in J7, and
-# an empty pin there can't pull it to "on" through the SSR inputs (swap_check.py).
-j_out = part(JST7, "J2", "SSRs", mpn="JST SM07B-GHS-TB",
-             notes="2=+5V (to heater SSR 3+, pump and valve board VCC+IN) 3=heater OUT 6=pump OUT 7=valve OUT; 1,4,5 unused")
-j_out[2] += v5
-for pin in (1, 4, 5):
-    j_out[pin] += NC
-for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 3, "Q1", "R4", None), ("PUMP", "IO19", 6, "Q2", "R5", None),
-                                         ("VALVE", "IO18", 7, "Q3", "R6", None)):
-    cmd, out = Net(f"{name}_CMD"), Net(f"{name}_OUT")
+# Outputs: GPIO -> AO3400A gate directly, 3.3k gate pull-down: off by hardware during reset, boot and
+# flashing (under 0.5 V at the gate even against a 20k internal pull-up; sim/REPORT.md). Each FET sinks:
+# - HEATER: the external heater SSR's input, on J2 (the only output that leaves the board, v32);
+# - PUMP, VALVE: the LED of that channel's zero-cross opto-triac driver (MAINS section), from +5V
+#   through R47/R48. The indicator LEDs D6-D8 sit on the gate lines (lit while the board drives them).
+# GPIO order on the module edge (IO18, IO19, IO20) = valve, pump, heater.
+# v32 J2 (4-pin GH, the only 4-pin socket): 1 = +5V (SSR 3 +), 2 = heater OUT (SSR 4 -), 3-4 empty.
+j_out = part(JST4, "J2", "Heater SSR", mpn="JST SM04B-GHS-TB",
+             notes="1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size)")
+j_out[1] += v5
+j_out[3] += NC
+j_out[4] += NC
+for name, gpio, qref, rpd in (("HEATER", "IO20", "Q1", "R4"), ("PUMP", "IO19", "Q2", "R5"), ("VALVE", "IO18", "Q3", "R6")):
+    cmd, out = Net(f"{name}_CMD"), (Net.get(f"{name}_OUT") or Net(f"{name}_OUT"))
     u_mcu[gpio] += cmd
     r = part(R, rpd, "3.3k", notes="Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)")
     r[1, 2] += cmd, gnd
-    q = part(NMOS, qref, "AO3400A", mpn="AO3400A", notes=f"{name} output: sinks the module input (SSR 7-15 mA, relay coil < 100 mA)")
+    q = part(NMOS, qref, "AO3400A", mpn="AO3400A",
+             notes=f"{name} output: sinks " + ("the external heater SSR input (7-15 mA)" if name == "HEATER" else "the opto-triac LED (~9 mA)"))
     q["G"] += cmd
     q["S"] += gnd
     q["D"] += out
-    j_out[jpin] += out
-    if dfb:
-        d = part(SIGDIODE, dfb, "1N4148W", mpn="1N4148W", notes="Flyback for the relay coil")
-        d["A"] += out
-        d["K"] += v5
+j_out[2] += Net.get("HEATER_OUT")
 
 # Thermocouple (v31): ungrounded K-type, M4 thread, screwed into the brew-thermostat hole (Gaggiuino's
-# probe). Its two wires push straight into J5 (WAGO 2060). TC- is the board's ground reference (the
+# probe). Its two wires, crimped into a GH 2-pin, plug into J5. TC- is the board's ground reference (the
 # probe's junction is insulated from the earthed boiler, so this is the only ground on it).
 # - R43/R44 1k in each ADC input + C12: the noise filter. The 0.5 m probe lead runs past the heater and
 #   pump wiring, and the SSRs switch 11 A beside it. (No lead can reach J5, so they aren't there for
@@ -272,9 +347,9 @@ for name, gpio, jpin, qref, rpd, dfb in (("HEATER", "IO20", 3, "Q1", "R4", None)
 #   ADC side of R43 the same current would drop 0.33 mV: ~8 C.)
 # - TMP117 (U7) sits at J5's pads: it reads the cold junction (the alloy-to-copper joints in the terminal).
 tc_p = Net("TC_P")
-j_tc = part(WAGO2, "J5", "Thermocouple", mpn="WAGO 2060-452/998-404",
-            notes="1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); strip 8-9 mm and push in. Cold junction measured by U7 beside it")
-j_tc[1, 2] += tc_p, gnd   # pin 1 faces the ADC column; TC- is the reference, on GND at the terminal (a named TC_N net would rename GND)
+j_tc = part(JST2, "J5", "Thermocouple", mpn="JST SM02B-GHS-TB",
+            notes="1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it")
+j_tc[1, 2] += tc_p, gnd   # TC- is the reference, on GND at the socket (a named TC_N net would rename GND)
 tc_inp, tc_inn = Net("TC_INP"), Net("TC_INN")
 r = part(R, "R43", "1k", notes="TC+ input: noise filter with C12 (probe lead runs past the heater wiring)")
 r[1, 2] += tc_p, tc_inp
@@ -379,10 +454,11 @@ for pin_no, (name, gpio) in ((4, ("SCK", "RXD0")), (3, ("DOUT1", "IO4")), (6, ("
 r = part(R, "R36", "10k", notes="SCK pull-down: HX711 stays powered while the C6 boots")
 r[1, 2] += u_mcu["RXD0"], gnd      # the GPIO side of SCK (Net("SCALE_SCK") here made a second, unconnected net: v19-v22 bug)
 
-# Rail sense: the thermistor divider is ratiometric to 3V3 and the transducer to +5V, but the ADC
-# measures absolute volts. Measuring both rails lets the firmware divide them out, so an open
-# thermistor reads exactly full scale (3300 mV) whatever the rail, and 0 C stays well clear of it.
-for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", "10k", "C10"), ("V5_SNS", v5, "IO3", "R24", "R25", "20k", "C11")):
+# Rail sense: the transducer is ratiometric to +5V but the ADC measures absolute volts, so the firmware
+# divides by the measured rail (the IRM module's output drifts with load and temperature). v32: the 3V3
+# sense is gone (it served the thermistor; the thermocouple ADC has its own reference, the C6 its own
+# brownout detector), GPIO2 is spare.
+for net, rail, gpio, rt_, rb_, vt, cref in (("V5_SNS", v5, "IO3", "R24", "R25", "20k", "C11"),):
     sns = Net(net)
     r = part(R, rt_, vt, notes=f"{net} divider top")
     r[1, 2] += rail, sns
@@ -393,6 +469,7 @@ for net, rail, gpio, rt_, rb_, vt, cref in (("V3_SNS", v3, "IO2", "R22", "R23", 
     u_mcu[gpio] += sns
 
 u_mcu["IO15"] += NC
+u_mcu["IO2"] += NC    # v32: spare (the 3V3 rail sense is gone)
 u_mcu["IO1"] += NC    # v31: the thermistor input is gone (thermocouple on I2C); spare ADC1 pin
 # No mounting holes (each costs ~50 mm2 of board): the printed holder grips the board's edges.
 
@@ -402,7 +479,7 @@ def nets():
     return builtins.default_circuit.nets
 
 
-FIRMWARE_PINS = {"IO0": "P_ADC", "IO2": "V3_SNS", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
+FIRMWARE_PINS = {"IO0": "P_ADC", "IO3": "V5_SNS", "IO18": "VALVE_CMD", "IO19": "PUMP_CMD", "IO20": "HEATER_CMD",
                  "IO6": "SW_BREW", "IO7": "SW_STEAM", "IO14": "SW_POWER", "IO23": "LED_STEAM_IO", "IO12": "USB_D-", "IO13": "USB_D+",
                  "IO21": "LED_PWR_IO", "IO22": "LED_COFFEE_IO", "TXD0": "STATUS", "RXD0": "SCALE_SCK",
                  "IO4": "SCALE_DOUT1", "IO5": "SCALE_DOUT2",
@@ -416,14 +493,28 @@ def netname(pin):
     return n.name if n is not None and n is not NC and n.pins else None
 
 
+MAINS_REFS = {"J12", "J13", "J14", "J15", "F1", "PS1", "U8", "U9", "Q5", "Q6", "R49", "R50", "R51", "R52", "R53", "C15", "C16"}
+THT_OK = {"PS1", "J12", "J13", "J14", "J15"}   # the IRM module and the spade tabs: JLC THT or hand-soldered
+
+
 def design_checks():
     errors = []
-    # 1. Low voltage only, single-sided SMD assembly: no mains parts, no through-hole parts.
-    if MAINS_PINS:
-        errors.append(f"MAINS: {sorted(MAINS_PINS)} on a low-voltage board")
+    # 1. v32 mains section. (a) No net joins a mains pin to a SELV pin: mains and SELV meet only inside
+    #    a bridging part (the opto-triacs, the IRM module). (b) Every mains part is a known one.
+    #    (c) Single-sided SMD, except the hand-solderable (or JLC THT) mains parts listed in THT_OK.
+    for n in nets():
+        pins = [(p.part.ref, p.num) for p in n.pins]
+        if not pins or n is NC:
+            continue
+        m = [x for x in pins if x in MAINS_PINS]
+        if m and len(m) != len(pins):
+            errors.append(f"ISOLATION: net {n.name} joins mains pins {m} to SELV pins {[x for x in pins if x not in MAINS_PINS]}")
+    for ref in sorted({r for r, _ in MAINS_PINS}):
+        if ref not in MAINS_REFS:
+            errors.append(f"MAINS: {ref} carries mains but isn't in MAINS_REFS")
     for p in builtins.default_circuit.parts:
-        if any(k in p.footprint for k in ("TO-220", "DIP", "THT", "TerminalBlock", "Vertical")) \
-                and BOM_EXTRA.get(p.ref, {}).get("populate", "Y") == "Y":    # bare holes (J4 programming) are fine
+        tht = any(k in p.footprint for k in ("THT", "TO-220", "TerminalBlock", "FASTON")) or p.footprint.startswith("Package_DIP:DIP")
+        if tht and p.ref not in THT_OK and BOM_EXTRA.get(p.ref, {}).get("populate", "Y") == "Y":
             errors.append(f"SMD: {p.ref} ({p.footprint}) is through-hole")
     # 2. Firmware pin map (firmware/esp32/src/main.rs).
     for pin, want in FIRMWARE_PINS.items():
@@ -448,7 +539,8 @@ def design_checks():
     if errors:
         print("\n".join(errors))
         sys.exit(1)
-    print("design checks: no mains, all SMD, firmware pin map OK, analog on ADC1, straps OK")
+    print("design checks: mains/SELV only meet inside the bridging parts, mains parts known, SMD except the "
+          "listed THT, firmware pin map OK, analog on ADC1, straps OK")
 
 
 def write_outputs():

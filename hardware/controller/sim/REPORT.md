@@ -4,59 +4,72 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 
 | Block | Case | Result | Requirement | |
 |---|---|---|---|---|
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 3.0 V | ✅ |
-| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 4.65 V | 4.65 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_typ, +5V 5.1 V | 5.1 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 4.65 V | 4.65 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 2.64 V, vth_max, +5V 5.1 V | 5.1 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 4.65 V | 4.65 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_typ, +5V 5.1 V | 5.1 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 4.65 V | 4.65 V | >= 3.0 V | ✅ |
+| Output on: voltage across the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V), GPIO 3.3 V, vth_max, +5V 5.1 V | 5.1 V | >= 3.0 V | ✅ |
 | Output off: current left through the module input | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 0 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 4.35 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 2.64 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_typ, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 4.6 V | 4.6 V | >= 4.0 V | ✅ |
-| Output on: voltage across the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V), GPIO 3.3 V, vth_max, +5V 5.0 V | 5 V | >= 4.0 V | ✅ |
-| Output off: current left through the module input | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V) | 5.01e-09 mA | < 0.1 mA (SSR must-release ~1 mA) | ✅ |
-| Output turn-off spike at the drain | pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V) | 5.55 V | < 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode) | ✅ |
+| Output turn-off spike at the drain | heater SSR (Schneider SSP1A125BDT, 3.0 V) | 4.35 V | < 20 V (AO3400A 30 V rating; resistive SSR input, no flyback diode) | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 2.64 V, vth_typ, +5V 4.65 V, Vf 1.5 V max | 9.82 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 2.64 V, vth_typ, +5V 5.1 V, Vf 1.5 V max | 11.1 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 2.64 V, vth_max, +5V 4.65 V, Vf 1.5 V max | 9.82 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 2.64 V, vth_max, +5V 5.1 V, Vf 1.5 V max | 11.1 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 3.3 V, vth_typ, +5V 4.65 V, Vf 1.5 V max | 9.82 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 3.3 V, vth_typ, +5V 5.1 V, Vf 1.5 V max | 11.1 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 3.3 V, vth_max, +5V 4.65 V, Vf 1.5 V max | 9.82 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max) | GPIO 3.3 V, vth_max, +5V 5.1 V, Vf 1.5 V max | 11.1 mA | >= 7.5 mA (1.5x IFT max) and <= 30 mA | ✅ |
+| Opto-triac LED off | FET off | 5.58e-10 mA | < 0.1 mA (far below any trigger) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 45k vs 3.3k pull-down | 0.225 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
 | Output during reset: module input current | internal pull-up 45k | 3.81e-09 mA | < 0.1 mA (off) | ✅ |
 | Output during reset (GPIO high-Z) | internal pull-up 20k vs 3.3k pull-down | 0.467 V | < 0.6 V (AO3400A Vth min 0.65 V): load stays off | ✅ |
 | Output during reset: module input current | internal pull-up 20k | 3.81e-09 mA | < 0.1 mA (off) | ✅ |
 | Output during reset, 100k pull-down (rejected value) | internal pull-up 45k | 2.28 V | reference only: why the pull-down is 3.3k | ✅ |
-| Reverse-polarity P-FET | J1 at +5.0 V, 250 mA load | 4.99 V | >= 4.95 V (drop < 50 mV) | ✅ |
-| Reverse-polarity P-FET | J1 wired backwards (-5 V) | 5.01e-09 mA | < 0.01 mA into the board | ✅ |
-| J5 mis-plug (5 V lead in the thermistor socket) | 1k R27 into GPIO1's clamp diode | 1.2 mA | < 2 mA (no damage; was unlimited without R27) | ✅ |
+| Pump triac turn-off: peak voltage (reference) | 120 V, no snubber | 2.49e+03 V | info: why the snubber is fitted | ✅ |
+| Valve triac (T410) turn-off: peak voltage (reference) | 120 V, no snubber | 2.89e+03 V | info: why the snubber is fitted | ✅ |
+| Pump triac (T435) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 171 V | < 480 V (80 % of the T435's 600 V) | ✅ |
+| Pump triac turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 47.1 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Valve triac (T410) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 429 V | < 480 V (80 % of the T410's 600 V) | ✅ |
+| Valve triac (T410) turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Pump triac turn-off: peak voltage (reference) | 132 V, no snubber | 2.48e+03 V | info: why the snubber is fitted | ✅ |
+| Valve triac (T410) turn-off: peak voltage (reference) | 132 V, no snubber | 2.91e+03 V | info: why the snubber is fitted | ✅ |
+| Pump triac (T435) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 190 V | < 480 V (80 % of the T435's 600 V) | ✅ |
+| Pump triac turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 47.1 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Valve triac (T410) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 456 V | < 480 V (80 % of the T410's 600 V) | ✅ |
+| Valve triac (T410) turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
+| Valve with a T435 instead (rejected) | 132 V, IH 35 mA, 100 R + 22 nF | 690 V | reference: over the 600 V rating, why the valve uses the T410 | ✅ |
+| Snubber off-state leakage | 22 nF at 120 V 60 Hz | 0.995 mA | < 2 mA (valve hold-in needs ~50 mA; pump coil ignores it) | ✅ |
+| Snubber discharge into the triac at turn-on | 170 V peak / 100 R | 1.7 A | < 31 A (T435 ITSM) and < 4 A di/dt-friendly | ✅ |
+| Snubber resistor dissipation | steady off-state | 0.0991 mW | < 100 mW (2512 1 W) | ✅ |
+| Pump triac (T435) junction temperature | pump 0.45 A rms half-wave (0.9 A peak) | 86.8 C | < 115 C (Tj max 125 C, 10 C margin) | ✅ |
+| Pump triac (T435) junction temperature | pump, 1.4 A peak allowance | 97.3 C | < 115 C (Tj max 125 C, 10 C margin) | ✅ |
+| Valve triac (T410) junction temperature | 0.1 A rms full-wave | 74.9 C | < 115 C | ✅ |
+| IRM-10-5 load vs derating | 70 C: 50 % of 2 A = 1.0 A (Mean Well derating curve) | 0.45 A | <= 1.0 A (peak, Wi-Fi + both opto LEDs + heater SSR) | ✅ |
+| LDO (TLV1117LV, SOT-223) junction temperature | 1.7 V x 150 mA average, ~100 C/W on its copper | 95.5 C | < 115 C (Tj max 125 C) | ✅ |
+| Opto LED resistor dissipation (R47/R48, 0603) | 11 mA | 39.9 mW | < 50 mW (0603 100 mW, half derated at 70 C) | ✅ |
+| Board fuse (F1, 2 A slow-blow) continuous load | IRM 0.12 A + pump 0.45 A + valve 0.1 A | 0.67 A | < 1.45 A (2 A x 0.75 x 0.97 rerating at 70 C) | ✅ |
+| Thermocouple signal range | tip 170 C, board 20 C (K-type ~41 uV/C) | 6.15 mV | < 256 mV (MCP3421 PGA 8 full scale) | ✅ |
+| Thermocouple open-probe reading | 10M bias vs ~281k ADC input (PGA 8) | 90.2 mV | > 15 mV (firmware: open probe) and < 256 mV (in range) | ✅ |
+| Thermocouple bias error | 0.33 uA through a 20-ohm probe loop | 0.161 C | < 0.3 C (constant; calibration removes it) | ✅ |
 | Status LED (red, 1k from GPIO16 / U0TXD) | 3.3 V | 1.3 mA | 1-3 mA (visible, well within GPIO drive) | ✅ |
 | Front-panel switch closed | 1k series, 10k || 45k pull-up | 0.359 V | <= 0.5 V (C6 VIL max 0.25 x VDD = 0.825 V: >= 0.3 V margin) | ✅ |
 | Front-panel switch wetting current | closed | 0.359 mA | >= 0.2 mA (keeps an old rocker's contacts clean) | ✅ |
 | Front-panel LED drive | 330 R from a 3.3 V GPIO, red LED Vf ~2.0 V | 3.94 mA | 2-8 mA (bright, within the C6's 20 mA drive) | ✅ |
 | Pressure input | 4.5 V full scale -> GPIO0 | 3.06 V | <= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail) | ✅ |
 | Pressure input | 0.5 V (0 bar) -> GPIO0 | 0.34 V | >= 0.1 V (clear of the ADC's non-linear bottom) | ✅ |
-| Pressure transducer load | R16 + R17 | 147 kOhm | > 100 kOhm (TE M3200 datasheet p2, voltage output) | ✅ |
+| Pressure transducer load | R16 + R17 | 147 kOhm | > 100 kOhm (any 0.5-4.5 V voltage-output transducer; XIDIBEI drives ~10 mA) | ✅ |
 | Pressure filter | -3 dB corner | 257 Hz | 150-400 Hz (keeps the pump's 60 Hz pulses, kills RF) | ✅ |
 | Pressure filter | 60 Hz pump ripple | -0.296 dB | > -1 dB (the pulses stay visible to firmware) | ✅ |
 | Pressure ADC kick-back (estimate) | 10 pF sample cap (assumed) vs 22 nF | 1.36 mV | < 2.7 mV (1/10 of the transducer's +-0.25 % FS at the pin) | ✅ |
-| Thermistor divider voltage | 20 C | 3.07 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 93 C | 1.5 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 125 C | 0.809 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor divider voltage | 150 C | 0.481 V | 0.15-3.15 V (inside the ADC's usable range) | ✅ |
-| Thermistor sensitivity | 93 C | 25.8 mV/C | > 10 mV/C (0.008 C per oversampled LSB) | ✅ |
-| Thermistor sensitivity | 140 C | 12.4 mV/C | > 10 mV/C (0.016 C per oversampled LSB) | ✅ |
-| Thermistor self-heating | 93 C, 0.57 mW, still air | 0.574 C | < 1 C (constant, so the boiling-water calibration point cancels it; clamped to the boiler it is far lower) | ✅ |
-| Thermistor error before calibration | 93 C, R +-1 % (Molex R25 tolerance) | 0.319 C | info: the 2-point calibration (room + boiling water) removes this | ✅ |
-| Thermistor error from the reference resistor | 93 C, 1 % resistor | 0.316 C | < 0.5 C before calibration (the boiling-water point removes it) | ✅ |
 | Pressure gain error from 1 % divider resistors | worst-case ratio | 0.0573 bar | < 0.15 bar at 9 bar (zero is calibrated at power-up) | ✅ |
-| 3.3 V rail under Wi-Fi bursts | PSU 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 5.0 V | 4.88 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
-| 3.3 V rail under Wi-Fi bursts | PSU 4.75 V (-5%) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
-| 5 V rail | PSU 4.75 V (-5%) | 4.63 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
+| 3.3 V rail under Wi-Fi bursts | IRM-10-5 5.0 V | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
+| 5 V rail | IRM-10-5 5.0 V | 4.88 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
+| 3.3 V rail under Wi-Fi bursts | IRM-10-5 4.9 V (-2 %) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
+| 5 V rail | IRM-10-5 4.9 V (-2 %) | 4.78 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.53 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
-**54 / 54 checks pass.**
+**67 / 67 checks pass.**

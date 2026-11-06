@@ -12,16 +12,18 @@ import argparse, html, json, os
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 BLOCKS = [
-    ("5 V in, reverse-polarity protection", ["J1", "Q4", "C6"], False),
+    ("MAINS: spade tabs (N, L, P, 3), fuse, isolated 5 V supply", ["J12", "J13", "J14", "J15", "F1", "PS1"], True),
+    ("MAINS: pump channel (opto-triac, T435, snubber)", ["U8", "Q5", "R49", "R51", "C15", "R47"], True),
+    ("MAINS: valve channel (opto-triac, T410, snubber)", ["U9", "Q6", "R50", "R52", "R53", "C16", "R48"], True),
     ("ESP32-C6 module, I2C bus, status LED", ["U4", "C3", "C4", "R10", "C5", "R11", "R46", "TP1", "D1", "R12"], False),
-    ("3.3 V regulator, USB (flashing / bench power)", ["U5", "C7", "D2", "J4", "R13", "R14"], False),
-    ("SSR outputs (heater, pump, valve)", ["J2", "Q1", "Q2", "Q3", "R4", "R5", "R6"], False),
-    ("Thermocouple: ADC + cold junction (v31)", ["J5", "U6", "U7", "R43", "R44", "R45", "C12", "C13", "C14"], False),
+    ("3.3 V regulator, USB (flashing / bench power)", ["U5", "C6", "C7", "D2", "J4", "R13", "R14"], False),
+    ("Outputs: heater SSR (J2), pump and valve opto drives", ["J2", "Q1", "Q2", "Q3", "R4", "R5", "R6"], False),
+    ("Thermocouple: ADC + cold junction", ["J5", "U6", "U7", "R43", "R44", "R45", "C12", "C13", "C14"], False),
     ("Pressure transducer", ["J6", "R16", "R17", "C9"], False),
     ("Front panel: switches + lamps", ["J7", "R18", "R19", "R20", "R21", "R28", "R29", "R30", "R31", "R32"], False),
     ("Indicator LEDs", ["D3", "D4", "D5", "D6", "D7", "D8", "R37", "R38", "R39", "R40", "R41", "R42"], False),
     ("Drip-tray scale (dual HX711)", ["J10", "R36"], False),
-    ("Rail sense", ["R22", "R23", "R24", "R25", "C10", "C11"], False),
+    ("Rail sense (+5V)", ["R24", "R25", "C11"], False),
 ]
 POWER = {"GND", "+5V", "+3V3", "VBUS"}
 
@@ -92,7 +94,7 @@ def main():
         out += items
         y += block_h + 24
     H = y + 30
-    head = (f'<text x="{margin}" y="38" font-size="22" font-weight="700">coffee controller v31 · {a.mains} V · net-label schematic</text>'
+    head = (f'<text x="{margin}" y="38" font-size="22" font-weight="700">coffee controller v32 · {a.mains} V · net-label schematic</text>'
             f'<text x="{margin}" y="58" font-size="12" fill="#55534f">Pins carry net-name tags; equal names are connected. Red = mains (hazardous). Blue = power rails. Source: hardware/controller/controller.py</text>')
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="system-ui,Segoe UI,sans-serif">'
            f'<rect width="100%" height="100%" fill="#ffffff"/>{head}{"".join(out)}</svg>')

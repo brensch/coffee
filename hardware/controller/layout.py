@@ -328,6 +328,14 @@ def build(spec, mains_v):
         for i, r in enumerate((rect(0, 0, W, 0.3), rect(0, H - 0.3, W, H), rect(W - 0.3, 0, W, H), rect(0, 0, 0.3, H))):
             guard(board, layer, r, f"edge {i}")
 
+    # v32 isolation band (plan "mains.band" [x0, x1]): no copper on either layer, and milled slots
+    # (plan "mains.slots": [x0, y0, x1, y1] rectangles) under the parts that bridge it.
+    if "band" in _M:
+        bx0, bx1 = _M["band"]
+        zone(board, None, pcbnew.F_Cu, rect(bx0, 0, bx1, H), keepout=True, name="ISOLATION BAND")   # no pads in it either: the optos and PSU pads sit either side
+    for sx0, sy0, sx1, sy1 in _M.get("slots", []):
+        seg(board, pcbnew.Edge_Cuts, rect(sx0, sy0, sx1, sy1))
+
     # GND pours are added after routing (add_pours): exported as a plane, Freerouting assumes
     # the pour connects every GND pad, and the real fill leaves islands. The module's exposed
     # pad (9 sub-pads) gets its own small GND patch with two vias down to the B.Cu plane.
@@ -419,15 +427,34 @@ def add_pours(board):
                 z = zone(board, board.GetNetsByName()["+3V3"], layer, rect(*lc[key]), name="LDO_COPPER", clearance=0.25, priority=2)
                 z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
                 z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)   # traces can cut it: drop the unconnected bits
+    pr = _plan.get("gnd_rect", [0.3, 0.3, W - 0.3, H - 0.3])   # v32: the SELV side only
     for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
-        z = zone(board, gnd, layer, rect(0.3, 0.3, W - 0.3, H - 0.3), name="GND")
+        z = zone(board, gnd, layer, rect(*pr), name="GND")
         z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
         z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
 
 
 def write_rules(path, spec):
-    """KiCad custom rules: none beyond the board's design settings (a low-voltage board)."""
-    open(path, "w").write("(version 1)\n")
+    """KiCad design rules = the mains lint (v14's, restored). 2.0 mm between mains nets everywhere
+    except (a) inside one part's courtyard, where the maker's pin pitch governs, and (b) net pairs at
+    (nearly) the same potential. Mains-to-SELV is the copper-free isolation band (plan "mains.band")."""
+    nets = spec.get("mains_nets", [])
+    if not nets:
+        open(path, "w").write("(version 1)\n"); return
+    isin = lambda side: "(" + " || ".join(f"{side}.NetName == '{n}'" for n in nets) + ")"
+    inside = " || ".join(f"(A.insideCourtyard('{r}') && B.insideCourtyard('{r}'))" for r in MAINS_PARTS) or "false"
+    pairs = " || ".join(f"(A.NetName == '{a}' && B.NetName == '{b}') || (A.NetName == '{b}' && B.NetName == '{a}')" for a, b in SAME_POTENTIAL) or "false"
+    open(path, "w").write(f"""(version 1)
+(rule "MAINS: 2.0 mm between mains nets (IEC 60664 functional, 120 V: ~1.6 mm)"
+  (condition "{isin('A')} && {isin('B')}")
+  (constraint clearance (min 2.0mm)))
+(rule "MAINS: pins of one part (manufacturer's pitch)"
+  (condition "{isin('A')} && {isin('B')} && ({inside})")
+  (constraint clearance (min 0.5mm)))
+(rule "MAINS: same-potential pairs"
+  (condition "{pairs}")
+  (constraint clearance (min 0.5mm)))
+""")
 
 
 def parse_ses(path):
@@ -484,9 +511,54 @@ def import_ses(board, path):
     return n_t, n_v
 
 
+# v32 mains section (plan "mains"): parts whose own pin pitch governs inside their courtyard, and mains
+# net pairs at (nearly) the same potential (0.5 mm between them is enough; 2.0 mm elsewhere).
+_M = _plan.get("mains", {})
+MAINS_PARTS = _M.get("parts", [])
+SAME_POTENTIAL = [tuple(p) for p in _M.get("same_potential", [])]
+
+
 def fix_dsn(path, spec):
-    """Nothing to add for a low-voltage board (kept so ext_route's flow stays the same)."""
-    return []
+    """Give fastroute the same mains rules as the DRC. KiCad's Python API doesn't carry netclass
+    membership into the Specctra export (every net lands in kicad_default), so: one DSN class per
+    same-potential group of mains nets (0.5 mm inside it) and 2.0 mm between every pair of mains
+    classes (class_class rules). Low-voltage nets stay where lv_classes puts them. Returns
+    [(class, first net)] for ext_route's neck-down list. (Restored from v14, router-agnostic.)"""
+    mains = spec.get("mains_nets", [])
+    if not mains:
+        return []
+    txt = open(path).read()
+    m = re.search(r'\(class kicad_default ""(.*?)\n      \(circuit', txt, re.S)
+    names = re.findall(r'"[^"]*"|\S+', m.group(1))
+    plain = lambda n: n.strip('"')
+    present = {plain(n): n for n in names}
+    mains = [n for n in mains if n in present]
+    groups, seen = [], set()
+    for a, b in SAME_POTENTIAL:                  # union the same-potential pairs into groups
+        g = next((g for g in groups if a in g or b in g), None)
+        if g is None:
+            g = set(); groups.append(g)
+        g.update(n for n in (a, b) if n in present)
+    for n in mains:
+        if not any(n in g for g in groups):
+            groups.append({n})
+    groups = [sorted(g) for g in groups if g]
+    rest = [n for n in names if plain(n) not in mains]
+    txt = txt[:m.start(1)] + " " + " ".join(rest) + txt[m.end(1):]
+    um = lambda v: f"{v * 1000:.1f}"
+    blocks, out = [], []
+    width = _M.get("width_mm", 0.8)
+    for i, g in enumerate(groups):
+        blocks.append(f"    (class M{i} {' '.join(present[n] for n in g)}\n      (circuit\n        (use_via Via[0-1]_1200:600_um)\n      )\n"
+                      f"      (rule\n        (width {um(width)})\n        (clearance {um(0.5)})\n      )\n    )\n")
+        out.append((f"M{i}", g[0]))
+    for i in range(len(groups)):
+        for j in range(i + 1, len(groups)):
+            blocks.append(f"    (class_class (classes M{i} M{j})\n      (rule (clearance {um(2.0)}))\n    )\n")
+    k = txt.index("    (class kicad_default")
+    txt = txt[:k] + "".join(blocks) + txt[k:]
+    open(path, "w").write(txt)
+    return out
 
 
 def fab_outputs(pcb, stem):

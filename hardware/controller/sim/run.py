@@ -55,12 +55,15 @@ def output(vgpio, fet, v5, load, rpd="3.3k", rpu=None, tstop="20m"):
     loads = {
         "ssr_sch": "Lcab v5 m 1u\nBssr m out I = min(0.010, max(0, (v(m)-v(out)-1.2)/150))",
         "ssr_board": "Lcab v5 m 1u\nRin m out 200",
+        # v32: MOC3083 IR LED behind 330 R (+1 %): onsemi Vf 1.15 typ / 1.5 max at 10 mA. DIR fitted to 1.5 V
+        "opto_led": "Rled v5 a 333.3\nDled a out DIR",
     }
     drive = f"Vg g 0 PULSE(0 {vgpio} 1m 1u 1u 8m 20m)\nRgpio g pin 25" if rpu is None else f"Rpu v33 pin {rpu}\nVv33 v33 0 3.3"
     net = f"""* output stage
 .model N3400 NMOS(LEVEL=1 VTO={vto} KP={kp} CGSO=1.5n CGDO=0.3n)
 .model D4148 D(IS=2.5n N=1.75 RS=0.6 BV=75 CJO=2p TT=4n)
 .model DRED D(IS=1e-19 N=1.8 RS=8)
+.model DIR D(IS=1e-14 N=1.9 RS=2)
 V5 v5 0 DC {v5}
 {drive}
 Rgs pin gate 0.01
@@ -79,6 +82,7 @@ meas tran vds_on FIND v(out) AT=8.5m
 meas tran vdrain_pk MAX v(out) from=9m to=20m
 meas tran vin_off FIND vin AT=19m
 meas tran iin_off FIND i(Vimeas) AT=19m
+meas tran iin_on FIND i(Vimeas) AT=8.5m
 meas tran vgate_rst AVG v(gate) from=0.1m to=20m
 .endc
 .end
@@ -107,6 +111,77 @@ print i(Vin)
     v5 = float(re.findall(r"v\(v5\)\s*=\s*([-+0-9.eE]+)", out)[0])
     i = float(re.findall(r"i\(vin\)\s*=\s*([-+0-9.eE]+)", out)[0])
     return v5, i
+
+
+# --------------------------------------------------------------- 3b. v32 mains: triac turn-off transients
+# Restored from v14 (git 9632e10), with v32's values: ST T435-600B triacs (IH 35 mA max, 600 V), the
+# 100 R + 22 nF X2 snubber. The triac is a gated switch that keeps conducting while |I| > IH after the
+# gate is removed; the pump has its own series diode; coil values are estimates (see REPORT notes).
+def snubber(with_rc, vrms=120.0, L=1.2, R=220.0, csn="22n", ih=0.035):
+    """Pump (diode + coil + stray C). Returns max |dv/dt| (V/us) and peak |V| across the triac."""
+    vpk = vrms * 2 ** 0.5
+    rc = f"Rsn mt2 s 100\nCsn s mt1 {csn}" if with_rc else ""
+    net = f"""* triac commutation with an inductive half-wave pump
+.model DP D(IS=1e-12 N=1.5 RS=0.5 CJO=40p TT=2u)
+.model DT D(IS=1e-12 N=1.3 RS=0.02)
+.model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
+Vline mt2 0 SIN(0 {vpk} 60)
+Vg g 0 PWL(0 1 40.6m 1 40.61m 0)
+Vsense mt2 xs 0
+Bctl c 0 V = max(v(g), abs(i(Vsense)) > {ih} ? 1 : 0)
+S1 xs x c 0 SW
+Dt x mt1 DT
+Ctr mt2 mt1 60p
+Roff mt2 mt1 50meg
+{rc}
+Dp mt1 p DP
+Lp p q {L}
+Cw p q 150p
+Rp q 0 {R}
+.tran 0.05u 80m 30m 0.05u
+.control
+run
+@WRDATA@
+.endc
+.end
+"""
+    w = wave(net, ["v(mt2,mt1)"], 0.08)
+    t, v = w["time"], w["v(mt2,mt1)"]
+    dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
+    return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
+
+
+def valve(with_rc, vrms=120.0, L=4.4, R=300.0, csn="22n", ih=0.035):
+    """3-way valve: AC solenoid, no diode. Returns max |dv/dt| (V/us) and peak |V| across the triac."""
+    vpk = vrms * 2 ** 0.5
+    rc = f"Rsn mt2 s 100\nCsn s mt1 {csn}" if with_rc else ""
+    net = f"""* valve turn-off
+.model DT D(IS=1e-12 N=1.3 RS=0.05)
+.model SW SW(RON=0.01 ROFF=100meg VT=0.5 VH=0.1)
+Vline mt2 0 SIN(0 {vpk} 60)
+Vg g 0 PWL(0 1 40.6m 1 40.61m 0)
+Vsense mt2 xs 0
+Bctl c 0 V = max(v(g), abs(i(Vsense)) > {ih} ? 1 : 0)
+S1 xs x c 0 SW
+Dt1 x mt1 DT
+Dt2 mt1 x DT
+Ctr mt2 mt1 30p
+Roff mt2 mt1 50meg
+{rc}
+Lv mt1 q {L}
+Cw mt1 q 100p
+Rv q 0 {R}
+.tran 0.05u 80m 30m 0.05u
+.control
+run
+@WRDATA@
+.endc
+.end
+"""
+    w = wave(net, ["v(mt2,mt1)"], 0.08)
+    t, v = w["time"], w["v(mt2,mt1)"]
+    dv = max(abs((v[i] - v[i - 1]) / (t[i] - t[i - 1])) for i in range(1, len(t)) if t[i] > 40.6e-3 and t[i] > t[i - 1])
+    return dv / 1e6, max(abs(x) for x, tt in zip(v, t) if tt > 40.6e-3)
 
 
 # --------------------------------------------------------------- 4. pressure input
@@ -191,16 +266,24 @@ def ntc_from_v(v, rref=4.7e3, vref=3.3):
 
 def main():
     # 1. outputs: on-state at the corners, with each module type
-    for load, vmin, lab in (("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),
-                            ("ssr_board", 4.0, "pump/valve SSR board (Omron G3MB-202P DC5, must-operate 4.0 V)")):
+    for load, vmin, lab in (("ssr_sch", 3.0, "heater SSR (Schneider SSP1A125BDT, 3.0 V)"),):
         for vg in (2.64, 3.3):   # C6 datasheet guarantees VOH >= 0.8 x VDD = 2.64 V
             for fet in ("vth_typ", "vth_max"):
-                for v5 in (4.6, 5.0):
+                for v5 in (4.65, 5.1):   # USB through D2 / IRM-10-5 +2 %
                     r = output(vg, fet, v5, load)
                     check("Output on: voltage across the module input", f"{lab}, GPIO {vg} V, {fet}, +5V {v5} V", r["vin_on"], f">= {vmin} V", r["vin_on"] >= vmin, "V")
         r = output(2.64, "vth_max", 5.0, load)
         check("Output off: current left through the module input", lab, abs(r["iin_off"]) * 1e3, "< 0.1 mA (SSR must-release ~1 mA)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
-        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; resistive SSR inputs, no flyback diode)", r["vdrain_pk"] < 20, "V")
+        check("Output turn-off spike at the drain", lab, r["vdrain_pk"], "< 20 V (AO3400A 30 V rating; resistive SSR input, no flyback diode)", r["vdrain_pk"] < 20, "V")
+    # v32: pump and valve FETs drive the MOC3083 LEDs (330 R from +5V)
+    for vg in (2.64, 3.3):
+        for fet in ("vth_typ", "vth_max"):
+            for v5 in (4.65, 5.1):
+                r = output(vg, fet, v5, "opto_led")
+                i = abs(r.get("iin_on", 0)) * 1e3
+                check("Opto-triac LED current (MOC3083: IFT 5 mA max, IF 50 mA abs max)", f"GPIO {vg} V, {fet}, +5V {v5} V, Vf 1.5 V max", i, ">= 7.5 mA (1.5x IFT max) and <= 30 mA", 7.5 <= i <= 30, "mA")
+    r = output(2.64, "vth_max", 5.0, "opto_led")
+    check("Opto-triac LED off", "FET off", abs(r["iin_off"]) * 1e3, "< 0.1 mA (far below any trigger)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
     # boot/reset: GPIO high-Z with a weak internal pull-up fighting the 4.7k pull-down
     for rpu in ("45k", "20k"):
         r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpu=rpu)
@@ -208,14 +291,54 @@ def main():
         check("Output during reset: module input current", f"internal pull-up {rpu}", abs(r["iin_off"]) * 1e3, "< 0.1 mA (off)", abs(r["iin_off"]) * 1e3 < 0.1, "mA")
     r = output(3.3, "vth_typ", 5.0, "ssr_sch", rpd="100k", rpu="45k")
     check("Output during reset, 100k pull-down (rejected value)", "internal pull-up 45k", r["vgate_rst"], "reference only: why the pull-down is 3.3k", True, "V")
-    # 2. reverse polarity
-    v5, i = revpol(5.0)
-    check("Reverse-polarity P-FET", "J1 at +5.0 V, 250 mA load", v5, ">= 4.95 V (drop < 50 mV)", v5 >= 4.95, "V")
-    v5, i = revpol(-5.0)
-    check("Reverse-polarity P-FET", "J1 wired backwards (-5 V)", abs(i) * 1e3, "< 0.01 mA into the board", abs(i) * 1e3 < 0.01, "mA")
-    # mis-plug: the 5 V lead (every cable is the same GH 3-pin) in the thermistor socket J5
-    i_clamp = (5.0 - 3.3 - 0.5) / 1000 * 1e3
-    check("J5 mis-plug (5 V lead in the thermistor socket)", "1k R27 into GPIO1's clamp diode", i_clamp, "< 2 mA (no damage; was unlimited without R27)", i_clamp < 2, "mA")
+    # 3b. mains: triac turn-off transients (v32)
+    for vr in (120.0, 132.0):
+        for with_rc in (False, True):
+            dv, peak = snubber(with_rc, vrms=vr)
+            lab = f"{vr:.0f} V, {'100 R + 22 nF X2' if with_rc else 'no snubber'}"
+            if with_rc:
+                check("Pump triac (T435) turn-off: peak voltage", lab, peak, "< 480 V (80 % of the T435's 600 V)", peak < 480, "V")
+                check("Pump triac turn-off: dV/dt", lab, dv, "< 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us)", dv < 100, "V/us")
+            else:
+                check("Pump triac turn-off: peak voltage (reference)", lab, peak, "info: why the snubber is fitted", True, "V")
+            dv, peak = valve(with_rc, vrms=vr, ih=0.015)    # T410: IH 15 mA max
+            if with_rc:
+                check("Valve triac (T410) turn-off: peak voltage", lab, peak, "< 480 V (80 % of the T410's 600 V)", peak < 480, "V")
+                check("Valve triac (T410) turn-off: dV/dt", lab, dv, "< 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us)", dv < 32, "V/us")
+            else:
+                check("Valve triac (T410) turn-off: peak voltage (reference)", lab, peak, "info: why the snubber is fitted", True, "V")
+    dv, peak = valve(True, vrms=132.0, ih=0.035)
+    check("Valve with a T435 instead (rejected)", "132 V, IH 35 mA, 100 R + 22 nF", peak, "reference: over the 600 V rating, why the valve uses the T410", True, "V")
+    i_leak = 120.0 * 2 * math.pi * 60 * 22e-9 * 1e3
+    check("Snubber off-state leakage", "22 nF at 120 V 60 Hz", i_leak, "< 2 mA (valve hold-in needs ~50 mA; pump coil ignores it)", i_leak < 2, "mA")
+    i_cap = 120 * 2 ** 0.5 / 100
+    check("Snubber discharge into the triac at turn-on", "170 V peak / 100 R", i_cap, "< 31 A (T435 ITSM) and < 4 A di/dt-friendly", i_cap < 4, "A")
+    p_r = (i_leak / 1e3) ** 2 * 100 * 1e3
+    check("Snubber resistor dissipation", "steady off-state", p_r, "< 100 mW (2512 1 W)", p_r < 100, "mW")
+    # thermals at 70 C inside the case (analytic; ST T4 datasheet: Vt0 0.89 V, Rd 0.12 ohm, DPAK
+    # Rth(j-a) 70 C/W on 0.5 cm2 of copper, lower on more: 60 C/W assumed for ~1-2 cm2 of AC_L_F copper)
+    TA = 70.0
+    for ipk, lab in ((0.9, "pump 0.45 A rms half-wave (0.9 A peak)"), (1.4, "pump, 1.4 A peak allowance")):
+        p = 0.89 * ipk / math.pi + 0.12 * (ipk / 2) ** 2
+        tj = TA + 60 * p
+        check("Pump triac (T435) junction temperature", lab, tj, "< 115 C (Tj max 125 C, 10 C margin)", tj < 115, "C")
+    p = 0.89 * 0.1 * 2 * 2 ** 0.5 / math.pi + 0.12 * 0.1 ** 2
+    check("Valve triac (T410) junction temperature", "0.1 A rms full-wave", TA + 60 * p, "< 115 C", TA + 60 * p < 115, "C")
+    i_avg, i_pk = 0.20, 0.45      # 5 V load: ESP32-C6 Wi-Fi average / bursts, LEDs, SSR input, opto LEDs, transducer
+    check("IRM-10-5 load vs derating", "70 C: 50 % of 2 A = 1.0 A (Mean Well derating curve)", i_pk, "<= 1.0 A (peak, Wi-Fi + both opto LEDs + heater SSR)", i_pk <= 1.0, "A")
+    p_ldo = (5.0 - 3.3) * 0.15
+    check("LDO (TLV1117LV, SOT-223) junction temperature", "1.7 V x 150 mA average, ~100 C/W on its copper", TA + 100 * p_ldo, "< 115 C (Tj max 125 C)", TA + 100 * p_ldo < 115, "C")
+    p_r = 0.011 ** 2 * 330 * 1e3
+    check("Opto LED resistor dissipation (R47/R48, 0603)", "11 mA", p_r, "< 50 mW (0603 100 mW, half derated at 70 C)", p_r < 50, "mW")
+    check("Board fuse (F1, 2 A slow-blow) continuous load", "IRM 0.12 A + pump 0.45 A + valve 0.1 A", 0.67, "< 1.45 A (2 A x 0.75 x 0.97 rerating at 70 C)", 0.67 < 1.45, "A")
+    # thermocouple input (analytic): the MCP3421 at PGA 8 against a K-type's 41 uV/C
+    fs = 2.048 / 8 * 1e3
+    v_hot = 41e-3 * (170 - 20)
+    check("Thermocouple signal range", "tip 170 C, board 20 C (K-type ~41 uV/C)", v_hot, f"< {fs:.0f} mV (MCP3421 PGA 8 full scale)", v_hot < fs, "mV")
+    v_open = 3.3 * 281e3 / (10e6 + 281e3 + 2e3) * 1e3
+    check("Thermocouple open-probe reading", "10M bias vs ~281k ADC input (PGA 8)", v_open, "> 15 mV (firmware: open probe) and < 256 mV (in range)", 15 < v_open < 256, "mV")
+    e_bias = 3.3 / 10e6 * 20 / 41e-6
+    check("Thermocouple bias error", "0.33 uA through a 20-ohm probe loop", e_bias, "< 0.3 C (constant; calibration removes it)", e_bias < 0.3, "C")
     # status LED
     i_led = (3.3 - 2.0) / 1000 * 1e3
     check("Status LED (red, 1k from GPIO16 / U0TXD)", "3.3 V", i_led, "1-3 mA (visible, well within GPIO drive)", 1 <= i_led <= 3, "mA")
@@ -232,7 +355,7 @@ def main():
     va = float(re.findall(r"v\(a\)\s*=\s*([-+0-9.eE]+)", out)[0])
     check("Pressure input", "4.5 V full scale -> GPIO0", va, "<= 3.1 V (inside the C6 ADC's 12 dB range, below the 3.3 V rail)", va <= 3.1, "V")
     check("Pressure input", "0.5 V (0 bar) -> GPIO0", 0.5 * 100 / 147, ">= 0.1 V (clear of the ADC's non-linear bottom)", 0.5 * 100 / 147 >= 0.1, "V")
-    check("Pressure transducer load", "R16 + R17", 147, "> 100 kOhm (TE M3200 datasheet p2, voltage output)", 147 > 100, "kOhm")
+    check("Pressure transducer load", "R16 + R17", 147, "> 100 kOhm (any 0.5-4.5 V voltage-output transducer; XIDIBEI drives ~10 mA)", 147 > 100, "kOhm")
     f3 = v.get("f3db", 0)
     check("Pressure filter", "-3 dB corner", f3, "150-400 Hz (keeps the pump's 60 Hz pulses, kills RF)", 150 <= f3 <= 400, "Hz")
     g60 = v.get("g60", 0) - 20 * math.log10(va / 4.5)   # relative to the divider's own DC gain
@@ -241,26 +364,10 @@ def main():
     # input). The criterion is a tenth of the transducer's own +-0.25 % FS accuracy at the pin (2.7 mV).
     kick = 3.0 * 10e-12 / 22e-9 * 1e3
     check("Pressure ADC kick-back (estimate)", "10 pF sample cap (assumed) vs 22 nF", kick, "< 2.7 mV (1/10 of the transducer's +-0.25 % FS at the pin)", kick < 2.7, "mV")
-    # 5. thermistor (Molex 218537-3919 50k to GND, 4.7k 1% to 3V3)
-    for t in (20.0, 93.0, 125.0, 150.0):
-        vt = ntc_v(t)
-        check("Thermistor divider voltage", f"{t:.0f} C", vt, "0.15-3.15 V (inside the ADC's usable range)", 0.15 <= vt <= 3.15, "V")
-    for t in (93.0, 140.0):
-        slope = (ntc_v(t - 0.5) - ntc_v(t + 0.5)) * 1e3
-        lsb = 3300 / 4096 / 4   # 12-bit, 16x oversampled -> ~2 extra bits
-        check("Thermistor sensitivity", f"{t:.0f} C", slope, f"> 10 mV/C ({lsb / slope:.3f} C per oversampled LSB)", slope > 10, "mV/C")
-    r93 = ntc_r(93.0)
-    p = (3.3 / (4.7e3 + r93)) ** 2 * r93 * 1e3
-    err = p / 1.0   # Molex dissipation constant 1 mW/C (sales drawing note 7); clamped to the boiler it sinks far better
-    check("Thermistor self-heating", f"93 C, {p:.2f} mW, still air", err, "< 1 C (constant, so the boiling-water calibration point cancels it; clamped to the boiler it is far lower)", err < 1.0, "C")
-    worst = max(abs(ntc_from_v(ntc_v(93.0, scale=k)) - 93.0) for k in (0.99, 1.01))
-    check("Thermistor error before calibration", "93 C, R +-1 % (Molex R25 tolerance)", worst, "info: the 2-point calibration (room + boiling water) removes this", True, "C")
-    r_ref_err = abs(ntc_from_v(ntc_v(93.0, rref=4.7e3 * 1.01)) - 93.0)
-    check("Thermistor error from the reference resistor", "93 C, 1 % resistor", r_ref_err, "< 0.5 C before calibration (the boiling-water point removes it)", r_ref_err < 0.5, "C")
     gain = (100 * 1.01 / (100 * 1.01 + 47 * 0.99)) / (100 / 147) - 1
     check("Pressure gain error from 1 % divider resistors", "worst-case ratio", abs(gain) * 9.0, "< 0.15 bar at 9 bar (zero is calibrated at power-up)", abs(gain) * 9.0 < 0.15, "bar")
     # 6. rails
-    for vpsu, label in ((5.0, "PSU 5.0 V"), (4.75, "PSU 4.75 V (-5%)"), (4.65, "USB 5.0 V through D2 (~4.65 V)")):
+    for vpsu, label in ((5.0, "IRM-10-5 5.0 V"), (4.9, "IRM-10-5 4.9 V (-2 %)"), (4.65, "USB 5.0 V through D2 (~4.65 V)")):
         v, out = rails(vpsu, label)
         check("3.3 V rail under Wi-Fi bursts", label, v.get("v33min", 0), ">= 3.0 V (ESP32-C6 min)", v.get("v33min", 0) >= 3.0, "V")
         check("5 V rail", label, v.get("v5min", 0), ">= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative)", v.get("v5min", 0) >= 4.2, "V")

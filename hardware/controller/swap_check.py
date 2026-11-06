@@ -60,26 +60,24 @@ def board_drive(cls, st, i):
 #   CHIP sup gnd ios outs   HX711 / transducer: protection diodes from every pin to its rail and ground
 #   SRC g v      the 5 V module output: v = g + 5, floating until one side is tied
 ROLE_NET = {   # role in a lead -> the net of its home socket that role sits on
-    "J2": {"X": "+5V", "h": "HEATER_OUT", "p": "PUMP_OUT", "v": "VALVE_OUT"},
+    "J2": {"X": "+5V", "h": "HEATER_OUT"},   # v32: the heater SSR only (pump/valve are on-board triacs)
     "J7": {"swP": "SW_POWER_IN", "swB": "SW_BREW_IN", "swS": "SW_STEAM_IN", "K": "GND",
            "L1": "LED_PWR", "L2": "LED_COFFEE", "L3": "LED_STEAM"},
     "J10": {"G": "GND", "V": "+3V3", "SCK": "SCALE_SCK", "D1": "SCALE_DOUT1", "D2": "SCALE_DOUT2"},   # v30: VCC+VDD on 3V3
-    "J1": {"g": "GND", "v": "+5V_IN"},
     "J6": {"S": "P_SIG", "V": "+5V", "G": "GND"},
 }
 LEADS = {
-    "J2": [("HSSR", "X", "h"), ("BRD", "X", "p"), ("BRD", "X", "v")],
+    "J2": [("HSSR", "X", "h")],
     "J7": [("SW", "swP", "K"), ("SW", "swB", "K"), ("SW", "swS", "K"),
            ("LEDR", "L1", "K"), ("LEDR", "L2", "K"), ("LEDR", "L3", "K")],
     "J10": [("CHIP", ["V"], "G", ["SCK", "D1", "D2"], ["D1", "D2"])],
-    "J1": [("SRC", "g", "v")],
     "J6": [("CHIP", ["V"], "G", ["S"], ["S"])],
 }
-# v31: J5 is a WAGO push-in terminal for the bare thermocouple wires, so
-# neither can take another lead (and the thermocouple has no plug to go elsewhere): only J1/J6 share a
-# size (3-pin) and J2/J7/J10 (7-pin).
-GROUPS = [["J1", "J6"], ["J2", "J7", "J10"]]
-LEAD_NAME = {"J1": "5V supply", "J2": "SSR", "J6": "pressure", "J7": "front panel", "J10": "scale"}
+# v32: sizes are unique except the two 7-pin sockets, J7 (front panel) and J10 (scale): J5 thermocouple
+# 2-pin, J6 pressure 3-pin, J2 heater SSR 4-pin (no 3-pin pinout pair for J2/J6 was harmless both ways). The 5 V input lead is gone
+# (on-board supply). Mains is on spade tabs, which no GH plug fits.
+GROUPS = [["J7", "J10"]]   # J2 (heater SSR) is the only 4-pin, J6 (pressure) the only 3-pin
+LEAD_NAME = {"J2": "heater SSR", "J6": "pressure", "J7": "front panel", "J10": "scale"}
 SWIN_LOW = 2.5
 BARE_LEDS = "--bare-leds" in sys.argv   # what-if: front LEDs fitted without their own resistor    # ESP32-C6 V_IH min = 0.75 * 3.3 V: a switch input pulled below this may read "on"
 

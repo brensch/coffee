@@ -33,7 +33,9 @@ def local_model(path):
 
 missing = []
 for fp in b.GetFootprints():
-    if len(fp.Models()) == 0 and fp.GetReference()[:2] in ("PS",):
+    if fp.GetReference().startswith(("TP", "H")):
+        continue                            # bare pads / holes: nothing to draw
+    if len(fp.Models()) == 0:
         missing.append(fp.GetReference())   # no 3D model in the footprint at all
     for i in range(len(fp.Models())):
         rel = local_model(fp.Models()[i].m_Filename)
@@ -52,7 +54,7 @@ for ext in (".kicad_pro", ".kicad_prl"):
     p = tmp.replace(".kicad_pcb", ext)
     if os.path.exists(p):
         os.remove(p)
-# stand-ins for parts without models: (ref, kind, size)
+# stand-ins for parts without models: a box over the courtyard (see below)
 extra = []
 _fitted = {r: v.get("populate", "Y") == "Y" for r, v in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build", "parts-120v.json")))["parts"].items()}
 for fp in b.GetFootprints():
@@ -62,20 +64,19 @@ for fp in b.GetFootprints():
     pads = list(fp.Pads())   # stand-ins sit on the pad centroid, whatever the rotation
     x = sum(pcbnew.ToMM(p.GetPosition().x) for p in pads) / len(pads)
     y = sum(pcbnew.ToMM(p.GetPosition().y) for p in pads) / len(pads)
-    vertical = round(fp.GetOrientationDegrees()) % 180 == 90
-    if ref.startswith("U"):     # ESP32-C6-WROOM-1U: 18 x 19.2 x 3.2 shielded can
-        extra.append(dict(ref=ref, kind="box", x=pcbnew.ToMM(fp.GetPosition().x), y=pcbnew.ToMM(fp.GetPosition().y), sx=18.0, sy=19.2, sz=3.2))
-    elif ref.startswith("F"):   # TR5 fuse: d8.5 x 8 mm
-        extra.append(dict(ref=ref, kind="cyl", x=x, y=y, r=4.25, sz=8.0))
-    elif ref.startswith("PS"):  # RECOM RAC03E: 37 x 24 x 15.4 mm; body centre is (15.24, -8.89) from pin 1
-        o = fp.GetOrientationDegrees()
-        p1 = [p for p in pads if p.GetNumber() == "1"][0]
-        cx, cy = pcbnew.ToMM(p1.GetPosition().x) + 15.24, pcbnew.ToMM(p1.GetPosition().y) - 8.89
-        extra.append(dict(ref=ref, kind="box", x=cx, y=cy, sx=37.0, sy=24.0, sz=15.4))
-    elif ref.startswith("J"):   # screw terminal without a local model: 10 x 10 x 12 mm block over its pins
-        extra.append(dict(ref=ref, kind="disc", x=x, y=y + 1.5, sx=11.0, sy=10.0, sz=12.0))
-    elif ref.startswith("RV"):  # 7 mm disc varistor standing on its leads
-        extra.append(dict(ref=ref, kind="disc", x=x, y=y, sx=4.2 if vertical else 7.5, sy=7.5 if vertical else 4.2, sz=9.0))
+    # v32: a box over the part's own courtyard (less 0.25 mm a side), at a height for its kind. (Before,
+    # every model-less "U" got the ESP32 module's 18 x 19.2 mm can: a 2 x 2 mm TMP117 drew as a slab.)
+    fp.BuildCourtyardCaches()
+    cb = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd).BBox()
+    x0, y0, x1, y1 = (pcbnew.ToMM(v) for v in (cb.GetLeft(), cb.GetTop(), cb.GetRight(), cb.GetBottom()))
+    sx, sy = max(x1 - x0 - 0.5, 0.5), max(y1 - y0 - 0.5, 0.5)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    HEIGHT = {"PS": 21.5,   # Mean Well IRM-05: 45.7 x 25.4 x 21.5 mm
+              "J": 6.0, "F": 3.0, "RV": 9.0, "C": 1.2, "R": 0.6, "D": 1.0, "Q": 1.8, "U": 1.0}
+    kind = next(k for k in sorted(HEIGHT, key=len, reverse=True) if ref.startswith(k)) if any(ref.startswith(k) for k in HEIGHT) else None
+    sz = HEIGHT.get(kind, 2.0)
+    colour = "disc" if kind == "J" else "box"
+    extra.append(dict(ref=ref, kind=colour, x=cx, y=cy, sx=sx, sy=sy, sz=sz))
 json.dump(extra, open(os.path.join(out, "standins.json"), "w"))
 py = os.path.expanduser("~/opt/cad-venv/bin/python")
 subprocess.run([py, "-c", r'''
