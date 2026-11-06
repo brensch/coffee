@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct EngineConfig {
-    /// Mains frequency (Hz). The engine ticks once per mains cycle, so this sets
+    /// Mains frequency (Hz): always 60 (US 120 V / 60 Hz only). The engine ticks once per mains cycle, so this sets
     /// the control period `dt = 1 / mains_hz` and the volume of one pump stroke.
     pub mains_hz: f32,
     pub brew_temp_c: f32,
@@ -232,6 +232,14 @@ pub struct PumpConfig {
     pub curve: Vec<(f32, f32)>,
     /// Multiplier applied to the curve (calibrate from a real flow measurement).
     pub flow_scale: f32,
+    /// Over-pressure valve, as the emulator models it: bleed back to the tank
+    /// `k * w * softplus((p - crack) / w)` ml/s. US 120 V units ship a 9 bar OPV
+    /// that opens gradually from ~7.7 bar, so at brew pressure part of what the
+    /// pump pushes never reaches the puck. Set `opv_k_ml_s_per_bar = 0` to ignore it.
+    /// Defaults match `models/gaggia_classic_pro_e24_120v.toml`; fit with a blind basket.
+    pub opv_crack_bar: f32,
+    pub opv_softness_bar: f32,
+    pub opv_k_ml_s_per_bar: f32,
 }
 
 impl Default for PumpConfig {
@@ -250,6 +258,9 @@ impl Default for PumpConfig {
                 (15.0, 0.0),
             ],
             flow_scale: 1.0,
+            opv_crack_bar: 8.6,
+            opv_softness_bar: 0.9,
+            opv_k_ml_s_per_bar: 4.0,
         }
     }
 }
@@ -426,7 +437,7 @@ impl EngineConfig {
         };
         let checks: &[(bool, &'static str)] = &[
             (probe_ok, "ntc settings read more than 5 C off the board's probe (Molex 218537-3919, 4.7k)"),
-            (self.mains_hz == 50.0 || self.mains_hz == 60.0, "mains_hz must be 50 or 60"),
+            (self.mains_hz == 60.0, "mains_hz must be 60 (US 120 V / 60 Hz only)"),
             (r(self.brew_temp_c, 60.0, 105.0), "brew_temp_c out of 60..105"),
             // the stock steam thermostat opens at about 145 C: a higher setpoint is never reached
             (r(self.steam_temp_c, 110.0, 142.0), "steam_temp_c out of 110..142"),
@@ -472,6 +483,7 @@ impl EngineConfig {
             (r(self.ready_band_c, 0.1, 10.0) && r(self.ready_over_c, 0.1, 10.0) && r(self.ready_hold_s, 0.0, 120.0)
                 && r(self.warmup_boost_until, 0.0, 1.0), "ready band out of range"),
             (r(self.pump.flow_scale, 0.2, 5.0) && !self.pump.curve.is_empty()
+                && r(self.pump.opv_crack_bar, 5.0, 14.0) && r(self.pump.opv_softness_bar, 0.05, 3.0) && r(self.pump.opv_k_ml_s_per_bar, 0.0, 20.0)
                 && self.pump.curve.iter().all(|(b, f)| r(*b, 0.0, 20.0) && r(*f, 0.0, 2000.0)), "pump curve out of range"),
             (r(p.range_bar, 5.0, 30.0) && r(p.v_zero_mv, 300.0, 700.0) && r(p.v_full_mv, 4000.0, 5000.0), "pressure_sensor range out of limits"),
             (r(p.divider, 0.5, 0.8) && r(p.span_gain, 0.8, 1.2) && r(p.zero_offset_bar, -1.0, 1.0), "pressure_sensor calibration out of limits"),

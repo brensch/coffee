@@ -1,5 +1,5 @@
 name "grind far too fine: shot chokes and the max time stops it"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 16min
 model puck.grind = 4.0
 

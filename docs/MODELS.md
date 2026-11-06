@@ -32,7 +32,7 @@ Record logs with `coffee-emu capture --port /dev/ttyACM0 --out x.clog` from the 
 Example:
 
 ```sh
-coffee-emu fit --log logs/heatup.clog --model models/gaggia_classic_pro_e24_230v.toml \
+coffee-emu fit --log logs/heatup.clog --model models/gaggia_classic_pro_e24_120v.toml \
   --params thermal.boiler_mass_kg,thermal.loss_boiler_w_k,thermal.h_boiler_water_w_k --w-pressure 0 --out models/my_e24.toml
 coffee-emu replay --log logs/heatup.clog --model models/my_e24.toml  # sim vs real export
 ```

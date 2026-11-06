@@ -1,5 +1,5 @@
 name "steam mode builds saturation pressure, then brew-ready again"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 23min
 
 when engine.state == ready for 20s as warm: steam on

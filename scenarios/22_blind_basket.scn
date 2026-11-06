@@ -1,5 +1,5 @@
 name "blind basket backflush: profile holds 9 bar, nothing reaches the cup"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 14min
 model puck.grind = 500
 

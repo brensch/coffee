@@ -21,7 +21,7 @@ values tuned by hand in the emulator).
 """
 import json, os, sys
 
-R_PER_G, DOSE, COMP, SWELL = 0.095, 18.0, 0.15, 1.12   # models/gaggia_classic_pro_e24_230v.toml [puck]
+R_PER_G, DOSE, COMP, SWELL = 0.095, 18.0, 0.15, 1.12   # models/gaggia_classic_pro_e24_120v.toml [puck]
 
 # Design flow (ml/s) stated in the profile authors' notes.
 OVERRIDES = {

@@ -1,5 +1,5 @@
 name "NTC leads short together while ready"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 12min
 
 when engine.state == ready for 20s as warm: set ntc.fault = short

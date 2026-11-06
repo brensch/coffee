@@ -1,5 +1,5 @@
 name "empty reservoir: pump runs dry, engine stops the shot"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 16min
 
 when engine.state == ready for 30s as warm: set reservoir.ml = 0; brew on

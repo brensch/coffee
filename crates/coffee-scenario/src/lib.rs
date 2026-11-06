@@ -4,7 +4,7 @@
 //!
 //! ```text
 //! name "probe falls off mid-shot"
-//! machine "../models/gaggia_classic_pro_e24_230v.toml"
+//! machine "../models/gaggia_classic_pro_e24_120v.toml"
 //! seed 42
 //! duration 10min
 //! model puck.grind = 1.1                       # override a model parameter

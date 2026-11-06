@@ -1,5 +1,5 @@
 name "probe reading freezes a few degrees under setpoint: energy-balance heater check"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 12min
 
 # The reading sticks at ~89 C during warm-up (setpoint 93). A plain PID then keeps adding heat the

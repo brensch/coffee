@@ -1,5 +1,5 @@
 name "Heater triac fails shorted: software flags runaway, hardware cutout holds"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 20min
 
 when engine.state == ready for 20s as warm: set heater_triac.fault = stuck_on

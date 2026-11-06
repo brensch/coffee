@@ -1,5 +1,5 @@
 name "diagnostic: two shots from a warm machine"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 20min
 trace_every 50ms
 trace time, boiler.temp, boiler.water_temp, portafilter.temp, brew.water_temp, probe.temp, hydraulics.pressure, pump.flow, opv.flow, group.flow, puck.flow, puck.wet, cup.mass, heater.power, engine.state, engine.phase, engine.temp, engine.setpoint, engine.pressure, engine.target_pressure, engine.flow, engine.target_flow, engine.weight, engine.heater_duty, engine.pump_duty, engine.shot_time, engine.water, engine.heat_soak

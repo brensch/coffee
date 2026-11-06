@@ -8,7 +8,7 @@ A scenario is a plain-text script, one statement per line:
 
 ```text
 name "probe falls off mid-shot"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 seed 42
 duration 10min
 model puck.grind = 1.1                       # override a model parameter
@@ -121,8 +121,8 @@ Every model parameter path (`coffee-emu signals` lists them) can be used with `m
 - `12_fault_heater_triac_shorted.scn`: heater triac fails shorted: software flags runaway, hardware cutout holds
 - `13_fault_no_water.scn`: empty reservoir: pump runs dry, engine stops the shot
 - `14_fault_pressure_sensor.scn`: pressure transducer unplugged mid-shot
-- `15_pump_worn.scn`: worn pump (60% stroke volume) still reaches 9 bar
-- `16_brownout.scn`: mains sags to 195 V during warm-up
+- `15_pump_worn.scn`: worn pump (60% stroke volume) runs flat out and still holds ~7.5 bar (US 9 bar OPV)
+- `16_brownout.scn`: mains sags to 102 V (-15%) during warm-up
 - `17_grind_too_fine.scn`: grind far too fine: shot chokes and the max time stops it
 - `18_channeling.scn`: puck channels mid-shot: flow limit catches it
 - `19_ntc_emi_spikes.scn`: EMI bursts on the NTC reading are rejected

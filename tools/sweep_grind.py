@@ -29,7 +29,7 @@ def sweep(path):
             p = dict(base, grind=g)
             tmp = os.path.join(d, f"g{g}.json")
             json.dump(p, open(tmp, "w"))
-            r = pc.check(tmp, pc.os.path.join(pc.ROOT, "models/gaggia_classic_pro_e24_230v.toml"))
+            r = pc.check(tmp, pc.os.path.join(pc.ROOT, "models/gaggia_classic_pro_e24_120v.toml"))
             results.append((score(r), g, r))
     best = min(results, key=lambda x: x[0])
     return base, best, results

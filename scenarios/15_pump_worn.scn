@@ -1,5 +1,5 @@
-name "worn pump (60% stroke volume) still reaches 9 bar"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+name "worn pump (60% stroke volume) runs flat out and still holds ~7.5 bar"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 16min
 model pump.wear = 0.6
 
@@ -7,6 +7,9 @@ when engine.state == ready for 30s as warm: brew on
 when engine.state == brew_done as done:
 at done+2s: brew off
 
-expect always engine.pressure > 8.0 from warm+20s until done-1s
+# US 120 V: the 9 bar OPV bleeds ~1 ml/s from ~7.7 bar, so a 60% pump at full
+# duty tops out near 7.5-7.9 bar (it reached 9 bar against the old 10 bar EU OPV).
+expect always engine.pressure > 7.3 from warm+20s until done-1s
+expect always engine.pump_duty > 0.9 from warm+20s until done-1s
 expect eventually engine.state == brew_done from warm by warm+60s
 expect at done+4s: cup.mass > 33g

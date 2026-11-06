@@ -1,5 +1,5 @@
 name "EMI spikes too small to reject must not bias the boiler hot"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 16min
 model thermistor.noise_mv = 3
 

@@ -1,5 +1,5 @@
 name "classic 9 bar shot from a warm machine"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 23min
 trace_every 50ms
 

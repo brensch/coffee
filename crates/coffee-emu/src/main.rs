@@ -39,7 +39,7 @@ enum Cmd {
         #[arg(long)]
         trace: Option<PathBuf>,
         /// Model used when the scenario has no `machine` line.
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
         /// Print the event timeline.
         #[arg(long)]
@@ -57,12 +57,12 @@ enum Cmd {
         /// Directory for per-scenario CSV traces.
         #[arg(long, default_value = "out/traces")]
         traces: PathBuf,
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
     },
     /// Live emulated machine with the lab API for the UI.
     Serve {
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
         /// Where the engine connects (`coffee-engine --emu tcp://...`).
         #[arg(long, default_value = "127.0.0.1:7878")]
@@ -93,7 +93,7 @@ enum Cmd {
     Replay {
         #[arg(long)]
         log: PathBuf,
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
         #[arg(long, default_value = "out/replay.csv")]
         out: PathBuf,
@@ -102,7 +102,7 @@ enum Cmd {
     Fit {
         #[arg(long)]
         log: PathBuf,
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
         /// Comma-separated model parameter paths.
         #[arg(long, value_delimiter = ',')]
@@ -148,7 +148,7 @@ enum Cmd {
     },
     /// List readable signals, settable knobs and model parameters.
     Signals {
-        #[arg(long, default_value = "models/gaggia_classic_pro_e24_230v.toml")]
+        #[arg(long, default_value = "models/gaggia_classic_pro_e24_120v.toml")]
         model: PathBuf,
     },
 }

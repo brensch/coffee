@@ -13,7 +13,7 @@ voltage_v = 120.0
 frequency_hz = 60.0
 
 [heater]
-power_w = 1200.0          # 120 V element rating unverified; fit from a heat-up log
+power_w = 1370.0          # US E24 nameplate 1425 W / 11.88 A at 110-120 V incl. pump (Whole Latte Love, Coffee Addicts); element share est, fit from a heat-up log
 rated_voltage_v = 120.0
 cutoff_open_c = 170.0     # bimetal safety cutout on the boiler (est)
 cutoff_close_c = 150.0

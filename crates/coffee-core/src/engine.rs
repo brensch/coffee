@@ -609,11 +609,13 @@ impl Engine {
         let max_flow = pump::max_flow_ml_s(&self.cfg.pump, p);
         let stroke = if self.pump_on { 1.0 } else { 0.0 };
         let frac = self.stroke_frac.update(stroke, dt, 0.25);
-        self.flow_est = frac * max_flow;
+        // What reaches the group: the pump's delivery less the OPV's bleed back to the tank.
+        let bleed = pump::opv_bleed_ml_s(&self.cfg.pump, p);
+        self.flow_est = (frac * max_flow - bleed).max(0.0);
         if let Some(b) = self.brew.as_mut()
             && b.ended.is_none()
         {
-            b.pumped_ml += stroke * max_flow * dt;
+            b.pumped_ml = (b.pumped_ml + (stroke * max_flow - bleed) * dt).max(0.0);
             b.peak_pressure = b.peak_pressure.max(p);
             if p > 3.0 && self.flow_est > 0.2 {
                 b.resistance_sum += p / self.flow_est;
@@ -1242,11 +1244,8 @@ mod tests {
 
     #[test]
     fn pumped_volume_counts_strokes() {
-        // 50 Hz: each stroke at ~0 bar delivers curve(0)/50 ml.
-        let cfg = EngineConfig {
-            mains_hz: 50.0,
-            ..Default::default()
-        };
+        // 60 Hz: each stroke at ~0 bar delivers curve(0)/60 ml.
+        let cfg = EngineConfig::default();
         let mut e = Engine::new(cfg.clone(), Profile::flush(2.0));
         let mut k = 0;
         for _ in 0..100 {
@@ -1267,7 +1266,7 @@ mod tests {
             }
         }
         let shot = e.last_shot().unwrap().1;
-        let per_stroke = pump::max_flow_ml_s(&cfg.pump, 0.3) / 50.0;
+        let per_stroke = pump::max_flow_ml_s(&cfg.pump, 0.3) / cfg.mains_hz;
         let expect = strokes as f32 * per_stroke;
         assert!(strokes > 50, "{strokes}");
         assert!(

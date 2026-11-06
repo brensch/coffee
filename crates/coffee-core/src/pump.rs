@@ -30,7 +30,20 @@ pub fn max_flow_ml_s(cfg: &PumpConfig, pressure_bar: f32) -> f32 {
     (cc_min / 60.0 * cfg.flow_scale).max(0.0)
 }
 
-/// Stroke duty (0..1) needed to deliver `flow_ml_s` against `pressure_bar`.
+/// Flow the over-pressure valve bleeds back to the tank at `pressure_bar` (ml/s).
+pub fn opv_bleed_ml_s(cfg: &PumpConfig, pressure_bar: f32) -> f32 {
+    if cfg.opv_k_ml_s_per_bar <= 0.0 {
+        return 0.0;
+    }
+    let w = cfg.opv_softness_bar.max(1e-3);
+    let x = (pressure_bar - cfg.opv_crack_bar) / w;
+    // softplus knee, as the emulator's OPV
+    let sp = if x > 30.0 { x } else { libm::logf(1.0 + libm::expf(x)) };
+    cfg.opv_k_ml_s_per_bar * w * sp
+}
+
+/// Stroke duty (0..1) needed to deliver `flow_ml_s` to the group against
+/// `pressure_bar`: the pump also has to cover what the OPV bleeds.
 pub fn duty_for_flow(cfg: &PumpConfig, flow_ml_s: f32, pressure_bar: f32) -> f32 {
     if flow_ml_s <= 0.0 {
         return 0.0;
@@ -39,7 +52,7 @@ pub fn duty_for_flow(cfg: &PumpConfig, flow_ml_s: f32, pressure_bar: f32) -> f32
     if max < 0.05 {
         1.0
     } else {
-        (flow_ml_s / max).clamp(0.0, 1.0)
+        ((flow_ml_s + opv_bleed_ml_s(cfg, pressure_bar)) / max).clamp(0.0, 1.0)
     }
 }
 
@@ -53,5 +66,16 @@ mod tests {
         assert!((max_flow_ml_s(&c, 9.0) - 255.0 / 60.0).abs() < 1e-3);
         assert_eq!(max_flow_ml_s(&c, 20.0), 0.0);
         assert_eq!(duty_for_flow(&c, 100.0, 0.0), 1.0);
+    }
+    #[test]
+    fn us_opv_bleeds_near_brew_pressure() {
+        let c = PumpConfig::default();
+        assert!(opv_bleed_ml_s(&c, 3.0) < 0.01);
+        let b9 = opv_bleed_ml_s(&c, 9.0);
+        assert!(b9 > 1.0 && b9 < max_flow_ml_s(&c, 9.0), "{b9}");
+        // covering the bleed costs duty
+        assert!(duty_for_flow(&c, 1.5, 9.0) > 1.5 / max_flow_ml_s(&c, 9.0) + 0.2);
+        let off = PumpConfig { opv_k_ml_s_per_bar: 0.0, ..c };
+        assert_eq!(opv_bleed_ml_s(&off, 12.0), 0.0);
     }
 }

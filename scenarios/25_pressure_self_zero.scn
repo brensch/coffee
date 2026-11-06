@@ -1,5 +1,5 @@
 name "transducer zero drift is removed by the power-on self-zero"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 1min
 # The part reads 0.25 bar high at atmospheric. Cold at power-on, the engine
 # adopts that as zero (it is within the 0.3 bar band of the install zero).

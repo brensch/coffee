@@ -7,13 +7,12 @@ calculations are in [docs/CIRCUIT.md](../../docs/CIRCUIT.md), and the install pl
 [docs/INSTALL.md](../../docs/INSTALL.md).
 
 ## Look at it
-- `build/coffee-controller-230v.kicad_pcb`: open it in KiCad 7 or later.
-- `build/coffee-controller-230v.png` / `.pdf` / `-top.svg` / `-bottom.svg`: quick views.
-- `build/coffee-controller-230v-drc.rpt`: DRC report. 0 errors; the warnings left are
+- `build/coffee-controller-120v.kicad_pcb`: open it in KiCad 7 or later.
+- `build/coffee-controller-120v.png` / `.pdf` / `-top.svg` / `-bottom.svg`: quick views.
+- `build/coffee-controller-120v-drc.rpt`: DRC report. 0 errors; the warnings left are
   silkscreen overlaps, two thermal-spoke counts and one dangling stub.
-- `build/coffee-controller-230v-fab/`: gerbers, drill file and pick-and-place CSV.
-- `build/bom-230v.csv`: the BOM.
-- 120 V: the same files, named `-120v`.
+- `build/coffee-controller-120v-fab/`: gerbers, drill file and pick-and-place CSV.
+- `build/bom-120v.csv`: the BOM.
 
 ## Rebuild
 ```sh

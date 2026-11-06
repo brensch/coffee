@@ -1,5 +1,5 @@
 name "cold start reaches ready and holds temperature"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 20min
 trace time, boiler.temp, boiler.water_temp, probe.temp, engine.temp, engine.setpoint, engine.heater_duty, heater.power, engine.state
 

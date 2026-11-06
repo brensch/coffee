@@ -12,7 +12,7 @@ An espresso machine controller built emulation-first, in Rust. It's in the spiri
   - Profiles, History (grind advice against a reference shot) and Settings.
   - Brewing is refused until the machine is Ready (water at temperature, group heat-soaked) unless you choose *Brew anyway*. The physical switch always works.
 
-Target machine: **Gaggia Classic Pro E24, US 120 V** (models for 120 V, 230 V, and the 2019 aluminium boiler are included). See [docs/HARDWARE.md](docs/HARDWARE.md).
+Target machine: **Gaggia Classic Pro E24, US 120 V / 60 Hz** only (model: `models/gaggia_classic_pro_e24_120v.toml`). See [docs/HARDWARE.md](docs/HARDWARE.md).
 
 ## Quick start
 

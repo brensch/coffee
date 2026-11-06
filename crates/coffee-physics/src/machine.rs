@@ -119,6 +119,9 @@ impl Default for Faults {
     }
 }
 
+/// Pump outlet to boiler inlet: the cold water a bleeding OPV can draw back (ml, est).
+const LINE_ML: f64 = 2.0;
+
 pub struct Machine {
     pub cfg: ModelConfig,
     pub faults: Faults,
@@ -149,6 +152,9 @@ pub struct Machine {
     // hydraulic state
     pub p: f64,
     pub reservoir_ml: f64,
+    /// Cold water in the pump-to-boiler line that a stroke pushed in and the OPV
+    /// can still push back out between strokes (ml, at most `LINE_ML`).
+    pub line_cold_ml: f64,
     pub head_ml: f64,
     pub absorbed_ml: f64,
     pub through_ml: f64,
@@ -213,6 +219,7 @@ impl Machine {
             fuse_blown: false,
             p: 0.0,
             reservoir_ml: cfg.reservoir.initial_ml,
+            line_cold_ml: 0.0,
             head_ml: 0.0,
             absorbed_ml: 0.0,
             through_ml: 0.0,
@@ -492,7 +499,20 @@ impl Machine {
             // Net flow into the boiler side; negative when the OPV bleeds the
             // line between strokes.
             let net = q_pump - q_opv;
-            let inflow = net.max(0.0);
+            // Cold water reaching the boiler. Between strokes the OPV bleeds the
+            // line back to the tank, and what it bleeds is the cold slug the last
+            // stroke pushed in, not boiler water: so backflow cancels recent cold
+            // inflow (up to the line's volume) instead of being ignored. Without
+            // this a soft OPV that bleeds at brew pressure (US units) would count
+            // the same cold water in on every stroke and never out.
+            let inflow = if net >= 0.0 {
+                self.line_cold_ml = (self.line_cold_ml + net * dt).min(LINE_ML);
+                net
+            } else {
+                let back = (-net * dt).min(self.line_cold_ml);
+                self.line_cold_ml -= back;
+                -back / dt
+            };
 
             // Thermal expansion of the water (only matters when liquid-full).
             let t_w_before = self.t_water;

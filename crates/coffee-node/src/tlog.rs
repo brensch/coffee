@@ -376,11 +376,11 @@ mod tests {
 
     #[test]
     fn steady_ticks_are_one_byte() {
-        let mut w = LogWriter::new(60, 50.0);
+        let mut w = LogWriter::new(60, 60.0);
         for i in 0..600u32 {
             let s = SensorFrame {
                 cycle: i,
-                t_us: i as u64 * 20_000,
+                t_us: (i as u64 * 16_666_667 + 500) / 1000, // on the 60 Hz grid
                 ntc_mv: 1700,
                 pressure_mv: 340,
                 ..Default::default()

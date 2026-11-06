@@ -110,7 +110,7 @@ def check(path, model):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("dirs", nargs="+")
-    ap.add_argument("--model", default=os.path.join(ROOT, "models/gaggia_classic_pro_e24_230v.toml"))
+    ap.add_argument("--model", default=os.path.join(ROOT, "models/gaggia_classic_pro_e24_120v.toml"))
     ap.add_argument("-j", type=int, default=os.cpu_count() or 4)
     a = ap.parse_args()
     files = sorted(os.path.join(dp, fn) for d in a.dirs for dp, _, fns in os.walk(d) for fn in fns if fn.endswith(".json"))

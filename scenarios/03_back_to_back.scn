@@ -1,5 +1,5 @@
 name "back-to-back shots 45 s apart hold temperature and yield"
-machine "../models/gaggia_classic_pro_e24_230v.toml"
+machine "../models/gaggia_classic_pro_e24_120v.toml"
 duration 20min
 trace_every 50ms
 
