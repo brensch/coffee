@@ -158,11 +158,30 @@ fn Link(
     #[prop(into)] label: Signal<String>,
     #[prop(into)] flowing: Signal<bool>,
     #[prop(optional)] warm: bool,
+    /// Draw a ball valve in the pipe: bore along the pipe when open, across it when closed.
+    #[prop(optional, into)] valve: Option<Signal<bool>>,
 ) -> impl IntoView {
+    let has_valve = valve.is_some();
+    let open = Signal::derive(move || valve.map(|v| v.get()).unwrap_or(true));
     view! {
-        <div class="link" class:flowing=flowing class:warm=warm>
-            <div class="link-line"><i></i></div>
-            <div class="link-label">{label}</div>
+        <div class="link" class:flowing=flowing class:warm=warm class:has-valve=has_valve
+            class:valve-open=move || has_valve && open.get() class:valve-closed=move || has_valve && !open.get()>
+            <div class="link-pipe">
+                <div class="link-line"><i></i></div>
+                {has_valve.then(|| view! {
+                    <svg class="valve" viewBox="0 0 32 32" role="img"
+                        aria-label=move || if open.get() { "valve open" } else { "valve closed" }>
+                        <circle class="valve-body" cx="16" cy="16" r="13" />
+                        <g class="valve-ball">
+                            <rect class="valve-bore" x="4" y="11.5" width="24" height="9" rx="2" />
+                        </g>
+                    </svg>
+                })}
+            </div>
+            <div class="link-label">
+                {has_valve.then(|| view! { <span class="valve-dot"></span> })}
+                {label}
+            </div>
         </div>
     }
 }
@@ -206,7 +225,7 @@ pub fn Diagram(#[prop(into)] data: Signal<DiagramData>) -> impl IntoView {
                 style=Signal::derive(move || format!("{}; --glow: {:.2}", tint(d().water_c), d().heater_level))
                 active=Signal::derive(move || d().heater_on)
                 badge=Signal::derive(move || d().water_ml.filter(|w| *w < 130.0).map(|w| format!("{w:.0} ml"))) />
-            <Link label=Signal::derive(move || String::from(if valve.get() { "valve open" } else { "valve closed" })) flowing=valve warm=true />
+            <Link label=Signal::derive(move || String::from(if valve.get() { "valve open" } else { "valve closed" })) flowing=valve warm=true valve=valve />
             <Stage name="Portafilter"
                 value=Signal::derive(move || d().group_c.map(|g| format!("{}{g:.0}", if d().group_estimated { "≈" } else { "" })).unwrap_or_else(|| "–".into()))
                 unit="°C"

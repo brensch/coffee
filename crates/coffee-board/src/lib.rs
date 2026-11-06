@@ -356,6 +356,8 @@ mod tests {
         use super::panel_leds;
         assert_eq!(panel_leds(EngineState::Standby, 0, 20.0, 93.0, 0), [false, false, false]);
         assert_eq!(panel_leds(EngineState::Ready, 0, 93.0, 93.0, 700), [true, true, false]);
+        assert_eq!(panel_leds(EngineState::Brewing, 0, 93.0, 93.0, 700), [true, true, false]);
+        assert_eq!(panel_leds(EngineState::BrewDone, 0, 93.0, 93.0, 700), [true, false, false]); // shot done: coffee lamp out
         assert_eq!(panel_leds(EngineState::Heating, 0, 60.0, 93.0, 700)[1], false); // blinking: off half the time
         assert_eq!(panel_leds(EngineState::Heating, 0, 60.0, 93.0, 100)[1], true);
         assert_eq!(panel_leds(EngineState::Steam, 0, 139.0, 140.0, 700), [true, false, true]);

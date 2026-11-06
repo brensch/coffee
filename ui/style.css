@@ -223,21 +223,46 @@ textarea.code { width: 100%; min-height: 260px; font-family: var(--mono); font-s
 .stage[style*="--pulse"].active { animation: stroke 0.2s ease-in-out infinite; border-color: var(--pressure); }
 @keyframes stroke { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pressure) 30%, transparent); } }
 
-.link { flex: 0 0 72px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
-.link-line { width: 100%; height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; position: relative; }
-.link-line i { position: absolute; inset: 0; opacity: 0; background: repeating-linear-gradient(90deg, var(--water) 0 8px, transparent 8px 16px); transition: opacity 0.3s; }
-.link.warm .link-line i { background: repeating-linear-gradient(90deg, var(--weight) 0 8px, transparent 8px 16px); }
+.link { flex: 0 0 84px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; }
+.link-pipe { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; }
+.link-line { width: 100%; height: 10px; border-radius: 5px; background: var(--border); overflow: hidden; position: relative; }
+.link-line i { position: absolute; inset: 0; opacity: 0; background: repeating-linear-gradient(90deg, var(--water) 0 12px, transparent 12px 20px); transition: opacity 0.3s; }
+.link.warm .link-line i { background: repeating-linear-gradient(90deg, var(--weight) 0 12px, transparent 12px 20px); }
 .link.flowing .link-line i { opacity: 1; animation: run 0.5s linear infinite; }
-@keyframes run { from { background-position: 0 0; } to { background-position: 16px 0; } }
-.link-label { font-size: 10px; color: var(--muted); font-family: var(--mono); white-space: nowrap; min-height: 1.2em; }
+@keyframes run { from { background-position: 0 0; } to { background-position: 20px 0; } }
+.link-label { font-size: 11px; color: var(--muted); font-family: var(--mono); white-space: nowrap; min-height: 1.2em; display: flex; align-items: center; gap: 5px; }
+
+/* ball valve in the pipe: the bore lines up with the pipe when open, turns across it when closed */
+.valve { position: absolute; left: 50%; top: 50%; width: 32px; height: 32px; transform: translate(-50%, -50%); overflow: visible; }
+.valve-body { fill: var(--raised); stroke-width: 2.5; transition: stroke 0.3s; }
+.valve-ball { transform-origin: 16px 16px; transition: transform 0.35s cubic-bezier(.4,1.4,.6,1); }
+.valve-bore { transition: fill 0.3s; }
+.link.valve-open .valve-body { stroke: var(--ok); }
+.link.valve-open .valve-bore { fill: var(--weight); }
+.link.valve-open .valve-ball { transform: rotate(0deg); }
+.link.valve-closed .valve-body { stroke: var(--bad); }
+.link.valve-closed .valve-bore { fill: var(--faint); }
+.link.valve-closed .valve-ball { transform: rotate(90deg); }
+/* closed: the pipe downstream of the valve is empty */
+.link.valve-closed .link-line { background: linear-gradient(90deg, var(--border) 50%, color-mix(in srgb, var(--border) 45%, transparent) 50%); }
+.valve-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.link.valve-open .valve-dot { background: var(--ok); }
+.link.valve-closed .valve-dot { background: var(--bad); }
+.link.valve-open .link-label { color: var(--ok); }
+.link.valve-closed .link-label { color: var(--text); }
 
 @media (max-width: 960px) {
   .flow { flex-direction: column; }
-  .link { flex: 0 0 40px; flex-direction: row; }
-  .link-line { width: 4px; height: 100%; }
-  .link-line i { background: repeating-linear-gradient(180deg, var(--water) 0 8px, transparent 8px 16px); }
-  .link.warm .link-line i { background: repeating-linear-gradient(180deg, var(--weight) 0 8px, transparent 8px 16px); }
-  @keyframes run { from { background-position: 0 0; } to { background-position: 0 16px; } }
+  .link { flex: 0 0 52px; flex-direction: row; gap: 12px; }
+  .link-pipe { width: auto; height: 100%; }
+  .link-line { width: 10px; height: 100%; }
+  .link-line i { background: repeating-linear-gradient(180deg, var(--water) 0 12px, transparent 12px 20px); }
+  .link.warm .link-line i { background: repeating-linear-gradient(180deg, var(--weight) 0 12px, transparent 12px 20px); }
+  @keyframes run { from { background-position: 0 0; } to { background-position: 0 20px; } }
+  /* the pipe runs vertically here, so the bore does too */
+  .link.valve-open .valve-ball { transform: rotate(90deg); }
+  .link.valve-closed .valve-ball { transform: rotate(0deg); }
+  .link.valve-closed .link-line { background: linear-gradient(180deg, var(--border) 50%, color-mix(in srgb, var(--border) 45%, transparent) 50%); }
 }
 
 .grind-line { font-size: 13px; padding: 8px 10px; border-radius: 8px; background: var(--raised); border: 1px solid var(--border); }

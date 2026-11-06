@@ -147,7 +147,9 @@ pub fn panel_leds(state: EngineState, faults: u16, temp_c: f32, setpoint_c: f32,
     match state {
         EngineState::Standby => [false, false, false],
         EngineState::Boot | EngineState::Heating => [true, slow, false],
-        EngineState::Ready | EngineState::Brewing | EngineState::BrewDone | EngineState::HotWater => [true, true, false],
+        EngineState::Ready | EngineState::Brewing | EngineState::HotWater => [true, true, false],
+        // Shot finished: the coffee lamp goes out until the rocker is turned back off.
+        EngineState::BrewDone => [true, false, false],
         EngineState::Steam => [true, false, if (setpoint_c - temp_c).abs() <= 3.0 { true } else { slow }],
         EngineState::Fault => [fast, false, false],
     }
