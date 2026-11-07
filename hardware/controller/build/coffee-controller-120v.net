@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/06/2026 12:30 PM")
+    (date "11/07/2026 01:05 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -689,13 +689,13 @@
     (comp
       (ref "J5")
       (value "Thermocouple")
-      (description "JST_GH_2_SMD")
-      (footprint "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
+      (description "Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2")
+      (footprint "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
       (fields
         (field
-          (name "Description") "JST_GH_2_SMD")
+          (name "Description") "Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2")
         (field
-          (name "Footprint") "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal")
+          (name "Footprint") "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal")
         (field
           (name "Datasheet"))
         (field
@@ -704,7 +704,7 @@
           (name "SKiDL Line") "controller.py:50"))
       (libsource
         (lib "NO_LIB")
-        (part "JST_GH_2_SMD"))
+        (part "Screw terminal 2P"))
       (sheetpath
         (names "/")
         (tstamps "/"))

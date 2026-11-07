@@ -1,0 +1,44 @@
+Refs,Qty,Value,Part / MPN,Footprint,Populate,Description,Notes
+C3,1,10uF 25V X5R,C,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
+C4 C11 C13 C14,4,100nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,"3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner | ADC reservoir | MCP3421 VDD bypass | TMP117 V+ bypass"
+C5 C12,2,1uF X5R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,Differential filter across the ADC inputs: ~80 Hz with R43/R44 | EN delay
+C6 C7,2,22uF 25V X5R,Samsung CL21A226MAQNNNE,Capacitor_SMD:C_0805_2012Metric,Y,Capacitor,"Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
+C9,1,22nF X7R,C,Capacitor_SMD:C_0603_1608Metric,Y,Capacitor,ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses
+C15 C16,2,22nF X2,Murata GA355DR7GB223KW01L,Coffee:C_2220_Murata_GA355,Y,"Class X2 safety capacitor, 250 VAC, 2220","MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage"
+D1 D3 D4 D5 D6 D7 D8,7,red,LED,LED_SMD:LED_0603_1608Metric,Y,LED,"Status: boot log flicker, on while programming, then the firmware heartbeat | indicator: coffee lamp | indicator: heater on | indicator: power lamp | indicator: pump on | indicator: steam lamp | indicator: valve on"
+D2,1,B5819W,B5819W SL,Diode_SMD:D_SOD-123,Y,Schottky 1 A 40 V,USB bench power
+F1,1,2A T,Littelfuse 0443002.DR,Coffee:Fuse_Littelfuse_Nano2_443,Y,"Fuse, 2 A slow-blow, 250 VAC, 50 A breaking","MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush)"
+J2,1,Heater SSR,JST SM04B-GHS-TB,Connector_JST:JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal,Y,JST_GH_4_SMD,1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size)
+J4,1,USB-C,HRO TYPE-C-31-M-12,Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12,Y,"USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power","Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
+J5,1,Thermocouple,"Phoenix MKDS 1,5/ 2-5,08","TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",Y,"Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2","1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); the probe's bare wires clamp straight in. Cold junction measured by U7 beside it"
+J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal,Y,JST_GH_3_SMD,"0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
+J7,1,Front panel,JST SM06B-GHS-TB,Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal,Y,JST_GH_6_SMD,1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)
+J10,1,Scale,JST SM05B-GHS-TB,Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal,Y,JST_GH_5_SMD,1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)
+J12,1,N,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. N: neutral (feeds the IRM module only)
+J13,1,L,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab","MAINS. L: live, unswitched (pump, valve, IRM)"
+J14,1,P,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. P: switched live to the pump
+J15,1,3,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. 3: switched live to the 3-way valve
+PS1,1,IRM-10-5,Mean Well IRM-10-5,Converter_ACDC:Converter_ACDC_MeanWell_IRM-10-xx_THT,Y,"Isolated AC-DC 5 V 2 A, 4.2 kVac, UL/IEC 62368-1, EN 61558; 50 % load at 70 C","Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C"
+Q1 Q2 Q3,3,AO3400A,AO3400A,Package_TO_SOT_SMD:SOT-23,Y,"N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate",HEATER output: sinks the external heater SSR input (7-15 mA) | PUMP output: sinks the opto-triac LED (~9 mA) | VALVE output: sinks the opto-triac LED (~9 mA)
+Q5,1,T435-600B,ST T435-600B-TR,Package_TO_SOT_SMD:TO-252-2,Y,"Triac 4 A 600 V, ST T4 series (DPAK)","MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)"
+Q6,1,T410-600B,ST T410-600B-TR,Package_TO_SOT_SMD:TO-252-2,Y,"Triac 4 A 600 V, ST T4 series (DPAK)","MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W"
+R4 R5 R6,3,3.3k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)
+R10 R20 R21 R25 R36,5,10k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,EN pull-up (Espressif RC delay) | SCK pull-down: HX711 stays powered while the C6 boots | V5_SNS divider bottom | switch pull-up / wetting current
+R11 R46,2,4.7k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,I2C SCL pull-up; also GPIO9 high at reset = normal boot | I2C SDA pull-up; also GPIO8's strap pull-up (high at reset)
+R12 R18 R19 R37 R38 R39 R40 R41 R42 R43 R44,11,1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,GPIO series protection | TC+ input: noise filter with C12 (probe lead runs past the heater wiring) | TC- input series: matches R43 (symmetric filter) | indicator LED: coffee lamp | indicator LED: heater on | indicator LED: power lamp | indicator LED: pump on | indicator LED: steam lamp | indicator LED: valve on | red LED Vf ~2.0 V: ~1.3 mA from 3.3 V
+R13 R14,2,5.1k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,USB-C sink identification
+R16,1,47k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,Divider 100/147 (147k load: TE M3200 needs > 100k)
+R17,1,100k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,
+R24,1,20k,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,V5_SNS divider top
+R30 R31 R32 R47 R48,5,330,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"PUMP opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA | VALVE opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA | front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA | front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA"
+R45,1,10M,R,Resistor_SMD:R_0603_1608Metric,Y,Resistor,"Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out"
+R49 R50,2,330,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak
+R51 R52,2,100 1W,UNI-ROYAL 25121WF1000T4E,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: snubber R (inductive load)
+R53,1,1k,R,Resistor_SMD:R_1206_3216Metric,Y,Resistor,MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k)
+R54,1,51k 500V,Vishay CRCW251251K0JNEG,Resistor_SMD:R_2512_6332Metric,Y,Resistor,MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)
+TP1,1,BOOT,TestPad,TestPoint:TestPoint_Pad_D1.0mm,Y,Bare test pad,Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in. On SCL: harmless to the bus
+U4,1,ESP32-C6-MINI-1U-H4,ESP32-C6-MINI-1U-H4,Espressif:ESP32-C6-MINI-1U,Y,"Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case
+U5,1,TLV1117LV33DCYR,TI TLV1117LV33DCYR,Package_TO_SOT_SMD:SOT-223-3_TabPin2,Y,"LDO 3.3 V 1 A, ceramic-stable","SOT-223 for heat: ~0.17 W average, +11 C"
+U6,1,MCP3421A0T-E/CH,MCP3421A0T-E/CH,Package_TO_SOT_SMD:SOT-23-6,Y,"18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8","Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C)"
+U7,1,TMP117AIDRVR,TI TMP117AIDRVR,Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm,Y,"+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)","Cold junction: at J5's pads, I2C 0x48 (ADD0 to GND), +-0.2 C max to 100 C; thermal pad soldered to GND (TI allows floating or grounded)"
+U8 U9,2,MOC3083SR2M,onsemi MOC3083SR2M,Package_DIP:SMDIP-6_W9.53mm_Clearance8mm,Y,"Zero-cross opto-triac driver, 800 V, 4170 Vrms, IFT 5 mA max","PUMP: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing | VALVE: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing"

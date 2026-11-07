@@ -9,7 +9,7 @@ position file would then put the part on the board reversed. Exits 1 on any mism
 import csv, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = os.path.join(HERE, "build")
+B = os.environ.get("BUILD_DIR", os.path.join(HERE, "build"))   # v38: same override as layout.py
 sys.path.insert(0, HERE)
 from jlc_cpl import PAD_MAP, PROXY   # noqa: E402
 

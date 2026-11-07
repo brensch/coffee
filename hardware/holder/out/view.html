@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>holder view</title>
+<style>html,body{margin:0;height:100%;background:#eef0f2}#c{width:100%;height:100%;display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body><canvas id="c"></canvas><script type="module">
+import * as THREE from "three"; import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"; import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+const qs = new URLSearchParams(location.search), file = qs.get("f") || "assembly", view = qs.get("v") || "front";
+const r = new THREE.WebGLRenderer({canvas: document.getElementById("c"), antialias: true, preserveDrawingBuffer: true});
+r.setSize(innerWidth, innerHeight, false); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.5;
+const s = new THREE.Scene(); s.background = new THREE.Color(0xeef0f2);
+s.add(new THREE.HemisphereLight(0xffffff, 0xa0a8b0, 2.4)); const d = new THREE.DirectionalLight(0xffffff, 2.0); d.position.set(60, 80, 160); s.add(d);
+const d2 = new THREE.DirectionalLight(0xffffff, 1.0); d2.position.set(-80, -40, 60); s.add(d2);
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 1, 3000); cam.up.set(0, 1, 0);
+new GLTFLoader().load(file + ".glb", g => { s.add(g.scene);
+  const b = new THREE.Box3().setFromObject(g.scene), c = b.getCenter(new THREE.Vector3()), z = b.getSize(new THREE.Vector3()), D = Math.max(z.x, z.y) * 2.1;
+  const P = {front: [0, 0, 1], iso: [0.75, 0.45, 0.85], side: [1, 0.1, 0.25], top: [0.15, 1, 0.45], back: [0.4, 0.3, -1]}[view];
+  cam.position.set(c.x + P[0] * D, c.y + P[1] * D, c.z + P[2] * D); cam.lookAt(c); r.render(s, cam); window.READY = 1; });
+</script></body></html>

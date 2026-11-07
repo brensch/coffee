@@ -32,7 +32,7 @@ import builtins
 NC = builtins.NC
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "build")
+OUT = os.environ.get("BUILD_DIR", os.path.join(HERE, "build"))   # v38: same override as layout.py
 os.makedirs(OUT, exist_ok=True)
 MAINS_V = int(os.environ.get("MAINS_V", "120"))   # the target machine is a US 120 V Gaggia Classic Pro
 
@@ -347,7 +347,7 @@ for name, gpio, qref, rpd in (("HEATER", "IO20", "Q1", "R4"), ("PUMP", "IO19", "
 j_out[2] += Net.get("HEATER_OUT")
 
 # Thermocouple (v31): ungrounded K-type, M4 thread, screwed into the brew-thermostat hole (Gaggiuino's
-# probe). Its two wires, crimped into a GH 2-pin, plug into J5. TC- is the board's ground reference (the
+# probe). Its two wires clamp into J5, a screw terminal (v38; was a GH 2-pin). TC- is the board's ground reference (the
 # probe's junction is insulated from the earthed boiler, so this is the only ground on it).
 # - R43/R44 1k in each ADC input + C12: the noise filter. The 0.5 m probe lead runs past the heater and
 #   pump wiring, and the SSRs switch 11 A beside it. (No lead can reach J5, so they aren't there for
@@ -362,8 +362,12 @@ j_out[2] += Net.get("HEATER_OUT")
 #   ADC side of R43 the same current would drop 0.33 mV: ~8 C.)
 # - TMP117 (U7) sits at J5's pads: it reads the cold junction (the alloy-to-copper joints in the terminal).
 tc_p = Net("TC_P")
-j_tc = part(JST2, "J5", "Thermocouple", mpn="JST SM02B-GHS-TB",
-            notes="1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it")
+# v38: a screw terminal (was a GH 2-pin): the probe's own alloy wires clamp straight in, nothing to crimp,
+# and no copper lead between the alloy and the cold junction U7 reads.
+TERM2 = tmpl("Screw terminal 2P", "J", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+             [(1, "1", T.PASSIVE), (2, "2", T.PASSIVE)], "Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2")
+j_tc = part(TERM2, "J5", "Thermocouple", mpn="Phoenix MKDS 1,5/ 2-5,08",
+            notes="1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); the probe's bare wires clamp straight in. Cold junction measured by U7 beside it")
 j_tc[1, 2] += tc_p, gnd   # TC- is the reference, on GND at the socket (a named TC_N net would rename GND)
 tc_inp, tc_inn = Net("TC_INP"), Net("TC_INN")
 r = part(R, "R43", "1k", notes="TC+ input: noise filter with C12 (probe lead runs past the heater wiring)")
@@ -506,7 +510,7 @@ def netname(pin):
 
 
 MAINS_REFS = {"J12", "J13", "J14", "J15", "F1", "PS1", "U8", "U9", "Q5", "Q6", "R49", "R50", "R51", "R52", "R53", "R54", "C15", "C16"}
-THT_OK = {"PS1", "J12", "J13", "J14", "J15"}   # the IRM module and the spade tabs: JLC THT or hand-soldered
+THT_OK = {"PS1", "J12", "J13", "J14", "J15", "J5"}   # the IRM module, the spade tabs and (v38) the thermocouple screw terminal: JLC THT or hand-soldered
 
 
 def design_checks():

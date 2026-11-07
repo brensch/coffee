@@ -37,7 +37,7 @@ THT = ("TestPoint", "MountingHole")   # bare pads/holes: not assembled. Everythi
 # MPN fixes: the part JLC actually stocks for the same function.
 MPN_HINTS = {
     "ESP32-C6-MINI-1U-H4": "ESP32-C6-MINI-1U-H4", "HRO TYPE-C-31-M-12": "TYPE-C-31-M-12",
-    "JST SM02B-GHS-TB": "SM02B-GHS-TB", "JST SM04B-GHS-TB": "SM04B-GHS-TB", "JST SM03B-GHS-TB": "SM03B-GHS-TB", "JST SM05B-GHS-TB": "SM05B-GHS-TB", "JST SM06B-GHS-TB": "SM06B-GHS-TB", "JST SM07B-GHS-TB": "SM07B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
+    "JST SM02B-GHS-TB": "SM02B-GHS-TB", "Phoenix MKDS 1,5/ 2-5,08": "MKDS 1,5/ 2-5,08", "JST SM04B-GHS-TB": "SM04B-GHS-TB", "JST SM03B-GHS-TB": "SM03B-GHS-TB", "JST SM05B-GHS-TB": "SM05B-GHS-TB", "JST SM06B-GHS-TB": "SM06B-GHS-TB", "JST SM07B-GHS-TB": "SM07B-GHS-TB", "TI TLV1117LV33DCYR": "TLV1117LV33DCYR",
     "AO3400A": "AO3400A", "AO3401A": "AO3401A", "1N4148W": "1N4148W", "B5819W SL": "B5819W SL",
     "Samsung CL21A226MAQNNNE": "CL21A226MAQNNNE",
 }
@@ -144,7 +144,7 @@ def main():
     ap.add_argument("--tht", choices=("jlc", "hand"), default="jlc",
                     help="v32: 'jlc' = JLC also solders the through-hole parts (IRM module, spade tabs); 'hand' = they go on hand.csv")
     a = ap.parse_args()
-    b = os.path.join(HERE, "build")
+    b = os.environ.get("BUILD_DIR", os.path.join(HERE, "build"))   # v38: same override as layout.py
     rows = list(csv.DictReader(open(os.path.join(b, f"bom-{a.mains}v.csv"))))
     pos = {r["Ref"]: r for r in csv.DictReader(open(os.path.join(b, f"coffee-controller-{a.mains}v-fab", "positions.csv")))}
     out = os.path.join(b, f"jlc-{a.mains}v" + ("-2side" if a.both_sides else "") + ("-smd" if a.tht == "hand" else ""))
@@ -161,7 +161,7 @@ def main():
         model = c.get("componentModelEn", "") if c else ""
         # through-hole parts, and anything placed on the bottom (connectors you solder yourself:
         # Economic PCBA assembles the top side only), go on the hand-solder list
-        through = any(k in row["Footprint"] for k in ("_THT", "FASTON"))
+        through = any(k in row["Footprint"] for k in ("_THT", "FASTON", "TerminalBlock"))   # v38: the TC screw terminal
         is_tht = any(t in row["Footprint"] for t in THT) or (a.tht == "hand" and through) or (not a.both_sides and all(
             pos.get(r, {}).get("Side", "top").lower().startswith("bottom") for r in refs))
         line = dict(Comment=row["Value"], Designator=",".join(refs), Footprint=row["Footprint"].split(":")[-1], **{"LCSC Part #": code})

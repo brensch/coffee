@@ -10,7 +10,7 @@ import json, math, os, subprocess, sys
 import layout, pcbnew
 
 out = sys.argv[1] if len(sys.argv) > 1 else "place.png"
-spec = json.load(open(os.path.join(layout.HERE, "build", "parts-120v.json")))
+spec = json.load(open(os.path.join(layout.BUILD, "parts-120v.json")))
 board = layout.build(spec, 120)
 W, H = layout.W, layout.H
 fps = list(board.GetFootprints())

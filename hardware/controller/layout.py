@@ -196,7 +196,8 @@ def silkscreen(board, mains_v, footprints=None):
             if not word or int(num) in skip_words.get(ref, []):
                 continue
             px, py = pads[num]
-            gap = 1.3 if fp.IsFlipped() else 0.5   # a bottom-side connector's own pads are on this layer: start past them
+            tht = any(p.GetAttribute() == pcbnew.PAD_ATTRIB_PTH for p in fp.Pads())
+            gap = 1.7 if tht else 1.3 if fp.IsFlipped() else 0.5   # pads on this (back) layer: start past them (v38: the THT screw terminal's 2.6 mm pads too)
             off = gap + tlen(word, 0.8) / 2
             silk(word, px + inward[0] * off, py + inward[1] * off, 0.8, ang)
             reach = max(reach, gap + tlen(word, 0.8))

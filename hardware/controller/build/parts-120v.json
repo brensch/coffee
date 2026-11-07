@@ -958,7 +958,7 @@
    "notes": "VALVE output: sinks the opto-triac LED (~9 mA)"
   },
   "J5": {
-   "footprint": "Connector_JST:JST_GH_SM02B-GHS-TB_1x02-1MP_P1.25mm_Horizontal",
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
    "value": "Thermocouple",
    "pins": {
     "1": "TC_P",
@@ -970,9 +970,9 @@
    },
    "mains": [],
    "populate": "Y",
-   "desc": "JST_GH_2_SMD",
-   "mpn": "JST SM02B-GHS-TB",
-   "notes": "1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it"
+   "desc": "Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2",
+   "mpn": "Phoenix MKDS 1,5/ 2-5,08",
+   "notes": "1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); the probe's bare wires clamp straight in. Cold junction measured by U7 beside it"
   },
   "R43": {
    "footprint": "Resistor_SMD:R_0603_1608Metric",

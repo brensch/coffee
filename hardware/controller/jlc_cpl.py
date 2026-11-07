@@ -20,7 +20,7 @@ import csv, json, math, os, sys, urllib.request
 import pcbnew
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = os.path.join(HERE, "build")
+B = os.environ.get("BUILD_DIR", os.path.join(HERE, "build"))   # v38: same override as layout.py
 CACHE = os.path.join(B, "easyeda-cache")
 
 
@@ -47,7 +47,9 @@ PROXY = {"C8598": "C81598",
 
 # Parts whose JLC pin numbers differ from the board footprint's: JLC pad -> board pad. Checked against
 # JLC's own symbol: KT-0603R (C2286) numbers 1 = anode, 2 = cathode; KiCad's LED_0603 has 1 = cathode.
-PAD_MAP = {"C2286": {"1": "2", "2": "1"}}
+# TE 63824-1 (C575074): JLC numbers the tab's two legs 1 and 2; the board footprint calls both "1", so
+# without this only one leg was fitted and J12/J13/J15 came out rotated or a pitch off (REVIEW-v37 M1).
+PAD_MAP = {"C2286": {"1": "2", "2": "1"}, "C575074": {"2": "1"}}
 HOLE_WEIGHT = 50.0
 
 
