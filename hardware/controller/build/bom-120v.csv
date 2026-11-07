@@ -15,7 +15,7 @@ J6,1,Pressure,JST SM03B-GHS-TB,Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25m
 J7,1,Front panel,JST SM06B-GHS-TB,Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal,Y,JST_GH_6_SMD,1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)
 J10,1,Scale,JST SM05B-GHS-TB,Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal,Y,JST_GH_5_SMD,1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)
 J12,1,N,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. N: neutral (feeds the IRM module only)
-J13,1,L,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab","MAINS. L: live, unswitched (pump, valve, IRM)"
+J13,1,L,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab","MAINS. L: live, switched by the power rocker (pump, valve, IRM)"
 J14,1,P,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. P: switched live to the pump
 J15,1,3,TE 63824-1,Coffee:FASTON_TE_63824-1,Y,"6.3 mm (0.250"") PCB quick-connect tab",MAINS. 3: switched live to the 3-way valve
 PS1,1,IRM-10-5,Mean Well IRM-10-5,Converter_ACDC:Converter_ACDC_MeanWell_IRM-10-xx_THT,Y,"Isolated AC-DC 5 V 2 A, 4.2 kVac, UL/IEC 62368-1, EN 61558; 50 % load at 70 C","Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C"

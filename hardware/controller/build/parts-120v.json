@@ -33,7 +33,7 @@
    "populate": "Y",
    "desc": "6.3 mm (0.250\") PCB quick-connect tab",
    "mpn": "TE 63824-1",
-   "notes": "MAINS. L: live, unswitched (pump, valve, IRM)"
+   "notes": "MAINS. L: live, switched by the power rocker (pump, valve, IRM)"
   },
   "J14": {
    "footprint": "Coffee:FASTON_TE_63824-1",

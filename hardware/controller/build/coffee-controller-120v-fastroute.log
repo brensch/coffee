@@ -1,6 +1,6 @@
     0.000 INFO  fastroute 0.1.14
-    0.000 INFO  live viewer: http://127.0.0.1:47379
-    0.001 INFO  parsed 'build/v38/coffee-controller-120v.dsn' in 0.4 ms: 2 layers, 82 components, 57 nets, 0 wires
+    0.000 INFO  live viewer: http://127.0.0.1:36455
+    0.001 INFO  parsed 'build/v39/coffee-controller-120v.dsn' in 0.4 ms: 2 layers, 82 components, 57 nets, 0 wires
     0.005 INFO  net class 'M1': no neck-down
     0.005 INFO  net class 'M2': no neck-down
     0.005 INFO  net class 'M3': no neck-down
@@ -10,92 +10,473 @@
     0.006 INFO  threads: autorouting passes run on router.autorouter.max_threads threads (1 = sequential); the optimizer uses router.optimizer.max_threads
     0.006 INFO  optimizer mode: Parallel { threads: 15 }, board time limits: WallClock, stage wall clock limits: enabled
     0.006 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
-    0.326 INFO  Fanout pass #1 completed in 0.32 seconds with 201 SMD pins fanouted, 1 not routed, 0 insert errors, +59 extra vias (0 SMD pins still to check in pass, ripup costs=100).
-    0.419 INFO  Fanout pass #2 completed in 0.09 seconds with 31 SMD pins fanouted, 0 not routed, 0 insert errors, +15 extra vias (0 SMD pins still to check in pass, ripup costs=200).
-    0.497 INFO  Fanout pass #3 completed in 0.08 seconds with 18 SMD pins fanouted, 0 not routed, 0 insert errors, +7 extra vias (0 SMD pins still to check in pass, ripup costs=300).
-    0.523 INFO  Fanout pass #4 completed in 0.03 seconds with 7 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
-    0.561 INFO  Fanout pass #5 completed in 0.04 seconds with 10 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
-    0.598 INFO  Fanout pass #6 completed in 0.04 seconds with 9 SMD pins fanouted, 0 not routed, 0 insert errors, +1 extra via (0 SMD pins still to check in pass, ripup costs=600).
-    0.630 INFO  Fanout pass #7 completed in 0.03 seconds with 8 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=700).
-    0.630 INFO  Fanout stopped after 7 passes: the last pass only re-fanned 8 pins of the previous pass.
-    0.630 INFO  Fanout stage completed: 7 passes, completed in 0.62 seconds.
-    0.635 INFO  checkpoint: best board so far (68 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    0.635 INFO  Auto-routing stage started with baseline score 562.01 for 68 unrouted items.
-    1.302 INFO  Auto-routing pass #1 was completed in 0.67 seconds with score 927.39 (11 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 68, failed 0, ripped 19).
-    1.303 INFO  checkpoint: best board so far (11 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    1.510 INFO  Auto-routing pass #2 was completed in 0.21 seconds with score 972.26 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 11, failed 0, ripped 4).
-    1.511 INFO  checkpoint: best board so far (4 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    1.573 INFO  Auto-routing pass #3 was completed in 0.06 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 4, failed 0, ripped 2).
-    1.574 INFO  checkpoint: best board so far (2 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    1.691 INFO  Auto-routing pass #4 was completed in 0.12 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 2).
-    1.787 INFO  Auto-routing pass #5 was completed in 0.10 seconds with score 978.67 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 2).
-    1.909 INFO  Auto-routing pass #6 was completed in 0.12 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 0, ripped 1).
-    1.910 INFO  checkpoint: best board so far (1 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    1.979 INFO  Auto-routing pass #7 was completed in 0.07 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 2).
-    2.166 INFO  Auto-routing pass #8 was completed in 0.19 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 2).
-    2.375 INFO  Auto-routing pass #9 was completed in 0.21 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
-    2.408 INFO  Auto-routing pass #10 was completed in 0.03 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.409 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    2.410 INFO  Auto-routing pass #11 was completed in 0.00 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
-    2.417 INFO  Auto-routing stage completed: started with 187 unrouted nets, completed in 1.78 seconds, final score: 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    2.431 INFO  Optimization stage started. Baseline router score: 997.91, optimizer score: 475.35, incomplete connections: 0, clearance violations: 24.
-    2.431 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
-    2.707 INFO  Stopping optimization pass #1 early after 12 consecutive items could not be improved.
-    3.137 INFO  Optimizer pass #1: applied 8 more improving candidate(s).
-    3.143 INFO  Optimizer pass #1 was completed in 0.71 seconds (77 of 273 candidates) with the score of 493.59 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    3.144 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    3.144 INFO  Optimizer pass #1: optimizer score 475.35 -> 493.59 (IMPROVED, 3.8367%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-    5.810 INFO  Optimizer pass #2: applied 27 more improving candidate(s).
-    5.817 INFO  Optimizer pass #2 was completed in 2.67 seconds (270 of 270 candidates) with the score of 568.43 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    5.818 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    5.818 INFO  Optimizer pass #2: optimizer score 493.59 -> 568.43 (IMPROVED, 15.1634%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-    7.004 INFO  Optimizer greedy phase stopped after 11 of 86 candidates (0.3 s, no further improvements).
-    7.004 INFO  Optimizer pass #3: applied 1 more improving candidate(s).
-    7.010 INFO  Optimizer pass #3 was completed in 1.19 seconds (267 of 267 candidates) with the score of 573.67 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    7.011 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    7.011 INFO  Optimizer pass #3: optimizer score 568.43 -> 573.67 (IMPROVED, 0.9220%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-    8.600 INFO  Optimizer pass #4: applied 10 more improving candidate(s).
-    8.605 INFO  Optimizer pass #4 was completed in 1.59 seconds (267 of 267 candidates) with the score of 583.17 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    8.606 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v38/coffee-controller-120v.ses'
-    8.606 INFO  Optimizer pass #4: optimizer score 573.67 -> 583.17 (IMPROVED, 1.6558%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-    9.718 INFO  Optimizer greedy phase stopped after 20 of 53 candidates (0.4 s, no further improvements).
-    9.718 INFO  Optimizer pass #5: applied 3 more improving candidate(s).
-    9.724 INFO  Optimizer pass #5 was completed in 1.12 seconds (264 of 264 candidates) with the score of 575.97 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    9.724 INFO  Optimizer pass #5 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 583.17, incomplete connections: 0, clearance violations: 24).
-    9.726 INFO  Optimizer pass #5: optimizer score 583.17 -> 575.97 (REGRESSED, -1.2341%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   10.687 INFO  Optimizer greedy phase stopped after 13 of 40 candidates (0.4 s, no further improvements).
-   10.687 INFO  Optimizer pass #6: applied 1 more improving candidate(s).
-   10.692 INFO  Optimizer pass #6 was completed in 0.96 seconds (264 of 264 candidates) with the score of 578.93 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   10.692 INFO  Optimizer pass #6 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 583.17, incomplete connections: 0, clearance violations: 24).
-   10.695 INFO  Optimizer pass #6: optimizer score 583.17 -> 578.93 (REGRESSED, -0.7270%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   10.695 INFO  Stopping optimizer because the improvement in this pass (-0.7270%) is below the threshold (0.00%).
-   10.701 INFO  Optimization stage completed: Baseline router score: 997.91, baseline optimizer score: 475.35, final router score: 997.91, final optimizer score: 583.17, completed in 8.27 seconds.
-   10.702 INFO  routing finished in 10.70 s
-   10.704 WARN  24 clearance violation(s) in the result:
-   10.704 WARN    F.Cu at (48.731, 16.531) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (48.731, 17.094) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (48.731, 18.506) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (48.731, 19.069) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (50.706, 16.531) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (49.294, 16.531) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (50.706, 17.094) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (50.706, 18.506) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (49.294, 17.094) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (49.294, 18.506) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (50.706, 19.069) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (49.294, 19.069) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (51.269, 16.531) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (51.269, 17.094) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (51.269, 18.506) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (51.269, 19.069) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   10.704 WARN    F.Cu at (64.280, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
-   10.704 WARN    F.Cu at (64.280, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
-   10.704 WARN    F.Cu at (59.720, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
-   10.704 WARN    F.Cu at (59.720, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
-   10.704 WARN    F.Cu at (46.280, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
-   10.704 WARN    F.Cu at (46.280, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
-   10.704 WARN    F.Cu at (41.720, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
-   10.704 WARN    F.Cu at (41.720, 53.250) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
-   10.705 INFO  saved 'build/v38/coffee-controller-120v.ses' (64819 bytes)
-   10.713 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
-   10.713 INFO  report written to 'build/v38/coffee-controller-120v-fastroute.json'
+    0.341 INFO  Fanout pass #1 completed in 0.33 seconds with 203 SMD pins fanouted, 0 not routed, 0 insert errors, +64 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    3.469 INFO  Fanout pass #2 completed in 3.13 seconds with 34 SMD pins fanouted, 0 not routed, 0 insert errors, +14 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    3.515 INFO  Fanout pass #3 completed in 0.05 seconds with 13 SMD pins fanouted, 0 not routed, 0 insert errors, +6 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    3.551 INFO  Fanout pass #4 completed in 0.04 seconds with 10 SMD pins fanouted, 0 not routed, 0 insert errors, +1 extra via (0 SMD pins still to check in pass, ripup costs=400).
+    3.579 INFO  Fanout pass #5 completed in 0.03 seconds with 8 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    3.579 INFO  Fanout stopped after 5 passes: the last pass only re-fanned 8 pins of the previous pass.
+    3.579 INFO  Fanout stage completed: 5 passes, completed in 3.57 seconds.
+    3.584 INFO  checkpoint: best board so far (71 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+    3.585 INFO  Auto-routing stage started with baseline score 542.78 for 71 unrouted items.
+   10.920 INFO  Auto-routing pass #1 was completed in 7.33 seconds with score 895.34 (16 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 75, failed 2, ripped 18).
+   10.922 INFO  checkpoint: best board so far (16 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   11.451 INFO  Auto-routing pass #2 was completed in 0.53 seconds with score 933.80 (10 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 17, failed 0, ripped 10).
+   11.452 INFO  checkpoint: best board so far (10 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   11.777 INFO  Auto-routing pass #3 was completed in 0.33 seconds with score 959.44 (6 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 10, failed 0, ripped 8).
+   11.778 INFO  checkpoint: best board so far (6 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   11.908 INFO  Auto-routing pass #4 was completed in 0.13 seconds with score 972.26 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 6, failed 0, ripped 4).
+   11.909 INFO  checkpoint: best board so far (4 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   12.165 INFO  Auto-routing pass #5 was completed in 0.26 seconds with score 972.26 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 4, failed 0, ripped 4).
+   12.452 INFO  Auto-routing pass #6 was completed in 0.29 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 4, failed 1, ripped 4).
+   12.453 INFO  checkpoint: best board so far (2 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   12.528 INFO  Auto-routing pass #7 was completed in 0.07 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 2).
+   12.576 INFO  Auto-routing pass #8 was completed in 0.05 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 4).
+   12.616 INFO  Auto-routing pass #9 was completed in 0.04 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 1).
+   12.617 INFO  checkpoint: best board so far (1 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   12.648 INFO  Auto-routing pass #10 was completed in 0.03 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 1).
+   12.666 INFO  Auto-routing pass #11 was completed in 0.02 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
+   12.668 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   12.668 INFO  Auto-routing pass #12 was completed in 0.00 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
+   12.680 INFO  Auto-routing stage completed: started with 187 unrouted nets, completed in 9.10 seconds, final score: 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   12.696 INFO  Optimization stage started. Baseline router score: 997.91, optimizer score: 437.46, incomplete connections: 0, clearance violations: 24.
+   12.696 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
+   13.010 INFO  Stopping optimization pass #1 early after 12 consecutive items could not be improved.
+   13.638 INFO  Optimizer pass #1: applied 7 more improving candidate(s).
+   13.645 INFO  Optimizer pass #1 was completed in 0.95 seconds (97 of 266 candidates) with the score of 453.96 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   13.646 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   13.646 INFO  Optimizer pass #1: optimizer score 437.46 -> 453.96 (IMPROVED, 3.7718%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   15.769 INFO  Optimizer greedy phase stopped after 46 of 115 candidates (1.3 s, no further improvements).
+   15.770 INFO  Optimizer pass #2: applied 13 more improving candidate(s).
+   15.776 INFO  Optimizer pass #2 was completed in 2.13 seconds (269 of 269 candidates) with the score of 507.30 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   15.778 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   15.778 INFO  Optimizer pass #2: optimizer score 453.96 -> 507.30 (IMPROVED, 11.7496%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   16.938 INFO  Optimizer greedy phase stopped after 26 of 87 candidates (0.3 s, no further improvements).
+   16.938 INFO  Optimizer pass #3: applied 5 more improving candidate(s).
+   16.945 INFO  Optimizer pass #3 was completed in 1.17 seconds (276 of 276 candidates) with the score of 521.51 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   16.947 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   16.947 INFO  Optimizer pass #3: optimizer score 507.30 -> 521.51 (IMPROVED, 2.8012%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   18.909 INFO  Optimizer greedy phase stopped after 54 of 81 candidates (1.2 s, no further improvements).
+   18.910 INFO  Optimizer pass #4: applied 12 more improving candidate(s).
+   18.916 INFO  Optimizer pass #4 was completed in 1.97 seconds (270 of 270 candidates) with the score of 536.01 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   18.917 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   18.917 INFO  Optimizer pass #4: optimizer score 521.51 -> 536.01 (IMPROVED, 2.7813%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   20.934 INFO  Optimizer greedy phase stopped after 48 of 58 candidates (0.9 s, no further improvements).
+   20.934 INFO  Optimizer pass #5: applied 12 more improving candidate(s).
+   20.940 INFO  Optimizer pass #5 was completed in 2.02 seconds (275 of 275 candidates) with the score of 544.04 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   20.941 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   20.941 INFO  Optimizer pass #5: optimizer score 536.01 -> 544.04 (IMPROVED, 1.4976%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   22.684 INFO  Optimizer pass #6: applied 7 more improving candidate(s).
+   22.690 INFO  Optimizer pass #6 was completed in 1.75 seconds (277 of 277 candidates) with the score of 553.00 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   22.693 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   22.693 INFO  Optimizer pass #6: optimizer score 544.04 -> 553.00 (IMPROVED, 1.6482%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   23.375 INFO  Stopping optimization pass #7 early after 50 consecutive items could not be improved.
+   24.022 INFO  Optimizer pass #7: applied 1 more improving candidate(s).
+   24.023 INFO  Optimizer pass #7 was completed in 1.33 seconds (174 of 278 candidates) with the score of 567.24 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   24.024 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   24.024 INFO  Optimizer pass #7: optimizer score 553.00 -> 567.24 (IMPROVED, 2.5745%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   24.934 INFO  Optimizer greedy phase stopped after 15 of 41 candidates (0.2 s, no further improvements).
+   24.934 INFO  Optimizer pass #8: applied 3 more improving candidate(s).
+   24.941 INFO  Optimizer pass #8 was completed in 0.92 seconds (276 of 276 candidates) with the score of 543.84 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   24.941 INFO  Optimizer pass #8 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 567.24, incomplete connections: 0, clearance violations: 24).
+   24.944 INFO  Optimizer pass #8: optimizer score 567.24 -> 543.84 (REGRESSED, -4.1247%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   25.142 INFO  Stopping optimization pass #9 early after 50 consecutive items could not be improved.
+   25.219 INFO  Optimizer pass #9 was completed in 0.27 seconds (55 of 276 candidates) with the score of 567.24 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   25.219 INFO  Optimizer pass #9 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 567.24, incomplete connections: 0, clearance violations: 24).
+   25.222 INFO  Optimizer pass #9: optimizer score 567.24 -> 567.24 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   26.178 INFO  Optimizer greedy phase stopped after 20 of 24 candidates (0.3 s, no further improvements).
+   26.178 INFO  Optimizer pass #10: applied 2 more improving candidate(s).
+   26.184 INFO  Optimizer pass #10 was completed in 0.96 seconds (276 of 276 candidates) with the score of 568.01 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   26.187 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   26.187 INFO  Optimizer pass #10: optimizer score 567.24 -> 568.01 (IMPROVED, 0.1358%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   26.438 INFO  Stopping optimization pass #11 early after 50 consecutive items could not be improved.
+   26.561 INFO  Optimizer pass #11 was completed in 0.37 seconds (75 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   26.562 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v39/coffee-controller-120v.ses'
+   26.562 INFO  Optimizer pass #11: optimizer score 568.01 -> 571.92 (IMPROVED, 0.6876%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   26.799 INFO  Stopping optimization pass #12 early after 50 consecutive items could not be improved.
+   26.900 INFO  Optimizer pass #12 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   26.900 INFO  Optimizer pass #12 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   26.903 INFO  Optimizer pass #12: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   27.090 INFO  Stopping optimization pass #13 early after 50 consecutive items could not be improved.
+   27.181 INFO  Optimizer pass #13 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   27.181 INFO  Optimizer pass #13 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   27.183 INFO  Optimizer pass #13: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   27.437 INFO  Stopping optimization pass #14 early after 50 consecutive items could not be improved.
+   27.534 INFO  Optimizer pass #14 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   27.534 INFO  Optimizer pass #14 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   27.536 INFO  Optimizer pass #14: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   27.726 INFO  Stopping optimization pass #15 early after 50 consecutive items could not be improved.
+   27.812 INFO  Optimizer pass #15 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   27.812 INFO  Optimizer pass #15 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   27.814 INFO  Optimizer pass #15: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   28.065 INFO  Stopping optimization pass #16 early after 50 consecutive items could not be improved.
+   28.160 INFO  Optimizer pass #16 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   28.160 INFO  Optimizer pass #16 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   28.163 INFO  Optimizer pass #16: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   28.353 INFO  Stopping optimization pass #17 early after 50 consecutive items could not be improved.
+   28.442 INFO  Optimizer pass #17 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   28.442 INFO  Optimizer pass #17 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   28.444 INFO  Optimizer pass #17: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   28.690 INFO  Stopping optimization pass #18 early after 50 consecutive items could not be improved.
+   28.787 INFO  Optimizer pass #18 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   28.787 INFO  Optimizer pass #18 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   28.789 INFO  Optimizer pass #18: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   28.977 INFO  Stopping optimization pass #19 early after 50 consecutive items could not be improved.
+   29.066 INFO  Optimizer pass #19 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   29.066 INFO  Optimizer pass #19 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   29.069 INFO  Optimizer pass #19: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   29.318 INFO  Stopping optimization pass #20 early after 50 consecutive items could not be improved.
+   29.411 INFO  Optimizer pass #20 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   29.411 INFO  Optimizer pass #20 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   29.413 INFO  Optimizer pass #20: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   29.598 INFO  Stopping optimization pass #21 early after 50 consecutive items could not be improved.
+   29.689 INFO  Optimizer pass #21 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   29.689 INFO  Optimizer pass #21 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   29.691 INFO  Optimizer pass #21: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   29.937 INFO  Stopping optimization pass #22 early after 50 consecutive items could not be improved.
+   30.038 INFO  Optimizer pass #22 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   30.038 INFO  Optimizer pass #22 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   30.040 INFO  Optimizer pass #22: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   30.233 INFO  Stopping optimization pass #23 early after 50 consecutive items could not be improved.
+   30.316 INFO  Optimizer pass #23 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   30.316 INFO  Optimizer pass #23 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   30.318 INFO  Optimizer pass #23: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   30.564 INFO  Stopping optimization pass #24 early after 50 consecutive items could not be improved.
+   30.658 INFO  Optimizer pass #24 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   30.658 INFO  Optimizer pass #24 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   30.661 INFO  Optimizer pass #24: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   30.843 INFO  Stopping optimization pass #25 early after 50 consecutive items could not be improved.
+   30.946 INFO  Optimizer pass #25 was completed in 0.28 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   30.946 INFO  Optimizer pass #25 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   30.948 INFO  Optimizer pass #25: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   31.196 INFO  Stopping optimization pass #26 early after 50 consecutive items could not be improved.
+   31.293 INFO  Optimizer pass #26 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   31.293 INFO  Optimizer pass #26 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   31.295 INFO  Optimizer pass #26: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   31.482 INFO  Stopping optimization pass #27 early after 50 consecutive items could not be improved.
+   31.578 INFO  Optimizer pass #27 was completed in 0.28 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   31.578 INFO  Optimizer pass #27 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   31.580 INFO  Optimizer pass #27: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   31.821 INFO  Stopping optimization pass #28 early after 50 consecutive items could not be improved.
+   31.924 INFO  Optimizer pass #28 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   31.924 INFO  Optimizer pass #28 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   31.926 INFO  Optimizer pass #28: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   32.112 INFO  Stopping optimization pass #29 early after 50 consecutive items could not be improved.
+   32.201 INFO  Optimizer pass #29 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   32.201 INFO  Optimizer pass #29 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   32.203 INFO  Optimizer pass #29: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   32.449 INFO  Stopping optimization pass #30 early after 50 consecutive items could not be improved.
+   32.552 INFO  Optimizer pass #30 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   32.552 INFO  Optimizer pass #30 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   32.554 INFO  Optimizer pass #30: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   32.743 INFO  Stopping optimization pass #31 early after 50 consecutive items could not be improved.
+   32.826 INFO  Optimizer pass #31 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   32.826 INFO  Optimizer pass #31 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   32.828 INFO  Optimizer pass #31: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   33.079 INFO  Stopping optimization pass #32 early after 50 consecutive items could not be improved.
+   33.175 INFO  Optimizer pass #32 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   33.175 INFO  Optimizer pass #32 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   33.177 INFO  Optimizer pass #32: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   33.362 INFO  Stopping optimization pass #33 early after 50 consecutive items could not be improved.
+   33.455 INFO  Optimizer pass #33 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   33.455 INFO  Optimizer pass #33 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   33.457 INFO  Optimizer pass #33: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   33.703 INFO  Stopping optimization pass #34 early after 50 consecutive items could not be improved.
+   33.804 INFO  Optimizer pass #34 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   33.804 INFO  Optimizer pass #34 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   33.806 INFO  Optimizer pass #34: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   33.990 INFO  Stopping optimization pass #35 early after 50 consecutive items could not be improved.
+   34.079 INFO  Optimizer pass #35 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   34.079 INFO  Optimizer pass #35 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   34.081 INFO  Optimizer pass #35: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   34.326 INFO  Stopping optimization pass #36 early after 50 consecutive items could not be improved.
+   34.423 INFO  Optimizer pass #36 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   34.423 INFO  Optimizer pass #36 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   34.425 INFO  Optimizer pass #36: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   34.610 INFO  Stopping optimization pass #37 early after 50 consecutive items could not be improved.
+   34.701 INFO  Optimizer pass #37 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   34.701 INFO  Optimizer pass #37 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   34.703 INFO  Optimizer pass #37: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   34.948 INFO  Stopping optimization pass #38 early after 50 consecutive items could not be improved.
+   35.046 INFO  Optimizer pass #38 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   35.046 INFO  Optimizer pass #38 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   35.048 INFO  Optimizer pass #38: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   35.233 INFO  Stopping optimization pass #39 early after 50 consecutive items could not be improved.
+   35.321 INFO  Optimizer pass #39 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   35.322 INFO  Optimizer pass #39 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   35.324 INFO  Optimizer pass #39: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   35.568 INFO  Stopping optimization pass #40 early after 50 consecutive items could not be improved.
+   35.669 INFO  Optimizer pass #40 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   35.669 INFO  Optimizer pass #40 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   35.671 INFO  Optimizer pass #40: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   35.860 INFO  Stopping optimization pass #41 early after 50 consecutive items could not be improved.
+   35.945 INFO  Optimizer pass #41 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   35.945 INFO  Optimizer pass #41 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   35.948 INFO  Optimizer pass #41: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   36.190 INFO  Stopping optimization pass #42 early after 50 consecutive items could not be improved.
+   36.290 INFO  Optimizer pass #42 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   36.290 INFO  Optimizer pass #42 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   36.292 INFO  Optimizer pass #42: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   36.477 INFO  Stopping optimization pass #43 early after 50 consecutive items could not be improved.
+   36.566 INFO  Optimizer pass #43 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   36.566 INFO  Optimizer pass #43 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   36.568 INFO  Optimizer pass #43: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   36.808 INFO  Stopping optimization pass #44 early after 50 consecutive items could not be improved.
+   36.908 INFO  Optimizer pass #44 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   36.908 INFO  Optimizer pass #44 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   36.910 INFO  Optimizer pass #44: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   37.098 INFO  Stopping optimization pass #45 early after 50 consecutive items could not be improved.
+   37.188 INFO  Optimizer pass #45 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   37.188 INFO  Optimizer pass #45 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   37.190 INFO  Optimizer pass #45: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   37.438 INFO  Stopping optimization pass #46 early after 50 consecutive items could not be improved.
+   37.536 INFO  Optimizer pass #46 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   37.536 INFO  Optimizer pass #46 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   37.538 INFO  Optimizer pass #46: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   37.725 INFO  Stopping optimization pass #47 early after 50 consecutive items could not be improved.
+   37.814 INFO  Optimizer pass #47 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   37.814 INFO  Optimizer pass #47 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   37.816 INFO  Optimizer pass #47: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   38.060 INFO  Stopping optimization pass #48 early after 50 consecutive items could not be improved.
+   38.154 INFO  Optimizer pass #48 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   38.155 INFO  Optimizer pass #48 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   38.157 INFO  Optimizer pass #48: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   38.348 INFO  Stopping optimization pass #49 early after 50 consecutive items could not be improved.
+   38.437 INFO  Optimizer pass #49 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   38.437 INFO  Optimizer pass #49 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   38.439 INFO  Optimizer pass #49: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   38.685 INFO  Stopping optimization pass #50 early after 50 consecutive items could not be improved.
+   38.782 INFO  Optimizer pass #50 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   38.782 INFO  Optimizer pass #50 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   38.785 INFO  Optimizer pass #50: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   38.978 INFO  Stopping optimization pass #51 early after 50 consecutive items could not be improved.
+   39.060 INFO  Optimizer pass #51 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   39.060 INFO  Optimizer pass #51 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   39.062 INFO  Optimizer pass #51: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   39.310 INFO  Stopping optimization pass #52 early after 50 consecutive items could not be improved.
+   39.409 INFO  Optimizer pass #52 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   39.409 INFO  Optimizer pass #52 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   39.411 INFO  Optimizer pass #52: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   39.602 INFO  Stopping optimization pass #53 early after 50 consecutive items could not be improved.
+   39.735 INFO  Optimizer pass #53 was completed in 0.32 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   39.735 INFO  Optimizer pass #53 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   39.737 INFO  Optimizer pass #53: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   39.980 INFO  Stopping optimization pass #54 early after 50 consecutive items could not be improved.
+   40.082 INFO  Optimizer pass #54 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   40.082 INFO  Optimizer pass #54 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   40.084 INFO  Optimizer pass #54: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   40.269 INFO  Stopping optimization pass #55 early after 50 consecutive items could not be improved.
+   40.362 INFO  Optimizer pass #55 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   40.362 INFO  Optimizer pass #55 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   40.364 INFO  Optimizer pass #55: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   40.610 INFO  Stopping optimization pass #56 early after 50 consecutive items could not be improved.
+   40.709 INFO  Optimizer pass #56 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   40.709 INFO  Optimizer pass #56 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   40.711 INFO  Optimizer pass #56: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   40.902 INFO  Stopping optimization pass #57 early after 50 consecutive items could not be improved.
+   40.991 INFO  Optimizer pass #57 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   40.991 INFO  Optimizer pass #57 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   40.993 INFO  Optimizer pass #57: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   41.241 INFO  Stopping optimization pass #58 early after 50 consecutive items could not be improved.
+   41.341 INFO  Optimizer pass #58 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   41.341 INFO  Optimizer pass #58 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   41.343 INFO  Optimizer pass #58: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   41.532 INFO  Stopping optimization pass #59 early after 50 consecutive items could not be improved.
+   41.623 INFO  Optimizer pass #59 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   41.623 INFO  Optimizer pass #59 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   41.625 INFO  Optimizer pass #59: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   41.865 INFO  Stopping optimization pass #60 early after 50 consecutive items could not be improved.
+   41.974 INFO  Optimizer pass #60 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   41.974 INFO  Optimizer pass #60 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   41.976 INFO  Optimizer pass #60: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   42.161 INFO  Stopping optimization pass #61 early after 50 consecutive items could not be improved.
+   42.248 INFO  Optimizer pass #61 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   42.248 INFO  Optimizer pass #61 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   42.251 INFO  Optimizer pass #61: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   42.502 INFO  Stopping optimization pass #62 early after 50 consecutive items could not be improved.
+   42.598 INFO  Optimizer pass #62 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   42.598 INFO  Optimizer pass #62 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   42.600 INFO  Optimizer pass #62: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   42.784 INFO  Stopping optimization pass #63 early after 50 consecutive items could not be improved.
+   42.874 INFO  Optimizer pass #63 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   42.874 INFO  Optimizer pass #63 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   42.876 INFO  Optimizer pass #63: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   43.117 INFO  Stopping optimization pass #64 early after 50 consecutive items could not be improved.
+   43.224 INFO  Optimizer pass #64 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   43.224 INFO  Optimizer pass #64 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   43.226 INFO  Optimizer pass #64: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   43.415 INFO  Stopping optimization pass #65 early after 50 consecutive items could not be improved.
+   43.507 INFO  Optimizer pass #65 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   43.507 INFO  Optimizer pass #65 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   43.509 INFO  Optimizer pass #65: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   43.753 INFO  Stopping optimization pass #66 early after 50 consecutive items could not be improved.
+   43.864 INFO  Optimizer pass #66 was completed in 0.35 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   43.864 INFO  Optimizer pass #66 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   43.866 INFO  Optimizer pass #66: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   44.053 INFO  Stopping optimization pass #67 early after 50 consecutive items could not be improved.
+   44.138 INFO  Optimizer pass #67 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   44.138 INFO  Optimizer pass #67 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   44.140 INFO  Optimizer pass #67: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   44.392 INFO  Stopping optimization pass #68 early after 50 consecutive items could not be improved.
+   44.487 INFO  Optimizer pass #68 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   44.487 INFO  Optimizer pass #68 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   44.489 INFO  Optimizer pass #68: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   44.673 INFO  Stopping optimization pass #69 early after 50 consecutive items could not be improved.
+   44.764 INFO  Optimizer pass #69 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   44.764 INFO  Optimizer pass #69 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   44.766 INFO  Optimizer pass #69: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   45.012 INFO  Stopping optimization pass #70 early after 50 consecutive items could not be improved.
+   45.105 INFO  Optimizer pass #70 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   45.105 INFO  Optimizer pass #70 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   45.107 INFO  Optimizer pass #70: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   45.293 INFO  Stopping optimization pass #71 early after 50 consecutive items could not be improved.
+   45.383 INFO  Optimizer pass #71 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   45.383 INFO  Optimizer pass #71 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   45.385 INFO  Optimizer pass #71: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   45.631 INFO  Stopping optimization pass #72 early after 50 consecutive items could not be improved.
+   45.724 INFO  Optimizer pass #72 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   45.724 INFO  Optimizer pass #72 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   45.726 INFO  Optimizer pass #72: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   45.914 INFO  Stopping optimization pass #73 early after 50 consecutive items could not be improved.
+   46.003 INFO  Optimizer pass #73 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   46.003 INFO  Optimizer pass #73 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   46.005 INFO  Optimizer pass #73: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   46.252 INFO  Stopping optimization pass #74 early after 50 consecutive items could not be improved.
+   46.353 INFO  Optimizer pass #74 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   46.353 INFO  Optimizer pass #74 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   46.355 INFO  Optimizer pass #74: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   46.546 INFO  Stopping optimization pass #75 early after 50 consecutive items could not be improved.
+   46.633 INFO  Optimizer pass #75 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   46.633 INFO  Optimizer pass #75 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   46.635 INFO  Optimizer pass #75: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   46.878 INFO  Stopping optimization pass #76 early after 50 consecutive items could not be improved.
+   46.977 INFO  Optimizer pass #76 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   46.977 INFO  Optimizer pass #76 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   46.980 INFO  Optimizer pass #76: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   47.162 INFO  Stopping optimization pass #77 early after 50 consecutive items could not be improved.
+   47.252 INFO  Optimizer pass #77 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   47.252 INFO  Optimizer pass #77 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   47.254 INFO  Optimizer pass #77: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   47.502 INFO  Stopping optimization pass #78 early after 50 consecutive items could not be improved.
+   47.595 INFO  Optimizer pass #78 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   47.595 INFO  Optimizer pass #78 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   47.597 INFO  Optimizer pass #78: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   47.789 INFO  Stopping optimization pass #79 early after 50 consecutive items could not be improved.
+   47.874 INFO  Optimizer pass #79 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   47.874 INFO  Optimizer pass #79 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   47.876 INFO  Optimizer pass #79: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   48.121 INFO  Stopping optimization pass #80 early after 50 consecutive items could not be improved.
+   48.220 INFO  Optimizer pass #80 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   48.220 INFO  Optimizer pass #80 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   48.222 INFO  Optimizer pass #80: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   48.425 INFO  Stopping optimization pass #81 early after 50 consecutive items could not be improved.
+   48.564 INFO  Optimizer pass #81 was completed in 0.34 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   48.564 INFO  Optimizer pass #81 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   48.566 INFO  Optimizer pass #81: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   48.815 INFO  Stopping optimization pass #82 early after 50 consecutive items could not be improved.
+   48.912 INFO  Optimizer pass #82 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   48.912 INFO  Optimizer pass #82 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   48.914 INFO  Optimizer pass #82: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   49.102 INFO  Stopping optimization pass #83 early after 50 consecutive items could not be improved.
+   49.189 INFO  Optimizer pass #83 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   49.189 INFO  Optimizer pass #83 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   49.191 INFO  Optimizer pass #83: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   49.432 INFO  Stopping optimization pass #84 early after 50 consecutive items could not be improved.
+   49.530 INFO  Optimizer pass #84 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   49.530 INFO  Optimizer pass #84 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   49.532 INFO  Optimizer pass #84: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   49.741 INFO  Stopping optimization pass #85 early after 50 consecutive items could not be improved.
+   49.880 INFO  Optimizer pass #85 was completed in 0.34 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   49.880 INFO  Optimizer pass #85 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   49.884 INFO  Optimizer pass #85: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   50.158 INFO  Stopping optimization pass #86 early after 50 consecutive items could not be improved.
+   50.251 INFO  Optimizer pass #86 was completed in 0.36 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   50.251 INFO  Optimizer pass #86 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   50.253 INFO  Optimizer pass #86: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   50.438 INFO  Stopping optimization pass #87 early after 50 consecutive items could not be improved.
+   50.531 INFO  Optimizer pass #87 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   50.531 INFO  Optimizer pass #87 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   50.533 INFO  Optimizer pass #87: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   50.780 INFO  Stopping optimization pass #88 early after 50 consecutive items could not be improved.
+   50.875 INFO  Optimizer pass #88 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   50.875 INFO  Optimizer pass #88 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   50.877 INFO  Optimizer pass #88: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   51.068 INFO  Stopping optimization pass #89 early after 50 consecutive items could not be improved.
+   51.159 INFO  Optimizer pass #89 was completed in 0.28 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   51.159 INFO  Optimizer pass #89 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   51.161 INFO  Optimizer pass #89: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   51.408 INFO  Stopping optimization pass #90 early after 50 consecutive items could not be improved.
+   51.515 INFO  Optimizer pass #90 was completed in 0.35 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   51.515 INFO  Optimizer pass #90 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   51.517 INFO  Optimizer pass #90: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   51.702 INFO  Stopping optimization pass #91 early after 50 consecutive items could not be improved.
+   51.804 INFO  Optimizer pass #91 was completed in 0.28 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   51.804 INFO  Optimizer pass #91 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   51.806 INFO  Optimizer pass #91: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   52.052 INFO  Stopping optimization pass #92 early after 50 consecutive items could not be improved.
+   52.152 INFO  Optimizer pass #92 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   52.152 INFO  Optimizer pass #92 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   52.154 INFO  Optimizer pass #92: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   52.338 INFO  Stopping optimization pass #93 early after 50 consecutive items could not be improved.
+   52.429 INFO  Optimizer pass #93 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   52.429 INFO  Optimizer pass #93 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   52.431 INFO  Optimizer pass #93: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   52.676 INFO  Stopping optimization pass #94 early after 50 consecutive items could not be improved.
+   52.773 INFO  Optimizer pass #94 was completed in 0.34 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   52.773 INFO  Optimizer pass #94 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   52.775 INFO  Optimizer pass #94: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   52.961 INFO  Stopping optimization pass #95 early after 50 consecutive items could not be improved.
+   53.051 INFO  Optimizer pass #95 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   53.051 INFO  Optimizer pass #95 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   53.053 INFO  Optimizer pass #95: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   53.295 INFO  Stopping optimization pass #96 early after 50 consecutive items could not be improved.
+   53.393 INFO  Optimizer pass #96 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   53.394 INFO  Optimizer pass #96 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   53.396 INFO  Optimizer pass #96: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   53.582 INFO  Stopping optimization pass #97 early after 50 consecutive items could not be improved.
+   53.674 INFO  Optimizer pass #97 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   53.674 INFO  Optimizer pass #97 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   53.676 INFO  Optimizer pass #97: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   53.921 INFO  Stopping optimization pass #98 early after 50 consecutive items could not be improved.
+   54.016 INFO  Optimizer pass #98 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   54.016 INFO  Optimizer pass #98 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   54.018 INFO  Optimizer pass #98: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   54.210 INFO  Stopping optimization pass #99 early after 50 consecutive items could not be improved.
+   54.293 INFO  Optimizer pass #99 was completed in 0.27 seconds (55 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   54.293 INFO  Optimizer pass #99 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   54.295 INFO  Optimizer pass #99: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   54.536 INFO  Stopping optimization pass #100 early after 50 consecutive items could not be improved.
+   54.633 INFO  Optimizer pass #100 was completed in 0.33 seconds (91 of 271 candidates) with the score of 571.92 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   54.633 INFO  Optimizer pass #100 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 571.92, incomplete connections: 0, clearance violations: 24).
+   54.635 INFO  Optimizer pass #100: optimizer score 571.92 -> 571.92 (UNCHANGED, 0.0000%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   54.641 INFO  Optimization stage completed: Baseline router score: 997.91, baseline optimizer score: 437.46, final router score: 997.91, final optimizer score: 571.92, completed in 41.95 seconds.
+   54.642 INFO  routing finished in 54.64 s
+   54.642 INFO  note: a board time limit fired (WallClock)
+   54.645 WARN  24 clearance violation(s) in the result:
+   54.645 WARN    F.Cu at (33.720, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   54.645 WARN    F.Cu at (33.720, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   54.645 WARN    F.Cu at (38.280, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   54.645 WARN    F.Cu at (38.280, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   54.645 WARN    F.Cu at (15.720, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   54.645 WARN    F.Cu at (15.720, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   54.645 WARN    F.Cu at (20.280, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   54.645 WARN    F.Cu at (20.280, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   54.645 WARN    F.Cu at (31.269, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (31.269, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (31.269, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (31.269, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (29.294, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (30.706, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (30.706, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (29.294, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (29.294, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (30.706, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (30.706, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (29.294, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (28.731, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (28.731, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (28.731, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.645 WARN    F.Cu at (28.731, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   54.646 INFO  saved 'build/v39/coffee-controller-120v.ses' (67626 bytes)
+   54.655 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
+   54.655 INFO  report written to 'build/v39/coffee-controller-120v-fastroute.json'

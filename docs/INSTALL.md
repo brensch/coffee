@@ -1,13 +1,14 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v33 controller board** (CIRCUIT.md), which switches the
+The plan from a clean PC to coffee, for the **v39 controller board** (CIRCUIT.md) in its printed holder (hardware/holder), which switches the
 pump and the 3-way valve itself and powers itself from mains, plus the external heater SSR (BUY.md,
 WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
 
-> ⚠️ **Mains voltage, on the board too.** The board's left half (the spades, fuse, IRM module, triacs and
-> snubbers) is at 120 V whenever the machine is plugged in, on both sides of the board. So are the heater
+> ⚠️ **Mains voltage, on the board too.** The board's top half (the spades, fuse, the IRM module's AC end,
+> triacs and snubbers) is at 120 V whenever the machine is plugged in with the power rocker on, on both
+> sides of the board. So are the heater
 > SSR and the machine's own wiring. Work only with the machine unplugged and, after it's been on, cooled.
-> The board lives in its printed tray, never loose and never against the steel. The stock steam
+> The board lives in its printed holder, never loose and never against the steel. The stock steam
 > thermostat and thermal fuse stay in series with the heater: they're the protection that doesn't depend
 > on software. If you aren't comfortable with mains wiring, have steps 5–6 checked by an electrician.
 
@@ -16,18 +17,14 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
 - **Everything off the board:** [BUY.md](BUY.md) has the exact parts, links and datasheets:
   - the heater SSR;
   - 18 AWG wire and 6.3 mm insulated receptacles for the four mains spades;
-  - JST GH housings, contacts and 26–28 AWG wire (you crimp every lead);
+  - ready-made JST GH leads (3, 4, 5 and 6 pin), nothing to crimp at the board;
   - the thermocouple, pressure transducer and antenna.
-- **The printed tray** (BUY.md #19): PETG or ASA (not PLA: the case runs 60–70 °C). It needs:
-  - three M3 standoffs at least 4 mm tall, at the board's holes;
-  - a **solid floor under the whole mains half**, which takes the push force of the receptacles;
-  - cutouts on the top edge for the GH plugs and on the left edge for the spade receptacles.
-
-  Hole positions, board top view, origin top-left, x right, y down, mm: **H3 (5, 5), H1 (16, 48.5)**,
-  **H2** at the bottom right (plan.json). The board is 98 × 55.5. The IRM stands 21.5 mm tall, so leave
-  ~25 mm of space above the board.
+- **The printed holder** (hardware/holder/README.md, BUY.md #19): `holder.stl` and `holder_bar.stl` in
+  ASA (not PETG or PLA: the case runs 60–70 °C), and six 10 × 3 mm H/SH-grade magnets. The board is 80 × 77 mm
+  with no holes; it slides into the holder. Leave ~50 mm of free depth off the side panel (the IRM stands
+  31 mm off it, the spade receptacles and their bent wires up to ~50 mm).
 - **Tools:**
-  - a GH crimper (Engineer PA-09) and a 6.3 mm receptacle crimper;
+  - a 6.3 mm receptacle crimper (for the one new pump lead) and a small flat screwdriver;
   - a multimeter and a power meter (Kill-A-Watt);
   - a **GFCI** (plug-in RCD) for the first mains power-ups;
   - a 0.1 g scale, a blind basket, and a thermometer for calibration.
@@ -97,12 +94,12 @@ the IRM may both be connected: the IRM then powers the board, and D2 keeps it ou
      the machine.
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1) to the USB-C shell (GND)
      while plugging in, then flash again.
-3. **Sensors:** plug in the thermocouple (J5, the only 2-pin), the transducer (J6) and the front-panel
+3. **Sensors:** clamp the thermocouple into J5 (the screw terminal), the transducer (J6) and the front-panel
    lead (J7):
    - **Temperature** reads room temperature, within about a degree of the board's cold-junction
      reading in the UI, and rises when you hold the probe's tip.
    - **Polarity:** if the temperature *falls* when you warm the tip, TC+ and TC− are swapped. The firmware
-     raises `probe_reversed` once it's ~25 °C off. Swap the two contacts in the housing (WIRING check 8
+     raises `probe_reversed` once it's ~25 °C off. Swap the two wires in the terminal (WIRING check 8
      identifies them: alumel, TC−, is the magnetic wire).
    - **Unplug the probe:** the UI shows `probe_open` within about a second, and the heater output goes
      off (step 4). Do this check here, on USB.
@@ -110,9 +107,8 @@ the IRM may both be connected: the IRM then powers the board, and D2 keeps it ou
      3 GND. For this first test, put a **220 Ω resistor in series with the +5 V wire**: it limits the
      current to ~20 mA if the legend is wrong. It should read ~0.5 V at atmospheric pressure, and the UI
      about 0 bar. Then remove the resistor.
-   - **Inputs:** power, brew and steam toggle when J7 pin 1, 2 or 3 is shorted to pin 4. **With J7.1
-     open the engine sits in Standby** (everything off): short J7.1–J7.4 to test the outputs.
-   - **Lamps:** the panel LEDs on J7.5–7.7 and the board's own D3–D5 follow the UI's front-panel card.
+   - **Inputs:** brew and steam toggle when J7 pin 1 or 2 is shorted to pin 3 (GND).
+   - **Lamps:** the panel LEDs on J7.4–7.6 and the board's own D3–D5 follow the UI's front-panel card.
    - **Scale:** with the scale on J10, the cup weight changes when you press on the tray.
    - **Calibrate the thermocouple now:** CALIBRATION.md, "Temperature" (room temperature, then the tip
      in boiling water).
@@ -135,8 +131,7 @@ mechanical steps; it has photos.
      be ungrounded).
    - A thin film of thermal paste on the thread, then **hand-tight plus a nip**: the boss is soft, and
      over-tightening can strip it.
-   - Crimp GH contacts straight onto the probe's two wires, into a GHR-02V-S housing: TC+ in pin 1,
-     TC− in pin 2. **Never splice it:** any joint to copper away from the board is an unmeasured
+   - Its two bare wires clamp into the board's J5 screw terminal: TC+ in pin 1, TC− in pin 2. **Never splice it:** any joint to copper away from the board is an unmeasured
      junction.
    - Keep the thermostat's two spade wires: they become the heater feed in §5.
 3. **Pressure:** GaggiMate's plumbing kit puts a G1/8 elbow and push-fit T between the pump and the
@@ -153,8 +148,8 @@ Follow [WIRING.md](WIRING.md): the wiring diagram and a terminal-by-terminal tab
 - the heater SSR (in place of the brew thermostat);
 - the board's JST GH leads.
 
-It also lists the multimeter checks to do before mains. The board goes into its tray first and stays
-there: push each receptacle onto its spade with the tray supporting the board.
+It also lists the multimeter checks to do before mains. Plug everything onto the board in your hand (a
+finger behind each spade tab), then slide it into its holder (hardware/holder/README.md, "Fit it").
 
 ## 6. First power-on
 Leave every lead plugged in, the heater SSR's included. The steam thermostat and thermal fuse are

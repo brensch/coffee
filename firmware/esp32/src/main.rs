@@ -31,7 +31,7 @@
 //! (lockstep wire protocol) and actuator frames go back; the machine pins stay
 //! off and there is no Wi-Fi (`bridge.rs`).
 //!
-//! # Pin map (controller v32: mains section on the board)
+//! # Pin map (controller v35-v39: mains section on the board, no power-rocker input)
 //!
 //! | Signal          | GPIO  | Notes                                                 |
 //! |-----------------|-------|-------------------------------------------------------|

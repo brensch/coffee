@@ -1,15 +1,15 @@
-# Mis-plug safety (v32 connectors)
+# Mis-plug safety (v39 connectors)
 
-v32 has five low-voltage JST GH sockets. GH has one key, so any lead fits any socket **of its size**; v32
-gives every lead a size of its own except the two 7-pin leads:
+v39 has four low-voltage JST GH sockets, each a different size, so no lead fits another's socket; the
+thermocouple goes into a screw terminal that no plug fits:
 
-| Size | Socket | Lead goes to | Pins 1 / 2 / 3 / 4 / 5 / 6 / 7 |
+| Size | Socket | Lead goes to | Pins 1 / 2 / 3 / 4 / 5 / 6 |
 |---|---|---|---|
-| 2-pin | **J5** thermocouple | the K-type probe (its own wires, crimped) | TC+ / TC− (GND) |
+| screw terminal | **J5** thermocouple | the K-type probe's own two wires, clamped | TC+ / TC− (GND) |
 | 3-pin | **J6** pressure | the transducer | SIG / +5V / GND |
 | 4-pin | **J2** heater SSR | the heater SSR's DC input | +5V / heater OUT / – / – |
-| 7-pin | **J7** front | the three rockers and their LEDs | PWR / BREW / STM / GND / LED P / LED C / LED S |
-| 7-pin | **J10** scale | the dual HX711 board in the tray base (3.3 V only) | – / – / DOUT1 / SCK / GND / DOUT2 / 3V3 |
+| 5-pin | **J10** scale | the dual HX711 board in the tray base (3.3 V only) | DOUT1 / SCK / GND / DOUT2 / 3V3 |
+| 6-pin | **J7** front | the brew and steam rockers and the three panel LEDs | BREW / STM / GND / LED P / LED C / LED S |
 
 Mains is on four 6.3 mm spade tabs (N, L, P, 3), which no GH plug fits. Why the sizes are unique: no
 pinout pair for the heater SSR and the pressure transducer on two 3-pin sockets is harmless both ways
@@ -20,12 +20,13 @@ back-fed through its protection diodes). So v32 moved the heater SSR to a 4-pin 
 
 **Every lead in every same-size socket is harmless.** No mains load switches on. No supply is shorted. No
 GPIO is overdriven or shorted. No chip gets more than a pull-up's ~0.6 mA through its protection
-diodes. The firmware can't be fooled into leaving standby. You find out you swapped them because the device doesn't work, not because
+diodes. You find out you swapped them because the device doesn't work, not because
 something breaks. This covers multi-lead swaps too (below).
 
 `hardware/controller/swap_check.py` checks this from the real netlist (`build/parts-120v.json`).
-`controller.py` runs it on every build and fails if any case is hazardous. In v32 the only same-size
-pair is J7/J10 (front panel and scale), unchanged from v30 and still harmless both ways.
+`controller.py` runs it on every build and fails if any case is hazardous. Since v35 there is no
+same-size pair (v32–v34 had J7/J10, both 7-pin, harmless both ways), so it now only confirms that.
+The one remaining physical risk is forcing a smaller plug off-centre into a larger header.
 
 ## History
 

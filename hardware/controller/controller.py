@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""coffee controller board v33: schematic as code (SKiDL).
+"""coffee controller board v39 (circuit as v35: v33 plus the 6-pin front panel, 5-pin scale, TC screw terminal): schematic as code (SKiDL).
 
 The small loads' mains are on this board (v32+), behind a 7 mm isolation band:
 - four 6.3 mm spades (N, L, P, 3), a 2 A fuse and a Mean Well IRM-10-5 that powers the board;
@@ -174,7 +174,7 @@ ac_n, ac_l, ac_lf = Net("AC_N"), Net("AC_L"), Net("AC_L_F")
 pump_sw, valve_sw = Net("PUMP_SW"), Net("VALVE_SW")
 for _n in (ac_n, ac_l, ac_lf):
     _n.drive = 100     # mains sources (ERC)
-for ref, net, what in (("J12", ac_n, "N: neutral (feeds the IRM module only)"), ("J13", ac_l, "L: live, unswitched (pump, valve, IRM)"),
+for ref, net, what in (("J12", ac_n, "N: neutral (feeds the IRM module only)"), ("J13", ac_l, "L: live, switched by the power rocker (pump, valve, IRM)"),
                        ("J14", pump_sw, "P: switched live to the pump"), ("J15", valve_sw, "3: switched live to the 3-way valve")):
     j = part(SPADE, ref, what.split(":")[0], mpn="TE 63824-1", mains=True, notes=f"MAINS. {what}")
     j[1] += net

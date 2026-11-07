@@ -1,28 +1,25 @@
-# Controller board v33: mains for the small loads on board
+# Controller board v39: mains for the small loads on board
 
-v33 is v32 plus one part, R54, the pump bleeder that the independent review found missing ([REVIEW-v32.md](REVIEW-v32.md), M1).
+The circuit is v33's (v32 plus R54, the pump bleeder from [REVIEW-v32.md](REVIEW-v32.md) M1), with three
+changes since: the power rocker is a plain mains switch again (v35: no standby input, J7 6-pin), the scale
+lead is 5-pin (v35), and the thermocouple lands on a screw terminal (v38). The layout is new: v38 put
+every part on the front face so the board slides into a printed holder (hardware/holder), and v39 turned it
+so the mains spades sit along the top edge and the low-voltage plugs along the bottom.
 
-A 98 × 55.5 mm two-layer board in two halves:
-- **Mains half (left):**
-  - four 6.3 mm spade tabs, N L P 3 (Gaggiuino's order);
+An 80 × 77 mm two-layer board in two halves across a 7 mm isolation band:
+- **Mains half (top):**
+  - four 6.3 mm spade tabs along the top edge: 3, P, L, N left to right;
   - a 2 A slow-blow fuse;
-  - a Mean Well **IRM-10-5** isolated 5 V supply;
+  - a Mean Well **IRM-10-5** isolated 5 V supply, standing across the band (AC pins above, DC below);
   - two zero-cross opto-triac channels that switch the **vibration pump** and the **3-way valve**.
-- **SELV half (right):**
+- **SELV half (bottom):**
   - the ESP32-C6 module and the thermocouple and pressure front ends;
-  - five JST GH sockets along the top edge, plus USB-C.
-- **Between the halves:** a 7 mm copper-free band with milled slots. Only the two opto-triacs and the IRM module cross it.
+  - the low-voltage plugs, the thermocouple screw terminal (bottom-right, the coolest corner of the
+    vertical board: every heat source is above it) and USB-C, along the bottom edge.
 
-The **heater (1370 W, 11.4 A) stays off the board**, on its external SSR driven from J2. The stock steam
-thermostat (145 °C) and thermal fuse (184 °C) stay in series with it. They are the over-temperature
-protection that doesn't depend on any of this.
-
-Parts and links: [BUY.md](BUY.md). Wiring: [WIRING.md](WIRING.md). Mis-plug safety: [SWAP-SAFETY.md](SWAP-SAFETY.md).
-
-Schematic as code: `hardware/controller/controller.py` (SKiDL). Simulations: `hardware/controller/sim/run.py`
-→ [sim/REPORT.md](../hardware/controller/sim/REPORT.md), 79/79 pass. Every part was checked against its
-maker's datasheet (pin map, package, and each value the design relies on); the quotes and links are in
-[`evidence/parts.jsonl`](evidence/parts.jsonl).
+Sections below that give v33 coordinates or edges ("left", "right", "Layout") describe v33's layout; the
+circuit, the values and the calculations are unchanged. Board numbers for v39: DRC clean, isolation checked
+on the copper on every build (isolation_check.py), independent review in [REVIEW-v39.md](REVIEW-v39.md).
 
 ## Why some mains came back onto the board
 
@@ -147,9 +144,9 @@ GPIO → AO3400A, **3.3 kΩ gate pull-down** (holds each output off while the pi
 
 ## Ordering: full assembly vs SMD only
 
-`build/coffee-v33-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM and the four
-spades (through-hole). `build/coffee-v33-smd-{bom,cpl}.csv` leaves those five parts out, and
-`coffee-v33-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
+`build/coffee-v39-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM, the four
+spades and the thermocouple terminal (through-hole). `build/coffee-v39-smd-{bom,cpl}.csv` leaves those six
+parts out, and `coffee-v39-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
 live tiered prices:
 
 | 5 boards | JLC | you | total |

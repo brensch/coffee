@@ -1,0 +1,1655 @@
+{
+ "mains_v": 120,
+ "parts": {
+  "J12": {
+   "footprint": "Coffee:FASTON_TE_63824-1",
+   "value": "N",
+   "pins": {
+    "1": "AC_N"
+   },
+   "pin_names": {
+    "1": "1"
+   },
+   "mains": [
+    "1"
+   ],
+   "populate": "Y",
+   "desc": "6.3 mm (0.250\") PCB quick-connect tab",
+   "mpn": "TE 63824-1",
+   "notes": "MAINS. N: neutral (feeds the IRM module only)"
+  },
+  "J13": {
+   "footprint": "Coffee:FASTON_TE_63824-1",
+   "value": "L",
+   "pins": {
+    "1": "AC_L"
+   },
+   "pin_names": {
+    "1": "1"
+   },
+   "mains": [
+    "1"
+   ],
+   "populate": "Y",
+   "desc": "6.3 mm (0.250\") PCB quick-connect tab",
+   "mpn": "TE 63824-1",
+   "notes": "MAINS. L: live, switched by the power rocker (pump, valve, IRM)"
+  },
+  "J14": {
+   "footprint": "Coffee:FASTON_TE_63824-1",
+   "value": "P",
+   "pins": {
+    "1": "PUMP_SW"
+   },
+   "pin_names": {
+    "1": "1"
+   },
+   "mains": [
+    "1"
+   ],
+   "populate": "Y",
+   "desc": "6.3 mm (0.250\") PCB quick-connect tab",
+   "mpn": "TE 63824-1",
+   "notes": "MAINS. P: switched live to the pump"
+  },
+  "J15": {
+   "footprint": "Coffee:FASTON_TE_63824-1",
+   "value": "3",
+   "pins": {
+    "1": "VALVE_SW"
+   },
+   "pin_names": {
+    "1": "1"
+   },
+   "mains": [
+    "1"
+   ],
+   "populate": "Y",
+   "desc": "6.3 mm (0.250\") PCB quick-connect tab",
+   "mpn": "TE 63824-1",
+   "notes": "MAINS. 3: switched live to the 3-way valve"
+  },
+  "F1": {
+   "footprint": "Coffee:Fuse_Littelfuse_Nano2_443",
+   "value": "2A T",
+   "pins": {
+    "1": "AC_L",
+    "2": "AC_L_F"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Fuse, 2 A slow-blow, 250 VAC, 50 A breaking",
+   "mpn": "Littelfuse 0443002.DR",
+   "notes": "MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush)"
+  },
+  "PS1": {
+   "footprint": "Converter_ACDC:Converter_ACDC_MeanWell_IRM-10-xx_THT",
+   "value": "IRM-10-5",
+   "pins": {
+    "1": "AC_N",
+    "2": "AC_L_F",
+    "3": "GND",
+    "4": "+5V"
+   },
+   "pin_names": {
+    "1": "AC/N",
+    "2": "AC/L",
+    "3": "-Vo",
+    "4": "+Vo"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Isolated AC-DC 5 V 2 A, 4.2 kVac, UL/IEC 62368-1, EN 61558; 50 % load at 70 C",
+   "mpn": "Mean Well IRM-10-5",
+   "notes": "Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C"
+  },
+  "R47": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "330",
+   "pins": {
+    "1": "+5V",
+    "2": "PUMP_LED_A"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "PUMP opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA"
+  },
+  "U8": {
+   "footprint": "Package_DIP:SMDIP-6_W9.53mm_Clearance8mm",
+   "value": "MOC3083SR2M",
+   "pins": {
+    "1": "PUMP_LED_A",
+    "2": "PUMP_OUT",
+    "3": null,
+    "4": "PUMP_G",
+    "5": null,
+    "6": "PUMP_O6"
+   },
+   "pin_names": {
+    "1": "A",
+    "2": "K",
+    "3": "NC",
+    "4": "MT1",
+    "5": "SUB",
+    "6": "MT2"
+   },
+   "mains": [
+    "4",
+    "5",
+    "6"
+   ],
+   "populate": "Y",
+   "desc": "Zero-cross opto-triac driver, 800 V, 4170 Vrms, IFT 5 mA max",
+   "mpn": "onsemi MOC3083SR2M",
+   "notes": "PUMP: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing"
+  },
+  "Q5": {
+   "footprint": "Package_TO_SOT_SMD:TO-252-2",
+   "value": "T435-600B",
+   "pins": {
+    "1": "PUMP_SW",
+    "2": "AC_L_F",
+    "3": "PUMP_G"
+   },
+   "pin_names": {
+    "1": "MT1",
+    "2": "MT2",
+    "3": "G"
+   },
+   "mains": [
+    "1",
+    "2",
+    "3"
+   ],
+   "populate": "Y",
+   "desc": "Triac 4 A 600 V, ST T4 series (DPAK)",
+   "mpn": "ST T435-600B-TR",
+   "notes": "MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)"
+  },
+  "R49": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "330",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "PUMP_O6"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak"
+  },
+  "R51": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "100 1W",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "PUMP_SNUB"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "UNI-ROYAL 25121WF1000T4E",
+   "notes": "MAINS: snubber R (inductive load)"
+  },
+  "C15": {
+   "footprint": "Coffee:C_2220_Murata_GA355",
+   "value": "22nF X2",
+   "pins": {
+    "1": "PUMP_SNUB",
+    "2": "PUMP_SW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Class X2 safety capacitor, 250 VAC, 2220",
+   "mpn": "Murata GA355DR7GB223KW01L",
+   "notes": "MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage"
+  },
+  "R54": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "51k 500V",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "PUMP_SW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "Vishay CRCW251251K0JNEG",
+   "notes": "MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1)"
+  },
+  "R48": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "330",
+   "pins": {
+    "1": "+5V",
+    "2": "VALVE_LED_A"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "VALVE opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA"
+  },
+  "U9": {
+   "footprint": "Package_DIP:SMDIP-6_W9.53mm_Clearance8mm",
+   "value": "MOC3083SR2M",
+   "pins": {
+    "1": "VALVE_LED_A",
+    "2": "VALVE_OUT",
+    "3": null,
+    "4": "VALVE_G",
+    "5": null,
+    "6": "VALVE_O6"
+   },
+   "pin_names": {
+    "1": "A",
+    "2": "K",
+    "3": "NC",
+    "4": "MT1",
+    "5": "SUB",
+    "6": "MT2"
+   },
+   "mains": [
+    "4",
+    "5",
+    "6"
+   ],
+   "populate": "Y",
+   "desc": "Zero-cross opto-triac driver, 800 V, 4170 Vrms, IFT 5 mA max",
+   "mpn": "onsemi MOC3083SR2M",
+   "notes": "VALVE: isolation barrier (pins 1-3 SELV, 4-6 mains) over a slot. Fires only within 20 V of a zero crossing"
+  },
+  "Q6": {
+   "footprint": "Package_TO_SOT_SMD:TO-252-2",
+   "value": "T410-600B",
+   "pins": {
+    "1": "VALVE_SW",
+    "2": "AC_L_F",
+    "3": "VALVE_G"
+   },
+   "pin_names": {
+    "1": "MT1",
+    "2": "MT2",
+    "3": "G"
+   },
+   "mains": [
+    "1",
+    "2",
+    "3"
+   ],
+   "populate": "Y",
+   "desc": "Triac 4 A 600 V, ST T4 series (DPAK)",
+   "mpn": "ST T410-600B-TR",
+   "notes": "MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W"
+  },
+  "R50": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "330",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "VALVE_O6"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak"
+  },
+  "R53": {
+   "footprint": "Resistor_SMD:R_1206_3216Metric",
+   "value": "1k",
+   "pins": {
+    "1": "VALVE_G",
+    "2": "VALVE_SW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k)"
+  },
+  "R52": {
+   "footprint": "Resistor_SMD:R_2512_6332Metric",
+   "value": "100 1W",
+   "pins": {
+    "1": "AC_L_F",
+    "2": "VALVE_SNUB"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "UNI-ROYAL 25121WF1000T4E",
+   "notes": "MAINS: snubber R (inductive load)"
+  },
+  "C16": {
+   "footprint": "Coffee:C_2220_Murata_GA355",
+   "value": "22nF X2",
+   "pins": {
+    "1": "VALVE_SNUB",
+    "2": "VALVE_SW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [
+    "1",
+    "2"
+   ],
+   "populate": "Y",
+   "desc": "Class X2 safety capacitor, 250 VAC, 2220",
+   "mpn": "Murata GA355DR7GB223KW01L",
+   "notes": "MAINS: snubber C, Class X2 250 VAC (Gaggiuino uses an unrated MLCC here). ~1 mA off-state leakage"
+  },
+  "U4": {
+   "footprint": "Espressif:ESP32-C6-MINI-1U",
+   "value": "ESP32-C6-MINI-1U-H4",
+   "pins": {
+    "1": "GND",
+    "2": "GND",
+    "3": "+3V3",
+    "4": null,
+    "5": null,
+    "6": "V5_SNS",
+    "7": null,
+    "8": "EN",
+    "9": "SCALE_DOUT1",
+    "10": "SCALE_DOUT2",
+    "11": "GND",
+    "12": "P_ADC",
+    "13": null,
+    "14": "GND",
+    "15": "SW_BREW",
+    "16": "SW_STEAM",
+    "17": "USB_D-",
+    "18": "USB_D+",
+    "19": null,
+    "20": null,
+    "21": null,
+    "22": "I2C_SDA",
+    "23": "I2C_SCL",
+    "24": "VALVE_CMD",
+    "25": "PUMP_CMD",
+    "26": "HEATER_CMD",
+    "27": "LED_PWR_IO",
+    "28": "LED_COFFEE_IO",
+    "29": "LED_STEAM_IO",
+    "30": "SCALE_SCK",
+    "31": "STATUS",
+    "32": null,
+    "33": null,
+    "34": null,
+    "35": null,
+    "36": "GND",
+    "37": "GND",
+    "38": "GND",
+    "39": "GND",
+    "40": "GND",
+    "41": "GND",
+    "42": "GND",
+    "43": "GND",
+    "44": "GND",
+    "45": "GND",
+    "46": "GND",
+    "47": "GND",
+    "48": "GND",
+    "49": "GND",
+    "50": "GND",
+    "51": "GND",
+    "52": "GND",
+    "53": "GND"
+   },
+   "pin_names": {
+    "1": "GND1",
+    "2": "GND2",
+    "3": "3V3",
+    "4": "NC4",
+    "5": "IO2",
+    "6": "IO3",
+    "7": "NC7",
+    "8": "EN",
+    "9": "IO4",
+    "10": "IO5",
+    "11": "GND11",
+    "12": "IO0",
+    "13": "IO1",
+    "14": "GND14",
+    "15": "IO6",
+    "16": "IO7",
+    "17": "IO12",
+    "18": "IO13",
+    "19": "IO14",
+    "20": "IO15",
+    "21": "NC21",
+    "22": "IO8",
+    "23": "IO9",
+    "24": "IO18",
+    "25": "IO19",
+    "26": "IO20",
+    "27": "IO21",
+    "28": "IO22",
+    "29": "IO23",
+    "30": "RXD0",
+    "31": "TXD0",
+    "32": "NC32",
+    "33": "NC33",
+    "34": "NC34",
+    "35": "NC35",
+    "36": "GND36",
+    "37": "GND37",
+    "38": "GND38",
+    "39": "GND39",
+    "40": "GND40",
+    "41": "GND41",
+    "42": "GND42",
+    "43": "GND43",
+    "44": "GND44",
+    "45": "GND45",
+    "46": "GND46",
+    "47": "GND47",
+    "48": "GND48",
+    "49": "GND49",
+    "50": "GND50",
+    "51": "GND51",
+    "52": "GND52",
+    "53": "GND53"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Wi-Fi 6 / BLE 5 RISC-V module, W.FL / MHF III antenna connector, 4 MB flash, 105 C rated",
+   "mpn": "ESP32-C6-MINI-1U-H4",
+   "notes": "W.FL / MHF III antenna (not U.FL): pigtail to a 2.4 GHz antenna outside the steel case"
+  },
+  "C3": {
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "value": "10uF 25V X5R",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
+  },
+  "C4": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF X7R",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "3V3: C3 at the LDO output (>= 1 uF for stability), C4 at the module's top-left corner"
+  },
+  "R10": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "EN"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "EN pull-up (Espressif RC delay)"
+  },
+  "C5": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "1uF X5R",
+   "pins": {
+    "1": "EN",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "EN delay"
+  },
+  "R11": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "I2C_SDA"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "I2C SDA pull-up; also GPIO8's strap pull-up (high at reset)"
+  },
+  "R46": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "4.7k",
+   "pins": {
+    "1": "+3V3",
+    "2": "I2C_SCL"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "I2C SCL pull-up; also GPIO9 high at reset = normal boot"
+  },
+  "TP1": {
+   "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+   "value": "BOOT",
+   "pins": {
+    "1": "I2C_SCL"
+   },
+   "pin_names": {
+    "1": "1"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Bare test pad",
+   "mpn": "",
+   "notes": "Recovery only (USB Serial/JTAG resets into download mode by itself): short to GND (the USB-C shell) while plugging USB in. On SCL: harmless to the bus"
+  },
+  "R12": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "STATUS",
+    "2": "STATUS_A"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "red LED Vf ~2.0 V: ~1.3 mA from 3.3 V"
+  },
+  "D1": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "STATUS_A"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "Status: boot log flicker, on while programming, then the firmware heartbeat"
+  },
+  "D2": {
+   "footprint": "Diode_SMD:D_SOD-123",
+   "value": "B5819W",
+   "pins": {
+    "1": "+5V",
+    "2": "VBUS"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Schottky 1 A 40 V",
+   "mpn": "B5819W SL",
+   "notes": "USB bench power"
+  },
+  "U5": {
+   "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+   "value": "TLV1117LV33DCYR",
+   "pins": {
+    "1": "GND",
+    "2": "+3V3",
+    "3": "+5V"
+   },
+   "pin_names": {
+    "1": "GND",
+    "2": "VOUT",
+    "3": "VIN"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LDO 3.3 V 1 A, ceramic-stable",
+   "mpn": "TI TLV1117LV33DCYR",
+   "notes": "SOT-223 for heat: ~0.17 W average, +11 C"
+  },
+  "C6": {
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "value": "22uF 25V X5R",
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "Samsung CL21A226MAQNNNE",
+   "notes": "Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
+  },
+  "C7": {
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "value": "22uF 25V X5R",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "Samsung CL21A226MAQNNNE",
+   "notes": "Ceramic bulk (X5R 25 V, 85 C: fine at the 60-70 C inside the machine; no electrolytics to age)"
+  },
+  "J4": {
+   "footprint": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
+   "value": "USB-C",
+   "pins": {
+    "A1": "GND",
+    "A4": "VBUS",
+    "A5": "CC1",
+    "A6": "USB_D+",
+    "A7": "USB_D-",
+    "A9": "VBUS",
+    "A12": "GND",
+    "B1": "GND",
+    "B4": "VBUS",
+    "B5": "CC2",
+    "B6": "USB_D+",
+    "B7": "USB_D-",
+    "B9": "VBUS",
+    "B12": "GND",
+    "S1": "GND"
+   },
+   "pin_names": {
+    "A1": "GND_A1",
+    "A4": "VBUS_A4",
+    "A5": "CC1",
+    "A6": "DP1",
+    "A7": "DN1",
+    "A9": "VBUS_A9",
+    "A12": "GND_A12",
+    "B1": "GND_B1",
+    "B4": "VBUS_B4",
+    "B5": "CC2",
+    "B6": "DP2",
+    "B7": "DN2",
+    "B9": "VBUS_B9",
+    "B12": "GND_B12",
+    "S1": "SHIELD"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "USB-C receptacle (USB 2.0): flashing, logs, JTAG, bench power",
+   "mpn": "HRO TYPE-C-31-M-12",
+   "notes": "Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power"
+  },
+  "R13": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC1",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "USB-C sink identification"
+  },
+  "R14": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "5.1k",
+   "pins": {
+    "1": "CC2",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "USB-C sink identification"
+  },
+  "J2": {
+   "footprint": "Connector_JST:JST_GH_SM04B-GHS-TB_1x04-1MP_P1.25mm_Horizontal",
+   "value": "Heater SSR",
+   "pins": {
+    "1": "+5V",
+    "2": "HEATER_OUT",
+    "3": null,
+    "4": null
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "JST_GH_4_SMD",
+   "mpn": "JST SM04B-GHS-TB",
+   "notes": "1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size)"
+  },
+  "R4": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "3.3k",
+   "pins": {
+    "1": "HEATER_CMD",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)"
+  },
+  "Q1": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "HEATER_CMD",
+    "2": "GND",
+    "3": "HEATER_OUT"
+   },
+   "pin_names": {
+    "1": "G",
+    "2": "S",
+    "3": "D"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate",
+   "mpn": "AO3400A",
+   "notes": "HEATER output: sinks the external heater SSR input (7-15 mA)"
+  },
+  "R5": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "3.3k",
+   "pins": {
+    "1": "PUMP_CMD",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)"
+  },
+  "Q2": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "PUMP_CMD",
+    "2": "GND",
+    "3": "PUMP_OUT"
+   },
+   "pin_names": {
+    "1": "G",
+    "2": "S",
+    "3": "D"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate",
+   "mpn": "AO3400A",
+   "notes": "PUMP output: sinks the opto-triac LED (~9 mA)"
+  },
+  "R6": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "3.3k",
+   "pins": {
+    "1": "VALVE_CMD",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim)"
+  },
+  "Q3": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "value": "AO3400A",
+   "pins": {
+    "1": "VALVE_CMD",
+    "2": "GND",
+    "3": "VALVE_OUT"
+   },
+   "pin_names": {
+    "1": "G",
+    "2": "S",
+    "3": "D"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "N-MOSFET 30 V 5.7 A, 48 mOhm at 2.5 V gate",
+   "mpn": "AO3400A",
+   "notes": "VALVE output: sinks the opto-triac LED (~9 mA)"
+  },
+  "J5": {
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "value": "Thermocouple",
+   "pins": {
+    "1": "TC_P",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Phoenix MKDS 1,5/2-5,08 screw terminal, 0.14-1.5 mm2",
+   "mpn": "Phoenix MKDS 1,5/ 2-5,08",
+   "notes": "1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); the probe's bare wires clamp straight in. Cold junction measured by U7 beside it"
+  },
+  "R43": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "TC_P",
+    "2": "TC_INP"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "TC+ input: noise filter with C12 (probe lead runs past the heater wiring)"
+  },
+  "R44": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "GND",
+    "2": "TC_INN"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "TC- input series: matches R43 (symmetric filter)"
+  },
+  "C12": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "1uF X5R",
+   "pins": {
+    "1": "TC_INP",
+    "2": "TC_INN"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "Differential filter across the ADC inputs: ~80 Hz with R43/R44"
+  },
+  "R45": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10M",
+   "pins": {
+    "1": "+3V3",
+    "2": "TC_P"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out"
+  },
+  "U6": {
+   "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+   "value": "MCP3421A0T-E/CH",
+   "pins": {
+    "1": "TC_INP",
+    "2": "GND",
+    "3": "I2C_SCL",
+    "4": "I2C_SDA",
+    "5": "+3V3",
+    "6": "TC_INN"
+   },
+   "pin_names": {
+    "1": "VIN+",
+    "2": "VSS",
+    "3": "SCL",
+    "4": "SDA",
+    "5": "VDD",
+    "6": "VIN-"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "18-bit delta-sigma ADC, I2C, 2.048 V reference, PGA x1-x8",
+   "mpn": "MCP3421A0T-E/CH",
+   "notes": "Thermocouple ADC, I2C 0x68: PGA 8, 18 bit, 3.75 SPS (15.6 uV/8 = 2 uV per LSB, 0.05 C)"
+  },
+  "C13": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF X7R",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "MCP3421 VDD bypass"
+  },
+  "U7": {
+   "footprint": "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm",
+   "value": "TMP117AIDRVR",
+   "pins": {
+    "1": "I2C_SCL",
+    "2": "GND",
+    "3": null,
+    "4": "GND",
+    "5": "+3V3",
+    "6": "I2C_SDA",
+    "7": "GND"
+   },
+   "pin_names": {
+    "1": "SCL",
+    "2": "GND",
+    "3": "ALERT",
+    "4": "ADD0",
+    "5": "V+",
+    "6": "SDA",
+    "7": "EP"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "+-0.1 C digital temperature sensor, I2C (thermocouple cold junction)",
+   "mpn": "TI TMP117AIDRVR",
+   "notes": "Cold junction: at J5's pads, I2C 0x48 (ADD0 to GND), +-0.2 C max to 100 C; thermal pad soldered to GND (TI allows floating or grounded)"
+  },
+  "C14": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF X7R",
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "TMP117 V+ bypass"
+  },
+  "J6": {
+   "footprint": "Connector_JST:JST_GH_SM03B-GHS-TB_1x03-1MP_P1.25mm_Horizontal",
+   "value": "Pressure",
+   "pins": {
+    "1": "P_SIG",
+    "2": "+5V",
+    "3": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2",
+    "3": "3"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "JST_GH_3_SMD",
+   "mpn": "JST SM03B-GHS-TB",
+   "notes": "0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board)"
+  },
+  "R16": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "47k",
+   "pins": {
+    "1": "P_SIG",
+    "2": "P_ADC"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "Divider 100/147 (147k load: TE M3200 needs > 100k)"
+  },
+  "R17": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "100k",
+   "pins": {
+    "1": "P_ADC",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": ""
+  },
+  "C9": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "22nF X7R",
+   "pins": {
+    "1": "P_ADC",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "ADC reservoir; ~226 Hz with the 32k divider: keeps the pump's 60 Hz pulses"
+  },
+  "J7": {
+   "footprint": "Connector_JST:JST_GH_SM06B-GHS-TB_1x06-1MP_P1.25mm_Horizontal",
+   "value": "Front panel",
+   "pins": {
+    "1": "SW_BREW_IN",
+    "2": "SW_STEAM_IN",
+    "3": "GND",
+    "4": "LED_PWR",
+    "5": "LED_COFFEE",
+    "6": "LED_STEAM"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "JST_GH_6_SMD",
+   "mpn": "JST SM06B-GHS-TB",
+   "notes": "1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND)"
+  },
+  "R20": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_BREW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "switch pull-up / wetting current"
+  },
+  "R18": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_BREW_IN",
+    "2": "SW_BREW"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "GPIO series protection"
+  },
+  "R21": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "+3V3",
+    "2": "SW_STEAM"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "switch pull-up / wetting current"
+  },
+  "R19": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "SW_STEAM_IN",
+    "2": "SW_STEAM"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "GPIO series protection"
+  },
+  "R30": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "330",
+   "pins": {
+    "1": "LED_PWR_IO",
+    "2": "LED_PWR"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA"
+  },
+  "R31": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "330",
+   "pins": {
+    "1": "LED_COFFEE_IO",
+    "2": "LED_COFFEE"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA"
+  },
+  "R32": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "330",
+   "pins": {
+    "1": "LED_STEAM_IO",
+    "2": "LED_STEAM"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA"
+  },
+  "R37": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_PWR_IO",
+    "2": "LED_PWR_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: power lamp"
+  },
+  "D3": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_PWR_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: power lamp"
+  },
+  "R38": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_COFFEE_IO",
+    "2": "LED_COFFEE_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: coffee lamp"
+  },
+  "D4": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_COFFEE_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: coffee lamp"
+  },
+  "R39": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "LED_STEAM_IO",
+    "2": "LED_STEAM_IO_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: steam lamp"
+  },
+  "D5": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "LED_STEAM_IO_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: steam lamp"
+  },
+  "R40": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "HEATER_CMD",
+    "2": "HEATER_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: heater on"
+  },
+  "D6": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "HEATER_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: heater on"
+  },
+  "R41": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "PUMP_CMD",
+    "2": "PUMP_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: pump on"
+  },
+  "D7": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "PUMP_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: pump on"
+  },
+  "R42": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "1k",
+   "pins": {
+    "1": "VALVE_CMD",
+    "2": "VALVE_CMD_IND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "indicator LED: valve on"
+  },
+  "D8": {
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "value": "red",
+   "pins": {
+    "1": "GND",
+    "2": "VALVE_CMD_IND"
+   },
+   "pin_names": {
+    "1": "K",
+    "2": "A"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "LED",
+   "mpn": "",
+   "notes": "indicator: valve on"
+  },
+  "J10": {
+   "footprint": "Connector_JST:JST_GH_SM05B-GHS-TB_1x05-1MP_P1.25mm_Horizontal",
+   "value": "Scale",
+   "pins": {
+    "1": "SCALE_DOUT1",
+    "2": "SCALE_SCK",
+    "3": "GND",
+    "4": "SCALE_DOUT2",
+    "5": "+3V3"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "JST_GH_5_SMD",
+   "mpn": "JST SM05B-GHS-TB",
+   "notes": "1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base)"
+  },
+  "R36": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "SCALE_SCK",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "SCK pull-down: HX711 stays powered while the C6 boots"
+  },
+  "R24": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "20k",
+   "pins": {
+    "1": "+5V",
+    "2": "V5_SNS"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V5_SNS divider top"
+  },
+  "R25": {
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "value": "10k",
+   "pins": {
+    "1": "V5_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Resistor",
+   "mpn": "",
+   "notes": "V5_SNS divider bottom"
+  },
+  "C11": {
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "value": "100nF X7R",
+   "pins": {
+    "1": "V5_SNS",
+    "2": "GND"
+   },
+   "pin_names": {
+    "1": "1",
+    "2": "2"
+   },
+   "mains": [],
+   "populate": "Y",
+   "desc": "Capacitor",
+   "mpn": "",
+   "notes": "ADC reservoir"
+  }
+ },
+ "mains_nets": [
+  "AC_L",
+  "AC_L_F",
+  "AC_N",
+  "PUMP_G",
+  "PUMP_O6",
+  "PUMP_SNUB",
+  "PUMP_SW",
+  "VALVE_G",
+  "VALVE_O6",
+  "VALVE_SNUB",
+  "VALVE_SW"
+ ],
+ "heater_nets": []
+}

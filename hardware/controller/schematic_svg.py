@@ -67,7 +67,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mains", type=int, default=120)
     a = ap.parse_args()
-    spec = json.load(open(os.path.join(HERE, "build", f"parts-{a.mains}v.json")))
+    spec = json.load(open(os.path.join(os.environ.get("BUILD_DIR", os.path.join(HERE, "build")), f"parts-{a.mains}v.json")))
     parts, mains_nets = spec["parts"], set(spec["mains_nets"])
     placed = {r for _, refs, _ in BLOCKS for r in refs}
     rest = [r for r in parts if r not in placed and not r.startswith("H")]
@@ -98,7 +98,7 @@ def main():
             f'<text x="{margin}" y="58" font-size="12" fill="#55534f">Pins carry net-name tags; equal names are connected. Red = mains (hazardous). Blue = power rails. Source: hardware/controller/controller.py</text>')
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="system-ui,Segoe UI,sans-serif">'
            f'<rect width="100%" height="100%" fill="#ffffff"/>{head}{"".join(out)}</svg>')
-    path = os.path.join(HERE, "build", f"schematic-{a.mains}v.svg")
+    path = os.path.join(os.environ.get("BUILD_DIR", os.path.join(HERE, "build")), f"schematic-{a.mains}v.svg")
     open(path, "w").write(svg)
     print("wrote", path)
 

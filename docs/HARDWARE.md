@@ -23,10 +23,10 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled (`build/coffee-v33-{gerbers.zip,bom.csv,cpl.csv}`), or SMD-only
-  with five through-hole parts to solder yourself (`coffee-v33-smd-*`). Order settings: INSTALL.md §1.
-- **Everything else:** [BUY.md](BUY.md): the heater SSR, mains wire and receptacles, GH housings and
-  contacts, the thermocouple, the pressure transducer, the antenna, and the tray.
+- **The board:** from JLCPCB, fully assembled, nothing to solder (`build/coffee-v39-{gerbers.zip,bom.csv,cpl.csv}`),
+  or SMD-only with six through-hole parts to solder yourself (`coffee-v39-smd-*`). Order settings: INSTALL.md §1.
+- **Everything else:** [BUY.md](BUY.md): the heater SSR, mains wire and receptacles, ready-made GH
+  leads, the thermocouple, the pressure transducer, the antenna, and the holder's magnets.
 
 ## How it's wired (summary; details in WIRING.md)
 | Load | Path |
@@ -39,15 +39,16 @@ Where to find what:
 The heater SSR's input is the GH 4-pin from J2 (1 = +5 V to SSR +, 2 = SSR −, switched low). See WIRING.md.
 
 ## Enclosure
-- **The tray:** the board sits on three M3 standoffs (≥ 4 mm) in a printed PETG/ASA tray, with a solid
-  floor under the mains half: it is the insulation between the board's underside (the spades' and IRM's
-  pins carry 120 V) and the case. Heat-resistant velcro holds the tray, never the bare board, on the
-  right side panel. Hole positions: INSTALL.md §0.
+- **The holder** (hardware/holder/README.md): a printed ASA back plate and front plate joined at the
+  sides. The board slides down between them in edge grooves and a printed bar stops it lifting. The back
+  plate is the insulation between the board's back (the spades' and IRM's pins carry 120 V) and the case;
+  the front plate covers the board except the IRM and the spade tabs. Six 10 × 3 mm magnets hold it to the
+  right side panel.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at
   full power.
-- **Orientation:** the GH plugs exit the top edge and the mains receptacles the left edge. Leave ~15 mm
-  above the board for the plugs' cable bend, ~25 mm over it for the IRM, and room at the left for the
-  receptacles and their 18 AWG leads.
+- **Orientation:** the mains receptacles sit along the board's top edge and their wires leave upward; the
+  low-voltage leads leave the bottom edge downward, so the two bundles never meet. Leave ~50 mm of free
+  depth off the panel (the IRM stands 31 mm off it) and room above and below for the cable bends.
 - **Wiring:** keep the mains wiring and the GH leads apart (≥ 6 mm, or a barrier), anchor every wire near
   its terminal, and use fibreglass sleeve near the boiler.
 - **Antenna:** route the module's W.FL pigtail out through a plastic part. The case is steel.

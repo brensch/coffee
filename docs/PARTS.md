@@ -1,6 +1,6 @@
-# Parts record: v33 board (mains for the pump, valve and supply on board)
+# Parts record: v39 board (mains for the pump, valve and supply on board)
 
-Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The five through-hole parts (PS1, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v33-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad), H1-H3 (M3 holes). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
+Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The six through-hole parts (PS1, J5, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v39-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad). No mounting holes: the board slides into its holder (hardware/holder). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
 
 | Refs | Value | Part | LCSC | JLC library | Stock | Notes |
 |---|---|---|---|---|---|---|
@@ -15,15 +15,15 @@ Everything JLC places on the board, as matched live against JLCPCB's library (`j
 | F1 | 2A T | 0443002.DR | C187538 | expand | 1367 | MAINS. 2 A slow-blow, 250 VAC, 50 A breaking: board live feed (load < 0.7 A; I2t 18 A2s rides the IRM inrush) |
 | J2 | Heater SSR | SM04B-GHS-TB(LF)(SN) | C189895 | expand | 17878 | 1=+5V (to SSR 3 +) 2=heater OUT (to SSR 4 -) 3-4=unused (4 pins only for a unique size) |
 | J4 | USB-C | TYPE-C-31-M-12 | C165948 | expand | 323731 | Flashing, logs, JTAG over the C6's USB Serial/JTAG; bench power |
-| J5 | Thermocouple | SM02B-GHS-TB(LF)(SN) | C189893 | expand | 10354 | 1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); GH contacts crimped on the probe's own wires. Cold junction measured by U7 beside it |
+| J5 | Thermocouple | MKDS 1,5/ 2-5,08 (Phoenix 1715721) | C5183929 | expand | 4260 | v39: screw terminal. 1=TC+ (chromel: non-magnetic; yellow ANSI, green IEC) 2=TC- (alumel: the magnetic wire; red ANSI, white IEC); the probe's bare wires clamp in. Cold junction measured by U7 beside it |
 | J6 | Pressure | SM03B-GHS-TB(LF)(SN) | C514175 | expand | 28841 | 0.5-4.5 V ratiometric 5 V transducer (Gaggiuino 0-1.2 MPa; BUY.md 7). 1=SIG 2=+5V 3=GND (v29: +5V in the middle, so the supply lead in this socket just powers the board) |
-| J7 | Front panel | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26107 | 1=POWER 2=BREW 3=STEAM 4=GND 5=LED power 6=LED coffee 7=LED steam (LED cathodes to GND) |
-| J10 | Scale | SM07B-GHS-TB(LF)(SN) | C495552 | expand | 26107 | 3=DOUT1 4=SCK 5=GND 6=DOUT2 7=+3V3 (VCC+VDD tied at the HX711 board), 1-2 unused (dual HX711 board in the tray base) |
+| J7 | Front panel | SM06B-GHS-TB(LF)(SN) | C133065 | expand | 15704 | 1=BREW 2=STEAM 3=GND 4=LED power 5=LED coffee 6=LED steam (LED cathodes to GND) |
+| J10 | Scale | SM05B-GHS-TB(LF)(SN) | C189896 | expand | 25527 | 1=DOUT1 2=SCK 3=GND 4=DOUT2 5=+3V3 (VCC+VDD tied at the HX711 board; dual HX711 board in the tray base) |
 | J12 | N | 63824-1 | C575074 | expand | 12429 | MAINS. N: neutral (feeds the IRM module only) |
 | J13 | L | 63824-1 | C575074 | expand | 12429 | MAINS. L: live, unswitched (pump, valve, IRM) |
 | J14 | P | 63824-1 | C575074 | expand | 12429 | MAINS. P: switched live to the pump |
 | J15 | 3 | 63824-1 | C575074 | expand | 12429 | MAINS. 3: switched live to the 3-way valve |
-| PS1 | IRM-10-5 | IRM-10-5 | C2857903 | expand | 3993 | Isolated 5 V supply; bridges the isolation band (AC pins left, DC pins right). 0.45 A peak load vs 1 A derated at 70 C |
+| PS1 | IRM-10-5 | IRM-10-5 | C2857903 | expand | 3993 | Isolated 5 V supply; bridges the isolation band (AC pins above it, DC pins below). 0.45 A peak load vs 1 A derated at 70 C |
 | Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 1079776 | HEATER output: sinks the external heater SSR input (7-15 mA) / PUMP output: sinks the opto-triac LED (~9 mA) / VALVE output: sinks the opto-triac LED (~9 mA) |
 | Q5 | T435-600B | T435-600B-TR | C145128 | expand | 1678 | MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient) |
 | Q6 | T410-600B | T410-600B-TR | C2970064 | expand | 1320 | MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W |

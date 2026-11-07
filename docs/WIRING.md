@@ -1,19 +1,20 @@
-# Wiring: v32 board (mains section on board) + heater SSR (US Gaggia Classic Pro, 120 V)
+# Wiring: v39 board in its holder + heater SSR (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
-This replaces INSTALL.md §5. **v32 carries mains for the small loads only**: its four 6.3 mm spade
-tabs take live and neutral in and switch the pump and the 3-way valve with on-board triacs; its own
-certified supply (Mean Well IRM-10-5) makes the 5 V. The 11 A heater stays on the external SSR on the
+This replaces INSTALL.md §5. **The board carries mains for the small loads only**: its four 6.3 mm spade
+tabs (along its top edge) take live and neutral in and switch the pump and the 3-way valve with on-board
+triacs; its own certified supply (Mean Well IRM-10-5) makes the 5 V. It sits in the printed holder
+(hardware/holder/README.md): mains wires leave the top, low-voltage leads the bottom. The 11 A heater stays on the external SSR on the
 rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply. *(The diagram above still shows the v30 module layout.)*
 
 > ⚠️ **Mains voltage.** Work with the machine unplugged, and cooled if it has been on. Photograph
 > the stock wiring before you touch it. The thermal fuse and steam thermostat stay in series with
-> the heater: they're the protection that doesn't depend on software. **The board's left end (spades,
-> fuse, triacs, the supply's AC pins, and their solder joints underneath) is live whenever the machine
-> is plugged in**: it lives in its printed tray, never against the chassis, and you never touch it
-> plugged in. If you aren't comfortable with mains wiring, have this checked by an electrician before
+> the heater: they're the protection that doesn't depend on software. **The board's top half (spades,
+> fuse, triacs, the supply's AC end, and their solder joints on the back) is live whenever the machine
+> is plugged in with the power rocker on**: it lives in its holder behind the front plate, never against
+> the chassis, and you never touch it plugged in. If you aren't comfortable with mains wiring, have this checked by an electrician before
 > first power-on.
 
 ## Sources and confidence
@@ -42,7 +43,7 @@ rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md).
    - The M4 thermocouple screws into the thermostat's hole (INSTALL.md §4).
 2. **Steam thermostat and thermal fuse:** leave them, and their wiring, exactly as they are.
 3. **Live (L):** unplug **C.4 (brown)** from the brew switch. It becomes the board's live (**J13 L**): its female receptacle plugs straight onto the tab. GaggiMate uses the same wire as its board's L.
-   Confirm it **unplugged**, with the meter on Ω: the plug's **narrow blade (live)** to C.4 reads continuity with the power switch ON and open with it OFF. (After step 8 it reads continuity either way: the power switch no longer carries mains.)
+   Confirm it **unplugged**, with the meter on Ω: the plug's **narrow blade (live)** to C.4 reads continuity with the power switch ON and open with it OFF.
 4. **Neutral (N):** unplug **S.5 (white)** from the steam switch. It becomes the board's neutral (**J12 N**, for the on-board supply only). GaggiMate uses the same wire as its board's N.
    Confirm it unplugged: the plug's **wide blade (neutral)** to S.5 reads continuity, and S.5 to the earth pin reads open.
 5. **Pump**
@@ -62,24 +63,10 @@ rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md).
    - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
    - **UNSURE:** whether S.4 is part of the steam-thermostat path on a US machine. If parking it breaks the heater circuit, the heater simply won't heat (fail-safe), and the "heater circuit" check below catches it.
 
-8. **Power switch (two-pole): take all mains off it; both poles become low-voltage only.**
-   The controller stays powered all the time and the rocker only tells it "on / standby". Mains must
-   not share the switch with the 5 V wiring: the insulation between a rocker's two poles isn't rated
-   to separate mains from the low-voltage side (independent review, S3). So:
-   - Machine unplugged. With the meter on Ω, identify the **live** pole (the plug's narrow blade has
-     continuity to one of its terminals) and the **neutral** pole.
-   - **Live pole:** take both its wires off the switch and join them (crimp both into one insulated
-     piggyback receptacle, or splice and heat-shrink). Live now runs through, unswitched.
-   - **Neutral pole:** the same: join its two wires and take them off the switch.
-   - The switch now has no mains wires at all. Use one pole's two terminals as the dry contact for
-     **J7 pins 1 and 4** (power and GND); leave the other pole empty.
-   - The board's **J13 L** takes live from that joined live (C.4 is on it; step 3) and **J12 N** the joined neutral (S.5; step 4).
-   - **What this changes:** the rocker no longer cuts mains to anything. In standby the heater, pump and
-     valve are off because the controller holds the heater SSR and the board's triacs off; the steam
-     thermostat and the thermal fuse still limit the heater in hardware. To make the machine dead,
-     **unplug it.**
-   - **UNSURE:** terminal numbering on your switch. Go by the meter, not by position. If you can't
-     tell the poles apart with certainty, stop.
+8. **Power switch: leave it exactly as it is.** It switches mains to the whole machine, the controller
+   included (since v35): rocker off means everything is off, the board too. Don't move any of its wires.
+   Over-the-air firmware updates are armed from the rockers instead (steam on, then brew held 3 s), so
+   nobody on the network can replace the firmware.
 
 9. **Front-panel lamps:** unplug the three 120 V lamps (power, coffee temp, steam temp) from the harness, insulate and tie back their freed wires, and fit the red LEDs in the lamp positions (BUY.md #15).
 
@@ -89,12 +76,12 @@ rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md).
 
 **18 AWG silicone** for every mains run you add, **fully insulated 6.3 mm receptacles** onto the
 board's tabs and the machine's tabs, **forks** on the heater SSR's screw terminals. The board's tabs
-are labelled on the silkscreen: **N, L, P, 3** (top to bottom on its left end, as Gaggiuino).
+are labelled on the silkscreen: **3, P, L, N** left to right along its top edge.
 
 | # | From | To | Ends | Notes |
 |---|---|---|---|---|
-| M1 | C.4 brown (female receptacle, ex brew switch; on the joined live, step 8) | board **J13 L** | its own receptacle | Live, unswitched. Feeds the board's 2 A fuse, then the supply, pump and valve triacs |
-| M2 | S.5 white (female receptacle, ex steam switch; on the joined neutral, step 8) | board **J12 N** | its own receptacle | Neutral, for the on-board supply only |
+| M1 | C.4 brown (female receptacle, ex brew switch) | board **J13 L** | its own receptacle | Live, switched by the power rocker. Feeds the board's 2 A fuse, then the supply, pump and valve triacs |
+| M2 | S.5 white (female receptacle, ex steam switch) | board **J12 N** | its own receptacle | Neutral, for the on-board supply only |
 | M3 | board **J14 P** | pump live tab (where grey PMP.B was) | female / female | The pump's other wire (white) stays as it is |
 | M4 | grey PMP.B free end (the valve live, step 6) | board **J15 3** | its own receptacle | The valve neutral stays as it is |
 | M5 | brew-thermostat wire 1 (white, female) | heater SSR **1/L1** | male spade / fork | The SSR replaces the thermostat |
@@ -102,55 +89,53 @@ are labelled on the silkscreen: **N, L, P, 3** (top to bottom on its left end, a
 | — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | unchanged | — | Don't touch |
 
 Mechanical:
-- **The board in its printed tray** (BUY.md #19): M3 nylon screws into ≥ 4 mm standoffs, a solid floor
-  under the mains end; the **tray** is velcroed to the side panel. The board never touches the chassis.
-  Push the four receptacles on with the board seated in the tray (the floor takes the push), straight
-  down onto the tabs; dress the four wires away from the low-voltage plugs.
+- **The board in its holder** (hardware/holder/README.md): the holder sticks to the side panel with six
+  magnets; the board slides down its grooves and a printed bar stops it lifting. The board never touches
+  the chassis. Fit the four receptacles with the board **out of the holder**, a finger behind each tab (pulling
+  one off takes up to ~76 N), then slide the board in with them on: they ride down the front plate's comb.
+  Dress the four wires upward, away from the low-voltage leads.
 - **Heater SSR:** flat on the inside of the rear panel at the ventilation slots, two M4 bolts with nuts and washers through the slots (or cable ties through them); its factory thermal pad against the panel. Clip its clear terminal cover on.
 - **Joints on the brew-thermostat wires (M5/M6):** pull them away from the boiler before tying them down; tape or heat-shrink any bare metal.
 - **Parked switch wires:** insulate each freed end (tape or heat-shrink) and tie it back; GaggiMate notes some machines have monoblock connectors whose receptacles come out bare.
 
 ### Low-voltage side
 
-JST **GH** 1.25 mm side-entry headers along the board's top edge, one size per job so that only the
-two 7-pin leads can swap (and that swap is harmless: docs/SWAP-SAFETY.md): **J2** heater SSR (4-pin),
-**J6** pressure (3-pin), **J7** front panel and **J10** scale (7-pin), **J5** thermocouple (2-pin, on
-the right edge). **You crimp every lead** (BUY.md #10-13): GHR housings with SSHL-002T-P0.2 contacts
-on 26–28 AWG silicone, about 300 mm, the far end crimped or soldered to the device. Label both ends.
+JST **GH** 1.25 mm side-entry headers along the board's **bottom** edge, each a different size so no lead
+fits another's socket (docs/SWAP-SAFETY.md): **J2** heater SSR (4-pin), **J6** pressure (3-pin), **J10**
+scale (5-pin), **J7** front panel (6-pin). **J5** thermocouple is a screw terminal in the bottom-right corner,
+and **J4** USB-C is at the bottom left.
 
-#### Crimping the GH leads
+#### Leads
 
-Strip ~1.5 mm, crimp the contact with the PA-09 so the rear wings grip the insulation and the front
-wings the strands, tug-test it, then push it into the housing until it clicks (tug again). For a wire
-too thick for the contact (the transducer's cable), solder a 26 AWG tail at the device end, heat-shrink
-it, and crimp the tail. The switch and LED ends get insulated 6.3 mm receptacles or are soldered.
+**Buy ready-made GH leads**: "JST GH 1.25 mm, n-pin, with latch, single-ended", about 300 mm, one each of 3,
+4, 5 and 6 pins. The plug end clicks into the board; you join the bare far end to the device (solder and
+heat-shrink, or a 6.3 mm receptacle for a switch tab). Go by pin position, not wire colour, and label both
+ends. Avoid look-alikes that don't fit GH sockets: Molex PicoBlade ("MX1.25"), JST SH (1.0 mm), ZH (1.5 mm).
 
-**Never splice the thermocouple.** Its two wires are thermocouple alloys all the way to J5: crimp the GH
-contacts straight onto them. Any joint to copper away from the board is a second junction whose
-temperature the board doesn't measure. If the 0.5 m lead is short, use K-type extension wire, alloy to
-the same alloy.
+**The thermocouple clamps straight into J5**, its two bare wires under the screws. **Never splice it:** its
+wires are thermocouple alloys all the way to J5, and any joint to copper away from the board is a second
+junction whose temperature the board doesn't measure. If the 0.5 m lead is short, use K-type extension wire,
+alloy to the same alloy.
 
 | Board pin | Signal | Goes to | Notes |
 |---|---|---|---|
 | J2.1 | +5 V | heater SSR **3 (+)** | 4-pin housing, two contacts: pins 3–4 stay empty |
 | J2.2 | heater OUT (pulled low = on) | heater SSR **4 (−)** | |
-| J7.1 | POWER | power rocker, one pole: one terminal | That pole carries no mains (step 8) |
-| J7.2 | BREW | brew switch, terminal **C.1** | Female spade on an 18 AWG pigtail |
-| J7.3 | STEAM | steam switch, terminal **S.4** | |
-| J7.4 | GND | power pole's other terminal, brew switch **C.2**, steam switch **S.5**, and the three LED cathodes | One lead spliced into short tails. **UNSURE** for your switches: check each pair closes when its rocker is on |
-| J7.5 / .6 / .7 | LED power / coffee / steam | LED **anodes** in the three lamp positions | **LEDs with their own resistor in the lead** (BUY.md #15: pre-wired, 5 V rated). The board has 330 Ω too; the LED's own resistor is what keeps a front-panel lead harmless in the wrong socket |
-| J10.1 – J10.2 | — | — | Unused: cut back and insulate |
-| J10.3 | DOUT1 | HX711 #1 DOUT (left load cell) | 7-pin lead to the tray base |
-| J10.4 | SCK | both HX711s' SCK (shared) | |
-| J10.5 | GND | HX711 board GND | |
-| J10.6 | DOUT2 | HX711 #2 DOUT (right load cell) | |
-| J10.7 | +3.3 V | HX711 board **VCC and VDD, linked at the board** | v30: the scale runs from 3.3 V only (HX711 works from 2.6 V), so there's no 5 V on this socket. DOUT swings 0–3.3 V, safe for the ESP32-C6. The lead runs behind the water tank, away from the mains wiring |
-| J5.1 | TC+ | thermocouple **positive** (chromel: non-magnetic; yellow in ANSI, green in IEC) | Route the lead away from the heater and mains wiring; cable-tie it near J5 so the wires can't pull out |
-| J5.2 | TC− | thermocouple **negative** (alumel: the wire a magnet pulls; red in ANSI, white in IEC) | GH contacts crimped on the probe's own wires. Polarity matters: reversed, the reading falls as the boiler heats and the firmware faults it |
+| J7.1 | BREW | brew switch, terminal **C.1** | Female spade on the lead's far end |
+| J7.2 | STEAM | steam switch, terminal **S.4** | |
+| J7.3 | GND | brew switch **C.2**, steam switch **S.5**, and the three LED cathodes | One wire spliced into short tails. **UNSURE** for your switches: check each pair closes when its rocker is on |
+| J7.4 / .5 / .6 | LED power / coffee / steam | LED **anodes** in the three lamp positions | **LEDs with their own resistor in the lead** (BUY.md #15: pre-wired, 5 V rated). The board has 330 Ω too; the LED's own resistor keeps a front-panel lead harmless anywhere |
+| J10.1 | DOUT1 | HX711 #1 DOUT (left load cell) | 5-pin lead to the tray base |
+| J10.2 | SCK | both HX711s' SCK (shared) | |
+| J10.3 | GND | HX711 board GND | |
+| J10.4 | DOUT2 | HX711 #2 DOUT (right load cell) | |
+| J10.5 | +3.3 V | HX711 board **VCC and VDD, linked at the board** | The scale runs from 3.3 V only (HX711 works from 2.6 V), so there's no 5 V on this socket. DOUT swings 0–3.3 V, safe for the ESP32-C6. The lead runs behind the water tank, away from the mains wiring |
+| J5.1 | TC+ | thermocouple **positive** (chromel: non-magnetic; yellow in ANSI, green in IEC) | Screw terminal. Route the lead away from the heater and mains wiring; tie it to the holder's bottom so the wires can't pull out |
+| J5.2 | TC− | thermocouple **negative** (alumel: the wire a magnet pulls; red in ANSI, white in IEC) | The probe's own bare wire under the screw. Polarity matters: reversed, the reading falls as the boiler heats and the firmware faults it |
 | J6.1 | signal | transducer output wire | ~0.5 V at 0 bar. Identify its wires on the bench first (INSTALL §3) |
 | J6.2 | +5 V | transducer supply wire | |
 | J6.3 | GND | transducer ground wire | |
-| J4 | USB-C | first flash, logs, bench power | At the board's right edge. **USB may be plugged in with mains on:** D2 keeps the on-board supply out of the PC. Bench power over USB runs everything but the mains section |
+| J4 | USB-C | first flash, logs, bench power | At the board's bottom-left, reached with the board out of its holder. **USB may be plugged in with mains on:** D2 keeps the on-board supply out of the PC. Bench power over USB runs everything but the mains section |
 | U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail + GW.15.2113 2 dBi dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part |
 
 ## Checks before mains (multimeter, machine unplugged)
@@ -169,7 +154,7 @@ the same alloy.
    - the switch dry contacts and the heater SSR's input terminals (3, 4).
    No continuity from any mains wire or spade to the chassis.
 6. **Earth:** touch the meter leads together first and subtract that reading. Chassis to the plug's earth pin < 0.5 Ω, and **the heater SSR's metal base** to the earth pin < 0.5 Ω (through its M4 bolts: scrape paint under them if it reads high).
-7. **Switches:** J7.1–J7.4 closes with the power rocker on; J7.2–J7.4 with brew pressed; J7.3–J7.4 with steam pressed (J7.4 is GND).
+7. **Switches:** J7.1–J7.3 closes with brew pressed; J7.2–J7.3 with steam pressed (J7.3 is GND).
 8. **Thermocouple** (do this before INSTALL §4 fits it): a few ohms to a few tens of ohms between its two wires (it's one loop of thin alloy wire), and **open (> 20 MΩ, the meter's top range)** from either wire to the M4 screw body. If either wire shows continuity to the body, it's a *grounded* probe: don't use it (the listing says ungrounded; a grounded one puts the earthed boiler on the board's input). Find TC− with a magnet: alumel is magnetic.
 
 9. **After the case goes back together:** every earth wire you unplugged is back on. GaggiMate's install guide warns that the top cover (cup warmer) has **two** earth wires. Measure each panel, the top cover included, to the plug's earth pin: < 0.5 Ω.
