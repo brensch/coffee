@@ -42,14 +42,15 @@ Firmware: ESP32-C6 (stable Rust), flashed and provisioned with the `coffee` CLI 
 coffee flash                                  # build + flash over USB (needs espflash)
 coffee wifi set --ssid HomeNet --password ... # store Wi-Fi, wait for an IP
 open http://coffee.local/                     # the same UI and API, served by the board
-coffee ota --host coffee.local                # later updates over Wi-Fi: power rocker off, steam rocker on
+coffee ota --host coffee.local                # later updates over Wi-Fi: steam rocker on, then brew held 3 s
 coffee-emu capture --port /dev/ttyACM0 --out real.clog   # record its log
 coffee flash --bridge && coffee-emu serve --engine-serial /dev/ttyACM0   # hardware-in-the-loop
 ```
 
-## Hardware: the v33 controller board
+## Hardware: the v39 controller board
 
-One 98 × 55.5 mm board, the Gaggiuino split done carefully. The pump, the 3-way valve and the board's own
+One 80 × 77 mm board, the Gaggiuino split done carefully, in a slide-in printed holder that sticks to the
+side panel with magnets (hardware/holder). The pump, the 3-way valve and the board's own
 supply are switched on the board, behind a 7 mm milled isolation band (7.83 mm minimum, verified on the
 copper). The 11 A heater stays on a factory SSR on the rear panel. It carries:
 - **Mains half:** four 6.3 mm spades (N, L, P, 3), a 2 A fuse, a certified Mean Well IRM-10-5, and two
@@ -57,14 +58,16 @@ copper). The 11 A heater stays on a factory SSR on the rear panel. It carries:
 - an ESP32-C6-MINI-1U (105 °C rated, W.FL / MHF III antenna connector);
 - a K-type thermocouple front end (MCP3421 18-bit ADC + TMP117 cold junction), plus pressure, front-panel
   (three switches in, three LEDs out) and drip-tray scale inputs;
-- **latching JST GH sockets, each lead a unique size** except the two 7-pins, and swapping those is
-  harmless (checked on every build: docs/SWAP-SAFETY.md);
+- **latching JST GH sockets, each lead a unique size**, so no lead fits another's socket (checked on every
+  build: docs/SWAP-SAFETY.md), and a screw terminal for the thermocouple;
+- mains spades along the top edge, low-voltage plugs along the bottom: the two bundles leave in opposite
+  directions;
 - USB-C for the first flash (then updates go over Wi-Fi), and a 7-LED indicator row: status, the three
   front-panel lamps, and heater/pump/valve.
 
 | Item | What | Notes |
 |---|---|---|
-| Board | v33 controller, assembled by JLCPCB (full, or SMD-only plus 5 parts to solder) | `hardware/controller` generates everything: schematic, PCB, DRC, isolation check, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
+| Board | v39 controller, assembled by JLCPCB (full, nothing to solder; or SMD-only plus 6 parts to solder) | `hardware/controller` generates everything: schematic, PCB, DRC, isolation check, fab and JLC files. See [docs/CIRCUIT.md](docs/CIRCUIT.md). |
 | Boiler temperature | K-type M4 screw-in thermocouple (Gaggiuino's) | NIST type-K conversion with cold-junction compensation in firmware. Two-point calibration. |
 | Pressure | Transducer 0–1.2 MPa, 5 V, 0.5–4.5 V, G1/4 (Gaggiuino's) + [GaggiMate plumbing kit](https://shop.gaggimate.eu/products/gaggimate-plumbing-kit) | |
 | Antenna | 2.4 GHz, W.FL (MHF III) pigtail, ≤ 2.33 dBi | Outside the steel case. |
