@@ -6,7 +6,7 @@ through the frame's struts and lock the cover.
 
 - **Frame:** back plate with a close recess for the board, small pockets for the through-hole pin tails, a lip over the
   board's top edge, a solid roof just above the board, and struts straight out of the sides at the top and the bottom,
-  each with a hole running across.
+  each with a hole running across. The top struts run back as side walls into the roof, so their tips aren't free.
 - **Board:** tilts in with its top edge hooked under the lip, then swings down into the recess. Its bottom edge rests on
   the recess wall. The four top pockets are short slots so the pins can move while it hooks in.
 - **Receptacles:** ordinary straight, fully insulated 6.3 mm receptacles push straight onto the board's four spades.
@@ -44,6 +44,8 @@ through the frame's struts and lock the cover.
   **Bars:** on their sides, as exported. No supports needed (checked).
 - 0.2 mm layers, 4 walls, 25 % infill, **at least 6 solid bottom layers on the frame**. Behind the mains pins' pockets
   there is 1.2 mm of plastic to the steel panel, and it has to be solid. Look at the pockets after printing: no gaps.
+- **Use an enclosure and a brim on the frame and the bars.** ASA lifts at the corners of a plate this size, a warped back
+  won't sit flat on the magnets, and the bars have a 3 mm wide footprint.
 - ASA shrinks about 0.5 %; if the first print is tight, scale the frame up 0.5 %.
 
 ## Magnets

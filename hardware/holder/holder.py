@@ -182,8 +182,12 @@ def frame():
     f += box(X0, BOARD_H + CLR, 0, X1, ROOF_Y, LIP_TOP)                     # recess top
     f += prism(lip_poly(), 0.0, BOARD_W)                                    # the lip
     for by, bz in (TOP_BAR, BOT_BAR):                                       # struts straight out of the sides
-        f += box(X0, by - 3.2, 0, X0 + STRUT, by + 3.2, bz + 3.2)
-        f += box(X1 - STRUT, by - 3.2, 0, X1, by + 3.2, bz + 3.2)
+        y1 = ROOF_Y + 0.5 if by == TOP_BAR[0] else by + 3.2                 # the top ones run back as side walls into the roof, so their tips aren't free
+        f += box(X0, by - 3.2, 0, X0 + STRUT, y1, bz + 3.2)
+        f += box(X1 - STRUT, by - 3.2, 0, X1, y1, bz + 3.2)
+        if by == BOT_BAR[0]:                                                # 45-degree gusset at the bottom struts' root
+            g = [(by + 3.2 - 0.01, ZF - 0.01), (by + 3.2 + 3.0, ZF - 0.01), (by + 3.2 - 0.01, ZF + 3.0)]
+            f += prism(g, X0, X0 + STRUT) + prism(g, X1 - STRUT, X1)
         f -= box(X0 - 1, by - HOLE / 2, bz + BAR / 2 - HOLE, X1 + 1, by + HOLE / 2, bz + BAR / 2)   # the bar is held by the hole's front face
     for r_, x, y, d in PINS:                                                # pin-tail pockets
         s = (d + 1.2) / 2; y0, y1 = pocket_y(y, d)
