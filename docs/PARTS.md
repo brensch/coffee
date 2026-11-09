@@ -1,6 +1,6 @@
-# Parts record: v44 board (mains for the pump, valve and supply on board)
+# Parts record: v45 board (mains for the pump, valve and supply on board)
 
-Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The six through-hole parts (PS1, J5, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v44-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad). No mounting holes: the board slides into its holder (hardware/holder). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
+Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The six through-hole parts (PS1, J5, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v45-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad). No mounting holes: the board slides into its holder (hardware/holder). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
 
 | Refs | Value | Part | LCSC | JLC library | Stock | Notes |
 |---|---|---|---|---|---|---|

@@ -6,7 +6,7 @@
 import os, sys, trimesh
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import holder as H
-board_glb = os.path.join(HERE, "..", "controller", "versions", "v44-flat-recess", "board.glb")
+board_glb = os.path.join(HERE, "..", "controller", "versions", "v45-closed-top", "board.glb")
 COL = {"holder_frame": [239, 138, 60, 255], "holder_cover": [70, 140, 190, 255], "holder_bars_assembled": [90, 90, 96, 255]}
 for name, cover_dz, bar_dx in (("assembly", 0.0, 0.0), ("exploded", 45.0, -40.0)):
     sc = trimesh.Scene()

@@ -1,4 +1,4 @@
-# Mis-plug safety (v44 connectors)
+# Mis-plug safety (v45 connectors)
 
 v39 has four low-voltage JST GH sockets, each a different size, so no lead fits another's socket; the
 thermocouple goes into a screw terminal that no plug fits:

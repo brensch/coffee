@@ -1,147 +1,100 @@
     0.000 INFO  fastroute 0.1.14
-    0.000 INFO  live viewer: http://127.0.0.1:54285
-    0.003 INFO  parsed 'build/v44/coffee-controller-120v.dsn' in 1.2 ms: 2 layers, 82 components, 57 nets, 0 wires
-    0.012 INFO  net class 'M1': no neck-down
-    0.012 INFO  net class 'M2': no neck-down
-    0.012 INFO  net class 'M3': no neck-down
-    0.012 INFO  net class 'FINE': no neck-down
-    0.013 WARN  Board has 24 pre-existing clearance violation(s) in the loaded design (24 unfixable).
-    0.013 INFO  built board in 10.9 ms: 1226 items (292 pins, 4 vias, 0 traces)
-    0.014 INFO  threads: autorouting passes run on router.autorouter.max_threads threads (1 = sequential); the optimizer uses router.optimizer.max_threads
-    0.014 INFO  optimizer mode: Parallel { threads: 15 }, board time limits: WallClock, stage wall clock limits: enabled
-    0.015 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
-    0.387 INFO  Fanout pass #1 completed in 0.37 seconds with 203 SMD pins fanouted, 0 not routed, 0 insert errors, +65 extra vias (0 SMD pins still to check in pass, ripup costs=100).
-    0.497 INFO  Fanout pass #2 completed in 0.11 seconds with 33 SMD pins fanouted, 0 not routed, 0 insert errors, +13 extra vias (0 SMD pins still to check in pass, ripup costs=200).
-    0.543 INFO  Fanout pass #3 completed in 0.05 seconds with 12 SMD pins fanouted, 0 not routed, 0 insert errors, +5 extra vias (0 SMD pins still to check in pass, ripup costs=300).
-    0.601 INFO  Fanout pass #4 completed in 0.06 seconds with 12 SMD pins fanouted, 0 not routed, 0 insert errors, +2 extra vias (0 SMD pins still to check in pass, ripup costs=400).
-    0.630 INFO  Fanout pass #5 completed in 0.03 seconds with 8 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
-    0.655 INFO  Fanout pass #6 completed in 0.02 seconds with 6 SMD pins fanouted, 0 not routed, 0 insert errors, +1 extra via (0 SMD pins still to check in pass, ripup costs=600).
-    0.676 INFO  Fanout pass #7 completed in 0.02 seconds with 5 SMD pins fanouted, 0 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=700).
-    0.676 INFO  Fanout stopped after 7 passes: the last pass only re-fanned 5 pins of the previous pass.
-    0.676 INFO  Fanout stage completed: 7 passes, completed in 0.66 seconds.
-    0.682 INFO  checkpoint: best board so far (71 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    0.683 INFO  Auto-routing stage started with baseline score 542.78 for 71 unrouted items.
-    1.457 INFO  Auto-routing pass #1 was completed in 0.77 seconds with score 895.34 (16 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 74, failed 2, ripped 23).
-    1.458 INFO  checkpoint: best board so far (16 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    1.975 INFO  Auto-routing pass #2 was completed in 0.52 seconds with score 869.70 (20 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 15, failed 2, ripped 8).
-    2.232 INFO  Auto-routing pass #3 was completed in 0.26 seconds with score 953.03 (7 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 20, failed 0, ripped 8).
-    2.233 INFO  checkpoint: best board so far (7 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    2.387 INFO  Auto-routing pass #4 was completed in 0.15 seconds with score 978.67 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 7, failed 0, ripped 2).
-    2.388 INFO  checkpoint: best board so far (3 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    2.509 INFO  Auto-routing pass #5 was completed in 0.12 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 0, ripped 1).
-    2.510 INFO  checkpoint: best board so far (2 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    2.567 INFO  Auto-routing pass #6 was completed in 0.06 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 0).
-    2.568 INFO  checkpoint: best board so far (1 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    2.586 INFO  Auto-routing pass #7 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.605 INFO  Auto-routing pass #8 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.623 INFO  Auto-routing pass #9 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.642 INFO  Auto-routing pass #10 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.660 INFO  Auto-routing pass #11 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.678 INFO  Auto-routing pass #12 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.695 INFO  Auto-routing pass #13 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.713 INFO  Auto-routing pass #14 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.731 INFO  Auto-routing pass #15 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.749 INFO  Auto-routing pass #16 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.767 INFO  Auto-routing pass #17 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.785 INFO  Auto-routing pass #18 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.802 INFO  Auto-routing pass #19 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.820 INFO  Auto-routing pass #20 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.838 INFO  Auto-routing pass #21 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.855 INFO  Auto-routing pass #22 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.873 INFO  Auto-routing pass #23 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.890 INFO  Auto-routing pass #24 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.908 INFO  Auto-routing pass #25 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.926 INFO  Auto-routing pass #26 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.943 INFO  Auto-routing pass #27 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.961 INFO  Auto-routing pass #28 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.978 INFO  Auto-routing pass #29 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    2.996 INFO  Auto-routing pass #30 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    3.013 INFO  Auto-routing pass #31 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    3.031 INFO  Auto-routing pass #32 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    3.049 INFO  Auto-routing pass #33 was completed in 0.02 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    3.074 INFO  Auto-routing pass #34 was completed in 0.01 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
-    3.075 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    3.075 INFO  Auto-routing pass #35 was completed in 0.00 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
-    3.076 INFO  Auto-routing stage completed: started with 187 unrouted nets, completed in 2.39 seconds, final score: 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    3.092 INFO  Optimization stage started. Baseline router score: 997.91, optimizer score: 440.65, incomplete connections: 0, clearance violations: 24.
-    3.092 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
-    5.705 INFO  Optimizer greedy phase stopped after 72 of 96 candidates (1.8 s, no further improvements).
-    5.705 INFO  Optimizer pass #1: applied 22 more improving candidate(s).
-    5.711 INFO  Optimizer pass #1 was completed in 2.62 seconds (260 of 260 candidates) with the score of 496.58 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-    5.713 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-    5.713 INFO  Optimizer pass #1: optimizer score 440.65 -> 496.58 (IMPROVED, 12.6943%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   10.060 INFO  Optimizer greedy phase stopped after 56 of 102 candidates (1.7 s, no further improvements).
-   10.060 INFO  Optimizer pass #2: applied 14 more improving candidate(s).
-   10.066 INFO  Optimizer pass #2 was completed in 4.35 seconds (260 of 260 candidates) with the score of 526.02 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   10.068 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   10.068 INFO  Optimizer pass #2: optimizer score 496.58 -> 526.02 (IMPROVED, 5.9280%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   13.080 INFO  Optimizer pass #3: applied 17 more improving candidate(s).
-   13.080 INFO  Optimizer pass #3 was completed in 3.01 seconds (256 of 256 candidates) with the score of 537.59 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   13.081 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   13.081 INFO  Optimizer pass #3: optimizer score 526.02 -> 537.59 (IMPROVED, 2.1996%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   14.815 INFO  Optimizer greedy phase stopped after 27 of 51 candidates (1.0 s, no further improvements).
-   14.815 INFO  Optimizer pass #4: applied 4 more improving candidate(s).
-   14.821 INFO  Optimizer pass #4 was completed in 1.74 seconds (256 of 256 candidates) with the score of 539.15 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   14.822 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   14.822 INFO  Optimizer pass #4: optimizer score 537.59 -> 539.15 (IMPROVED, 0.2904%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   16.335 INFO  Optimizer greedy phase stopped after 27 of 64 candidates (0.8 s, no further improvements).
-   16.335 INFO  Optimizer pass #5: applied 6 more improving candidate(s).
-   16.341 INFO  Optimizer pass #5 was completed in 1.52 seconds (263 of 263 candidates) with the score of 542.03 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   16.343 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   16.343 INFO  Optimizer pass #5: optimizer score 539.15 -> 542.03 (IMPROVED, 0.5335%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   17.596 INFO  Optimizer greedy phase stopped after 17 of 78 candidates (0.6 s, no further improvements).
-   17.596 INFO  Optimizer pass #6: applied 2 more improving candidate(s).
-   17.602 INFO  Optimizer pass #6 was completed in 1.26 seconds (259 of 259 candidates) with the score of 537.89 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   17.602 INFO  Optimizer pass #6 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 542.03, incomplete connections: 0, clearance violations: 24).
-   17.605 INFO  Optimizer pass #6: optimizer score 542.03 -> 537.89 (REGRESSED, -0.7628%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   18.520 INFO  Optimizer greedy phase stopped after 10 of 49 candidates (0.3 s, no further improvements).
-   18.526 INFO  Optimizer pass #7 was completed in 0.91 seconds (259 of 259 candidates) with the score of 543.07 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   18.529 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   18.529 INFO  Optimizer pass #7: optimizer score 542.03 -> 543.07 (IMPROVED, 0.1917%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   20.009 INFO  Optimizer greedy phase stopped after 23 of 52 candidates (0.8 s, no further improvements).
-   20.009 INFO  Optimizer pass #8: applied 3 more improving candidate(s).
-   20.015 INFO  Optimizer pass #8 was completed in 1.49 seconds (260 of 260 candidates) with the score of 552.56 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   20.016 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   20.017 INFO  Optimizer pass #8: optimizer score 543.07 -> 552.56 (IMPROVED, 1.7481%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   21.278 INFO  Optimizer greedy phase stopped after 14 of 38 candidates (0.6 s, no further improvements).
-   21.278 INFO  Optimizer pass #9: applied 2 more improving candidate(s).
-   21.285 INFO  Optimizer pass #9 was completed in 1.27 seconds (258 of 258 candidates) with the score of 555.74 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   21.286 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v44/coffee-controller-120v.ses'
-   21.286 INFO  Optimizer pass #9: optimizer score 552.56 -> 555.74 (IMPROVED, 0.5759%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   22.375 INFO  Optimizer greedy phase stopped after 14 of 45 candidates (0.5 s, no further improvements).
-   22.375 INFO  Optimizer pass #10: applied 1 more improving candidate(s).
-   22.381 INFO  Optimizer pass #10 was completed in 1.10 seconds (260 of 260 candidates) with the score of 554.17 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
-   22.382 INFO  Optimizer pass #10 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 555.74, incomplete connections: 0, clearance violations: 24).
-   22.384 INFO  Optimizer pass #10: optimizer score 555.74 -> 554.17 (REGRESSED, -0.2832%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
-   22.384 INFO  Stopping optimizer because the improvement in this pass (-0.2832%) is below the threshold (0.00%).
-   22.390 INFO  Optimization stage completed: Baseline router score: 997.91, baseline optimizer score: 440.65, final router score: 997.91, final optimizer score: 555.74, completed in 19.30 seconds.
-   22.392 INFO  routing finished in 22.38 s
-   22.392 INFO  note: a board time limit fired (WallClock)
-   22.394 WARN  24 clearance violation(s) in the result:
-   22.394 WARN    F.Cu at (24.469, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (24.469, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (24.469, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (24.469, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (23.906, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (22.494, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (23.906, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (22.494, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (23.906, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (22.494, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (23.906, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (22.494, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (21.931, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (21.931, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (21.931, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (21.931, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
-   22.394 WARN    F.Cu at (8.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
-   22.394 WARN    F.Cu at (8.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
-   22.394 WARN    F.Cu at (13.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
-   22.394 WARN    F.Cu at (13.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
-   22.394 WARN    F.Cu at (26.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
-   22.394 WARN    F.Cu at (26.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
-   22.394 WARN    F.Cu at (31.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
-   22.394 WARN    F.Cu at (31.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
-   22.395 INFO  saved 'build/v44/coffee-controller-120v.ses' (65113 bytes)
-   22.403 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
-   22.403 INFO  report written to 'build/v44/coffee-controller-120v-fastroute.json'
+    0.000 INFO  live viewer: http://127.0.0.1:50969
+    0.003 INFO  parsed 'build/v45/coffee-controller-120v.dsn' in 1.6 ms: 2 layers, 82 components, 57 nets, 0 wires
+    0.016 INFO  net class 'M1': no neck-down
+    0.016 INFO  net class 'M2': no neck-down
+    0.016 INFO  net class 'M3': no neck-down
+    0.016 INFO  net class 'FINE': no neck-down
+    0.016 WARN  Board has 24 pre-existing clearance violation(s) in the loaded design (24 unfixable).
+    0.016 INFO  built board in 13.7 ms: 1226 items (292 pins, 4 vias, 0 traces)
+    0.017 INFO  threads: autorouting passes run on router.autorouter.max_threads threads (1 = sequential); the optimizer uses router.optimizer.max_threads
+    0.018 INFO  optimizer mode: Parallel { threads: 15 }, board time limits: WallClock, stage wall clock limits: enabled
+    0.018 INFO  Pipeline thread limits: autorouter.max_threads=15, optimizer.max_threads=15.
+    0.384 INFO  Fanout pass #1 completed in 0.36 seconds with 204 SMD pins fanouted, 1 not routed, 0 insert errors, +59 extra vias (0 SMD pins still to check in pass, ripup costs=100).
+    0.543 INFO  Fanout pass #2 completed in 0.16 seconds with 41 SMD pins fanouted, 1 not routed, 0 insert errors, +21 extra vias (0 SMD pins still to check in pass, ripup costs=200).
+    0.593 INFO  Fanout pass #3 completed in 0.05 seconds with 11 SMD pins fanouted, 1 not routed, 0 insert errors, +7 extra vias (0 SMD pins still to check in pass, ripup costs=300).
+    0.611 INFO  Fanout pass #4 completed in 0.02 seconds with 5 SMD pins fanouted, 1 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=400).
+    0.629 INFO  Fanout pass #5 completed in 0.02 seconds with 5 SMD pins fanouted, 1 not routed, 0 insert errors, +0 extra vias (0 SMD pins still to check in pass, ripup costs=500).
+    0.629 INFO  Fanout stopped after 5 passes: the last pass only re-fanned 5 pins of the previous pass.
+    0.629 INFO  Fanout stage completed: 5 passes, completed in 0.61 seconds.
+    0.634 INFO  checkpoint: best board so far (71 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    0.635 INFO  Auto-routing stage started with baseline score 542.78 for 71 unrouted items.
+    1.191 INFO  Auto-routing pass #1 was completed in 0.56 seconds with score 856.88 (22 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 76, failed 2, ripped 34).
+    1.192 INFO  checkpoint: best board so far (22 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    1.517 INFO  Auto-routing pass #2 was completed in 0.33 seconds with score 953.03 (7 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 23, failed 2, ripped 9).
+    1.520 INFO  checkpoint: best board so far (7 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    1.819 INFO  Auto-routing pass #3 was completed in 0.30 seconds with score 972.26 (4 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 7, failed 2, ripped 3).
+    1.820 INFO  checkpoint: best board so far (4 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    2.180 INFO  Auto-routing pass #4 was completed in 0.36 seconds with score 978.67 (3 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 4, failed 0, ripped 3).
+    2.182 INFO  checkpoint: best board so far (3 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    2.304 INFO  Auto-routing pass #5 was completed in 0.12 seconds with score 985.08 (2 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 3, failed 0, ripped 3).
+    2.305 INFO  checkpoint: best board so far (2 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    2.398 INFO  Auto-routing pass #6 was completed in 0.09 seconds with score 991.49 (1 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 2, failed 0, ripped 1).
+    2.399 INFO  checkpoint: best board so far (1 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    2.447 INFO  Auto-routing pass #7 was completed in 0.05 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 1, failed 0, ripped 0).
+    2.448 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    2.449 INFO  Auto-routing pass #8 was completed in 0.00 seconds with score 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items) (routed 0, failed 0, ripped 0).
+    2.464 INFO  Auto-routing stage completed: started with 187 unrouted nets, completed in 1.83 seconds, final score: 997.91 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+    2.480 INFO  Optimization stage started. Baseline router score: 997.91, optimizer score: 433.70, incomplete connections: 0, clearance violations: 24.
+    2.480 INFO  Optimizer time budget: 60 s (as long as routing took; set router.optimizer.timeout to change).
+    5.247 INFO  Optimizer greedy phase stopped after 74 of 97 candidates (1.6 s, no further improvements).
+    5.247 INFO  Optimizer pass #1: applied 17 more improving candidate(s).
+    5.254 INFO  Optimizer pass #1 was completed in 2.77 seconds (274 of 274 candidates) with the score of 497.27 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+    5.256 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    5.256 INFO  Optimizer pass #1: optimizer score 433.70 -> 497.27 (IMPROVED, 14.6568%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+    7.274 INFO  Optimizer greedy phase stopped after 50 of 82 candidates (1.0 s, no further improvements).
+    7.274 INFO  Optimizer pass #2: applied 13 more improving candidate(s).
+    7.281 INFO  Optimizer pass #2 was completed in 2.02 seconds (274 of 274 candidates) with the score of 536.63 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+    7.282 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    7.282 INFO  Optimizer pass #2: optimizer score 497.27 -> 536.63 (IMPROVED, 7.9154%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+    9.959 INFO  Optimizer greedy phase stopped after 80 of 82 candidates (1.8 s, no further improvements).
+    9.959 INFO  Optimizer pass #3: applied 17 more improving candidate(s).
+    9.959 INFO  Optimizer pass #3 was completed in 2.68 seconds (269 of 269 candidates) with the score of 562.17 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+    9.961 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+    9.961 INFO  Optimizer pass #3: optimizer score 536.63 -> 562.17 (IMPROVED, 4.7590%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   11.959 INFO  Optimizer greedy phase stopped after 24 of 63 candidates (1.1 s, no further improvements).
+   11.959 INFO  Optimizer pass #4: applied 3 more improving candidate(s).
+   11.965 INFO  Optimizer pass #4 was completed in 2.00 seconds (276 of 276 candidates) with the score of 570.59 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   11.966 INFO  checkpoint: best board so far (0 unrouted, 24 violations) written to 'build/v45/coffee-controller-120v.ses'
+   11.966 INFO  Optimizer pass #4: optimizer score 562.17 -> 570.59 (IMPROVED, 1.4984%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   13.317 INFO  Optimizer greedy phase stopped after 13 of 71 candidates (0.4 s, no further improvements).
+   13.317 INFO  Optimizer pass #5: applied 1 more improving candidate(s).
+   13.324 INFO  Optimizer pass #5 was completed in 1.36 seconds (276 of 276 candidates) with the score of 567.29 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   13.324 INFO  Optimizer pass #5 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 570.59, incomplete connections: 0, clearance violations: 24).
+   13.327 INFO  Optimizer pass #5: optimizer score 570.59 -> 567.29 (REGRESSED, -0.5795%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   14.310 INFO  Optimizer greedy phase stopped after 11 of 40 candidates (0.2 s, no further improvements).
+   14.310 INFO  Optimizer pass #6: applied 1 more improving candidate(s).
+   14.317 INFO  Optimizer pass #6 was completed in 0.98 seconds (276 of 276 candidates) with the score of 569.73 (0 unrouted and 24 violations, 24 of them pre-existing between fixed items).
+   14.317 INFO  Optimizer pass #6 candidate rejected: OPTIMIZER_SCORE_NOT_IMPROVED. Restoring incumbent (optimizer score 570.59, incomplete connections: 0, clearance violations: 24).
+   14.320 INFO  Optimizer pass #6: optimizer score 570.59 -> 569.73 (REGRESSED, -0.1512%), router score: 997.91, incomplete connections: 0, clearance violations: 24.
+   14.320 INFO  Stopping optimizer because the improvement in this pass (-0.1512%) is below the threshold (0.00%).
+   14.328 INFO  Optimization stage completed: Baseline router score: 997.91, baseline optimizer score: 433.70, final router score: 997.91, final optimizer score: 570.59, completed in 11.85 seconds.
+   14.329 INFO  routing finished in 14.31 s
+   14.332 WARN  24 clearance violation(s) in the result:
+   14.332 WARN    F.Cu at (24.469, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (24.469, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (24.469, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (24.469, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (22.494, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (23.906, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (22.494, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (22.494, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (23.906, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (23.906, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (22.494, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (23.906, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (21.931, 60.469) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (21.931, 59.906) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (21.931, 58.494) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (21.931, 57.931) mm: clearance 0.200 mm, actual 0.071 mm (pre-existing, unfixable): pin U4 [GND] / via [GND]
+   14.332 WARN    F.Cu at (26.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   14.332 WARN    F.Cu at (26.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [PUMP_G] / pin Q5 [AC_L_F]
+   14.332 WARN    F.Cu at (31.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   14.332 WARN    F.Cu at (31.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q5 [AC_L_F] / pin Q5 [PUMP_SW]
+   14.332 WARN    F.Cu at (8.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   14.332 WARN    F.Cu at (8.920, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [VALVE_G] / pin Q6 [AC_L_F]
+   14.332 WARN    F.Cu at (13.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   14.332 WARN    F.Cu at (13.480, 23.750) mm: clearance 2.000 mm, actual 1.998 mm (pre-existing, unfixable): pin Q6 [AC_L_F] / pin Q6 [VALVE_SW]
+   14.333 INFO  saved 'build/v45/coffee-controller-120v.ses' (67415 bytes)
+   14.342 INFO  diagnosis of 0 unrouted connections in 0.01 s: 0 routable alone (congestion), 0 not routable on the loaded board (blocked), 0 in ignored net classes
+   14.342 INFO  report written to 'build/v45/coffee-controller-120v-fastroute.json'

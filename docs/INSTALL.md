@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v44 controller board** (CIRCUIT.md) in its printed holder (hardware/holder), which switches the
+The plan from a clean PC to coffee, for the **v45 controller board** (CIRCUIT.md) in its printed holder (hardware/holder), which switches the
 pump and the 3-way valve itself and powers itself from mains, plus the external heater SSR (BUY.md,
 WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
 

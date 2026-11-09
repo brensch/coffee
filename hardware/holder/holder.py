@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
-"""Holder for the controller board (v44): a FRAME on the steel side panel, a COVER, and two BARS (user's design).
+"""Holder for the controller board (v45): a FRAME on the steel side panel, a COVER, and two BARS (user's design).
 
 Frame: the board lies flat on the back plate in a recess that fits it closely, with small pockets for the through-hole
 pin tails. Its top edge tucks under a lip in the recess; its bottom edge rests on the recess wall. A solid roof sits just
 above the board. Struts come straight out of the frame's sides at the top and the bottom, with a hole running across.
 Receptacles: straight fully insulated 6.3 mm ones push straight onto the spades, under the roof; wires leave straight out.
-Cover: goes on from the front between the struts. 13 mm off the panel over the low parts, deeper over the thermocouple
-terminal and the IRM supply (45-degree steps). One boss on it presses the board back against the plate. On the left its top
-edge slopes shut. Bars: slide across through the struts, in front of the cover, and lock it; a head at one end, a groove at
-the other for a small cable tie, so they can't work out.
+Cover: goes on from the front between the struts, closed across its whole top edge, including over the IRM supply. 13 mm
+off the panel over the low parts, deeper over the thermocouple terminal and the supply (45-degree steps). A spring finger
+inside it presses on the board. Bars: slide across through the struts, in front of the cover; their ramped ends push the
+cover back against the finger, which holds the board flat on the plate and the cover hard against the bars. A head at one
+end, a groove at the other for a small cable tie.
 
     ~/opt/holder-venv/bin/python holder.py   # -> out/holder_frame.stl, holder_cover.stl, holder_bars.stl (+ .step), checks
 
 Frame (mm): X = board x, Y up (Y = BOARD_H - board y; board bottom edge at Y = 0), Z off the panel (board back face at ZB).
-Board inputs: _court/_tht/_parts/_mains_pads_v44.json from hardware/controller/versions/v44-flat-recess.
+Board inputs: _court/_tht/_parts/_mains_pads_v45.json from hardware/controller/versions/v45-closed-top.
 """
 import json, os, sys
 import numpy as np
-from build123d import Box, Cylinder, Pos, Plane, Polygon, extrude, export_stl, export_step
+from build123d import Box, Cylinder, Pos, Rot, Plane, Polygon, extrude, export_stl, export_step
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out"); os.makedirs(OUT, exist_ok=True)
-VER = "v44"
+VER = "v45"
 
 BOARD_W, BOARD_H, BOARD_T = 71.2, 77.0, 1.6
 BACK_T = 4.5                                 # back plate; the pin-tail pockets leave 1.2 mm of it toward the steel
@@ -48,7 +49,13 @@ TAIL = 3.0                                   # pin tails below the board, at mos
 SLIDE = 2.0                                  # the top row's pockets are this much longer: the board hooks under the lip by sliding up
 BAR = 3.0
 HOLE = BAR + 0.3
-BOTTOM = -5.2                                # cover's bottom edge
+BAR_GAP = 0.05                               # bar to cover, as drawn (the bars' ramped ends take up the rest)
+RAMP = (6.0, 1.2)                            # bar's leading end: long, rise on its bearing face
+SPRING_PRELOAD = 0.8                         # free, the finger reaches this far past the board's face: the cover's spring travel
+FINGER_X = (33.0, 39.5)
+FINGER_Y = (36.0, 64.0)                      # tip end, root end
+FINGER_T, FINGER_PAD = 1.5, 3.0
+BOTTOM = -5.4                                # cover's bottom edge
 MAG_D, MAG_T = 10.0, 3.0
 MAGNETS = [(8.0, 40.0), (8.0, 60.0), (26.0, 14.0), (38.0, 60.0), (64.0, 14.0), (38.0, 32.0)]
 
@@ -75,8 +82,8 @@ X_TC = J5[0] - 0.6 - WALL
 Y_PSU0 = PSU[1] - 0.6
 COVER_TOP = min(ty for _, ty in TABS.values()) - RECEPT[1] / 2 - 1.0     # 1 mm below the receptacles' funnels
 Z_LO, Z_DEEP = Z_LOW + WALL, Z_PSU + WALL    # outer depths
-TOP_BAR = (COVER_TOP - 3.0, Z_DEEP + BAR / 2 + 0.2)
-BOT_BAR = (-2.2, Z_LO + BAR / 2 + 0.2)
+TOP_BAR = (COVER_TOP - 3.0, Z_DEEP + BAR_GAP + BAR / 2)
+BOT_BAR = (-2.4, Z_LO + BAR_GAP + BAR / 2)
 Y_F0 = BOT_BAR[0] - 3.2                      # frame bottom
 HEIGHT = ROOF_Y + ROOF_T - Y_F0
 RIB_X = (8.0, 24.0, 38.0)                    # the top bar bears on these over the low part
@@ -93,32 +100,25 @@ def outer_prof(zb, ys, zt):
 
 def inner_prof(zb, ys, zt):
     zb -= WALL; zt -= WALL
-    return [(BOTTOM - 1, ZC - 1), (BOTTOM - 1, zb)] + step(ys, zb, zt) + [(COVER_TOP + 1, zt), (COVER_TOP + 1, ZC - 1)]
+    return [(BOTTOM - 1, ZC - 1), (BOTTOM - 1, zb)] + step(ys, zb, zt) + [(COVER_TOP - WALL, zt), (COVER_TOP - WALL, ZC - 1)]
 
 
 def left_outer():
     return [(BOTTOM, ZC), (BOTTOM, Z_LO), (COVER_TOP, Z_LO), (COVER_TOP, ZC)]
 
 
-def left_inner():                            # the low part's top edge slopes shut toward the board (45 degrees)
-    ye = COVER_TOP - 2 ** 0.5 * WALL
-    return [(BOTTOM - 1, ZC - 1), (BOTTOM - 1, Z_LOW), (ye - (Z_LOW - ZC), Z_LOW), (ye, ZC), (ye, ZC - 1)]
+def left_inner():
+    return [(BOTTOM - 1, ZC - 1), (BOTTOM - 1, Z_LOW), (COVER_TOP - WALL, Z_LOW), (COVER_TOP - WALL, ZC - 1)]
 
 
-def free_spot():
-    """A clear patch of board for the boss that presses it back, as near the middle of the board as the parts allow.
-    Parts below the pad only have to pass under the boss's 45-degree underside."""
-    boxes = [p for p in part_boxes() if "pin tail" not in p[0]]
-
-    def clear(xc, yc):
-        for _, x0, y0, z0, x1, y1, z1 in boxes:
-            if x1 < xc - 2.5 or x0 > xc + 2.5 or y0 > yc + 2.5:
-                continue
-            if y1 >= yc - 2.5 or z1 >= ZF + 0.15 + (yc - 2.5 - y1):
-                return False
-        return True
-    spots = [(0.5 * i, 0.5 * j) for j in range(16, 120) for i in range(8, 120) if 0.5 * i + 2 < X_PSU - WALL]
-    return min((p for p in spots if clear(*p)), key=lambda p: (p[0] - BOARD_W / 2) ** 2 + (p[1] - BOARD_H / 2) ** 2)
+def finger():
+    """The spring: a leaf hanging off the cover's inside, printed with the cover. Root near the top edge, flat pad at the tip.
+    Drawn in its free shape, so the pad is SPRING_PRELOAD past the board's face; seated, the board bends it back."""
+    y0, y1 = FINGER_Y
+    zt, zr = ZF - SPRING_PRELOAD, Z_LOW + 0.3
+    yp = y0 + FINGER_PAD
+    slope = (y1 - yp) / (zr - zt)
+    return prism([(y1, zr), (yp, zt), (y0, zt), (y0, zt + FINGER_T), (yp, zt + FINGER_T), (y1 - FINGER_T * slope, zr)], *FINGER_X)
 
 
 def cover():
@@ -136,9 +136,7 @@ def cover():
     c = outer - inner
     for rx in RIB_X:                                                # ribs carry the top bar's load to the low front
         c += prism([(COVER_TOP - 6 - (Z_DEEP - Z_LO), Z_LO - 0.1), (COVER_TOP - 6, Z_DEEP), (COVER_TOP, Z_DEEP), (COVER_TOP, Z_LO - 0.1)], rx - 1.0, rx + 1.0)
-    xc, yc = free_spot()                                            # the boss: presses the board back
-    tip = ZF + 0.15; w = Z_LOW + 0.3
-    c += prism([(yc + 2, tip), (yc + 2, w), (yc - 2 - (w - tip), w), (yc - 2, tip)], xc - 2, xc + 2)
+    c += finger()
     by, bz = BOT_BAR
     c -= box(X_TC - 1, by - HOLE / 2, bz - HOLE / 2, XC1 + 1, by + HOLE / 2, bz + HOLE / 2)   # bottom bar through the terminal pocket
     return c
@@ -195,9 +193,12 @@ def frame():
 def one_bar(by, bz):
     h, x0, x1 = BAR / 2, X0 - 0.4, X1 + 6.0
     b = box(x0, by - h, bz - h, x1, by + h, bz + h)
-    b += box(x0 - 2.5, by - h, bz - h, x0, by + h, bz + 3.0)                # head: flush on the back face, so it prints flat
+    b += box(x0 - 2.5, by - h, bz - h, x0, by + h, bz + 3.0)                # head: flush on the back face
     b -= box(X1 + 1.0, by - h - 1, bz - h - 1, X1 + 3.8, by - h + 0.6, bz + h + 1)   # groove for a small cable tie
     b -= box(X1 + 1.0, by + h - 0.6, bz - h - 1, X1 + 3.8, by + h + 1, bz + h + 1)
+    ln, rise = RAMP                                                         # the leading end's back face ramps: it pushes the cover back as it slides in
+    ramp = Polygon(*[(x1 - ln, bz - h), (x1 + 0.01, bz - h + rise), (x1 + 0.01, bz - h - 0.5), (x1 - ln, bz - h - 0.5)], align=None)
+    b -= extrude(Plane.XZ.offset(-(by + h + 1)) * ramp, amount=2 * h + 2, dir=(0, -1, 0))
     return b
 
 
@@ -206,10 +207,10 @@ def bars():
 
 
 def bars_for_print():
-    """Both bars lying flat on Z = 0, side by side."""
+    """Both bars lying on their side on Z = 0 (so the ramp and head are in the bed's plane), side by side."""
     out = None
     for i, (by, bz) in enumerate((TOP_BAR, BOT_BAR)):
-        b = Pos(0, -by + i * 12.0, -(bz - BAR / 2)) * one_bar(by, bz)
+        b = Pos(0, i * 12.0, BAR / 2) * Rot(90, 0, 0) * Pos(0, -by, -bz) * one_bar(by, bz)
         out = b if out is None else out + b
     return out
 
@@ -251,6 +252,18 @@ def plugs():
         if r == "J5":
             out.append(("thermocouple wire", x - 0.8, -60.0, ZF + 1.5, x + 0.8, y, ZF + 5.5))
     return out
+
+
+def spring_figures():
+    """Beam estimate of the finger, ASA E about 2 GPa. Free length runs from where its front face leaves the cover to the pad."""
+    y0, y1 = FINGER_Y
+    zt, zr = ZF - SPRING_PRELOAD, Z_LOW + 0.3
+    yp = y0 + FINGER_PAD
+    L = y1 - FINGER_T * (y1 - yp) / (zr - zt) - yp
+    w = FINGER_X[1] - FINGER_X[0]
+    I = w * FINGER_T ** 3 / 12
+    k = 3 * 2000 * I / L ** 3
+    return f"free length {L:.1f}, {k:.2f} N/mm, {k * SPRING_PRELOAD:.2f} N at {SPRING_PRELOAD} mm, peak bending stress {3 * 2000 * FINGER_T * SPRING_PRELOAD / (2 * L * L):.0f} MPa"
 
 
 def fit_check(fr, cv, br):
@@ -299,9 +312,16 @@ def fit_check(fr, cv, br):
         bad.append("bars: the top bar doesn't bear on the cover")
     if not hit(cv, (20.0, BOT_BAR[0] - 1, BOT_BAR[1] - BAR / 2 - 0.5, 30.0, BOT_BAR[0] + 1, BOT_BAR[1] - BAR / 2)):
         bad.append("bars: the bottom bar doesn't bear on the cover")
-    xc, yc = free_spot()
-    if not hit(cv, (xc - 1, yc - 1, ZF + 0.16, xc + 1, yc + 1, ZF + 0.5)):
-        bad.append("cover: the boss doesn't reach the board")
+    y0, y1 = FINGER_Y
+    xm = sum(FINGER_X) / 2
+    if not hit(cv, (xm - 1, y0 + 0.5, ZF - SPRING_PRELOAD + 0.05, xm + 1, y0 + FINGER_PAD - 0.5, ZF)):
+        bad.append("cover: the spring finger doesn't reach the board")
+    if SPRING_PRELOAD <= HOLE - BAR + BAR_GAP:
+        bad.append("cover: the bars' slack is more than the spring's travel")
+    if RAMP[1] < SPRING_PRELOAD + BAR_GAP:
+        bad.append("bars: the ramp is too short to push the cover back")
+    if PSU[3] > COVER_TOP - WALL - 0.3:
+        bad.append("cover: the supply's top doesn't fit under the cover's closed top")
     if not hit(fr, (5.0, BOARD_H - 0.5, ZF + 0.1, 60.0, BOARD_H + CLR, LIP_TOP)):
         bad.append("frame: no lip over the board's top edge")
     if not hit(fr, (5.0, -0.5, ZB, 60.0, -CLR, ZF)):
@@ -408,11 +428,11 @@ if __name__ == "__main__":
     for name, s in (("frame", fr), ("cover", cv)):
         bb = s.bounding_box()
         print(f"{name}: {bb.size.X:.1f} x {bb.size.Y:.1f} x {bb.size.Z:.1f} mm, {s.volume / 1000:.1f} cm3")
-    print(f"off the panel: cover {Z_LO:.1f} (low parts), {Z_TC + WALL:.1f} (terminal), {Z_DEEP:.1f} (supply); receptacles to {ZF + RECEPT[2]:.1f}; roof edge {ROOF_Z:.1f}. Height {HEIGHT:.1f}. Boss at {free_spot()}")
+    print(f"off the panel: cover {Z_LO:.1f} (low parts), {Z_TC + WALL:.1f} (terminal), {Z_DEEP:.1f} (supply); receptacles to {ZF + RECEPT[2]:.1f}; roof edge {ROOF_Z:.1f}. Height {HEIGHT:.1f}. Supply top {PSU[3]:.2f}, cover closes at {COVER_TOP - WALL:.2f}. Finger: {spring_figures()}")
     print("mains pads seen above the cover's top edge (under the roof):", exposed_mains() or "none")
     holes = coverage(os.path.join(OUT, "holder_cover.stl"))
     print("board visible through the cover:", f"{len(holes)} points, e.g. {holes[:6]}" if holes else "none")
-    for label, f, up in (("frame on its back", "holder_frame", (0, 0, 1)), ("cover on its bottom edge", "holder_cover", (0, 1, 0)), ("bars flat", "holder_bars", (0, 0, 1))):
+    for label, f, up in (("frame on its back", "holder_frame", (0, 0, 1)), ("cover on its top edge", "holder_cover", (0, -1, 0)), ("bars on their sides", "holder_bars", (0, 0, 1))):
         print(f"overhangs, {label}:", overhangs(os.path.join(OUT, f + ".stl"), up) or "none")
     bad = fit_check(fr, cv, br)
     ok, deg = tilt_in()

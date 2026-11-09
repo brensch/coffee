@@ -25,3 +25,8 @@ v44's overhang check covers every part in its print orientation.
 
 New in v44: the board has to get in under the lip with its pin tails in pockets, so `holder.py` searches the board's
 poses for a path. Without the slots on the top row of pins there is none.
+
+v45 (after the user asked whether the bars really hold it flush): they didn't. As drawn in v44 the boss stopped 0.15 mm
+short of the board and the bars had 0.35 mm of slack. v45 replaces the boss with a printed spring finger (0.8 mm of
+travel, more than the slack) and ramps the bars' leading ends. The cover's top is now closed over the supply (moved 3.8 mm
+down the board for it), and the cover prints on that closed top edge, so S6's brim and S7's slope are no longer needed.
