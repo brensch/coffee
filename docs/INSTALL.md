@@ -20,7 +20,7 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
   - ready-made JST GH leads (3, 4, 5 and 6 pin), nothing to crimp at the board;
   - the thermocouple, pressure transducer and antenna.
 - **The printed holder** (hardware/holder/README.md, BUY.md #19): `holder_frame.stl`, `holder_cover.stl` and
-  `holder_bars.stl` in ASA (not PETG or PLA: the case runs 60–70 °C), and six 10 × 3 mm H/SH-grade magnets. The board
+  `holder_bars.stl` in ASA (not PETG or PLA: the case runs 60–70 °C), and seven 10 × 3 mm H/SH-grade magnets. The board
   is 71.2 × 77 mm with no holes; it hooks under a lip and lies flat in the frame. The holder is 13–30 mm deep off the side
   panel (the receptacles reach ~36 mm, the roof's edge ~41 mm); leave room in front for the wires' bend.
 - **Tools:**

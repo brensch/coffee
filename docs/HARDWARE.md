@@ -43,7 +43,7 @@ The heater SSR's input is the GH 4-pin from J2 (1 = +5 V to SSR +, 2 = SSR −, 
   spade end) and a cover shaped to the board (13 mm off the panel over the low parts, 30 mm over the supply).
   The board lies flat on the back plate, hooked under a lip; the cover goes on from the front and two bars slide across to lock it; its
   spring finger presses the board flat. The mains receptacles stick straight out under the roof. The back plate is the insulation between the
-  board's back (the spades' and IRM's pins carry 120 V) and the case. Six 10 × 3 mm magnets hold it to the
+  board's back (the spades' and IRM's pins carry 120 V) and the case. Seven 10 × 3 mm magnets hold it to the
   right side panel.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at
   full power.

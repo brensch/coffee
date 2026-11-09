@@ -1,6 +1,6 @@
 # Board holder (v45, for the 71.2 × 77 mm v45 board)
 
-Three printed parts. The **frame** stays on the inside of the machine's steel side panel (six magnets). The board lies
+Three printed parts. The **frame** stays on the inside of the machine's steel side panel (seven magnets). The board lies
 flat on its back plate. The **cover** goes on over the board from the front. Two **bars** slide across the full width
 through the frame's struts and lock the cover.
 
@@ -45,10 +45,10 @@ through the frame's struts and lock the cover.
 - ASA shrinks about 0.5 %; if the first print is tight, scale the frame up 0.5 %.
 
 ## Magnets
-- **Six 10 × 3 mm neodymium discs, H or SH grade** (N35H, N42SH). Set them into the pockets on the frame's back with
+- **Seven 10 × 3 mm neodymium discs, H or SH grade** (N35H, N42SH). Set them into the pockets on the frame's back with
   **high-temperature epoxy** (not CA), same pole out. Plain N52 loses strength for good above ~80 °C.
 - They don't affect the board. **Test the panel is magnetic first** (some are stainless); otherwise use
-  high-temperature double-sided tape. Brace the frame with a hand when pulling receptacles.
+  high-temperature double-sided tape. They sit on a 3 × 3 grid, less the two spots behind the supply. Brace the frame with a hand when pulling receptacles.
 
 ## Fit it
 1. Stick the frame to the inside of the side panel, roof up.

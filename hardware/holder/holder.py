@@ -57,7 +57,8 @@ FINGER_Y = (36.0, 64.0)                      # tip end, root end
 FINGER_T, FINGER_PAD = 1.5, 3.0
 BOTTOM = -5.4                                # cover's bottom edge
 MAG_D, MAG_T = 10.0, 3.0
-MAGNETS = [(8.0, 40.0), (8.0, 60.0), (26.0, 14.0), (38.0, 60.0), (64.0, 14.0), (38.0, 32.0)]
+MAG_X, MAG_Y = (8.0, 35.6, 63.2), (14.5, 37.25, 60.0)   # a 3 x 3 grid, centred on the board's width
+MAGNETS = [(x, y) for y in MAG_Y for x in MAG_X if not (x > 60 and y > 20)]   # less the two that would sit behind the supply
 
 
 def box(x0, y0, z0, x1, y1, z1):

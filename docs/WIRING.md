@@ -89,7 +89,7 @@ are labelled on the silkscreen: **3, P, L, N** left to right along its top edge.
 | — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | unchanged | — | Don't touch |
 
 Mechanical:
-- **The board in its holder** (hardware/holder/README.md): the frame sticks to the side panel with six magnets;
+- **The board in its holder** (hardware/holder/README.md): the frame sticks to the side panel with seven magnets;
   the board hooks under the lip at its top edge and swings down flat onto the back plate. Push the four receptacles
   straight onto the board's spades, then put the cover on (its spring finger holds the board flat) and lock it with the two
   bars that slide across (a small cable tie through each bar's groove). The four mains wires leave straight out under the roof, away from the low-voltage

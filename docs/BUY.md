@@ -34,7 +34,7 @@ AliExpress prices weren't readable from here: the "~" figures are typical, open 
 | 17 | **Scale amplifier**: 2 generic HX711 modules, **powered from 3.3 V only** (link VCC and VDD) | 2 | AliExpress | ~$3 |
 | 18 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters | 1 set | Printables model 285370 | filament |
 | 19 | **Printed board holder**: frame, cover and two bars (**ASA** or ABS; not PETG or PLA: the case runs 60–70 °C): hardware/holder/out/holder_frame.stl, holder_cover.stl, holder_bars.stl | 1 | print it yourself (hardware/holder/README.md) | filament |
-| 20 | **Magnets, 10 × 3 mm neodymium discs**, for the holder's back; **H or SH grade** (N35H, N42SH: 120–150 °C), not plain N52. Check your side panel is magnetic first | 6 (+ spares) | any | ~$5 |
+| 20 | **Magnets, 10 × 3 mm neodymium discs**, for the holder's back; **H or SH grade** (N35H, N42SH: 120–150 °C), not plain N52. Check your side panel is magnetic first | 7 (+ spares) | any | ~$5 |
 
 **Total ≈ $110–135** including the receptacle crimper (~$25, reusable), plus shipping.
 
