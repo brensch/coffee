@@ -15,8 +15,10 @@ through the frame's struts and lock the cover.
   above. 13.2 mm off the panel over the low parts, 22.2 mm over the thermocouple terminal, 29.9 mm over the supply;
   45-degree steps.
 - **Spring finger:** a thin leaf printed on the cover's inside. Drawn free it reaches 0.8 mm past the board's face;
-  seated, the board bends it back. That is what holds the board flat on the plate, and pushes the cover forward onto
-  the bars so nothing rattles (about 1.2 N, a beam estimate, not a measurement).
+  seated, the board bends it back. That is what holds the board flat on the plate (about 1.2 N, a beam estimate, not a
+  measurement).
+- **Seating:** the cover's rim lands on the frame's recess walls (0.2 mm clear of the board itself), and the bars hold it
+  there, each bar braced against the front face of its holes.
 - **Bars:** one across the cover's top, one across its bottom edge. Their leading end is ramped: as a bar slides in it
   pushes the cover back against the finger. A head at one end, a groove for a small cable tie at the other, so they
   can't work out.
@@ -57,7 +59,8 @@ through the frame's struts and lock the cover.
 3. Tilt the board with its bottom edge toward you, set its top pins into their slots, slide it up so the top edge goes
    under the lip, and swing the bottom down into the recess.
 4. Push the four receptacles straight onto the spades.
-5. Put the cover on from the front, between the struts. It sits slightly proud: the spring finger is touching the board.
+5. Put the cover on from the front, between the struts. It sits about 0.8 mm proud of the frame until the bars push it
+   down: the spring finger is touching the board.
 6. Slide the two bars across through the struts, ramped end first. The ramp pushes the cover back as the bar goes
    in. Pull a small cable tie through each groove. Wires leave straight
    out under the roof, low-voltage leads and the antenna pigtail out of the bottom.

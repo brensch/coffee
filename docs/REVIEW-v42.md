@@ -30,3 +30,6 @@ v45 (after the user asked whether the bars really hold it flush): they didn't. A
 short of the board and the bars had 0.35 mm of slack. v45 replaces the boss with a printed spring finger (0.8 mm of
 travel, more than the slack) and ramps the bars' leading ends. The cover's top is now closed over the supply (moved 3.8 mm
 down the board for it), and the cover prints on that closed top edge, so S6's brim and S7's slope are no longer needed.
+
+v47: the cover's rim now lands on the frame's recess walls (it stood 0.2 mm off them), and each bar is braced against the
+front face of its holes, so the bars take no slack. Over the board itself the rim stays 0.2 mm clear.

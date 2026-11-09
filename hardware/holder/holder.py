@@ -35,7 +35,8 @@ FIT = 0.3                                    # cover to strut
 WALL = 1.6                                   # cover walls
 XC0, XC1 = -(WALL - 0.3), BOARD_W + (WALL - 0.3)      # cover outer sides (its walls overlap the board's edge strip by 0.3)
 X0, X1 = XC0 - FIT - STRUT, XC1 + FIT + STRUT         # frame outer sides = strut outer faces
-ZC = ZF + 0.2                                # the cover's back edge
+ZC = ZF                                      # the cover's back edge: it lands on the frame's recess walls
+Z_RELIEF = ZF + 0.2                          # over the board itself the edge stands 0.2 clear, so only the frame bears
 Z_LOW = ZF + 5.5                             # inner, over the low parts
 Z_PSU = ZF + 21.5 + 0.7                      # inner, IRM-10-5
 Z_TC = ZB + 15.45 + 0.7                      # inner, MKDS terminal with its screws
@@ -49,7 +50,7 @@ TAIL = 3.0                                   # pin tails below the board, at mos
 SLIDE = 2.0                                  # the top row's pockets are this much longer: the board hooks under the lip by sliding up
 BAR = 3.0
 HOLE = BAR + 0.3
-BAR_GAP = 0.05                               # bar to cover, as drawn (the bars' ramped ends take up the rest)
+BAR_GAP = 0.0                                # bar against the cover, as drawn: bar held by the hole's front face
 RAMP = (6.0, 1.2)                            # bar's leading end: long, rise on its bearing face
 SPRING_PRELOAD = 0.8                         # free, the finger reaches this far past the board's face: the cover's spring travel
 FINGER_X = (33.0, 39.5)
@@ -135,6 +136,7 @@ def cover():
         x = b0
         inner = inner + (prism(i0, x - WALL - 0.01, x + WALL + 0.01) & prism(i1, x - WALL - 0.01, x + WALL + 0.01))
     c = outer - inner
+    c -= box(-CLR, BOTTOM - 1, ZC - 1, BOARD_W + CLR, COVER_TOP + 1, Z_RELIEF)      # relief over the board
     for rx in RIB_X:                                                # ribs carry the top bar's load to the low front
         c += prism([(COVER_TOP - 6 - (Z_DEEP - Z_LO), Z_LO - 0.1), (COVER_TOP - 6, Z_DEEP), (COVER_TOP, Z_DEEP), (COVER_TOP, Z_LO - 0.1)], rx - 1.0, rx + 1.0)
     c += finger()
@@ -182,7 +184,7 @@ def frame():
     for by, bz in (TOP_BAR, BOT_BAR):                                       # struts straight out of the sides
         f += box(X0, by - 3.2, 0, X0 + STRUT, by + 3.2, bz + 3.2)
         f += box(X1 - STRUT, by - 3.2, 0, X1, by + 3.2, bz + 3.2)
-        f -= box(X0 - 1, by - HOLE / 2, bz - HOLE / 2, X1 + 1, by + HOLE / 2, bz + HOLE / 2)
+        f -= box(X0 - 1, by - HOLE / 2, bz + BAR / 2 - HOLE, X1 + 1, by + HOLE / 2, bz + BAR / 2)   # the bar is held by the hole's front face
     for r_, x, y, d in PINS:                                                # pin-tail pockets
         s = (d + 1.2) / 2; y0, y1 = pocket_y(y, d)
         f -= box(x - s, y0, BACK_T - POCKET_D, x + s, y1, BACK_T + 0.01)
@@ -317,8 +319,13 @@ def fit_check(fr, cv, br):
     xm = sum(FINGER_X) / 2
     if not hit(cv, (xm - 1, y0 + 0.5, ZF - SPRING_PRELOAD + 0.05, xm + 1, y0 + FINGER_PAD - 0.5, ZF)):
         bad.append("cover: the spring finger doesn't reach the board")
-    if SPRING_PRELOAD <= HOLE - BAR + BAR_GAP:
-        bad.append("cover: the bars' slack is more than the spring's travel")
+    if SPRING_PRELOAD < 0.4:
+        bad.append("cover: the spring has too little travel to absorb print tolerance")
+    for x in (XC0 + 0.2, XC1 - 0.2):                               # the cover lands on the frame: rim on the recess walls
+        if not hit(fr, (x - 0.1, 20.0, ZC - 0.2, x + 0.1, 40.0, ZC)):
+            bad.append("frame: nothing under the cover's rim")
+        if not hit(cv, (x - 0.1, 20.0, ZC, x + 0.1, 40.0, ZC + 0.2)):
+            bad.append("cover: its rim doesn't come down to the frame")
     if RAMP[1] < SPRING_PRELOAD + BAR_GAP:
         bad.append("bars: the ramp is too short to push the cover back")
     if PSU[3] > COVER_TOP - WALL - 0.3:
