@@ -1,4 +1,4 @@
-# Wiring: v39 board in its holder + heater SSR (US Gaggia Classic Pro, 120 V)
+# Wiring: v44 board in its holder + heater SSR (US Gaggia Classic Pro, 120 V)
 
 ![wiring diagram](wiring.svg)
 
@@ -90,9 +90,9 @@ are labelled on the silkscreen: **3, P, L, N** left to right along its top edge.
 
 Mechanical:
 - **The board in its holder** (hardware/holder/README.md): the frame sticks to the side panel with six magnets;
-  the board slides up into it from below. Push the four receptacles straight onto the board's spades (the channel
-  over the board's top edge takes the push), then put the cover on (its fingers hold the board up) and lock it with
-  the two bars that slide across. The four mains wires leave straight out under the roof, away from the low-voltage
+  the board hooks under the lip at its top edge and swings down flat onto the back plate. Push the four receptacles
+  straight onto the board's spades, then put the cover on (its boss presses the board back) and lock it with the two
+  bars that slide across (a small cable tie through each bar's groove). The four mains wires leave straight out under the roof, away from the low-voltage
   leads below. The board never touches the chassis.
 - **Heater SSR:** flat on the inside of the rear panel at the ventilation slots, two M4 bolts with nuts and washers through the slots (or cable ties through them); its factory thermal pad against the panel. Clip its clear terminal cover on.
 - **Joints on the brew-thermostat wires (M5/M6):** pull them away from the boiler before tying them down; tape or heat-shrink any bare metal.

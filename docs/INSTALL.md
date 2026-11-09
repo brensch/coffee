@@ -1,6 +1,6 @@
 # Install plan
 
-The plan from a clean PC to coffee, for the **v39 controller board** (CIRCUIT.md) in its printed holder (hardware/holder), which switches the
+The plan from a clean PC to coffee, for the **v44 controller board** (CIRCUIT.md) in its printed holder (hardware/holder), which switches the
 pump and the 3-way valve itself and powers itself from mains, plus the external heater SSR (BUY.md,
 WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
 
@@ -21,8 +21,8 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
   - the thermocouple, pressure transducer and antenna.
 - **The printed holder** (hardware/holder/README.md, BUY.md #19): `holder_frame.stl`, `holder_cover.stl` and
   `holder_bars.stl` in ASA (not PETG or PLA: the case runs 60–70 °C), and six 10 × 3 mm H/SH-grade magnets. The board
-  is 80 × 77 mm with no holes; it slides up into the frame from below. The holder is 17–34 mm deep off the side
-  panel (the receptacles reach ~40 mm, the roof's edge ~45 mm); leave room in front for the wires' bend.
+  is 71.2 × 77 mm with no holes; it hooks under a lip and lies flat in the frame. The holder is 13–30 mm deep off the side
+  panel (the receptacles reach ~36 mm, the roof's edge ~41 mm); leave room in front for the wires' bend.
 - **Tools:**
   - a 6.3 mm receptacle crimper (for the one new pump lead) and a small flat screwdriver;
   - a multimeter and a power meter (Kill-A-Watt);

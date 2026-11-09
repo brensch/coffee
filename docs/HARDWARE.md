@@ -23,8 +23,8 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled, nothing to solder (`build/coffee-v39-{gerbers.zip,bom.csv,cpl.csv}`),
-  or SMD-only with six through-hole parts to solder yourself (`coffee-v39-smd-*`). Order settings: INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled, nothing to solder (`build/coffee-v44-{gerbers.zip,bom.csv,cpl.csv}`),
+  or SMD-only with six through-hole parts to solder yourself (`coffee-v44-smd-*`). Order settings: INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md): the heater SSR, mains wire and receptacles, ready-made GH
   leads, the thermocouple, the pressure transducer, the antenna, and the holder's magnets.
 
@@ -40,9 +40,9 @@ The heater SSR's input is the GH 4-pin from J2 (1 = +5 V to SSR +, 2 = SSR −, 
 
 ## Enclosure
 - **The holder** (hardware/holder/README.md): a printed ASA frame (back plate, side walls, a roof over the
-  spade end) and a cover shaped to the board (17 mm off the panel over the low parts, 34 mm over the supply).
-  The board slides up into the frame; the cover goes on from the front and two bars slide across to lock it; its
-  fingers hold the board up. The mains receptacles stick straight out under the roof. The back plate is the insulation between the
+  spade end) and a cover shaped to the board (13 mm off the panel over the low parts, 30 mm over the supply).
+  The board lies flat on the back plate, hooked under a lip; the cover goes on from the front and two bars slide across to lock it; its
+  boss presses the board back. The mains receptacles stick straight out under the roof. The back plate is the insulation between the
   board's back (the spades' and IRM's pins carry 120 V) and the case. Six 10 × 3 mm magnets hold it to the
   right side panel.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at

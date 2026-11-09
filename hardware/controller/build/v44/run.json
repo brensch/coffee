@@ -1,0 +1,1 @@
+{"tool": "fastroute", "secs": 900, "start": 1794193827.179938, "env": {"PLACE_JSON": "plan_v44.json", "FASTROUTE_ARGS": "--router.autorouter.min_passes=30 --router.optimizer.optimization_improvement_threshold=0"}, "end": 1794193853.377619}

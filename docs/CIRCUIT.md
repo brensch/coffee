@@ -1,4 +1,4 @@
-# Controller board v39: mains for the small loads on board
+# Controller board v44: mains for the small loads on board
 
 The circuit is v33's (v32 plus R54, the pump bleeder from [REVIEW-v32.md](REVIEW-v32.md) M1), with three
 changes since: the power rocker is a plain mains switch again (v35: no standby input, J7 6-pin), the scale
@@ -18,7 +18,7 @@ An 80 × 77 mm two-layer board in two halves across a 7 mm isolation band:
     vertical board: every heat source is above it) and USB-C, along the bottom edge.
 
 Sections below that give v33 coordinates or edges ("left", "right", "Layout") describe v33's layout; the
-circuit, the values and the calculations are unchanged. Board numbers for v39: DRC clean, isolation checked
+circuit, the values and the calculations are unchanged. Board numbers for v44 (same circuit, narrowed): DRC clean, isolation checked
 on the copper on every build (isolation_check.py), independent review in [REVIEW-v39.md](REVIEW-v39.md).
 
 ## Why some mains came back onto the board
@@ -144,9 +144,9 @@ GPIO → AO3400A, **3.3 kΩ gate pull-down** (holds each output off while the pi
 
 ## Ordering: full assembly vs SMD only
 
-`build/coffee-v39-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM, the four
-spades and the thermocouple terminal (through-hole). `build/coffee-v39-smd-{bom,cpl}.csv` leaves those six
-parts out, and `coffee-v39-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
+`build/coffee-v44-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM, the four
+spades and the thermocouple terminal (through-hole). `build/coffee-v44-smd-{bom,cpl}.csv` leaves those six
+parts out, and `coffee-v44-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
 live tiered prices:
 
 | 5 boards | JLC | you | total |
