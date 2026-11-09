@@ -18,7 +18,7 @@ AliExpress prices weren't readable from here: the "~" figures are typical, open 
 |---|---|---|---|---|
 | 1 | **Heater SSR**: Schneider **SSP1A125BDT** (genuine, 25 A, zero-cross, hockey-puck size) | 1 | <https://www.standardelectricsupply.com/2341717-Schneider-Electric-SSP1A125BDT> | $24.97 |
 | 2 | **18 AWG silicone wire** (mains: L, N, pump, valve to the board's spades; heater SSR) | 2–3 m | <https://s.click.aliexpress.com/e/_EJ5sOfm> | ~$5 |
-| 3 | **6.3 mm (0.250") female receptacles, fully insulated**, for 18 AWG: the board's four spades and the machine's tabs | ~20 | any reputable (TE/Molex/Panduit), or a kit | ~$5 |
+| 3 | **6.3 mm (0.250") female receptacles, fully insulated**, for 18 AWG: the board's four spades and the machine's tabs | ~20 | any reputable (TE/NSI/Panduit), or a kit | ~$5 |
 | 4 | **6.35 mm piggyback** (live split, Gaggia Classic) | 1–2 | <https://s.click.aliexpress.com/e/_EytfYJO> | ~$2 |
 | 5 | **Fork connectors** SV1.25-5S (heater SSR output) | 2 | <https://s.click.aliexpress.com/e/_EIAVCxe> | ~$2 |
 | 6 | **Thermocouple**: ungrounded **K-type, M4 screw**, 0.5 m PTFE lead (Gaggiuino's: "CG K/PT100 Type M3 M4 Copper Screw Thermocouple", pick **K / M4 / 0.5 m**) | 1 (+1 spare) | <https://www.aliexpress.us/item/3256805310471537.html> | ~$1 |
@@ -33,7 +33,7 @@ AliExpress prices weren't readable from here: the "~" figures are typical, open 
 | 16 | **Scale load cells**: 750 g mini bar cells, as Gaggiuino's scale | 2 (buy 3–4) | Gaggiuino's parts list; datasheet-backed alternative HT Sensor TAL220F-1kg | ~$6 |
 | 17 | **Scale amplifier**: 2 generic HX711 modules, **powered from 3.3 V only** (link VCC and VDD) | 2 | AliExpress | ~$3 |
 | 18 | **Printed scale base**: Gaggiuino scale base + Classic Pro tray adapters | 1 set | Printables model 285370 | filament |
-| 19 | **Printed board holder** + two pegs (**ASA** or ABS; not PETG or PLA: the case runs 60–70 °C): hardware/holder/out/holder.stl, holder_peg.stl | 1 | print it yourself (hardware/holder/README.md) | filament |
+| 19 | **Printed board holder**: frame, cover and two bars (**ASA** or ABS; not PETG or PLA: the case runs 60–70 °C): hardware/holder/out/holder_frame.stl, holder_cover.stl, holder_bars.stl | 1 | print it yourself (hardware/holder/README.md) | filament |
 | 20 | **Magnets, 10 × 3 mm neodymium discs**, for the holder's back; **H or SH grade** (N35H, N42SH: 120–150 °C), not plain N52. Check your side panel is magnetic first | 6 (+ spares) | any | ~$5 |
 
 **Total ≈ $110–135** including the receptacle crimper (~$25, reusable), plus shipping.
@@ -45,7 +45,7 @@ AliExpress prices weren't readable from here: the "~" figures are typical, open 
   board's J2 (+5V, OUT). Datasheet: <https://www.se.com/us/en/product/download-pdf/SSP1A125BDT>.
 - **2–5 Mains wiring.** 18 AWG silicone for every mains run, fully insulated 6.3 mm receptacles on
   the board's four spades (N, L, P, 3) and the machine's tabs. Push receptacles on with the board in
-  its holder, through the wire slot: the channel over the board's top edge takes the push and pull (up to ~80 N).
+  its holder, before the cover goes on: the channel over the board's top edge takes the push (up to ~80 N).
 - **6 Thermocouple.** Its two bare wires clamp into the board's J5 screw terminal (Phoenix MKDS,
   0.14–1.5 mm²); never splice it: any joint to copper away from the board is an unmeasured second
   junction. WIRING check 8 confirms it's ungrounded and finds TC−.

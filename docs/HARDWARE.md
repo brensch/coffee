@@ -39,17 +39,17 @@ Where to find what:
 The heater SSR's input is the GH 4-pin from J2 (1 = +5 V to SSR +, 2 = SSR −, switched low). See WIRING.md.
 
 ## Enclosure
-- **The holder** (hardware/holder/README.md): one printed ASA part. The back plate rises into a roof over
-  the spade end; a solid front wall covers the whole board; the mains wires leave forward through a slot
-  under the roof, so drips from above run off it. The board slides up into it from below, in edge grooves
-  and a channel over its top edge, and stands on two pegs. The back plate is the insulation between the
+- **The holder** (hardware/holder/README.md): a printed ASA frame (back plate, side walls, a roof over the
+  spade end) and a cover shaped to the board (17 mm off the panel over the low parts, 34 mm over the supply).
+  The board slides up into the frame; the cover goes on from the front and two bars slide across to lock it; its
+  fingers hold the board up. The mains receptacles stick straight out under the roof. The back plate is the insulation between the
   board's back (the spades' and IRM's pins carry 120 V) and the case. Six 10 × 3 mm magnets hold it to the
   right side panel.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at
   full power.
 - **Orientation:** the mains receptacles sit along the board's top edge, inside under the roof, and their
   wires leave forward; the low-voltage leads leave the bottom edge downward, so the two bundles never meet.
-  The holder is 52 mm deep off the panel; leave ~60 mm and room in front of the slot for the wires' bend.
+  The holder is 17–34 mm deep off the panel (~45 mm at the roof's edge); leave room in front of the slot for the wires' bend.
 - **Wiring:** keep the mains wiring and the GH leads apart (≥ 6 mm, or a barrier), anchor every wire near
   its terminal, and use fibreglass sleeve near the boiler.
 - **Antenna:** route the module's W.FL pigtail out through a plastic part. The case is steel.

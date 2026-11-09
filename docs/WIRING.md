@@ -5,7 +5,7 @@
 This replaces INSTALL.md §5. **The board carries mains for the small loads only**: its four 6.3 mm spade
 tabs (along its top edge) take live and neutral in and switch the pump and the 3-way valve with on-board
 triacs; its own certified supply (Mean Well IRM-10-5) makes the 5 V. It sits in the printed holder
-(hardware/holder/README.md): mains wires leave forward under its roof, low-voltage leads out of the bottom. The 11 A heater stays on the external SSR on the
+(hardware/holder/README.md): mains wires leave straight out under its roof, low-voltage leads out of the bottom. The 11 A heater stays on the external SSR on the
 rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md). INSTALL.md §4
 (sensors, plumbing) and §6–§7 still apply. *(The diagram above still shows the v30 module layout.)*
 
@@ -13,7 +13,7 @@ rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md).
 > the stock wiring before you touch it. The thermal fuse and steam thermostat stay in series with
 > the heater: they're the protection that doesn't depend on software. **The board's top half (spades,
 > fuse, triacs, the supply's AC end, and their solder joints on the back) is live whenever the machine
-> is plugged in with the power rocker on**: it lives in its holder behind the solid front wall, never against
+> is plugged in with the power rocker on**: it lives in its holder behind the cover, never against
 > the chassis, and you never touch it plugged in. If you aren't comfortable with mains wiring, have this checked by an electrician before
 > first power-on.
 
@@ -89,11 +89,11 @@ are labelled on the silkscreen: **3, P, L, N** left to right along its top edge.
 | — | pump white, valve neutral, steam thermostat, thermal fuse, heater, earth | unchanged | — | Don't touch |
 
 Mechanical:
-- **The board in its holder** (hardware/holder/README.md): the holder sticks to the side panel with six
-  magnets; the board slides up into it from below and stands on two pegs. The board never touches the chassis.
-  Push the four receptacles on through the forward-facing wire slot under the holder's roof, straight in (the
-  channel over the board's top edge takes the push and the ~76 N pull-off), and dress the four wires out of
-  the slot, away from the low-voltage leads below.
+- **The board in its holder** (hardware/holder/README.md): the frame sticks to the side panel with six magnets;
+  the board slides up into it from below. Push the four receptacles straight onto the board's spades (the channel
+  over the board's top edge takes the push), then put the cover on (its fingers hold the board up) and lock it with
+  the two bars that slide across. The four mains wires leave straight out under the roof, away from the low-voltage
+  leads below. The board never touches the chassis.
 - **Heater SSR:** flat on the inside of the rear panel at the ventilation slots, two M4 bolts with nuts and washers through the slots (or cable ties through them); its factory thermal pad against the panel. Clip its clear terminal cover on.
 - **Joints on the brew-thermostat wires (M5/M6):** pull them away from the boiler before tying them down; tape or heat-shrink any bare metal.
 - **Parked switch wires:** insulate each freed end (tape or heat-shrink) and tie it back; GaggiMate notes some machines have monoblock connectors whose receptacles come out bare.
