@@ -110,8 +110,11 @@ def cover():
         inner = inner + (prism(profile(zb0, ys0, zt0, inner=True), x - WALL - 0.01, x + WALL + 0.01) &
                          prism(profile(zb1, ys1, zt1, inner=True), x - WALL - 0.01, x + WALL + 0.01))
     c = outer - inner
-    for fx0, fx1 in ((2.0, 7.5), (76.0, 78.3)):                  # fingers under the board's bottom edge (inside the side walls)
-        c += box(fx0, -3.0, ZB - 0.1, fx1, 0.0, FRAME_Z + 0.5)
+    # Fingers under the board's bottom edge: wedges from the cover's front wall back under the board, joined to that
+    # wall, with a 45-degree underside down to the bottom edge so they print without support.
+    tip = ZB - 0.1
+    for fx0, fx1, zw in ((2.0, 7.5, Z_LOW + 0.5), (76.0, 78.3, Z_TC + 0.5)):
+        c += prism([(0.0, tip), (0.0, zw), (BOTTOM, zw), (BOTTOM, tip + 3.0), (-3.0, tip)], fx0, fx1)
     by, bz = BOT_BAR                                             # bottom bar passes through the terminal pocket's walls
     s = BAR + 0.3
     c -= box(X_TC - 1, by - s / 2, bz - s / 2, X1 + 1, by + s / 2, bz + s / 2)
@@ -297,6 +300,11 @@ if __name__ == "__main__":
     print("overhangs, frame printed on its back:", overhangs(os.path.join(OUT, "holder_frame.stl"), (0, 0, 1)) or "none")
     print("overhangs, cover printed on its bottom edge:", overhangs(os.path.join(OUT, "holder_cover.stl"), (0, 1, 0)) or "none")
     bad = fit_check(fr, cv, br)
+    for name, s, want in (("frame", fr, 1), ("cover", cv, 1), ("bars", br, 2)):   # a floating piece collides with nothing
+        n = len(s.solids())
+        print(f"{name}: {n} solid bod{'y' if n == 1 else 'ies'}")
+        if n != want:
+            bad.append(f"{name}: {n} separate bodies, expected {want}")
     if holes:
         bad.append(f"cover: the board shows through it at {len(holes)} grid points")
     print("fit: OK" if not bad else "fit problems:\n  " + "\n  ".join(bad))
