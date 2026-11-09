@@ -39,16 +39,17 @@ Where to find what:
 The heater SSR's input is the GH 4-pin from J2 (1 = +5 V to SSR +, 2 = SSR −, switched low). See WIRING.md.
 
 ## Enclosure
-- **The holder** (hardware/holder/README.md): a printed ASA back plate and front plate joined at the
-  sides. The board slides down between them in edge grooves and a printed bar stops it lifting. The back
-  plate is the insulation between the board's back (the spades' and IRM's pins carry 120 V) and the case;
-  the front plate covers the board except the IRM and the spade tabs. Six 10 × 3 mm magnets hold it to the
+- **The holder** (hardware/holder/README.md): one printed ASA part. The back plate rises into a roof over
+  the spade end; a solid front wall covers the whole board; the mains wires leave forward through a slot
+  under the roof, so drips from above run off it. The board slides up into it from below, in edge grooves
+  and a channel over its top edge, and stands on two pegs. The back plate is the insulation between the
+  board's back (the spades' and IRM's pins carry 120 V) and the case. Six 10 × 3 mm magnets hold it to the
   right side panel.
 - **Heater SSR:** on the steel rear panel (its heatsink), never on plastic. It dissipates about 12 W at
   full power.
-- **Orientation:** the mains receptacles sit along the board's top edge and their wires leave upward; the
-  low-voltage leads leave the bottom edge downward, so the two bundles never meet. Leave ~50 mm of free
-  depth off the panel (the IRM stands 31 mm off it) and room above and below for the cable bends.
+- **Orientation:** the mains receptacles sit along the board's top edge, inside under the roof, and their
+  wires leave forward; the low-voltage leads leave the bottom edge downward, so the two bundles never meet.
+  The holder is 52 mm deep off the panel; leave ~60 mm and room in front of the slot for the wires' bend.
 - **Wiring:** keep the mains wiring and the GH leads apart (≥ 6 mm, or a barrier), anchor every wire near
   its terminal, and use fibreglass sleeve near the boiler.
 - **Antenna:** route the module's W.FL pigtail out through a plastic part. The case is steel.

@@ -1,74 +1,74 @@
-# Board holder (v39)
+# Board holder (v40 holder, for the v39 board)
 
-One printed part that sticks to the inside of the machine's steel side panel with six magnets. It is a back plate
-and a front plate joined by two side walls, open at the top. The controller board slides down between them in
-two edge grooves and stands on the floor. A printed bar through both side walls, just above the board's top
-edge, stops it being pulled up.
+One printed part that sticks to the inside of the machine's steel side panel with six magnets, plus two pegs.
+The back plate rises above the board and turns into a roof that overhangs outward. Below it, a deep solid front
+wall covers the whole board: no window, no comb, no channel. The four mains wires leave straight out of their
+receptacles through a forward-facing slot between the front wall's top and the roof, so drips from above hit
+the roof and run off outside the front wall. Everything else leaves through the open bottom.
 
 ```
-          mains wires leave UP                        retaining bar
-   ┌──║───────╥──────────╥────────╥───────────────────┐ ═══════
-   │  ║ [3]   ║   [P]    ║  [L]   ║   [N]  ┌────────┐ │   comb: a slot per spade tab
-   │  ╨───────╨──────────╨────────╨        │        │ │
-   │                                       │  IRM   │ │   supply channel (open to the top)
-   │      front plate covers the board     │ supply │ │
-   │      (optos, triacs, fuse, module)    │        │ │
-   │           [LED window]                └────────┘ │
-   │                                         ┌──────┐ │   terminal column (screwdriver access)
-   │                                         │  TC  │ │
-   └──[USB]──[press]──[scale]──[front]──[SSR]┴──────┴─┘
-          low-voltage leads leave DOWN (open bottom)
+ side section (panel on the left)            front
+ ┌──────────────────── roof ─┐               ┌──────────── roof ──────────┐
+ │   ┌─channel─┐             │               │  [3]   [P] [L]      [N]    │ <- wire slot (faces forward)
+ │   │ ▐[tab]━━━━ receptacle ━━━━ wire out    ├────────────────────────────┤
+ │   │ ▐       │    ┌──front wall            │                            │
+ │   │ ▐ board │    │                        │   front wall: solid        │
+ │   │ ▐       │    │                        │                            │
+ │   │ ▐ supply│    │                        │                            │
+ │   │ ▐       │    │                        └─[peg]──────────────[peg]───┘
+ │ magnets     │    │                            low-voltage leads leave down
+ └─peg═══════════════╪══                       
 ```
 
 ## Files
 - `holder.py` builds it (build123d): `~/opt/holder-venv/bin/python holder.py`. It writes `out/holder.stl` and
-  `out/holder_bar.stl` (print both) plus `.step` files. Every opening in the front plate is computed from the
-  board. The fit check sweeps every part and pin tail along its path into the holder and also checks:
-  - the plugs, thermocouple wires, receptacles and the bar;
-  - screwdriver access to the terminal;
-  - which mains pads the front plate leaves uncovered (only the four spade tabs).
-  It checks the model, not a print: holes in a real FDM print come out ~0.1–0.2 mm small, which the comb
-  slots (0.6 mm a side over TE's maximum receptacle width) and grooves (0.25 mm a side) allow for.
+  `out/holder_peg.stl` (both pegs; print the file once) plus `.step` files. The fit check, by solid intersection:
+  - every part, every pin tail on the back, the plugged-in low-voltage plugs and leads, and the thermocouple
+    wires, sliding up into the holder from below and seated;
+  - each spade receptacle going on straight through the wire slot;
+  - the pegs against everything;
+  - a lip in front of the board's top edge (it takes the receptacles' pull-off) and a stop above it;
+  - which mains pads are visible through the wire slot (only the four spade tabs' own pads).
 - `assemble.py` writes `out/assembly.glb` and `out/exploded.glb`; open `out/view.html?f=assembly&v=iso`.
 
 ## Print
-- **Material: ASA (or ABS).** Not PETG: its heat-deflection temperature (~70 °C) is right at the 60–70 °C
-  inside the case, and the pump triac's tab runs near 100 °C 5.5 mm under the front plate. Not PLA.
-- **Stand it on its floor** (the bottom end) on the bed: the walls, both plates and the grooves then print
-  as vertical walls with no supports (the front plate reaches the bed, and its strip under the board ties
-  it to the right wall). The LED window and the bar holes are small enough to bridge.
-- 0.2 mm layers, 4 walls, 30 % infill. About 51 cm³ (~65 g). The bar prints flat.
+- **Material: ASA (or ABS).** Not PETG (its heat-deflection temperature, ~70 °C, is the case temperature) and not PLA.
+- **Print it upside down, standing on its roof**: the roof is the first layer, and the back plate, side walls,
+  front wall, grooves and ribs all rise straight up from it (the open bottom ends up on top). The one overhang
+  is the front wall's top edge, which starts mid-air above the wire slot: an 80 mm bridge between the side
+  walls. Most printers bridge that fine; otherwise let the slicer put support in the wire slot only.
+- 0.2 mm layers, 4 walls, 25 % infill. About 93 cm³ (~115 g). Print the pegs flat.
 
 ## Magnets
-- **Six 10 × 3 mm neodymium discs**, the commonest size there is. Press them into the pockets on the back face
-  with a drop of CA glue, all with the same pole facing out.
-- **Heat:** plain N-grade magnets (N35–N52; N52 is the least heat-tolerant) lose strength for good above
-  ~80 °C, and the case runs 60–70 °C. Buy an **H or SH grade** (N35H, N42SH: rated 120–150 °C).
-- **Test the panel first:** hold a magnet against the inside of your side panel. If it doesn't stick hard
-  (some panels are stainless), use high-temperature double-sided tape instead.
+- **Six 10 × 3 mm neodymium discs, H or SH grade** (N35H, N42SH: 120–150 °C). Plain N52 is the least
+  heat-tolerant and the case runs 60–70 °C. Press them into the pockets on the back with a drop of CA glue,
+  same pole out.
+- They don't affect the board: no part on it cares about a static field, and the supply's transformer is
+  20–30 mm away through the board.
+- **Test the panel first:** if a magnet doesn't stick hard to the inside of your side panel (some are
+  stainless), use high-temperature double-sided tape instead.
 
 ## Fit it
-Fit the four mains receptacles with the board **out of the holder**, a finger behind each tab: pulling one off
-takes up to ~76 N (TE 108-2043), which would bend the board with nothing behind it.
-1. Stick the holder to the inside of the side panel, open end up.
-2. With the board in your hand: push the four mains receptacles onto the spades, plug the low-voltage leads
-   into the bottom edge, and clamp the thermocouple's two wires in its screw terminal (TC+ chromel, the
-   non-magnetic wire, in pin 1).
-3. Slide the board down the grooves: the receptacles and their wires go down the comb slots, the low-voltage
-   leads (and the antenna pigtail) out of the open bottom, until the board stands on the floor.
-4. Push the retaining bar through both side walls above the board's top edge.
+1. Stick the holder to the inside of the side panel, roof up.
+2. With the board in your hand: plug the low-voltage leads into its bottom edge, and clamp the thermocouple's
+   two wires in its screw terminal (TC+ chromel, the non-magnetic wire, in pin 1).
+3. Slide the board up into the holder from below, along the side grooves, until its top edge goes into the
+   channel under the roof. The low-voltage leads (and the antenna pigtail) hang out of the open bottom.
+4. Push the two pegs through the slots in the front wall, under the board's bottom edge, into the back plate.
+   The board now stands on them.
+5. Push the four mains receptacles onto the spades through the wire slot, straight in. The channel above the
+   tabs and the ribs behind the board take the push. Dress the wires out of the slot.
 
-To take the board out: pull the bar, slide the board up with everything still plugged in, then unplug it in
-your hand. USB-C (first flash, recovery) is only reachable with the board out.
+To take it out: pull the four receptacles off through the slot (the channel holds the board), pull the pegs,
+slide the board down. USB-C (first flash, recovery) is only reachable with the board out.
 
 ## Water
-The front plate keeps things from landing on the board, but its top is open. **Don't mount it under the
-water-tank fill, the OPV return or the solenoid valve's exhaust.** Water that does get in runs down and out of
-the open bottom; drain slots in the floor stop it pooling behind the board. A spray of conformal coating on
-the assembled board (masking the plugs, the terminal and the spade tabs) is cheap insurance.
+The roof keeps drips off; the only opening at the top end faces forward under it. Water that does get in runs
+down and out of the open bottom. Still, **don't mount it under the water-tank fill, the OPV return or the
+solenoid valve's exhaust.** Conformal coating on the board is optional extra insurance.
 
 ## Space it needs
-The holder is 86.5 × 85 mm on the panel and 17 mm deep. The IRM supply stands 31 mm off the panel, and the spade
-receptacles reach ~40 mm (TE's 23.7 mm receptacle on the 14 mm tab), ~45–50 mm with their wires bent upward.
-**Check there's 50 mm of free depth at the spot you choose**, clear of the boiler, the pump and anything that
-moves.
+86.5 mm wide, 96.5 mm tall and 52 mm deep off the panel (44.5 mm at the front wall, 52 mm at the roof's edge).
+The receptacles are inside; the mains wires leave forward from the slot, so leave room in front of it for their
+bend. **Check there's ~60 mm of free depth** where you mount it, clear of the boiler, the pump and anything
+that moves.

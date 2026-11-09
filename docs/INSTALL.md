@@ -19,10 +19,10 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
   - 18 AWG wire and 6.3 mm insulated receptacles for the four mains spades;
   - ready-made JST GH leads (3, 4, 5 and 6 pin), nothing to crimp at the board;
   - the thermocouple, pressure transducer and antenna.
-- **The printed holder** (hardware/holder/README.md, BUY.md #19): `holder.stl` and `holder_bar.stl` in
+- **The printed holder** (hardware/holder/README.md, BUY.md #19): `holder.stl` and `holder_peg.stl` in
   ASA (not PETG or PLA: the case runs 60–70 °C), and six 10 × 3 mm H/SH-grade magnets. The board is 80 × 77 mm
-  with no holes; it slides into the holder. Leave ~50 mm of free depth off the side panel (the IRM stands
-  31 mm off it, the spade receptacles and their bent wires up to ~50 mm).
+  with no holes; it slides up into the holder from below. The holder is 52 mm deep off the side panel; leave
+  ~60 mm.
 - **Tools:**
   - a 6.3 mm receptacle crimper (for the one new pump lead) and a small flat screwdriver;
   - a multimeter and a power meter (Kill-A-Watt);
@@ -148,8 +148,9 @@ Follow [WIRING.md](WIRING.md): the wiring diagram and a terminal-by-terminal tab
 - the heater SSR (in place of the brew thermostat);
 - the board's JST GH leads.
 
-It also lists the multimeter checks to do before mains. Plug everything onto the board in your hand (a
-finger behind each spade tab), then slide it into its holder (hardware/holder/README.md, "Fit it").
+It also lists the multimeter checks to do before mains. Plug the low-voltage leads and the thermocouple onto the board in
+your hand, slide it up into its holder and peg it, then push the four mains receptacles on through the wire
+slot (hardware/holder/README.md, "Fit it").
 
 ## 6. First power-on
 Leave every lead plugged in, the heater SSR's included. The steam thermostat and thermal fuse are
