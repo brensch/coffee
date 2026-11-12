@@ -1,4 +1,8 @@
-# Controller board v45: mains for the small loads on board
+# Controller board v49 (v45 layout): mains for the small loads on board
+
+**v49 changes two part values on the v45 board and nothing else** (same copper, same placement; the board's silkscreen still reads v45):
+- **Q6, the valve triac, is the 800 V T410-800B** (was the 600 V T410-600B). The valve coil's inductance isn't measured, and a weaker coil kicks harder at turn-off: 456 V for the assumed coil, 510 V at ~45 mA, 561 V at ~30 mA.
+- **R49 and R50 are 200 Ω** (were 330 Ω, the value for 240 V mains). The valve's triac has to re-fire at every current zero, inside the zero-cross opto's window; with 200 Ω it needs 6.3 V across it, against the opto's 12 V typical limit (7.6 V before).
 
 The circuit is v33's (v32 plus R54, the pump bleeder from [REVIEW-v32.md](REVIEW-v32.md) M1), with three
 changes since: the power rocker is a plain mains switch again (v35: no standby input, J7 6-pin), the scale
@@ -34,7 +38,8 @@ from Gaggiuino's board:
   unrated MLCC there. The resistors are 1 W 2512s.
 - **The valve gets a low-holding-current triac** (T410, IH 15 mA). When the triac drops out, the coil is
   still carrying current, and it dumps that into the snubber: V ≈ IH·√(L/C). A T435 on the valve gives
-  690 V at 132 V line, over its 600 V rating. The T410 gives 456 V.
+  690 V at 132 V line, over its 600 V rating. The T410 gives 456 V with the assumed coil, and v49 fits its 800 V version
+  because a weaker coil than assumed gives up to ~560 V.
 
 ## Mains section
 
@@ -45,12 +50,12 @@ from Gaggiuino's board:
 | PS1 | Mean Well IRM-10-5, 5 V 2 A | certified (UL/IEC 62368-1), 4.2 kVac isolation. Its AC and DC pins sit 38.5 mm apart, so it bridges the band by itself. Peak load 0.45 A (Wi-Fi + both opto LEDs + heater SSR input) vs 1.0 A allowed at 70 °C (Mean Well's 50 % derating) |
 | U8, U9 | onsemi MOC3083SR2M zero-cross opto-triac | 800 V, 4170 Vrms. The wide-lead SMD package has an 8.03 mm row gap, plus a slot under the body. It fires only within 20 V of a zero crossing, so there's no inrush or EMI from switching mid-cycle |
 | R47, R48 | 330 Ω, from +5 V | opto LED current 9.8–11.1 mA at every corner, vs the 5 mA IFT max (2×) and the 50 mA rating. Low-side switched by the AO3400A on the command GPIO |
-| R49, R50 | 330 Ω 1206 | opto pin 6 to MT2: holds the opto's turn-on surge under its 1 A peak (onsemi AN-3004) |
+| R49, R50 | 200 Ω 1206 (v49; was 330 Ω) | opto pin 6 to MT2: holds the opto's turn-on surge under its 1 A peak (0.93 A at a 132 V line peak; onsemi AN-3004). Low enough that each triac gets its gate current with little voltage across it: 6.3 V for the valve, which re-fires at every current zero and must do so under the opto's inhibit voltage (12 V typ) |
 | Q5 | ST T435-600B (DPAK), pump | IGT/IH 35 mA, 400 V/µs, snubberless-class. Pump 0.45 A rms, half-wave (its own diode): 86.8 °C junction at 70 °C ambient on its copper (97 °C at a 1.4 A peak allowance) |
-| Q6 | ST T410-600B (DPAK), valve | IH 15 mA (see above). 40 V/µs: the snubber holds the turn-off to 23 V/µs. ~0.1 W, 75 °C junction |
+| Q6 | ST T410-800B (DPAK), valve (v49; was T410-600B) | IH 15 mA (see above). 40 V/µs: the snubber holds the turn-off to 23 V/µs. ~0.1 W, 75 °C junction |
 | R53 | 1 kΩ 1206, gate to MT1 | dV/dt immunity for the T410's sensitive 10 mA gate (AN-3004: 330 Ω–1 kΩ) |
 | R54 | 51 kΩ, Vishay CRCW251251K0JNEG (500 V, 1 W), across the pump triac | **v33.** The pump's series diode lets C15 charge to the line peak and then blocks its discharge: ~170 V DC would sit across the triac, and the zero-cross MOC3083 only fires under its inhibit voltage (12 V typ, 20 V max), so the pump would never stroke again. R54 drains it (τ 1.1 ms). Sized for the tight case, the pump running every cycle: the triac drops out late in the cycle, leaving ~5 ms before the next positive zero crossing. 51k gets it to 1.8 V there (5 V even with 2.5× the assumed coil inductance); 100k left 13 V. 187 V peak (37 % of its rating), 171 mW while the pump is off. The valve needs none (no diode) |
-| R51/C15, R52/C16 | 100 Ω 1 W 2512 + 22 nF X2 (Murata GA355) | RC snubber across each triac. Pump turn-off 171–190 V, valve 429–456 V (limit 480 V = 80 % of 600 V); 2.5–2.9 kV without. Off-state leakage ~1 mA: under anything that holds the valve in (~50 mA) or moves the pump |
+| R51/C15, R52/C16 | 100 Ω 1 W 2512 + 22 nF X2 (Murata GA355) | RC snubber across each triac. Pump turn-off 171–190 V, valve 429–456 V with the assumed coil, up to 561 V with a weak one (limit 640 V = 80 % of the valve triac's 800 V); 2.5–2.9 kV without. Off-state leakage ~1 mA: under anything that holds the valve in (~50 mA) or moves the pump |
 
 **No MOV.** The IRM passes a 1 kV L–N surge (EN 61000-4-5) by itself, and the triacs and optos are
 600/800 V parts. A worn MOV fails as a short, which the fuse would then have to clear.
@@ -144,9 +149,9 @@ GPIO → AO3400A, **3.3 kΩ gate pull-down** (holds each output off while the pi
 
 ## Ordering: full assembly vs SMD only
 
-`build/coffee-v45-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM, the four
-spades and the thermocouple terminal (through-hole). `build/coffee-v45-smd-{bom,cpl}.csv` leaves those six
-parts out, and `coffee-v45-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
+`build/coffee-v49-{gerbers.zip,bom.csv,cpl.csv}` has JLC solder everything, including the IRM, the four
+spades and the thermocouple terminal (through-hole). `build/coffee-v49-smd-{bom,cpl}.csv` leaves those six
+parts out, and `coffee-v49-smd-hand-solder.csv` lists them. `python3 hardware/controller/cost.py` prices both from JLC's
 live tiered prices:
 
 | 5 boards | JLC | you | total |

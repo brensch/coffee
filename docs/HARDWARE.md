@@ -23,8 +23,8 @@ Where to find what:
 6. **Measure what the model needs.** Each sensor maps to model parameters. Anything we can't sense is estimated, and the UI says so.
 
 ## What you buy
-- **The board:** from JLCPCB, fully assembled, nothing to solder (`build/coffee-v45-{gerbers.zip,bom.csv,cpl.csv}`),
-  or SMD-only with six through-hole parts to solder yourself (`coffee-v45-smd-*`). Order settings: INSTALL.md §1.
+- **The board:** from JLCPCB, fully assembled, nothing to solder (`build/coffee-v49-{gerbers.zip,bom.csv,cpl.csv}`),
+  or SMD-only with six through-hole parts to solder yourself (`coffee-v49-smd-*`; the v45 board with v49's two part values). Order settings: INSTALL.md §1.
 - **Everything else:** [BUY.md](BUY.md): the heater SSR, mains wire and receptacles, ready-made GH
   leads, the thermocouple, the pressure transducer, the antenna, and the holder's magnets.
 

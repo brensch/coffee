@@ -87,8 +87,10 @@ FIXED = {"D_SOD-123|B5819W": "C8598",   # B5819W SL, basic part (its model name 
          "IRM-10-xx_THT|IRM-10-5": "C2857903",                     # Mean Well IRM-10-5
          "SMDIP-6_W9.53mm_Clearance8mm|MOC3083SR2M": "C111561",   # onsemi MOC3083SR2M
          "TO-252-2|T435-600B": "C145128",                         # ST T435-600B-TR (pump)
-         "TO-252-2|T410-600B": "C2970064",                        # ST T410-600B-TR (valve)
+         "TO-252-2|T410-600B": "C2970064",                        # ST T410-600B-TR (valve, to v48)
+         "TO-252-2|T410-800B": "C155606",                         # ST T410-800B-TR (valve, v49)
          "C_2220_Murata_GA355|22nF X2": "C437417",                # Murata GA355DR7GB223KW01L, Class X2
+         "R_1206_3216Metric|200": "C18002",                       # v49: UNI-ROYAL 1206W4F2000T5E (opto pin 6 resistors)
          "R_2512_6332Metric|100 1W": "C35218",
          "R_2512_6332Metric|51k 500V": "C2078757",                # v33: Vishay CRCW251251K0JNEG, 500 V 1 W (pump bleeder)                    # UNI-ROYAL 25121WF1000T4E
          "Fuse_Littelfuse_Nano2_443|2A T": "C187538",              # Littelfuse 0443002.DR

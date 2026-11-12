@@ -350,7 +350,7 @@ def main():
                 check("Pump triac turn-off: peak voltage (reference)", lab, peak, "info: why the snubber is fitted", True, "V")
             dv, peak = valve(with_rc, vrms=vr, ih=0.015)    # T410: IH 15 mA max
             if with_rc:
-                check("Valve triac (T410) turn-off: peak voltage", lab, peak, "< 480 V (80 % of the T410's 600 V)", peak < 480, "V")
+                check("Valve triac (T410-800B) turn-off: peak voltage", lab, peak, "< 640 V (80 % of the T410-800B's 800 V; v49)", peak < 640, "V")
                 check("Valve triac (T410) turn-off: dV/dt", lab, dv, "< 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us)", dv < 32, "V/us")
             else:
                 check("Valve triac (T410) turn-off: peak voltage (reference)", lab, peak, "info: why the snubber is fitted", True, "V")
@@ -372,6 +372,23 @@ def main():
     check("Pump bleeder dissipation (R54, 2512 1 W)", "132 V, half-wave while the pump is off", p_bl,
           "< 250 mW (25 % of 1 W)", p_bl < 250, "mW")
     check("Pump bleeder voltage (R54)", "132 V line peak (the triac's off-state voltage)", 132 * 2 ** 0.5, "< 400 V (80 % of the CRCW2512's 500 V)", 132 * 2 ** 0.5 < 400, "V")
+    # v49: the valve coil isn't measured. Weaker coils (more inductance, less current) kick harder; the 800 V
+    # triac has to cover them, and the dV/dt has to stay inside the T410's rating.
+    for L, R in ((6.0, 400.0), (8.0, 500.0), (12.0, 600.0)):
+        ima = 132.0 / math.hypot(R, 2 * math.pi * 60 * L) * 1e3
+        dv, peak = valve(True, vrms=132.0, L=L, R=R, ih=0.015)
+        lab = f"132 V, weaker coil: {L:.0f} H, {R:.0f} R (~{ima:.0f} mA)"
+        check("Valve triac (T410-800B) turn-off: peak voltage", lab, peak, "< 640 V (80 % of 800 V; the 600 V part's limit was 480 V)", peak < 640, "V")
+        check("Valve triac (T410-800B) turn-off: dV/dt", lab, dv, "< 32 V/us (80 % of the T410's 40 V/us)", dv < 32, "V/us")
+    # v49: R49/R50 200 R (were 330 R). The opto's peak current if it ever fires at the line peak, and the
+    # voltage the triac needs across it for its gate current (opto on-state 3 V max + gate 1.3 V max + IGT x R).
+    check("Opto peak current through R49/R50 (200 R)", "132 V line peak, fired at the peak (dV/dt mis-fire)", 132 * 2 ** 0.5 / 200, "< 1 A (MOC3083 ITSM)", 132 * 2 ** 0.5 / 200 < 1.0, "A")
+    for nm, igt in (("Valve (T410, IGT 10 mA max)", 0.010), ("Pump (T435, IGT 35 mA max)", 0.035)):
+        v = 3.0 + 1.3 + igt * 200
+        if nm.startswith("Valve"):
+            check("Triac voltage needed to fire through the opto", nm + ", 200 R", v, "< 12 V (MOC3083 inhibit voltage, typ; the valve re-fires at every current zero; 330 R needed 7.6 V)", v < 12, "V")
+        else:
+            check("Triac voltage needed to fire through the opto", nm + ", 200 R", v, "info: the pump fires on a rising line with the opto already latched, so the inhibit voltage doesn't limit it (330 R needed 15.9 V)", True, "V")
     dv, peak = valve(True, vrms=132.0, ih=0.035)
     check("Valve with a T435 instead (rejected)", "132 V, IH 35 mA, 100 R + 22 nF", peak, "reference: over the 600 V rating, why the valve uses the T410", True, "V")
     i_leak = 120.0 * 2 * math.pi * 60 * 22e-9 * 1e3

@@ -2,7 +2,7 @@
   (version "D")
   (design
     (source "controller.py")
-    (date "11/07/2026 02:08 PM")
+    (date "11/11/2026 10:50 PM")
     (tool "SKiDL (3.0.0)")
     (sheet
       (number 1)
@@ -850,11 +850,11 @@
     (comp
       (ref "Q5")
       (value "T435-600B")
-      (description "Triac 4 A 600 V, ST T4 series (DPAK)")
+      (description "Triac 4 A, ST T4 series (DPAK), 600 or 800 V")
       (footprint "Package_TO_SOT_SMD:TO-252-2")
       (fields
         (field
-          (name "Description") "Triac 4 A 600 V, ST T4 series (DPAK)")
+          (name "Description") "Triac 4 A, ST T4 series (DPAK), 600 or 800 V")
         (field
           (name "Footprint") "Package_TO_SOT_SMD:TO-252-2")
         (field
@@ -872,12 +872,12 @@
       (tstamps "8b3eeb49-422c-5be2-865d-3dfba2211852"))
     (comp
       (ref "Q6")
-      (value "T410-600B")
-      (description "Triac 4 A 600 V, ST T4 series (DPAK)")
+      (value "T410-800B")
+      (description "Triac 4 A, ST T4 series (DPAK), 600 or 800 V")
       (footprint "Package_TO_SOT_SMD:TO-252-2")
       (fields
         (field
-          (name "Description") "Triac 4 A 600 V, ST T4 series (DPAK)")
+          (name "Description") "Triac 4 A, ST T4 series (DPAK), 600 or 800 V")
         (field
           (name "Footprint") "Package_TO_SOT_SMD:TO-252-2")
         (field
@@ -1585,7 +1585,7 @@
       (tstamps "2925aeeb-307c-5c8f-9ac6-b671764bdb69"))
     (comp
       (ref "R49")
-      (value "330")
+      (value "200")
       (description "Resistor")
       (footprint "Resistor_SMD:R_1206_3216Metric")
       (fields
@@ -1631,7 +1631,7 @@
       (tstamps "29f79588-e279-5ce8-b215-982a9074cc1e"))
     (comp
       (ref "R50")
-      (value "330")
+      (value "200")
       (description "Resistor")
       (footprint "Resistor_SMD:R_1206_3216Metric")
       (fields

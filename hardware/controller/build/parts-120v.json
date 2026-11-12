@@ -178,13 +178,13 @@
     "3"
    ],
    "populate": "Y",
-   "desc": "Triac 4 A 600 V, ST T4 series (DPAK)",
+   "desc": "Triac 4 A, ST T4 series (DPAK), 600 or 800 V",
    "mpn": "ST T435-600B-TR",
    "notes": "MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)"
   },
   "R49": {
    "footprint": "Resistor_SMD:R_1206_3216Metric",
-   "value": "330",
+   "value": "200",
    "pins": {
     "1": "AC_L_F",
     "2": "PUMP_O6"
@@ -199,8 +199,8 @@
    ],
    "populate": "Y",
    "desc": "Resistor",
-   "mpn": "",
-   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak"
+   "mpn": "UNI-ROYAL 1206W4F2000T5E",
+   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak at 120 V (onsemi AN-3004); low enough that the triac re-fires inside the opto's zero-cross window; 1206 for the 170 V peak"
   },
   "R51": {
    "footprint": "Resistor_SMD:R_2512_6332Metric",
@@ -310,7 +310,7 @@
   },
   "Q6": {
    "footprint": "Package_TO_SOT_SMD:TO-252-2",
-   "value": "T410-600B",
+   "value": "T410-800B",
    "pins": {
     "1": "VALVE_SW",
     "2": "AC_L_F",
@@ -327,13 +327,13 @@
     "3"
    ],
    "populate": "Y",
-   "desc": "Triac 4 A 600 V, ST T4 series (DPAK)",
-   "mpn": "ST T410-600B-TR",
-   "notes": "MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W"
+   "desc": "Triac 4 A, ST T4 series (DPAK), 600 or 800 V",
+   "mpn": "ST T410-800B-TR",
+   "notes": "MAINS: VALVE. Valve: 800 V; IH 15 mA (the coil's turn-off kick is 456 V for the assumed coil, up to ~560 V for a weak one), 40 V/us; ~0.1 W"
   },
   "R50": {
    "footprint": "Resistor_SMD:R_1206_3216Metric",
-   "value": "330",
+   "value": "200",
    "pins": {
     "1": "AC_L_F",
     "2": "VALVE_O6"
@@ -348,8 +348,8 @@
    ],
    "populate": "Y",
    "desc": "Resistor",
-   "mpn": "",
-   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak"
+   "mpn": "UNI-ROYAL 1206W4F2000T5E",
+   "notes": "MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak at 120 V (onsemi AN-3004); low enough that the triac re-fires inside the opto's zero-cross window; 1206 for the 170 V peak"
   },
   "R53": {
    "footprint": "Resistor_SMD:R_1206_3216Metric",

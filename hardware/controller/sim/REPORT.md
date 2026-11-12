@@ -32,13 +32,13 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Valve triac (T410) turn-off: peak voltage (reference) | 120 V, no snubber | 2.89e+03 V | info: why the snubber is fitted | ✅ |
 | Pump triac (T435) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 169 V | < 480 V (80 % of the T435's 600 V) | ✅ |
 | Pump triac turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 47 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
-| Valve triac (T410) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 429 V | < 480 V (80 % of the T410's 600 V) | ✅ |
+| Valve triac (T410-800B) turn-off: peak voltage | 120 V, 100 R + 22 nF X2 | 429 V | < 640 V (80 % of the T410-800B's 800 V; v49) | ✅ |
 | Valve triac (T410) turn-off: dV/dt | 120 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
 | Pump triac turn-off: peak voltage (reference) | 132 V, no snubber | 1.12e+03 V | info: why the snubber is fitted | ✅ |
 | Valve triac (T410) turn-off: peak voltage (reference) | 132 V, no snubber | 2.91e+03 V | info: why the snubber is fitted | ✅ |
 | Pump triac (T435) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 186 V | < 480 V (80 % of the T435's 600 V) | ✅ |
 | Pump triac turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 47 V/us | < 100 V/us (T435 static 400 V/us; MOC3083 static >= 600 V/us) | ✅ |
-| Valve triac (T410) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 456 V | < 480 V (80 % of the T410's 600 V) | ✅ |
+| Valve triac (T410-800B) turn-off: peak voltage | 132 V, 100 R + 22 nF X2 | 456 V | < 640 V (80 % of the T410-800B's 800 V; v49) | ✅ |
 | Valve triac (T410) turn-off: dV/dt | 132 V, 100 R + 22 nF X2 | 23.2 V/us | < 32 V/us (80 % of the T410's 40 V/us; MOC3083 static >= 600 V/us) | ✅ |
 | Pump zero-cross re-arm (reference) | 120 V, after one stroke, no bleeder (v32) | 168 V | info: review M1 (no bleeder) and its re-review (100k marginal when running) | ✅ |
 | Pump zero-cross re-arm (reference) | 120 V, after one stroke, 100k (first v33 value, rejected) | 1.09 V | info: review M1 (no bleeder) and its re-review (100k marginal when running) | ✅ |
@@ -52,6 +52,15 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | Pump zero-cross re-arm: triac voltage just before each positive zero crossing | 132 V, running every cycle, 51k bleeder (R54) | 1.82 V | < 5 V (MOC3083 fires only under VINH: 12 V typ, 20 V max, no minimum) | ✅ |
 | Pump bleeder dissipation (R54, 2512 1 W) | 132 V, half-wave while the pump is off | 171 mW | < 250 mW (25 % of 1 W) | ✅ |
 | Pump bleeder voltage (R54) | 132 V line peak (the triac's off-state voltage) | 187 V | < 400 V (80 % of the CRCW2512's 500 V) | ✅ |
+| Valve triac (T410-800B) turn-off: peak voltage | 132 V, weaker coil: 6 H, 400 R (~57 mA) | 481 V | < 640 V (80 % of 800 V; the 600 V part's limit was 480 V) | ✅ |
+| Valve triac (T410-800B) turn-off: dV/dt | 132 V, weaker coil: 6 H, 400 R (~57 mA) | 23.8 V/us | < 32 V/us (80 % of the T410's 40 V/us) | ✅ |
+| Valve triac (T410-800B) turn-off: peak voltage | 132 V, weaker coil: 8 H, 500 R (~43 mA) | 510 V | < 640 V (80 % of 800 V; the 600 V part's limit was 480 V) | ✅ |
+| Valve triac (T410-800B) turn-off: dV/dt | 132 V, weaker coil: 8 H, 500 R (~43 mA) | 24.2 V/us | < 32 V/us (80 % of the T410's 40 V/us) | ✅ |
+| Valve triac (T410-800B) turn-off: peak voltage | 132 V, weaker coil: 12 H, 600 R (~29 mA) | 561 V | < 640 V (80 % of 800 V; the 600 V part's limit was 480 V) | ✅ |
+| Valve triac (T410-800B) turn-off: dV/dt | 132 V, weaker coil: 12 H, 600 R (~29 mA) | 24.5 V/us | < 32 V/us (80 % of the T410's 40 V/us) | ✅ |
+| Opto peak current through R49/R50 (200 R) | 132 V line peak, fired at the peak (dV/dt mis-fire) | 0.933 A | < 1 A (MOC3083 ITSM) | ✅ |
+| Triac voltage needed to fire through the opto | Valve (T410, IGT 10 mA max), 200 R | 6.3 V | < 12 V (MOC3083 inhibit voltage, typ; the valve re-fires at every current zero; 330 R needed 7.6 V) | ✅ |
+| Triac voltage needed to fire through the opto | Pump (T435, IGT 35 mA max), 200 R | 11.3 V | info: the pump fires on a rising line with the opto already latched, so the inhibit voltage doesn't limit it (330 R needed 15.9 V) | ✅ |
 | Valve with a T435 instead (rejected) | 132 V, IH 35 mA, 100 R + 22 nF | 690 V | reference: over the 600 V rating, why the valve uses the T410 | ✅ |
 | Snubber off-state leakage | 22 nF at 120 V 60 Hz | 0.995 mA | < 2 mA (valve hold-in needs ~50 mA; pump coil ignores it) | ✅ |
 | Snubber discharge into the triac at turn-on | 170 V peak / 100 R | 1.7 A | < 31 A (T435 ITSM) and < 4 A di/dt-friendly | ✅ |
@@ -84,4 +93,4 @@ ngspice 42, behavioural models fitted to datasheet values (see `sim/run.py`). Ge
 | 3.3 V rail under Wi-Fi bursts | USB 5.0 V through D2 (~4.65 V) | 3.29 V | >= 3.0 V (ESP32-C6 min) | ✅ |
 | 5 V rail | USB 5.0 V through D2 (~4.65 V) | 4.53 V | >= 4.2 V (info: on USB the transducer runs below the 4.75 V a 5 V part is usually specified for; readings indicative) | ✅ |
 
-**79 / 79 checks pass.**
+**88 / 88 checks pass.**

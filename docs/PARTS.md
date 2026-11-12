@@ -1,6 +1,6 @@
-# Parts record: v45 board (mains for the pump, valve and supply on board)
+# Parts record: v49 parts on the v45 board (mains for the pump, valve and supply on board)
 
-Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The six through-hole parts (PS1, J5, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v45-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad). No mounting holes: the board slides into its holder (hardware/holder). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
+Everything JLC places on the board, as matched live against JLCPCB's library (`jlc.py`, 2026-11-06). "base" parts carry no setup fee; each "expand" (extended) part type adds about $3 to an assembly order. The six through-hole parts (PS1, J5, J12-J15) are JLC-soldered in the full-assembly files and listed in `build/coffee-v49-smd-hand-solder.csv` for the SMD-only order (CIRCUIT.md, "Ordering"). Not fitted: TP1 (BOOT pad). No mounting holes: the board slides into its holder (hardware/holder). Datasheet evidence for every part: [evidence/parts.jsonl](evidence/parts.jsonl). Off-board parts: [BUY.md](BUY.md).
 
 | Refs | Value | Part | LCSC | JLC library | Stock | Notes |
 |---|---|---|---|---|---|---|
@@ -26,7 +26,7 @@ Everything JLC places on the board, as matched live against JLCPCB's library (`j
 | PS1 | IRM-10-5 | IRM-10-5 | C2857903 | expand | 3993 | Isolated 5 V supply; bridges the isolation band (AC pins above it, DC pins below). 0.45 A peak load vs 1 A derated at 70 C |
 | Q1 Q2 Q3 | AO3400A | AO3400A | C20917 | base | 1079776 | HEATER output: sinks the external heater SSR input (7-15 mA) / PUMP output: sinks the opto-triac LED (~9 mA) / VALVE output: sinks the opto-triac LED (~9 mA) |
 | Q5 | T435-600B | T435-600B-TR | C145128 | expand | 1678 | MAINS: PUMP. Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient) |
-| Q6 | T410-600B | T410-600B-TR | C2970064 | expand | 1320 | MAINS: VALVE. Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W |
+| Q6 | T410-800B | T410-800B-TR | C155606 | expand | 69 | MAINS: VALVE. v49: 800 V (was T410-600B). IH 15 mA; the coil's turn-off kick is 456 V for the assumed coil, up to ~560 V for a weak one; 40 V/us; ~0.1 W |
 | R4 R5 R6 | 3.3k | 0603WAF3301T5E | C22978 | base | 4821040 | Gate pull-down: holds the gate < 0.5 V against a weak internal pull-up at reset (sim) |
 | R10 R20 R21 R25 R28 R36 | 10k | 0603WAF1002T5E | C25804 | base | 42728470 | EN pull-up (Espressif RC delay) / switch pull-up / wetting current / V5_SNS divider bottom / SCK pull-down: HX711 stays powered while the C6 boots |
 | R11 R46 | 4.7k | 0603WAF4701T5E | C23162 | base | 16104758 | I2C SDA pull-up; also GPIO8's strap pull-up (high at reset) / I2C SCL pull-up; also GPIO9 high at reset = normal boot |
@@ -37,7 +37,7 @@ Everything JLC places on the board, as matched live against JLCPCB's library (`j
 | R24 | 20k | 0603WAF2002T5E | C4184 | base | 5724785 | V5_SNS divider top |
 | R30 R31 R32 R47 R48 | 330 | 0603WAF3300T5E | C23138 | base | 2893759 | front-panel LED (pwr) current limit (plus the LED's own in its lead): ~2 mA / front-panel LED (coffee) current limit (plus the LED's own in its lead): ~2 mA / front-panel LED (steam) current limit (plus the LED's own in its lead): ~2 mA / PUMP opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA / VALVE opto LED: (5 - 1.25) / 330 = 11 mA, 2x the 5 mA IFT max, under 50 mA |
 | R45 | 10M | 0603WAF1005T5E | C7250 | base | 836522 | Open-probe bias on the connector side of R43: open -> ADC over range -> fault; probe in: ~3 uV, calibrated out |
-| R49 R50 | 330 | 1206W4F3300T5E | C17930 | expand | 204965 | MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak |
+| R49 R50 | 200 | 1206W4F2000T5E | C18002 | expand | 98099 | MAINS: opto pin 6 to MT2. v49: 200 R (was 330 R): 0.93 A peak at 132 V, under the opto's 1 A; the valve triac re-fires with 6.3 V across it |
 | R51 R52 | 100 1W | 25121WF1000T4E | C35218 | expand | 38578 | MAINS: snubber R (inductive load) |
 | R53 | 1k | 1206W4F1001T5E | C4410 | base | 1572607 | MAINS: gate-MT1 for the T410's 10 mA logic-level gate: dV/dt immunity (onsemi AN-3004: 330 R - 1k) |
 | R54 | 51k 500V | CRCW251251K0JNEG | C2078757 | expand | 880 | MAINS: pump bleeder across the triac: re-arms the zero-cross opto every cycle (review M1) |

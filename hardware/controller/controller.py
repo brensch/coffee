@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""coffee controller board v39 (circuit as v35: v33 plus the 6-pin front panel, 5-pin scale, TC screw terminal): schematic as code (SKiDL).
+"""coffee controller board v49 (layout v45; circuit as v35: v33 plus the 6-pin front panel, 5-pin scale, TC screw terminal): schematic as code (SKiDL).
 
 The small loads' mains are on this board (v32+), behind a 7 mm isolation band:
 - four 6.3 mm spades (N, L, P, 3), a 2 A fuse and a Mean Well IRM-10-5 that powers the board;
@@ -112,7 +112,7 @@ OPTO = tmpl("MOC3083SR2M", "U", "Package_DIP:SMDIP-6_W9.53mm_Clearance8mm",
 # 2 = tab, 3 = right lead -> 1 MT1 (A1), 2 MT2 (A2), 3 G.
 TRIAC = tmpl("Triac_DPAK", "Q", "Package_TO_SOT_SMD:TO-252-2",
              [(1, "MT1", T.PASSIVE), (2, "MT2", T.PASSIVE), (3, "G", T.PASSIVE)],
-             "Triac 4 A 600 V, ST T4 series (DPAK)")
+             "Triac 4 A, ST T4 series (DPAK), 600 or 800 V")
 CX2 = tmpl("C_X2", "C", "Coffee:C_2220_Murata_GA355", TWO, "Class X2 safety capacitor, 250 VAC, 2220")
 FUSE = tmpl("Fuse", "F", "Coffee:Fuse_Littelfuse_Nano2_443", TWO, "Fuse, 2 A slow-blow, 250 VAC, 50 A breaking")
 SPADE = tmpl("FASTON", "J", "Coffee:FASTON_TE_63824-1", [(1, "1", T.PASSIVE)], "6.3 mm (0.250\") PCB quick-connect tab")
@@ -208,8 +208,12 @@ def triac_channel(name, n_u, n_q, r_led, r_6, r_sn, c_sn, out_net, triac, triac_
     q["G"] += g
     u["MT1"] += g
     u["MT2"] += o6
-    r = part(R, r_6, "330", footprint=FP_R_1206, mains=True,
-             notes="MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak (onsemi AN-3004); 1206 for the 170 V peak")
+    # v49: 200 R (was 330, the 240 V value). 187 V peak / 200 R = 0.93 A, still under the opto's 1 A peak, and the
+    # triac needs less voltage across it to get its gate current: 10 mA x 200 R = 2 V (valve), 35 mA x 200 R = 7 V
+    # (pump). That matters on the valve: its coil current lags, so the triac re-fires at every current zero and has to
+    # do it before the voltage across it passes the zero-cross opto's inhibit level (12 V typ, no minimum given).
+    r = part(R, r_6, "200", footprint=FP_R_1206, mpn="UNI-ROYAL 1206W4F2000T5E", mains=True,
+             notes="MAINS: opto pin 6 to MT2: holds the opto's surge under its 1 A peak at 120 V (onsemi AN-3004); low enough that the triac re-fires inside the opto's zero-cross window; 1206 for the 170 V peak")
     r[1, 2] += ac_lf, o6
     if r_gk:
         r = part(R, r_gk, "1k", footprint=FP_R_1206, mains=True,
@@ -242,10 +246,12 @@ triac_channel("PUMP", "U8", "Q5", "R47", "R49", "R51", "C15", pump_sw, "T435-600
               "Pump: IH 35 mA, 400 V/us. ~0.3-0.5 W on its AC_L_F copper (~90-100 C junction at 70 C ambient)",
               bleed="R54")
 # Valve: T410 (IH 15 mA). The coil is still carrying current when the triac drops out at IH, and dumps
-# it into the snubber: V ~ IH * sqrt(L/C). The T435's 35 mA gave 690 V (over its 600 V); the T410's 15 mA
-# gives 456 V at 132 V line (76 %), dV/dt 23 V/us (its rating 40). sim/REPORT.md.
-triac_channel("VALVE", "U9", "Q6", "R48", "R50", "R52", "C16", valve_sw, "T410-600B",
-              "Valve: IH 15 mA (keeps the coil's turn-off kick to 456 V worst case), 40 V/us; ~0.1 W", r_gk="R53")
+# it into the snubber: V ~ IH * sqrt(L/C). The T435's 35 mA gave 690 V; the T410's 15 mA gives 456 V at
+# 132 V line for the assumed coil (4.4 H, ~80 mA), dV/dt 23 V/us (its rating 40). sim/REPORT.md.
+# v49: the 800 V part (same series, same DPAK, same gate and dV/dt figures). The coil is not measured, and a
+# weaker one kicks harder: 510 V at ~45 mA, 561 V at ~30 mA. 800 V covers all of those; 600 V did not.
+triac_channel("VALVE", "U9", "Q6", "R48", "R50", "R52", "C16", valve_sw, "T410-800B",
+              "Valve: 800 V; IH 15 mA (the coil's turn-off kick is 456 V for the assumed coil, up to ~560 V for a weak one), 40 V/us; ~0.1 W", r_gk="R53")
 
 # ================================================================ POWER
 # v32: the 5 V rail comes from the on-board Mean Well IRM-10-5 (MAINS section above). No external 5 V
