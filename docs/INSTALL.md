@@ -43,11 +43,11 @@ WIRING.md). The machine is a US 120 V Gaggia Classic Pro.
    python3 cost.py                        # price both
    ```
 2. **Files to upload** (in `build/`), one of two sets:
-   - **Full assembly (recommended):** `coffee-v33-gerbers.zip`, `coffee-v33-bom.csv`, `coffee-v33-cpl.csv`.
-     JLC solders everything, the five through-hole parts included (the IRM and the four spades).
-   - **SMD only:** the same gerbers, plus `coffee-v33-smd-bom.csv` and `coffee-v33-smd-cpl.csv`. Then you
-     solder the parts in `coffee-v33-smd-hand-solder.csv` (the IRM-10-5 and four TE 63824-1 tabs, which
-     you buy from LCSC). Each mains joint must be a full, shiny fillet. Trim the leads to 1.5 mm or less
+   - **Full assembly (recommended):** `coffee-v49-gerbers.zip`, `coffee-v49-bom.csv`, `coffee-v49-cpl.csv`.
+     JLC solders everything, the six through-hole parts included (the IRM, the four spades and the thermocouple terminal).
+   - **SMD only:** the same gerbers, plus `coffee-v49-smd-bom.csv` and `coffee-v49-smd-cpl.csv`. Then you
+     solder the parts in `coffee-v49-smd-hand-solder.csv` (the IRM-10-5, four TE 63824-1 tabs and the
+     thermocouple screw terminal, which you buy from LCSC). Each mains joint must be a full, shiny fillet. Trim the leads to 1.5 mm or less
      on the underside, then clean off the flux.
    - About $184 vs $173 for 5 boards (CIRCUIT.md, "Ordering").
 3. **PCB options:**
@@ -89,8 +89,8 @@ the IRM may both be connected: the IRM then powers the board, and D2 keeps it ou
    - Plug USB-C into the PC and run `coffee flash`, then `coffee wifi set --ssid … --password …`. The
      status LED glows while the chip is in programming mode and flickers at every reset.
    - The second command prints the board's address (`http://coffee.local/` works too).
-   - Later updates go over Wi-Fi (`coffee ota`). The board only accepts one with the power rocker **off**
-     and the steam rocker **on**, so nobody on the network can replace the firmware without someone at
+   - Later updates go over Wi-Fi (`coffee ota`). The board only accepts one after the steam rocker is switched
+     on, then the brew rocker, both held for 3 s, so nobody on the network can replace the firmware without someone at
      the machine.
    - If a bad firmware ever stops USB working: short the **BOOT** pad (TP1) to the USB-C shell (GND)
      while plugging in, then flash again.

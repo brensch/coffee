@@ -8,7 +8,7 @@ software. The low-voltage leads are ready-made (no crimping at the board); the t
 
 Wiring: [WIRING.md](WIRING.md). Every candidate looked at, with datasheet quotes and links, is in
 [`docs/evidence/parts.jsonl`](evidence/parts.jsonl): flip a status there to change a choice. The
-board itself (all its parts, including the mains section) is the JLC order: `hardware/controller/build/coffee-v33-*`.
+board itself (all its parts, including the mains section) is the JLC order: `hardware/controller/build/coffee-v49-*`.
 
 AliExpress prices weren't readable from here: the "~" figures are typical, open the links.
 

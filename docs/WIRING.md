@@ -59,7 +59,7 @@ rear panel, driven from the board's J2. Parts and links are in [BUY.md](BUY.md).
 7. **Brew and steam switches** (after step 6)
    - Remove every mains wire from both switches, **except** that you already took the valve live labelled in step 6 to the board's J15.
    - Insulate each freed end (they already have insulated receptacles; add heat-shrink over any that don't) and tie them back.
-   - The switches then carry only the 5 V J7 signals, and the switch lamps go dark.
+   - The switches then carry only the 3.3 V J7 signals, and the switch lamps go dark.
    - GaggiMate moves S.4 (black) to the S.1 position. In this build S.4 is parked insulated, **not** moved, because the steam switch must not bypass anything: the board owns the heater.
    - **UNSURE:** whether S.4 is part of the steam-thermostat path on a US machine. If parking it breaks the heater circuit, the heater simply won't heat (fail-safe), and the "heater circuit" check below catches it.
 
@@ -130,12 +130,12 @@ alloy to the same alloy.
 | J10.3 | GND | HX711 board GND | |
 | J10.4 | DOUT2 | HX711 #2 DOUT (right load cell) | |
 | J10.5 | +3.3 V | HX711 board **VCC and VDD, linked at the board** | The scale runs from 3.3 V only (HX711 works from 2.6 V), so there's no 5 V on this socket. DOUT swings 0–3.3 V, safe for the ESP32-C6. The lead runs behind the water tank, away from the mains wiring |
-| J5.1 | TC+ | thermocouple **positive** (chromel: non-magnetic; yellow in ANSI, green in IEC) | Screw terminal. Route the lead away from the heater and mains wiring; tie it to the holder's bottom so the wires can't pull out |
-| J5.2 | TC− | thermocouple **negative** (alumel: the wire a magnet pulls; red in ANSI, white in IEC) | The probe's own bare wire under the screw. Polarity matters: reversed, the reading falls as the boiler heats and the firmware faults it |
+| J5.1 | TC+ | thermocouple **positive** (chromel: non-magnetic. Don't trust the wire colours: cheap probes don't follow ANSI or IEC. Use a magnet, and confirm with the warm-tip test: the reading must rise when you warm the tip) | Screw terminal. Route the lead away from the heater and mains wiring; tie it to the holder's bottom so the wires can't pull out |
+| J5.2 | TC− | thermocouple **negative** (alumel: the wire a magnet pulls) | The probe's own bare wire under the screw. Polarity matters: reversed, the reading falls as the boiler heats and the firmware faults it |
 | J6.1 | signal | transducer output wire | ~0.5 V at 0 bar. Identify its wires on the bench first (INSTALL §3) |
 | J6.2 | +5 V | transducer supply wire | |
 | J6.3 | GND | transducer ground wire | |
-| J4 | USB-C | first flash, logs, bench power | At the board's bottom-left, reached with the board out of its holder. **USB may be plugged in with mains on:** D2 keeps the on-board supply out of the PC. Bench power over USB runs everything but the mains section |
+| J4 | USB-C | first flash, logs, bench power | At the board's bottom-left, reached with the board out of its holder. **Never plug USB in while the machine is plugged into the wall** (INSTALL.md): the circuit allows it (D2 keeps the on-board supply out of the PC), but your hand would be beside live mains joints. Bench power over USB runs everything but the mains section |
 | U4 | W.FL / MHF III | Taoglas CAB.A02 pigtail + GW.15.2113 2 dBi dipole (BUY.md #13) | Mount the SMA bulkhead in a **plastic** part |
 
 ## Checks before mains (multimeter, machine unplugged)
@@ -144,7 +144,7 @@ alloy to the same alloy.
 2. **Heater SSR open:** the 1/L1–2/T1 load terminals read open or very high on the Ω range.
 3. **Heater circuit intact:** with the **machine's power switch ON** (still unplugged), temporarily short the two brew-thermostat wires (SSR out of circuit). From C.4 through the heater to neutral you should now read the heater's ~10 Ω. Remove the short afterwards. If it reads open, a parked wire (e.g. S.4) was part of the heater path. Stop and re-check against GaggiMate's diagram before going further.
 3b. **Steam thermostat in series with the SSR:** with the short from check 3 still on (reading ~10 Ω), unplug **one** steam-thermostat lead: the reading must go **open**. If it stays at ~10 Ω, **stop**: the steam thermostat isn't in the SSR's heater path, so don't power on until it is. Plug it back and confirm ~10 Ω again. This proves the 145 °C thermostat still guards the heater path the SSR switches.
-4. **Triacs open:** **J13 L** to **J14 P**, and **J13 L** to **J15 3**, read open or very high (the snubbers are 100 Ω in series with 22 nF: open at DC).
+4. **Triacs open:** **J13 L** to **J14 P** reads about **51 kΩ** (R54, the pump bleeder; this also proves the fuse is intact), and **J13 L** to **J15 3** reads open (the snubbers are 100 Ω in series with 22 nF: open at DC). A low reading on either means a shorted triac.
 4a. **Pump and valve still connected after the switch wires were parked** (step 7), measured to S.5 with the power switch ON:
    - board **J14 P** through the pump reads its coil. The Ulka has a diode in series, so use diode mode or try both lead polarities before calling it open;
    - board **J15 3** through the valve coil reads a few hundred Ω to a few kΩ.
@@ -164,4 +164,4 @@ alloy to the same alloy.
 Follow INSTALL.md §6:
 1. The board boots from its own supply. It runs its power-on self-test first (each output in turn), then with the power rocker on it heats: the UI shows the heater on and the power meter reads ~1.37 kW.
 2. A flush (UI or `coffee flush`) runs the pump and opens the valve together: you hear the pump and see water at the group. There is no heater-only or pump-only command.
-3. Listen for pump hum while the pump is "off". Each triac channel leaks about 1 mA through its snubber, far below what moves the pump; a hum means something is bypassing the triac (the firmware's stroke detector flags it too).
+3. Listen for pump hum while the pump is "off". The valve channel leaks about 1 mA through its snubber and the pump channel about 3.4 mA (snubber plus R54), far below what moves the pump; a hum means something is bypassing the triac (the firmware's stroke detector flags it too).

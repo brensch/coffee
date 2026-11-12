@@ -171,4 +171,8 @@ IRM's pins carry mains, and a factory joint is worth $2 a board.
   insulated.
 - **Pump on the real pump:** count the strokes (one per enabled mains cycle: R54's job), and listen for hum
   while it's off. The snubber and R54 leak about 1 + 3 mA.
-- **Valve coil:** read its label. The design assumes 80–150 mA.
+- **Valve coil:** read its label. The design assumes 80–150 mA; v49's 800 V triac covers coils down to ~30 mA.
+- **Valve re-firing every half cycle** (the zero-cross opto on an inductive load; not simulated, REVIEW-v49 S1): with the
+  valve energised, a meter on DC volts across the coil reads about 0 V. Tens of volts, a buzz or a hot coil mean it is
+  running on half-waves. The fix is a random-phase 800 V opto in U9's place (same footprint).
+- **Pump re-firing:** flow with the pump at 100 % equals the flow with the pump wired straight to mains.
